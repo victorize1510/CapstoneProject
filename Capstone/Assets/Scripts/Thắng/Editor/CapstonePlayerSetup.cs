@@ -7,60 +7,71 @@ public static class CapstonePlayerSetup
 {
     private const string ControllerGuid = "7055637715af6304e8460cbc24b40236";
     private const string VexaPrefabGuid = "af66125fc77de28428e08afd4fd94286";
-    private const string IdleClipGuid = "341c576f8aa097d46b777b4b1e950b42";
-    private const string IdleChillClipGuid = "b4954a14d34f06446b69305ceeb4a95c";
-    private const string JumpClipGuid = "adda36e5788cbd54d8a92cb11a9c8c56";
-    private const string SlowRunClipGuid = "48917c912e9f1444babc48600de9f89d";
-    private const string FastRunClipGuid = "60d1bc6d8510ed249872168e2a4b8ffd";
-    private const string IdleToRollClipGuid = "bbb126017a6250e46b21d4d1d84297f3";
-    private const string RunToRollingClipGuid = "bb84197e6ab9a584db837cec0b5b3db3";
-    private const string RunLookBackClipGuid = "204dd593ee97f9446af04cea427b13f0";
-    private const string RunningBackwardClipGuid = "0bb15fcde6a37f548ae84d57dfff6597";
-    private const string ThrowClipGuid = "439b968c5093b564eace9d4a6b606c50";
-    private static readonly string ControllerFallbackPath = "Assets/Animations/Th\u1EAFng/PlayerBasic.controller";
+    private const string NeutralIdleGuid = "e504240169a5ef74aae29a1e7e38854b";
+    private const string SadIdleGuid = "a2e1a10679dea714083014a61923af83";
+    private const string IdleBattleGuid = "5be2ca04da0951c4d945c78004c6f75d";
+    private const string SlowRunGuid = "48917c912e9f1444babc48600de9f89d";
+    private const string SprintGuid = "67c8151bfac8543428614cbaa518af51";
+    private const string RunToStopGuid = "f88d3e95bed763a4e91a7171012aefd9";
+    private const string StandingToCrouchedGuid = "34f3156609079794480dc5e9c3291ddb";
+    private const string CrouchIdleGuid = "305dd9f6f04de5140ae1b62c3738f97d";
+    private const string CrouchedWalkingGuid = "ae600b20d521dae42b80d101aa4a92a6";
+    private const string CrouchedToStandingGuid = "34f3156609079794480dc5e9c3291ddb";
+    private const string CrouchedToSprintingGuid = "6c1b77285c076d3499d90fec919798d5";
+    private const string IdleToRollGuid = "bbb126017a6250e46b21d4d1d84297f3";
+    private const string RunToRollingGuid = "bb84197e6ab9a584db837cec0b5b3db3";
+    private const string RunningBackwardGuid = "0bb15fcde6a37f548ae84d57dfff6597";
+    private const string RunningJumpGuid = "01692d7a53071914abd2e41fe8d6f5c2";
+    private const string PickingUpGuid = "e13fe1e094bbec348acc00a515191bcd";
+    private const string ThrowGuid = "8d5141b03c6d1fc41869a230679ba972";
+    private const float CrouchTransitionDuration = 0.5f;
+    private const float RollControllerHeight = 0.9f;
+    private const float RollControllerRadius = 0.3f;
+    private static readonly Vector3 RollControllerCenter = new Vector3(0f, 0.45f, 0f);
+
+    private static readonly string AnimationsRoot = "Assets/Animations/Th\u1EAFng";
+    private static readonly string ControllerFallbackPath = AnimationsRoot + "/PlayerBasic.controller";
 
     private struct StateSpec
     {
         public readonly string StateName;
         public readonly string ClipGuid;
-        public readonly string PreferredClipName;
+        public readonly string[] PreferredClipNames;
         public readonly bool Loop;
-        public readonly bool UseRootMotionXZ;
+        public readonly bool AllowRootMotionXZ;
         public readonly Vector3 Position;
         public readonly float Speed;
 
-        public StateSpec(string stateName, string clipGuid, string preferredClipName, bool loop, bool useRootMotionXZ, Vector3 position, float speed)
+        public StateSpec(string stateName, string clipGuid, bool loop, bool allowRootMotionXZ, Vector3 position, float speed, params string[] preferredClipNames)
         {
             StateName = stateName;
             ClipGuid = clipGuid;
-            PreferredClipName = preferredClipName;
             Loop = loop;
-            UseRootMotionXZ = useRootMotionXZ;
+            AllowRootMotionXZ = allowRootMotionXZ;
             Position = position;
             Speed = speed;
+            PreferredClipNames = preferredClipNames;
         }
     }
 
-    [InitializeOnLoadMethod]
-    private static void AutoRepairPlayerControllerAfterCompile()
+    [MenuItem("Tools/Capstone/Repair Player Setup In Open Scene")]
+    public static void RepairPlayerControllerSetup()
     {
-        EditorApplication.delayCall += () =>
+        if (EditorApplication.isPlayingOrWillChangePlaymode)
         {
-            if (EditorApplication.isPlayingOrWillChangePlaymode)
-            {
-                return;
-            }
+            return;
+        }
 
-            ConfigureImportedClips(GetStateSpecs());
+        AnimatorController controller = LoadController();
+        bool needsRebuild = controller == null || !ControllerHasRequiredStates(controller);
+        if (needsRebuild)
+        {
+            EnsureAnimatorController(true);
+        }
 
-            AnimatorController controller = LoadController();
-            if (controller == null || !ControllerHasRequiredStates(controller))
-            {
-                EnsureAnimatorController(true);
-                int fixedPlayers = FixPlayersInOpenScenes(false);
-                Debug.Log("[Capstone] Rebuilt PlayerBasic controller and refreshed player setup. Players fixed: " + fixedPlayers);
-            }
-        };
+        int fixedPlayers = FixPlayersInOpenScenes(false, needsRebuild);
+        bool fixedCamera = RefreshCameraForFirstOpenPlayer(needsRebuild);
+        Debug.Log("[Capstone] Player setup repair finished. Controller rebuilt: " + needsRebuild + ". Players fixed: " + fixedPlayers + ". Camera fixed: " + fixedCamera);
     }
 
     [MenuItem("Tools/Capstone/Create Vexa Basic Player In Scene")]
@@ -97,16 +108,18 @@ public static class CapstonePlayerSetup
     public static void RebuildPlayerAnimatorController()
     {
         EnsureAnimatorController(true);
-        int fixedPlayers = FixPlayersInOpenScenes(false);
+        int fixedPlayers = FixPlayersInOpenScenes(false, true);
+        bool fixedCamera = RefreshCameraForFirstOpenPlayer(true);
         AssetDatabase.SaveAssets();
-        EditorUtility.DisplayDialog("Player controller rebuilt", "Rebuilt PlayerBasic and refreshed players: " + fixedPlayers, "OK");
+        EditorUtility.DisplayDialog("Player controller rebuilt", "Rebuilt PlayerBasic. Players refreshed: " + fixedPlayers + ". Camera refreshed: " + fixedCamera, "OK");
     }
 
     [MenuItem("Tools/Capstone/Fix Player Animator Missing")]
     public static void FixPlayerAnimatorMissing()
     {
-        int fixedCount = FixPlayersInOpenScenes(true);
-        EditorUtility.DisplayDialog("Player animator fixed", "Fixed player animator setup count: " + fixedCount, "OK");
+        int fixedCount = FixPlayersInOpenScenes(true, true);
+        bool fixedCamera = RefreshCameraForFirstOpenPlayer(true);
+        EditorUtility.DisplayDialog("Player animator fixed", "Fixed player animator setup count: " + fixedCount + ". Camera refreshed: " + fixedCamera, "OK");
     }
 
     [MenuItem("Tools/Capstone/Setup Selected Basic Player")]
@@ -131,7 +144,7 @@ public static class CapstonePlayerSetup
         return Selection.activeGameObject != null;
     }
 
-    private static int FixPlayersInOpenScenes(bool includeSelectionFallback)
+    private static int FixPlayersInOpenScenes(bool includeSelectionFallback, bool force)
     {
         int fixedCount = 0;
         BasicPlayerMovement[] players = Object.FindObjectsByType<BasicPlayerMovement>(FindObjectsSortMode.None);
@@ -142,7 +155,12 @@ public static class CapstonePlayerSetup
                 continue;
             }
 
-            Undo.RegisterFullObjectHierarchyUndo(movement.gameObject, "Fix player animator missing");
+            if (!force && !PlayerNeedsSetup(movement))
+            {
+                continue;
+            }
+
+            Undo.RegisterFullObjectHierarchyUndo(movement.gameObject, "Fix player setup");
             SetupPlayer(movement.gameObject);
             fixedCount++;
             EditorSceneManager.MarkSceneDirty(movement.gameObject.scene);
@@ -150,13 +168,120 @@ public static class CapstonePlayerSetup
 
         if (includeSelectionFallback && Selection.activeGameObject != null && Selection.activeGameObject.GetComponentInParent<BasicPlayerMovement>() == null)
         {
-            Undo.RegisterFullObjectHierarchyUndo(Selection.activeGameObject, "Fix selected player animator missing");
+            Undo.RegisterFullObjectHierarchyUndo(Selection.activeGameObject, "Fix selected player setup");
             SetupPlayer(Selection.activeGameObject);
             fixedCount++;
             EditorSceneManager.MarkSceneDirty(Selection.activeGameObject.scene);
         }
 
         return fixedCount;
+    }
+
+    private static bool RefreshCameraForFirstOpenPlayer(bool force)
+    {
+        BasicPlayerMovement[] players = Object.FindObjectsByType<BasicPlayerMovement>(FindObjectsSortMode.None);
+        if (players == null || players.Length == 0 || players[0] == null)
+        {
+            return false;
+        }
+
+        if (!force && !CameraNeedsSetup(players[0].transform))
+        {
+            return false;
+        }
+
+        SetupCamera(players[0].transform);
+        return true;
+    }
+
+    private static bool CameraNeedsSetup(Transform target)
+    {
+        Camera camera = Camera.main;
+        if (camera == null)
+        {
+            return true;
+        }
+
+        System.Type brainType = FindType("Unity.Cinemachine.CinemachineBrain");
+        System.Type cameraType = FindType("Unity.Cinemachine.CinemachineCamera");
+        if (brainType == null || cameraType == null)
+        {
+            BasicCameraFollow fallbackFollow = camera.GetComponent<BasicCameraFollow>();
+            return fallbackFollow == null || fallbackFollow.target != target;
+        }
+
+        if (camera.GetComponent(brainType) == null)
+        {
+            return true;
+        }
+
+        GameObject virtualCameraObject = GameObject.Find("CM Player Follow Camera");
+        if (virtualCameraObject == null)
+        {
+            return true;
+        }
+
+        Component cinemachineCamera = virtualCameraObject.GetComponent(cameraType);
+        return cinemachineCamera == null || GetMember(cinemachineCamera, "Follow") as Transform != target;
+    }
+
+    private static bool PlayerNeedsSetup(BasicPlayerMovement movement)
+    {
+        if (movement == null)
+        {
+            return false;
+        }
+
+        Transform animatorTarget = FindChildRecursive(movement.transform, "Armature");
+        if (animatorTarget == null)
+        {
+            animatorTarget = movement.transform;
+        }
+
+        Animator expectedAnimator = animatorTarget.GetComponent<Animator>();
+        Animator rootAnimator = movement.GetComponent<Animator>();
+        RuntimeAnimatorController controller = LoadController();
+
+        return movement.animator == null
+            || expectedAnimator == null
+            || movement.animator != expectedAnimator
+            || (animatorTarget != movement.transform && rootAnimator != null)
+            || expectedAnimator.runtimeAnimatorController != controller
+            || expectedAnimator.applyRootMotion
+            || movement.useRootMotion
+            || movement.rootMotionDrivesLocomotion
+            || movement.rootMotionDrivesRoll
+            || movement.rootMotionDrivesJump
+            || !movement.codeDrivesInPlaceLocomotion
+            || movement.applyAnimatorRootYaw
+            || movement.applyAnimatorRootRotationToVisual
+            || movement.keepAnimatorTransformPinned
+            || !movement.snapFeetToGround
+            || Mathf.Abs(movement.groundContactOffset) > 0.001f
+            || Mathf.Abs(movement.standingToCrouchDuration - CrouchTransitionDuration) > 0.001f
+            || Mathf.Abs(movement.crouchToStandingDuration - CrouchTransitionDuration) > 0.001f
+            || !movement.resizeControllerDuringRoll
+            || Mathf.Abs(movement.rollControllerHeight - RollControllerHeight) > 0.001f
+            || Mathf.Abs(movement.rollControllerRadius - RollControllerRadius) > 0.001f
+            || (movement.rollControllerCenter - RollControllerCenter).sqrMagnitude > 0.0001f
+            || expectedAnimator.GetComponent<AnimatorRootMotionRelay>() != null
+            || PlayerRigidbodyNeedsTiltLock(movement.gameObject)
+            || movement.idleNeutralState != "IdleNeutral"
+            || movement.sprintState != "Sprint"
+            || movement.crouchWalkingState != "CrouchWalking"
+            || movement.sprintingToRollState != "SprintingToRoll";
+    }
+
+    private static bool PlayerRigidbodyNeedsTiltLock(GameObject player)
+    {
+        Rigidbody body = player.GetComponent<Rigidbody>();
+        if (body == null)
+        {
+            return false;
+        }
+
+        RigidbodyConstraints required = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        return body.constraints != required || !body.isKinematic || body.useGravity;
     }
 
     private static void SetupPlayer(GameObject player)
@@ -168,11 +293,7 @@ public static class CapstonePlayerSetup
             animatorTarget = player.transform;
         }
 
-        Animator rootAnimator = player.GetComponent<Animator>();
-        if (rootAnimator != null && animatorTarget != player.transform)
-        {
-            Undo.DestroyObjectImmediate(rootAnimator);
-        }
+        RemoveUnexpectedAnimatorSetup(player, animatorTarget);
 
         Animator animator = animatorTarget.GetComponent<Animator>();
         if (animator == null)
@@ -181,8 +302,9 @@ public static class CapstonePlayerSetup
         }
 
         Undo.RecordObject(animator, "Assign player animator controller");
+        animator.avatar = null;
         animator.runtimeAnimatorController = controller;
-        animator.applyRootMotion = true;
+        animator.applyRootMotion = false;
         animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
         CharacterController characterController = GetOrAddComponent<CharacterController>(player);
@@ -192,32 +314,120 @@ public static class CapstonePlayerSetup
         characterController.center = new Vector3(0f, 0.9f, 0f);
         characterController.stepOffset = 0.35f;
         characterController.slopeLimit = 45f;
+        characterController.skinWidth = 0.02f;
+        characterController.minMoveDistance = 0f;
+        characterController.detectCollisions = true;
+        characterController.enableOverlapRecovery = true;
+
+        Rigidbody body = player.GetComponent<Rigidbody>();
+        if (body != null)
+        {
+            Undo.RecordObject(body, "Setup player rigidbody");
+            body.useGravity = false;
+            body.isKinematic = true;
+            body.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        }
 
         BasicPlayerMovement movement = GetOrAddComponent<BasicPlayerMovement>(player);
         Undo.RecordObject(movement, "Setup player movement");
         movement.animator = animator;
         movement.cameraTransform = Camera.main != null ? Camera.main.transform : null;
-        movement.useRootMotion = true;
-        movement.fallbackToCodeMotionWhenNoRootMotion = true;
+        movement.useRootMotion = false;
+        movement.rootMotionDrivesLocomotion = false;
+        movement.rootMotionDrivesRoll = false;
+        movement.rootMotionDrivesJump = false;
+        movement.codeDrivesInPlaceLocomotion = true;
+        movement.fallbackToCodeMotionWhenRootMotionIsSmall = false;
+        movement.rootMotionScale = 1f;
+        movement.rootMotionFallbackDelay = 0.08f;
+        movement.rootMotionFallbackThreshold = 0.005f;
+        movement.applyAnimatorRootYaw = false;
+        movement.applyAnimatorRootRotationToVisual = false;
+        movement.keepAnimatorTransformPinned = false;
+        movement.snapFeetToGround = true;
+        movement.groundLayers = ~0;
+        movement.groundSnapDistance = 0.45f;
+        movement.groundSnapProbeHeight = 0.35f;
+        movement.groundContactOffset = 0f;
         movement.slowRunSpeed = 3.5f;
-        movement.fastRunSpeed = 6f;
+        movement.sprintSpeed = 6f;
         movement.backwardSpeed = 2.8f;
-        movement.slowRunRootMotionScale = 1f;
-        movement.fastRunRootMotionScale = 1f;
-        movement.backwardRootMotionScale = 1f;
-        movement.rollRootMotionScale = 1f;
-        movement.jumpHeight = 1.4f;
-        movement.idleChillDelay = 5f;
+        movement.crouchWalkSpeed = 1.55f;
+        movement.acceleration = 18f;
+        movement.deceleration = 24f;
+        movement.turnSpeed = 720f;
+        movement.jumpHeight = 1.35f;
         movement.rollKey = KeyCode.Q;
+        movement.idleRollDuration = 2.15f;
+        movement.sprintRollDuration = 1.35f;
+        movement.idleRollDistance = 2.6f;
+        movement.sprintRollDistance = 3.7f;
+        movement.resizeControllerDuringRoll = true;
+        movement.rollControllerHeight = RollControllerHeight;
+        movement.rollControllerRadius = RollControllerRadius;
+        movement.rollControllerCenter = RollControllerCenter;
+        movement.standingToCrouchDuration = CrouchTransitionDuration;
+        movement.crouchToStandingDuration = CrouchTransitionDuration;
+        movement.crouchKey = KeyCode.LeftControl;
+        movement.alternateCrouchKey = KeyCode.RightControl;
+        movement.pickUpKey = KeyCode.E;
         movement.aimMouseButton = 1;
-        movement.throwDuration = 0.75f;
-        movement.idleRollDistance = 2.2f;
-        movement.runRollDistance = 3.6f;
-        movement.keepAnimatorTransformPinned = true;
+        movement.rightMouseButtonThrows = false;
+        movement.requirePickupTarget = false;
+        movement.idleSadDelay = 5f;
+        movement.battleRelaxDelay = 5f;
+        movement.runToStopDuration = 0.55f;
+        movement.jumpDuration = 0.95f;
+        movement.pickUpDuration = 1.15f;
+        movement.throwDuration = 0.95f;
+        movement.useAnimatorStateLengthForActions = true;
+        movement.actionExitNormalizedTime = 0.98f;
+        movement.minimumActionDuration = 0.08f;
 
-        AnimatorRootMotionRelay relay = GetOrAddComponent<AnimatorRootMotionRelay>(animator.gameObject);
-        Undo.RecordObject(relay, "Setup root motion relay");
-        relay.movement = movement;
+        movement.idleNeutralState = "IdleNeutral";
+        movement.idleSadState = "IdleSad";
+        movement.idleBattleState = "IdleBattle";
+        movement.slowRunState = "SlowRun";
+        movement.sprintState = "Sprint";
+        movement.runToStopState = "RunToStop";
+        movement.standingToCrouchState = "StandingToCrouch";
+        movement.crouchIdleState = "CrouchIdle";
+        movement.crouchWalkingState = "CrouchWalking";
+        movement.crouchToStandingState = "CrouchToStanding";
+        movement.crouchToSprintState = "CrouchToSprint";
+        movement.idleToRollState = "IdleToRoll";
+        movement.sprintingToRollState = "SprintingToRoll";
+        movement.runningBackwardState = "RunningBackward";
+        movement.jumpState = "Jump";
+        movement.pickingUpState = "PickingUp";
+        movement.throwState = "Throw";
+
+        AnimatorRootMotionRelay relay = animator.GetComponent<AnimatorRootMotionRelay>();
+        if (relay != null)
+        {
+            Undo.DestroyObjectImmediate(relay);
+        }
+    }
+
+    private static void RemoveUnexpectedAnimatorSetup(GameObject player, Transform animatorTarget)
+    {
+        AnimatorRootMotionRelay[] relays = player.GetComponentsInChildren<AnimatorRootMotionRelay>(true);
+        foreach (AnimatorRootMotionRelay relay in relays)
+        {
+            if (relay != null && relay.transform != animatorTarget)
+            {
+                Undo.DestroyObjectImmediate(relay);
+            }
+        }
+
+        Animator[] animators = player.GetComponentsInChildren<Animator>(true);
+        foreach (Animator nestedAnimator in animators)
+        {
+            if (nestedAnimator != null && nestedAnimator.transform != animatorTarget)
+            {
+                Undo.DestroyObjectImmediate(nestedAnimator);
+            }
+        }
     }
 
     private static void SetupCamera(Transform target)
@@ -236,8 +446,21 @@ public static class CapstonePlayerSetup
         camera.transform.position = target.position + new Vector3(0f, 2.2f, -4.5f);
         camera.transform.LookAt(target.position + Vector3.up * 1.2f);
 
+        if (SetupCinemachineCamera(camera, target))
+        {
+            BasicCameraFollow legacyFollow = camera.GetComponent<BasicCameraFollow>();
+            if (legacyFollow != null)
+            {
+                Undo.RecordObject(legacyFollow, "Disable legacy camera follow");
+                legacyFollow.enabled = false;
+            }
+
+            return;
+        }
+
         BasicCameraFollow follow = GetOrAddComponent<BasicCameraFollow>(camera.gameObject);
-        Undo.RecordObject(follow, "Setup camera follow");
+        Undo.RecordObject(follow, "Setup fallback camera follow");
+        follow.enabled = true;
         follow.target = target;
         follow.offset = new Vector3(0f, 2.2f, -4.5f);
         follow.aimOffset = new Vector3(0.75f, 1.8f, -2.75f);
@@ -250,6 +473,45 @@ public static class CapstonePlayerSetup
         follow.mouseSensitivity = 2.2f;
         follow.lockCursorOnPlay = true;
         follow.showAimReticle = true;
+    }
+
+    private static bool SetupCinemachineCamera(Camera camera, Transform target)
+    {
+        System.Type brainType = FindType("Unity.Cinemachine.CinemachineBrain");
+        System.Type cameraType = FindType("Unity.Cinemachine.CinemachineCamera");
+        System.Type thirdPersonFollowType = FindType("Unity.Cinemachine.CinemachineThirdPersonFollow");
+
+        if (brainType == null || cameraType == null || thirdPersonFollowType == null)
+        {
+            return false;
+        }
+
+        GetOrAddComponent(camera.gameObject, brainType);
+
+        GameObject virtualCameraObject = GameObject.Find("CM Player Follow Camera");
+        if (virtualCameraObject == null)
+        {
+            virtualCameraObject = new GameObject("CM Player Follow Camera");
+            Undo.RegisterCreatedObjectUndo(virtualCameraObject, "Create Cinemachine player camera");
+        }
+
+        virtualCameraObject.transform.position = target.position + new Vector3(0f, 2.2f, -4.5f);
+        virtualCameraObject.transform.LookAt(target.position + Vector3.up * 1.2f);
+
+        Component cinemachineCamera = GetOrAddComponent(virtualCameraObject, cameraType);
+        SetMember(cinemachineCamera, "Follow", target);
+        SetMember(cinemachineCamera, "LookAt", target);
+        SetMember(cinemachineCamera, "Priority", 20);
+
+        Component thirdPersonFollow = GetOrAddComponent(virtualCameraObject, thirdPersonFollowType);
+        SetMember(thirdPersonFollow, "ShoulderOffset", new Vector3(0.75f, -0.35f, 0f));
+        SetMember(thirdPersonFollow, "CameraSide", 1f);
+        SetMember(thirdPersonFollow, "VerticalArmLength", 1.2f);
+        SetMember(thirdPersonFollow, "CameraDistance", 4f);
+        SetMember(thirdPersonFollow, "Damping", new Vector3(0.08f, 0.18f, 0.18f));
+
+        EditorSceneManager.MarkSceneDirty(target.gameObject.scene);
+        return true;
     }
 
     private static void EnsureTestGround()
@@ -269,10 +531,12 @@ public static class CapstonePlayerSetup
 
     private static RuntimeAnimatorController EnsureAnimatorController(bool forceRebuild)
     {
+        ConfigureImportedClips(GetStateSpecs());
+
         AnimatorController controller = LoadController();
         if (controller == null)
         {
-            EnsureFolder("Assets/Animations/Th\u1EAFng");
+            EnsureFolder(AnimationsRoot);
             controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerFallbackPath);
         }
 
@@ -298,7 +562,6 @@ public static class CapstonePlayerSetup
     private static void RebuildAnimatorController(AnimatorController controller)
     {
         StateSpec[] stateSpecs = GetStateSpecs();
-        ConfigureImportedClips(stateSpecs);
 
         controller.parameters = new AnimatorControllerParameter[0];
         controller.AddParameter("Speed", AnimatorControllerParameterType.Float);
@@ -306,9 +569,17 @@ public static class CapstonePlayerSetup
         controller.AddParameter("MoveY", AnimatorControllerParameterType.Float);
         controller.AddParameter("Grounded", AnimatorControllerParameterType.Bool);
         controller.AddParameter("VerticalSpeed", AnimatorControllerParameterType.Float);
+        controller.AddParameter("IsMoving", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IsSprinting", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IsCrouching", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IsEnemyNearby", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IsRolling", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IsJumping", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IsPickingUp", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IsThrowing", AnimatorControllerParameterType.Bool);
+        controller.AddParameter("IdleTimer", AnimatorControllerParameterType.Float);
         controller.AddParameter("FastRun", AnimatorControllerParameterType.Bool);
         controller.AddParameter("Backward", AnimatorControllerParameterType.Bool);
-        controller.AddParameter("LookBack", AnimatorControllerParameterType.Bool);
         controller.AddParameter("Rolling", AnimatorControllerParameterType.Bool);
         controller.AddParameter("Jumping", AnimatorControllerParameterType.Bool);
         controller.AddParameter("Throwing", AnimatorControllerParameterType.Bool);
@@ -330,11 +601,12 @@ public static class CapstonePlayerSetup
         foreach (StateSpec spec in stateSpecs)
         {
             AnimatorState state = stateMachine.AddState(spec.StateName, spec.Position);
-            state.motion = LoadClipByGuid(spec.ClipGuid, spec.PreferredClipName);
+            state.motion = LoadClipForState(spec);
             state.speed = spec.Speed;
+            state.cycleOffset = 0f;
             state.writeDefaultValues = true;
 
-            if (spec.StateName == "Idle")
+            if (spec.StateName == "IdleNeutral")
             {
                 defaultState = state;
             }
@@ -358,16 +630,23 @@ public static class CapstonePlayerSetup
     {
         return new StateSpec[]
         {
-            new StateSpec("Idle", IdleClipGuid, "Idle", true, false, new Vector3(260f, 80f, 0f), 1f),
-            new StateSpec("IdleChill", IdleChillClipGuid, "IdleChill", true, false, new Vector3(260f, 190f, 0f), 1f),
-            new StateSpec("SlowRun", SlowRunClipGuid, "Slow Run", true, true, new Vector3(520f, 80f, 0f), 1f),
-            new StateSpec("FastRun", FastRunClipGuid, "Fast Run", true, true, new Vector3(520f, 190f, 0f), 1f),
-            new StateSpec("RunningBackward", RunningBackwardClipGuid, "Running Backward", true, true, new Vector3(520f, 300f, 0f), 1f),
-            new StateSpec("RunLookBack", RunLookBackClipGuid, "Run Look Back", true, true, new Vector3(780f, 80f, 0f), 1f),
-            new StateSpec("IdleToRoll", IdleToRollClipGuid, "Idle to Roll", false, true, new Vector3(260f, 410f, 0f), 1f),
-            new StateSpec("RunToRolling", RunToRollingClipGuid, "Run To Rolling", false, true, new Vector3(520f, 410f, 0f), 1f),
-            new StateSpec("Jump", JumpClipGuid, "Jump01", false, false, new Vector3(780f, 300f, 0f), 1f),
-            new StateSpec("Throw", ThrowClipGuid, "GunShot01", false, false, new Vector3(780f, 410f, 0f), 1f),
+            new StateSpec("IdleNeutral", NeutralIdleGuid, true, false, new Vector3(220f, 80f, 0f), 1f, "Neutral Idle", "Idle"),
+            new StateSpec("IdleSad", SadIdleGuid, true, false, new Vector3(220f, 190f, 0f), 1f, "Sad Idle", "IdleChill"),
+            new StateSpec("IdleBattle", IdleBattleGuid, true, false, new Vector3(220f, 300f, 0f), 1f, "IdleBattle", "Battle Idle"),
+            new StateSpec("SlowRun", SlowRunGuid, true, true, new Vector3(500f, 80f, 0f), 1f, "Slow Run", "Run"),
+            new StateSpec("Sprint", SprintGuid, true, true, new Vector3(500f, 190f, 0f), 1f, "Sprint", "Fast Run"),
+            new StateSpec("RunningBackward", RunningBackwardGuid, true, true, new Vector3(500f, 300f, 0f), 1f, "Running Backward"),
+            new StateSpec("RunToStop", RunToStopGuid, false, true, new Vector3(500f, 410f, 0f), 1f, "Run To Stop"),
+            new StateSpec("StandingToCrouch", StandingToCrouchedGuid, false, false, new Vector3(780f, 80f, 0f), -1f, "Crouch To Standing Idle(Thaythechuan)", "Crouch To Standing Idle", "Crouch To Standing", "Crouched To Standing"),
+            new StateSpec("CrouchIdle", CrouchIdleGuid, true, false, new Vector3(780f, 190f, 0f), 1f, "Crouch Idle", "Crouched Idle"),
+            new StateSpec("CrouchWalking", CrouchedWalkingGuid, true, true, new Vector3(780f, 300f, 0f), 1f, "Crouched Walking"),
+            new StateSpec("CrouchToStanding", CrouchedToStandingGuid, false, false, new Vector3(780f, 410f, 0f), 1f, "Crouch To Standing Idle(Thaythechuan)", "Crouch To Standing Idle", "Crouch To Standing", "Crouched To Standing"),
+            new StateSpec("CrouchToSprint", CrouchedToSprintingGuid, false, true, new Vector3(780f, 520f, 0f), 1f, "Crouched To Sprinting", "Crouch To Sprint"),
+            new StateSpec("IdleToRoll", IdleToRollGuid, false, true, new Vector3(1060f, 80f, 0f), 1f, "Idle to Roll", "Idle To Roll"),
+            new StateSpec("SprintingToRoll", RunToRollingGuid, false, true, new Vector3(1060f, 190f, 0f), 1f, "Run To Rolling", "Sprinting To Roll", "Run To Roll"),
+            new StateSpec("Jump", RunningJumpGuid, false, true, new Vector3(1060f, 300f, 0f), 1f, "Running Jump", "Jump"),
+            new StateSpec("PickingUp", PickingUpGuid, false, false, new Vector3(1060f, 410f, 0f), 1f, "Picking Up Object", "Picking Up"),
+            new StateSpec("Throw", ThrowGuid, false, false, new Vector3(1060f, 520f, 0f), 1f, "Throw (chuan)", "Throw", "GunShot01"),
         };
     }
 
@@ -382,10 +661,22 @@ public static class CapstonePlayerSetup
         StateSpec[] specs = GetStateSpecs();
         foreach (StateSpec spec in specs)
         {
+            AnimationClip expectedClip = LoadClipForState(spec);
+            if (expectedClip == null)
+            {
+                return false;
+            }
+
             bool found = false;
             foreach (ChildAnimatorState state in states)
             {
-                if (state.state != null && state.state.name == spec.StateName)
+                if (state.state == null || state.state.name != spec.StateName)
+                {
+                    continue;
+                }
+
+                float expectedCycleOffset = 0f;
+                if (state.state.motion == expectedClip && Mathf.Approximately(state.state.speed, spec.Speed) && Mathf.Approximately(state.state.cycleOffset, expectedCycleOffset))
                 {
                     found = true;
                     break;
@@ -411,10 +702,10 @@ public static class CapstonePlayerSetup
 
     private static void ConfigureClipImport(StateSpec spec)
     {
-        string path = GetAssetPath(spec.ClipGuid);
+        string path = FindAssetPathForSpec(spec);
         if (string.IsNullOrEmpty(path))
         {
-            Debug.LogWarning("[Capstone] Cannot find animation asset by GUID: " + spec.ClipGuid);
+            Debug.LogWarning("[Capstone] Cannot find animation asset for state: " + spec.StateName);
             return;
         }
 
@@ -436,6 +727,19 @@ public static class CapstonePlayerSetup
         }
 
         bool changed = false;
+        if (importer.animationType != ModelImporterAnimationType.Generic)
+        {
+            importer.animationType = ModelImporterAnimationType.Generic;
+            changed = true;
+        }
+
+        if (importer.avatarSetup != ModelImporterAvatarSetup.NoAvatar)
+        {
+            importer.avatarSetup = ModelImporterAvatarSetup.NoAvatar;
+            importer.sourceAvatar = null;
+            changed = true;
+        }
+
         for (int i = 0; i < clips.Length; i++)
         {
             if (clips[i].loopTime != spec.Loop)
@@ -450,22 +754,45 @@ public static class CapstonePlayerSetup
                 changed = true;
             }
 
-            if (!clips[i].lockRootRotation)
+            bool freeRootRotation = UsesFreeRootRotation(spec.StateName);
+            bool freeRootHeight = UsesFreeRootHeight(spec.StateName);
+            bool freeRootPositionXZ = UsesFreeRootPositionXZ(spec.StateName);
+
+            if (clips[i].lockRootRotation == freeRootRotation)
             {
-                clips[i].lockRootRotation = true;
+                clips[i].lockRootRotation = !freeRootRotation;
                 changed = true;
             }
 
-            if (!clips[i].lockRootHeightY)
+            if (!clips[i].keepOriginalOrientation)
             {
-                clips[i].lockRootHeightY = true;
+                clips[i].keepOriginalOrientation = true;
                 changed = true;
             }
 
-            bool shouldLockRootPositionXZ = !spec.UseRootMotionXZ;
-            if (clips[i].lockRootPositionXZ != shouldLockRootPositionXZ)
+            if (clips[i].lockRootHeightY == freeRootHeight)
             {
-                clips[i].lockRootPositionXZ = shouldLockRootPositionXZ;
+                clips[i].lockRootHeightY = !freeRootHeight;
+                changed = true;
+            }
+
+            bool keepOriginalPositionY = freeRootHeight;
+            if (clips[i].keepOriginalPositionY != keepOriginalPositionY)
+            {
+                clips[i].keepOriginalPositionY = keepOriginalPositionY;
+                changed = true;
+            }
+
+            bool heightFromFeet = !freeRootHeight;
+            if (clips[i].heightFromFeet != heightFromFeet)
+            {
+                clips[i].heightFromFeet = heightFromFeet;
+                changed = true;
+            }
+
+            if (clips[i].lockRootPositionXZ == freeRootPositionXZ)
+            {
+                clips[i].lockRootPositionXZ = !freeRootPositionXZ;
                 changed = true;
             }
         }
@@ -477,22 +804,44 @@ public static class CapstonePlayerSetup
         }
     }
 
-    private static AnimationClip LoadClipByGuid(string guid, string preferredClipName)
+    private static bool UsesFreeRootRotation(string stateName)
     {
-        return LoadClip(GetAssetPath(guid), preferredClipName);
+        return false;
     }
 
-    private static AnimationClip LoadClip(string path, string preferredClipName)
+    private static bool UsesFreeRootHeight(string stateName)
+    {
+        return false;
+    }
+
+    private static bool UsesFreeRootPositionXZ(string stateName)
+    {
+        return false;
+    }
+
+    private static AnimationClip LoadClipForState(StateSpec spec)
+    {
+        AnimationClip clip = LoadClipFromPath(GetAssetPath(spec.ClipGuid), spec.PreferredClipNames);
+        if (clip != null)
+        {
+            return clip;
+        }
+
+        string path = FindAssetPathForSpec(spec);
+        return LoadClipFromPath(path, spec.PreferredClipNames);
+    }
+
+    private static AnimationClip LoadClipFromPath(string path, string[] preferredClipNames)
     {
         if (string.IsNullOrEmpty(path))
         {
             return null;
         }
 
-        Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
+        UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
         AnimationClip fallback = null;
 
-        foreach (Object asset in assets)
+        foreach (UnityEngine.Object asset in assets)
         {
             AnimationClip clip = asset as AnimationClip;
             if (clip == null || clip.name.StartsWith("__preview__"))
@@ -500,7 +849,7 @@ public static class CapstonePlayerSetup
                 continue;
             }
 
-            if (clip.name == preferredClipName)
+            if (NameMatches(clip.name, preferredClipNames))
             {
                 return clip;
             }
@@ -512,6 +861,68 @@ public static class CapstonePlayerSetup
         }
 
         return fallback;
+    }
+
+    private static string FindAssetPathForSpec(StateSpec spec)
+    {
+        string path = GetAssetPath(spec.ClipGuid);
+        if (!string.IsNullOrEmpty(path))
+        {
+            return path;
+        }
+
+        string[] guids = AssetDatabase.FindAssets("t:AnimationClip", new[] { AnimationsRoot });
+        for (int i = 0; i < guids.Length; i++)
+        {
+            path = AssetDatabase.GUIDToAssetPath(guids[i]);
+            string fileName = System.IO.Path.GetFileNameWithoutExtension(path);
+            if (NameMatches(fileName, spec.PreferredClipNames))
+            {
+                return path;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool NameMatches(string candidate, string[] preferredNames)
+    {
+        if (preferredNames == null || preferredNames.Length == 0)
+        {
+            return false;
+        }
+
+        string normalizedCandidate = NormalizeName(candidate);
+        for (int i = 0; i < preferredNames.Length; i++)
+        {
+            string normalizedPreferred = NormalizeName(preferredNames[i]);
+            if (normalizedCandidate == normalizedPreferred || normalizedCandidate.Contains(normalizedPreferred) || normalizedPreferred.Contains(normalizedCandidate))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static string NormalizeName(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return string.Empty;
+        }
+
+        System.Text.StringBuilder builder = new System.Text.StringBuilder(value.Length);
+        for (int i = 0; i < value.Length; i++)
+        {
+            char c = value[i];
+            if (char.IsLetterOrDigit(c))
+            {
+                builder.Append(char.ToLowerInvariant(c));
+            }
+        }
+
+        return builder.ToString();
     }
 
     private static string GetAssetPath(string guid)
@@ -549,6 +960,74 @@ public static class CapstonePlayerSetup
         return component;
     }
 
+    private static Component GetOrAddComponent(GameObject gameObject, System.Type componentType)
+    {
+        Component component = gameObject.GetComponent(componentType);
+        if (component == null)
+        {
+            component = Undo.AddComponent(gameObject, componentType);
+        }
+
+        return component;
+    }
+
+    private static System.Type FindType(string typeName)
+    {
+        System.Reflection.Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+        for (int i = 0; i < assemblies.Length; i++)
+        {
+            System.Type type = assemblies[i].GetType(typeName);
+            if (type != null)
+            {
+                return type;
+            }
+        }
+
+        return null;
+    }
+
+    private static void SetMember(object target, string memberName, object value)
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        System.Type type = target.GetType();
+        System.Reflection.PropertyInfo property = type.GetProperty(memberName);
+        if (property != null && property.CanWrite)
+        {
+            property.SetValue(target, value, null);
+            EditorUtility.SetDirty(target as Object);
+            return;
+        }
+
+        System.Reflection.FieldInfo field = type.GetField(memberName);
+        if (field != null)
+        {
+            field.SetValue(target, value);
+            EditorUtility.SetDirty(target as Object);
+        }
+    }
+
+    private static object GetMember(object target, string memberName)
+    {
+        if (target == null)
+        {
+            return null;
+        }
+
+        System.Type type = target.GetType();
+        System.Reflection.PropertyInfo property = type.GetProperty(memberName);
+        if (property != null && property.CanRead)
+        {
+            return property.GetValue(target, null);
+        }
+
+        System.Reflection.FieldInfo field = type.GetField(memberName);
+        return field != null ? field.GetValue(target) : null;
+    }
+
     private static void EnsureFolder(string unityPath)
     {
         if (AssetDatabase.IsValidFolder(unityPath))
@@ -571,3 +1050,4 @@ public static class CapstonePlayerSetup
         }
     }
 }
+

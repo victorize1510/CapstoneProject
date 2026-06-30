@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.ivanmurzak.unity.mcp": "0.82.1",
+    "com.ivanmurzak.unity.mcp": "0.82.3",
     "com.unity.ai.navigation": "2.0.12",
     "com.unity.cinemachine": "3.1.7",
     "com.unity.collab-proxy": "2.12.4",
