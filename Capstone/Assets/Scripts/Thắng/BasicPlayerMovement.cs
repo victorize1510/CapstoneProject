@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Cinemachine;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -39,6 +40,7 @@ public class BasicPlayerMovement : MonoBehaviour
     [Header("References")]
     public Animator animator;
     public Transform cameraTransform;
+    public CinemachineOrbitalFollow movementOrbitCamera;
 
     [Header("Movement")]
     public float slowRunSpeed = 3.5f;
@@ -49,6 +51,7 @@ public class BasicPlayerMovement : MonoBehaviour
     public float deceleration = 24f;
     public float turnSpeed = 720f;
     public bool cameraRelativeMovement = true;
+    public bool useOrbitCameraYawForMovement = true;
 
     [Header("Animation Motion")]
     public bool useRootMotion = false;
@@ -1168,7 +1171,8 @@ public class BasicPlayerMovement : MonoBehaviour
 
         if (cameraRelativeMovement && cameraTransform != null)
         {
-            direction = GetCameraForward() * input.y + GetCameraRight() * input.x;
+            Vector3 forward = GetMovementCameraForward();
+            direction = forward * input.y + GetRightFromForward(forward) * input.x;
         }
         else
         {
@@ -1176,6 +1180,18 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         return Vector3.ClampMagnitude(direction, 1f);
+    }
+
+    private Vector3 GetMovementCameraForward()
+    {
+        if (useOrbitCameraYawForMovement && movementOrbitCamera != null)
+        {
+            Vector3 forward = Quaternion.Euler(0f, movementOrbitCamera.HorizontalAxis.Value, 0f) * Vector3.forward;
+            forward.y = 0f;
+            return forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        }
+
+        return GetCameraForward();
     }
 
     private void RotateToward(Vector3 direction)
@@ -1219,6 +1235,11 @@ public class BasicPlayerMovement : MonoBehaviour
     private Vector3 GetCameraRight()
     {
         Vector3 forward = GetCameraForward();
+        return GetRightFromForward(forward);
+    }
+
+    private Vector3 GetRightFromForward(Vector3 forward)
+    {
         Vector3 right = Vector3.Cross(Vector3.up, forward);
         return right.sqrMagnitude > 0.001f ? right.normalized : Vector3.right;
     }
@@ -1523,6 +1544,11 @@ public class BasicPlayerMovement : MonoBehaviour
         if (cameraTransform != null && cameraFollow == null)
         {
             cameraFollow = cameraTransform.GetComponent<BasicCameraFollow>();
+        }
+
+        if (useOrbitCameraYawForMovement && movementOrbitCamera == null)
+        {
+            movementOrbitCamera = Object.FindFirstObjectByType<CinemachineOrbitalFollow>();
         }
     }
 
