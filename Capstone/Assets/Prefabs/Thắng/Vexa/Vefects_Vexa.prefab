@@ -2908,7 +2908,6 @@ MonoBehaviour:
   rightMouseButtonThrows: 0
   requirePickupTarget: 0
   hasPickupTarget: 0
-  runToStopDuration: 0.55
   jumpDuration: 0.95
   pickUpDuration: 1.15
   throwDuration: 0.95
@@ -2937,7 +2936,6 @@ MonoBehaviour:
   idleBattleState: IdleBattle
   slowRunState: SlowRun
   sprintState: Sprint
-  runToStopState: RunToStop
   standingToCrouchState: StandingToCrouch
   crouchIdleState: CrouchIdle
   crouchWalkingState: CrouchWalking

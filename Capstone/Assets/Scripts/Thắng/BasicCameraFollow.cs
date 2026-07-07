@@ -8,6 +8,9 @@ public class BasicCameraFollow : MonoBehaviour
     public Vector3 offset = new Vector3(0f, 2.2f, -4.5f);
     public float lookHeight = 1.2f;
     public float followSpeed = 10f;
+    public float positionSmoothTime = 0.12f;
+    public float focusSmoothTime = 0.18f;
+    public float maxFocusLag = 2f;
     public float mouseSensitivity = 2.2f;
     public float minPitch = -25f;
     public float maxPitch = 65f;
@@ -25,6 +28,10 @@ public class BasicCameraFollow : MonoBehaviour
     private float yaw;
     private float pitch = 18f;
     private float aimBlend;
+    private Vector3 positionVelocity;
+    private Vector3 focusVelocity;
+    private Vector3 focusPoint;
+    private bool focusInitialized;
 
     public bool IsAiming
     {
@@ -43,7 +50,9 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void Start()
     {
+        TryFindTarget();
         InitializeAnglesFromCurrentCamera();
+        InitializeFocusPoint();
 
         if (lockCursorOnPlay)
         {
@@ -61,6 +70,8 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void LateUpdate()
     {
+        TryFindTarget();
+
         if (target == null)
         {
             return;
@@ -70,6 +81,20 @@ public class BasicCameraFollow : MonoBehaviour
         UpdateMouseLook();
         UpdateAimBlend();
         FollowTarget();
+    }
+
+    private void TryFindTarget()
+    {
+        if (target != null)
+        {
+            return;
+        }
+
+        BasicPlayerMovement player = Object.FindFirstObjectByType<BasicPlayerMovement>();
+        if (player != null)
+        {
+            target = player.transform;
+        }
     }
 
     private void InitializeAnglesFromCurrentCamera()
@@ -94,6 +119,19 @@ public class BasicCameraFollow : MonoBehaviour
         }
 
         pitch = Mathf.Clamp(NormalizePitch(transform.eulerAngles.x), minPitch, maxPitch);
+    }
+
+    private void InitializeFocusPoint()
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        focusPoint = target.position + Vector3.up * lookHeight;
+        focusInitialized = true;
+        positionVelocity = Vector3.zero;
+        focusVelocity = Vector3.zero;
     }
 
     private void UpdateCursorLock()
@@ -134,6 +172,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void FollowTarget()
     {
+        float deltaTime = Mathf.Max(Time.deltaTime, 0.0001f);
         Quaternion cameraYaw = Quaternion.Euler(0f, yaw, 0f);
         Quaternion cameraRotation = Quaternion.Euler(pitch, yaw, 0f);
         Vector3 normalOffset = cameraRotation * offset;
@@ -143,12 +182,31 @@ public class BasicCameraFollow : MonoBehaviour
         Vector3 normalFocus = target.position + Vector3.up * lookHeight;
         Vector3 aimDirection = cameraRotation * Vector3.forward;
         Vector3 aimFocus = target.position + Vector3.up * aimLookHeight + aimDirection * aimLookAhead;
-        Vector3 focus = Vector3.Lerp(normalFocus, aimFocus, aimBlend);
+        Vector3 desiredFocus = Vector3.Lerp(normalFocus, aimFocus, aimBlend);
+        if (!focusInitialized)
+        {
+            focusPoint = desiredFocus;
+            focusInitialized = true;
+        }
+
+        focusPoint = Vector3.SmoothDamp(focusPoint, desiredFocus, ref focusVelocity, focusSmoothTime, Mathf.Infinity, deltaTime);
+        Vector3 focusOffset = focusPoint - desiredFocus;
+        if (focusOffset.sqrMagnitude > maxFocusLag * maxFocusLag)
+        {
+            focusPoint = desiredFocus + focusOffset.normalized * maxFocusLag;
+            focusVelocity = Vector3.zero;
+        }
+
+        // Aim looks toward a point ahead of the player, but the camera position
+        // must stay anchored to the player. Using focusPoint here makes the
+        // camera drift forward while aiming and breaks the over-shoulder view.
         Vector3 desiredPosition = target.position + blendedOffset;
         float blendedFollowSpeed = Mathf.Lerp(followSpeed, followSpeed * 1.35f, aimBlend);
+        float speedRatio = followSpeed > 0.001f ? blendedFollowSpeed / followSpeed : 1f;
+        float smoothTime = Mathf.Max(0.01f, positionSmoothTime / Mathf.Max(0.1f, speedRatio));
 
-        transform.position = Vector3.Lerp(transform.position, desiredPosition, blendedFollowSpeed * Time.deltaTime);
-        transform.rotation = Quaternion.LookRotation(focus - transform.position, Vector3.up);
+        transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref positionVelocity, smoothTime, Mathf.Infinity, deltaTime);
+        transform.rotation = Quaternion.LookRotation(focusPoint - transform.position, Vector3.up);
     }
 
     private void OnGUI()

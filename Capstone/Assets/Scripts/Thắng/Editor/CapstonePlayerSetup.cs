@@ -12,7 +12,6 @@ public static class CapstonePlayerSetup
     private const string IdleBattleGuid = "5be2ca04da0951c4d945c78004c6f75d";
     private const string SlowRunGuid = "48917c912e9f1444babc48600de9f89d";
     private const string SprintGuid = "67c8151bfac8543428614cbaa518af51";
-    private const string RunToStopGuid = "f88d3e95bed763a4e91a7171012aefd9";
     private const string StandingToCrouchedGuid = "34f3156609079794480dc5e9c3291ddb";
     private const string CrouchIdleGuid = "305dd9f6f04de5140ae1b62c3738f97d";
     private const string CrouchedWalkingGuid = "ae600b20d521dae42b80d101aa4a92a6";
@@ -21,7 +20,7 @@ public static class CapstonePlayerSetup
     private const string IdleToRollGuid = "bbb126017a6250e46b21d4d1d84297f3";
     private const string RunToRollingGuid = "bb84197e6ab9a584db837cec0b5b3db3";
     private const string RunningBackwardGuid = "0bb15fcde6a37f548ae84d57dfff6597";
-    private const string RunningJumpGuid = "01692d7a53071914abd2e41fe8d6f5c2";
+    private const string JumpGuid = "22254f4b549ca624294118b2aea4e4b9";
     private const string PickingUpGuid = "e13fe1e094bbec348acc00a515191bcd";
     private const string ThrowGuid = "8d5141b03c6d1fc41869a230679ba972";
     private const float CrouchTransitionDuration = 0.5f;
@@ -257,7 +256,6 @@ public static class CapstonePlayerSetup
             || movement.rootMotionDrivesRoll
             || movement.rootMotionDrivesJump
             || !movement.codeDrivesInPlaceLocomotion
-            || !movement.useOrbitCameraYawForMovement
             || movement.applyAnimatorRootYaw
             || movement.applyAnimatorRootRotationToVisual
             || movement.keepAnimatorTransformPinned
@@ -338,7 +336,9 @@ public static class CapstonePlayerSetup
         movement.animator = animator;
         movement.cameraTransform = Camera.main != null ? Camera.main.transform : null;
         movement.cameraRelativeMovement = true;
-        movement.useOrbitCameraYawForMovement = true;
+        movement.turnSpeed = 720f;
+        movement.sprintTurnSpeed = 420f;
+        movement.aimTurnSpeed = 900f;
         movement.useRootMotion = false;
         movement.rootMotionDrivesLocomotion = false;
         movement.rootMotionDrivesRoll = false;
@@ -383,7 +383,6 @@ public static class CapstonePlayerSetup
         movement.requirePickupTarget = false;
         movement.idleSadDelay = 5f;
         movement.battleRelaxDelay = 5f;
-        movement.runToStopDuration = 0.55f;
         movement.jumpDuration = 0.95f;
         movement.pickUpDuration = 1.15f;
         movement.throwDuration = 0.95f;
@@ -396,7 +395,6 @@ public static class CapstonePlayerSetup
         movement.idleBattleState = "IdleBattle";
         movement.slowRunState = "SlowRun";
         movement.sprintState = "Sprint";
-        movement.runToStopState = "RunToStop";
         movement.standingToCrouchState = "StandingToCrouch";
         movement.crouchIdleState = "CrouchIdle";
         movement.crouchWalkingState = "CrouchWalking";
@@ -453,25 +451,18 @@ public static class CapstonePlayerSetup
         camera.transform.position = target.position + new Vector3(0f, 2.2f, -4.5f);
         camera.transform.LookAt(target.position + Vector3.up * 1.2f);
 
-        if (SetupCinemachineCamera(camera, target))
-        {
-            BasicCameraFollow legacyFollow = camera.GetComponent<BasicCameraFollow>();
-            if (legacyFollow != null)
-            {
-                Undo.RecordObject(legacyFollow, "Disable legacy camera follow");
-                legacyFollow.enabled = false;
-            }
-
-            return;
-        }
+        DisableCinemachineCamera(camera);
 
         BasicCameraFollow follow = GetOrAddComponent<BasicCameraFollow>(camera.gameObject);
-        Undo.RecordObject(follow, "Setup fallback camera follow");
+        Undo.RecordObject(follow, "Setup basic open-world camera");
         follow.enabled = true;
         follow.target = target;
         follow.offset = new Vector3(0f, 2.2f, -4.5f);
         follow.aimOffset = new Vector3(0.75f, 1.8f, -2.75f);
         follow.followSpeed = 10f;
+        follow.positionSmoothTime = 0.12f;
+        follow.focusSmoothTime = 0.18f;
+        follow.maxFocusLag = 2f;
         follow.lookHeight = 1.2f;
         follow.aimLookHeight = 1.45f;
         follow.aimLookAhead = 10f;
@@ -480,6 +471,32 @@ public static class CapstonePlayerSetup
         follow.mouseSensitivity = 2.2f;
         follow.lockCursorOnPlay = true;
         follow.showAimReticle = true;
+    }
+
+    private static void DisableCinemachineCamera(Camera camera)
+    {
+        System.Type brainType = FindType("Unity.Cinemachine.CinemachineBrain");
+        if (brainType != null && camera != null)
+        {
+            Behaviour brain = camera.GetComponent(brainType) as Behaviour;
+            if (brain != null)
+            {
+                Undo.RecordObject(brain, "Disable Cinemachine brain");
+                brain.enabled = false;
+            }
+        }
+
+        GameObject virtualCameraObject = GameObject.Find("FreeLook Camera");
+        if (virtualCameraObject == null)
+        {
+            virtualCameraObject = GameObject.Find("CM Player Follow Camera");
+        }
+
+        if (virtualCameraObject != null)
+        {
+            Undo.RecordObject(virtualCameraObject, "Disable Cinemachine virtual camera");
+            virtualCameraObject.SetActive(false);
+        }
     }
 
     private static bool SetupCinemachineCamera(Camera camera, Transform target)
@@ -529,16 +546,15 @@ public static class CapstonePlayerSetup
         BasicPlayerMovement movement = target.GetComponent<BasicPlayerMovement>();
         if (movement != null)
         {
-            Undo.RecordObject(movement, "Assign movement orbit camera");
-            movement.useOrbitCameraYawForMovement = true;
-            SetMember(movement, "movementOrbitCamera", orbitalFollow);
+            Undo.RecordObject(movement, "Assign movement camera");
+            movement.cameraTransform = camera.transform;
         }
         SetSerializedVector3(orbitalFollow, "TargetOffset", new Vector3(0f, 1.2f, 0f));
         SetSerializedInt(orbitalFollow, "TrackerSettings.BindingMode", 4);
-        SetSerializedVector3(orbitalFollow, "TrackerSettings.PositionDamping", new Vector3(0.55f, 0.75f, 0.55f));
+        SetSerializedVector3(orbitalFollow, "TrackerSettings.PositionDamping", new Vector3(0.8f, 0.9f, 0.8f));
         SetSerializedInt(orbitalFollow, "TrackerSettings.AngularDampingMode", 0);
-        SetSerializedVector3(orbitalFollow, "TrackerSettings.RotationDamping", new Vector3(0.7f, 0.7f, 0.7f));
-        SetSerializedFloat(orbitalFollow, "TrackerSettings.QuaternionDamping", 0.7f);
+        SetSerializedVector3(orbitalFollow, "TrackerSettings.RotationDamping", new Vector3(1.2f, 1.2f, 1.2f));
+        SetSerializedFloat(orbitalFollow, "TrackerSettings.QuaternionDamping", 1.2f);
         SetSerializedInt(orbitalFollow, "OrbitStyle", 1);
         SetSerializedFloat(orbitalFollow, "Radius", 5f);
         SetSerializedFloat(orbitalFollow, "Orbits.Top.Radius", 2f);
@@ -565,13 +581,13 @@ public static class CapstonePlayerSetup
         SetSerializedBool(orbitalFollow, "RadialAxis.Wrap", false);
 
         Component rotationComposer = GetOrAddComponent(virtualCameraObject, rotationComposerType);
-        SetSerializedVector2(rotationComposer, "Composition.ScreenPosition", Vector2.zero);
-        SetSerializedBool(rotationComposer, "Composition.DeadZone.Enabled", false);
-        SetSerializedVector2(rotationComposer, "Composition.DeadZone.Size", Vector2.zero);
+        SetSerializedVector2(rotationComposer, "Composition.ScreenPosition", new Vector2(0f, 0.08f));
+        SetSerializedBool(rotationComposer, "Composition.DeadZone.Enabled", true);
+        SetSerializedVector2(rotationComposer, "Composition.DeadZone.Size", new Vector2(0.82f, 0.68f));
         SetSerializedBool(rotationComposer, "Composition.HardLimits.Enabled", false);
         SetSerializedBool(rotationComposer, "CenterOnActivate", true);
         SetSerializedVector3(rotationComposer, "TargetOffset", new Vector3(0f, 1.2f, 0f));
-        SetSerializedVector2(rotationComposer, "Damping", new Vector2(0.35f, 0.35f));
+        SetSerializedVector2(rotationComposer, "Damping", new Vector2(1.8f, 1.8f));
 
         if (freeLookModifierType != null)
         {
@@ -724,7 +740,6 @@ public static class CapstonePlayerSetup
             new StateSpec("SlowRun", SlowRunGuid, true, true, new Vector3(500f, 80f, 0f), 1f, "Slow Run", "Run"),
             new StateSpec("Sprint", SprintGuid, true, true, new Vector3(500f, 190f, 0f), 1f, "Sprint", "Fast Run"),
             new StateSpec("RunningBackward", RunningBackwardGuid, true, true, new Vector3(500f, 300f, 0f), 1f, "Running Backward"),
-            new StateSpec("RunToStop", RunToStopGuid, false, true, new Vector3(500f, 410f, 0f), 1f, "Run To Stop"),
             new StateSpec("StandingToCrouch", StandingToCrouchedGuid, false, false, new Vector3(780f, 80f, 0f), -1f, "Crouch To Standing Idle(Thaythechuan)", "Crouch To Standing Idle", "Crouch To Standing", "Crouched To Standing"),
             new StateSpec("CrouchIdle", CrouchIdleGuid, true, false, new Vector3(780f, 190f, 0f), 1f, "Crouch Idle", "Crouched Idle"),
             new StateSpec("CrouchWalking", CrouchedWalkingGuid, true, true, new Vector3(780f, 300f, 0f), 1f, "Crouched Walking"),
@@ -732,7 +747,7 @@ public static class CapstonePlayerSetup
             new StateSpec("CrouchToSprint", CrouchedToSprintingGuid, false, true, new Vector3(780f, 520f, 0f), 1f, "Crouched To Sprinting", "Crouch To Sprint"),
             new StateSpec("IdleToRoll", IdleToRollGuid, false, true, new Vector3(1060f, 80f, 0f), 1f, "Idle to Roll", "Idle To Roll"),
             new StateSpec("SprintingToRoll", RunToRollingGuid, false, true, new Vector3(1060f, 190f, 0f), 1f, "Run To Rolling", "Sprinting To Roll", "Run To Roll"),
-            new StateSpec("Jump", RunningJumpGuid, false, true, new Vector3(1060f, 300f, 0f), 1f, "Running Jump", "Jump"),
+            new StateSpec("Jump", JumpGuid, false, true, new Vector3(1060f, 300f, 0f), 1f, "JumpChuan", "Jump"),
             new StateSpec("PickingUp", PickingUpGuid, false, false, new Vector3(1060f, 410f, 0f), 1f, "Picking Up Object", "Picking Up"),
             new StateSpec("Throw", ThrowGuid, false, false, new Vector3(1060f, 520f, 0f), 1f, "Throw (chuan)", "Throw", "GunShot01"),
         };

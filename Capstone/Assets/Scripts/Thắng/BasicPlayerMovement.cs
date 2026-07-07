@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.Cinemachine;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
@@ -14,7 +13,6 @@ public class BasicPlayerMovement : MonoBehaviour
         IdleBattle,
         SlowRun,
         Sprint,
-        RunToStop,
         StandingToCrouch,
         CrouchIdle,
         CrouchWalking,
@@ -40,7 +38,6 @@ public class BasicPlayerMovement : MonoBehaviour
     [Header("References")]
     public Animator animator;
     public Transform cameraTransform;
-    public CinemachineOrbitalFollow movementOrbitCamera;
 
     [Header("Movement")]
     public float slowRunSpeed = 3.5f;
@@ -50,8 +47,9 @@ public class BasicPlayerMovement : MonoBehaviour
     public float acceleration = 18f;
     public float deceleration = 24f;
     public float turnSpeed = 720f;
+    public float sprintTurnSpeed = 420f;
+    public float aimTurnSpeed = 900f;
     public bool cameraRelativeMovement = true;
-    public bool useOrbitCameraYawForMovement = true;
 
     [Header("Animation Motion")]
     public bool useRootMotion = false;
@@ -104,7 +102,6 @@ public class BasicPlayerMovement : MonoBehaviour
     public bool rightMouseButtonThrows = false;
     public bool requirePickupTarget = false;
     public bool hasPickupTarget = false;
-    public float runToStopDuration = 0.55f;
     public float jumpDuration = 0.95f;
     public float pickUpDuration = 1.15f;
     public float throwDuration = 0.95f;
@@ -133,7 +130,6 @@ public class BasicPlayerMovement : MonoBehaviour
     public string idleBattleState = "IdleBattle";
     public string slowRunState = "SlowRun";
     public string sprintState = "Sprint";
-    public string runToStopState = "RunToStop";
     public string standingToCrouchState = "StandingToCrouch";
     public string crouchIdleState = "CrouchIdle";
     public string crouchWalkingState = "CrouchWalking";
@@ -218,7 +214,6 @@ public class BasicPlayerMovement : MonoBehaviour
     private bool crouchWanted;
     private bool returnToCrouchAfterAction;
     private bool autoEnemyNearby;
-    private bool wasSprinting;
     private bool standingControllerShapeCaptured;
     private bool controllerSizedForRoll;
 
@@ -280,6 +275,9 @@ public class BasicPlayerMovement : MonoBehaviour
         crouchWalkSpeed = Mathf.Max(0f, crouchWalkSpeed);
         acceleration = Mathf.Max(0.1f, acceleration);
         deceleration = Mathf.Max(0.1f, deceleration);
+        turnSpeed = Mathf.Max(1f, turnSpeed);
+        sprintTurnSpeed = Mathf.Max(1f, sprintTurnSpeed);
+        aimTurnSpeed = Mathf.Max(1f, aimTurnSpeed);
         jumpHeight = Mathf.Max(0f, jumpHeight);
         idleRollDuration = Mathf.Max(0.1f, idleRollDuration);
         sprintRollDuration = Mathf.Max(0.1f, sprintRollDuration);
@@ -290,7 +288,6 @@ public class BasicPlayerMovement : MonoBehaviour
         standingToCrouchDuration = Mathf.Max(0.1f, standingToCrouchDuration);
         crouchToStandingDuration = Mathf.Max(0.1f, crouchToStandingDuration);
         crouchToSprintDuration = Mathf.Max(0.1f, crouchToSprintDuration);
-        runToStopDuration = Mathf.Max(0.1f, runToStopDuration);
         jumpDuration = Mathf.Max(0.1f, jumpDuration);
         pickUpDuration = Mathf.Max(0.1f, pickUpDuration);
         throwDuration = Mathf.Max(0.1f, throwDuration);
@@ -348,7 +345,6 @@ public class BasicPlayerMovement : MonoBehaviour
 
         PlayState(currentState, false);
         UpdateAnimatorParameters();
-        wasSprinting = currentState == PlayerState.Sprint && hasMoveInput;
     }
 
     private void LateUpdate()
@@ -525,10 +521,6 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (wasSprinting && !hasMoveInput && grounded)
-        {
-            StartOneShot(PlayerState.RunToStop, runToStopDuration);
-        }
     }
 
     private void ToggleCrouch()
@@ -877,8 +869,7 @@ public class BasicPlayerMovement : MonoBehaviour
             || currentState == PlayerState.Sprint
             || currentState == PlayerState.RunningBackward
             || currentState == PlayerState.CrouchWalking
-            || currentState == PlayerState.CrouchToSprint
-            || currentState == PlayerState.RunToStop;
+            || currentState == PlayerState.CrouchToSprint;
     }
 
     private bool ShouldUseAnimatorRootRotation()
@@ -1110,7 +1101,7 @@ public class BasicPlayerMovement : MonoBehaviour
         }
         else if (hasMoveInput)
         {
-            facingDirection = moveDirection;
+            facingDirection = GetLocomotionFacingDirection();
         }
         else
         {
@@ -1118,6 +1109,19 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         RotateToward(facingDirection);
+    }
+
+    private Vector3 GetLocomotionFacingDirection()
+    {
+        Vector3 velocityDirection = horizontalVelocity;
+        velocityDirection.y = 0f;
+
+        if (velocityDirection.sqrMagnitude > 0.04f)
+        {
+            return velocityDirection.normalized;
+        }
+
+        return moveDirection;
     }
 
     private void UpdateGroundedBeforeMove()
@@ -1171,7 +1175,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
         if (cameraRelativeMovement && cameraTransform != null)
         {
-            Vector3 forward = GetMovementCameraForward();
+            Vector3 forward = GetCameraForward();
             direction = forward * input.y + GetRightFromForward(forward) * input.x;
         }
         else
@@ -1180,18 +1184,6 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         return Vector3.ClampMagnitude(direction, 1f);
-    }
-
-    private Vector3 GetMovementCameraForward()
-    {
-        if (useOrbitCameraYawForMovement && movementOrbitCamera != null)
-        {
-            Vector3 forward = Quaternion.Euler(0f, movementOrbitCamera.HorizontalAxis.Value, 0f) * Vector3.forward;
-            forward.y = 0f;
-            return forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
-        }
-
-        return GetCameraForward();
     }
 
     private void RotateToward(Vector3 direction)
@@ -1203,7 +1195,23 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, turnSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, GetTurnSpeed(direction) * Time.deltaTime);
+    }
+
+    private float GetTurnSpeed(Vector3 targetDirection)
+    {
+        if (aimHeld)
+        {
+            return aimTurnSpeed;
+        }
+
+        if (currentState == PlayerState.Sprint || (sprintHeld && hasMoveInput))
+        {
+            float angle = Vector3.Angle(GetFlatForward(transform), targetDirection);
+            return angle > 110f ? sprintTurnSpeed * 0.75f : sprintTurnSpeed;
+        }
+
+        return turnSpeed;
     }
 
     private void SnapFacing(Vector3 direction)
@@ -1455,8 +1463,6 @@ public class BasicPlayerMovement : MonoBehaviour
                 return slowRunState;
             case PlayerState.Sprint:
                 return sprintState;
-            case PlayerState.RunToStop:
-                return runToStopState;
             case PlayerState.StandingToCrouch:
                 return standingToCrouchState;
             case PlayerState.CrouchIdle:
@@ -1494,7 +1500,6 @@ public class BasicPlayerMovement : MonoBehaviour
         stateFallbacks[sprintingToRollState] = new[] { "RunToRolling", "Run To Rolling" };
         stateFallbacks[crouchIdleState] = new[] { idleNeutralState, "Idle" };
         stateFallbacks[pickingUpState] = new[] { idleNeutralState, "Idle" };
-        stateFallbacks[runToStopState] = new[] { idleNeutralState, "Idle" };
     }
 
     private void UpdateAnimatorParameters()
@@ -1544,11 +1549,6 @@ public class BasicPlayerMovement : MonoBehaviour
         if (cameraTransform != null && cameraFollow == null)
         {
             cameraFollow = cameraTransform.GetComponent<BasicCameraFollow>();
-        }
-
-        if (useOrbitCameraYawForMovement && movementOrbitCamera == null)
-        {
-            movementOrbitCamera = Object.FindFirstObjectByType<CinemachineOrbitalFollow>();
         }
     }
 
