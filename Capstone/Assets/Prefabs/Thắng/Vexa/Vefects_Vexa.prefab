@@ -2842,6 +2842,11 @@ MonoBehaviour:
   acceleration: 18
   deceleration: 24
   turnSpeed: 720
+  sprintTurnSpeed: 420
+  sprintMomentumDelay: 1
+  sprintMomentumTurnSpeed: 260
+  sprintMomentumAccelerationMultiplier: 0.35
+  aimTurnSpeed: 900
   cameraRelativeMovement: 1
   useRootMotion: 0
   rootMotionDrivesLocomotion: 0
@@ -2855,9 +2860,19 @@ MonoBehaviour:
   applyAnimatorRootYaw: 0
   applyAnimatorRootRotationToVisual: 0
   keepAnimatorTransformPinned: 0
+  jumpKey: 32
+  jumpInputCooldown: 0.18
+  jumpGroundLockTime: 0.12
   jumpHeight: 1.35
   gravity: -25
   groundedStickForce: -2
+  landingCarryDistance: 2.5
+  landingCarryDuration: 0.55
+  jumpForwardSpeedMultiplier: 1
+  landingCarryDistanceRatio: 0.25
+  landingCarrySpeedMultiplier: 0.5
+  floatFallDelay: 0.18
+  floatFallVerticalSpeed: -3
   snapFeetToGround: 1
   groundLayers:
     serializedVersion: 2
@@ -2866,8 +2881,8 @@ MonoBehaviour:
   groundSnapProbeHeight: 0.35
   groundContactOffset: 0
   rollKey: 113
-  idleRollDuration: 2.15
-  sprintRollDuration: 1.35
+  idleRollDuration: 1.9
+  sprintRollDuration: 1.15
   idleRollDistance: 2.6
   sprintRollDistance: 3.7
   resizeControllerDuringRoll: 1
@@ -2902,7 +2917,6 @@ MonoBehaviour:
   alternateCrouchKey: 305
   standingToCrouchDuration: 0.5
   crouchToStandingDuration: 0.5
-  crouchToSprintDuration: 0.65
   pickUpKey: 101
   aimMouseButton: 1
   rightMouseButtonThrows: 0
@@ -2911,7 +2925,9 @@ MonoBehaviour:
   jumpDuration: 0.95
   pickUpDuration: 1.15
   throwDuration: 0.95
+  runToStopDuration: 0.7
   useAnimatorStateLengthForActions: 1
+  useAnimatorStateLengthForJump: 0
   actionExitNormalizedTime: 0.98
   minimumActionDuration: 0.08
   isInSafeArea: 1
@@ -2936,14 +2952,16 @@ MonoBehaviour:
   idleBattleState: IdleBattle
   slowRunState: SlowRun
   sprintState: Sprint
+  runToStopState: RunToStop
   standingToCrouchState: StandingToCrouch
   crouchIdleState: CrouchIdle
   crouchWalkingState: CrouchWalking
   crouchToStandingState: CrouchToStanding
-  crouchToSprintState: CrouchToSprint
   idleToRollState: IdleToRoll
   sprintingToRollState: SprintingToRoll
   runningBackwardState: RunningBackward
+  floatingState: Floating
+  idleJumpState: IdleJump
   jumpState: Jump
   pickingUpState: PickingUp
   throwState: Throw

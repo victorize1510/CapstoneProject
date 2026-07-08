@@ -13,14 +13,16 @@ public class BasicPlayerMovement : MonoBehaviour
         IdleBattle,
         SlowRun,
         Sprint,
+        RunToStop,
         StandingToCrouch,
         CrouchIdle,
         CrouchWalking,
         CrouchToStanding,
-        CrouchToSprint,
         IdleToRoll,
         SprintingToRoll,
         RunningBackward,
+        Floating,
+        IdleJump,
         Jump,
         PickingUp,
         Throw
@@ -48,6 +50,9 @@ public class BasicPlayerMovement : MonoBehaviour
     public float deceleration = 24f;
     public float turnSpeed = 720f;
     public float sprintTurnSpeed = 420f;
+    public float sprintMomentumDelay = 1f;
+    public float sprintMomentumTurnSpeed = 260f;
+    public float sprintMomentumAccelerationMultiplier = 0.35f;
     public float aimTurnSpeed = 900f;
     public bool cameraRelativeMovement = true;
 
@@ -66,9 +71,19 @@ public class BasicPlayerMovement : MonoBehaviour
     public bool keepAnimatorTransformPinned = false;
 
     [Header("Jump")]
+    public KeyCode jumpKey = KeyCode.Space;
+    public float jumpInputCooldown = 0.18f;
+    public float jumpGroundLockTime = 0.12f;
     public float jumpHeight = 1.35f;
     public float gravity = -25f;
     public float groundedStickForce = -2f;
+    public float landingCarryDistance = 2.5f;
+    public float landingCarryDuration = 0.55f;
+    public float jumpForwardSpeedMultiplier = 1f;
+    public float landingCarryDistanceRatio = 0.25f;
+    public float landingCarrySpeedMultiplier = 0.5f;
+    public float floatFallDelay = 0.18f;
+    public float floatFallVerticalSpeed = -3f;
 
     [Header("Grounding")]
     public bool snapFeetToGround = true;
@@ -79,8 +94,8 @@ public class BasicPlayerMovement : MonoBehaviour
 
     [Header("Roll")]
     public KeyCode rollKey = KeyCode.Q;
-    public float idleRollDuration = 2.15f;
-    public float sprintRollDuration = 1.35f;
+    public float idleRollDuration = 1.9f;
+    public float sprintRollDuration = 1.15f;
     public float idleRollDistance = 2.6f;
     public float sprintRollDistance = 3.7f;
     public bool resizeControllerDuringRoll = true;
@@ -94,7 +109,6 @@ public class BasicPlayerMovement : MonoBehaviour
     public KeyCode alternateCrouchKey = KeyCode.RightControl;
     public float standingToCrouchDuration = 0.5f;
     public float crouchToStandingDuration = 0.5f;
-    public float crouchToSprintDuration = 0.65f;
 
     [Header("Actions")]
     public KeyCode pickUpKey = KeyCode.E;
@@ -105,7 +119,9 @@ public class BasicPlayerMovement : MonoBehaviour
     public float jumpDuration = 0.95f;
     public float pickUpDuration = 1.15f;
     public float throwDuration = 0.95f;
+    public float runToStopDuration = 0.7f;
     public bool useAnimatorStateLengthForActions = true;
+    public bool useAnimatorStateLengthForJump = false;
     public float actionExitNormalizedTime = 0.98f;
     public float minimumActionDuration = 0.08f;
 
@@ -130,14 +146,16 @@ public class BasicPlayerMovement : MonoBehaviour
     public string idleBattleState = "IdleBattle";
     public string slowRunState = "SlowRun";
     public string sprintState = "Sprint";
+    public string runToStopState = "RunToStop";
     public string standingToCrouchState = "StandingToCrouch";
     public string crouchIdleState = "CrouchIdle";
     public string crouchWalkingState = "CrouchWalking";
     public string crouchToStandingState = "CrouchToStanding";
-    public string crouchToSprintState = "CrouchToSprint";
     public string idleToRollState = "IdleToRoll";
     public string sprintingToRollState = "SprintingToRoll";
     public string runningBackwardState = "RunningBackward";
+    public string floatingState = "Floating";
+    public string idleJumpState = "IdleJump";
     public string jumpState = "Jump";
     public string pickingUpState = "PickingUp";
     public string throwState = "Throw";
@@ -193,11 +211,21 @@ public class BasicPlayerMovement : MonoBehaviour
     private Vector3 moveDirection;
     private Vector3 horizontalVelocity;
     private Vector3 rollDirection;
+    private Vector3 jumpCarryDirection;
+    private Vector3 landingCarryDirection;
     private float verticalVelocity;
+    private float jumpHorizontalSpeed;
+    private float jumpExpectedAirTime;
+    private float jumpLandingCarryDistance;
+    private float landingCarrySpeed;
+    private float airborneTimer;
     private float idleTimer;
     private float stateTimer;
     private float activeStateDuration;
     private float previousRollCurveValue;
+    private float sprintMomentumTimer;
+    private float landingCarryTimer;
+    private float lastJumpStartTime = -100f;
     private float battleRelaxTimer = float.PositiveInfinity;
     private float enemyProbeTimer;
     private float lastRootMotionTime = -100f;
@@ -213,6 +241,10 @@ public class BasicPlayerMovement : MonoBehaviour
     private bool isCrouching;
     private bool crouchWanted;
     private bool returnToCrouchAfterAction;
+    private bool jumpStartedFromMovement;
+    private bool jumpConsumedUntilGrounded;
+    private bool jumpLeftGround;
+    private bool wasLongSprinting;
     private bool autoEnemyNearby;
     private bool standingControllerShapeCaptured;
     private bool controllerSizedForRoll;
@@ -277,8 +309,20 @@ public class BasicPlayerMovement : MonoBehaviour
         deceleration = Mathf.Max(0.1f, deceleration);
         turnSpeed = Mathf.Max(1f, turnSpeed);
         sprintTurnSpeed = Mathf.Max(1f, sprintTurnSpeed);
+        sprintMomentumDelay = Mathf.Max(0f, sprintMomentumDelay);
+        sprintMomentumTurnSpeed = Mathf.Max(1f, sprintMomentumTurnSpeed);
+        sprintMomentumAccelerationMultiplier = Mathf.Clamp(sprintMomentumAccelerationMultiplier, 0.05f, 1f);
         aimTurnSpeed = Mathf.Max(1f, aimTurnSpeed);
+        jumpInputCooldown = Mathf.Max(0f, jumpInputCooldown);
+        jumpGroundLockTime = Mathf.Max(0f, jumpGroundLockTime);
         jumpHeight = Mathf.Max(0f, jumpHeight);
+        landingCarryDistance = Mathf.Max(0f, landingCarryDistance);
+        landingCarryDuration = Mathf.Max(0.05f, landingCarryDuration);
+        jumpForwardSpeedMultiplier = Mathf.Max(0f, jumpForwardSpeedMultiplier);
+        landingCarryDistanceRatio = Mathf.Clamp01(landingCarryDistanceRatio);
+        landingCarrySpeedMultiplier = Mathf.Max(0f, landingCarrySpeedMultiplier);
+        floatFallDelay = Mathf.Max(0f, floatFallDelay);
+        floatFallVerticalSpeed = Mathf.Min(0f, floatFallVerticalSpeed);
         idleRollDuration = Mathf.Max(0.1f, idleRollDuration);
         sprintRollDuration = Mathf.Max(0.1f, sprintRollDuration);
         idleRollDistance = Mathf.Max(0f, idleRollDistance);
@@ -287,10 +331,10 @@ public class BasicPlayerMovement : MonoBehaviour
         rollControllerRadius = Mathf.Clamp(rollControllerRadius, 0.01f, rollControllerHeight * 0.5f);
         standingToCrouchDuration = Mathf.Max(0.1f, standingToCrouchDuration);
         crouchToStandingDuration = Mathf.Max(0.1f, crouchToStandingDuration);
-        crouchToSprintDuration = Mathf.Max(0.1f, crouchToSprintDuration);
         jumpDuration = Mathf.Max(0.1f, jumpDuration);
         pickUpDuration = Mathf.Max(0.1f, pickUpDuration);
         throwDuration = Mathf.Max(0.1f, throwDuration);
+        runToStopDuration = Mathf.Max(0.1f, runToStopDuration);
         idleSadDelay = Mathf.Max(0f, idleSadDelay);
         battleRelaxDelay = Mathf.Max(0f, battleRelaxDelay);
         rootMotionScale = Mathf.Max(0f, rootMotionScale);
@@ -336,6 +380,8 @@ public class BasicPlayerMovement : MonoBehaviour
 
         UpdateFacing();
         MoveCharacter(Time.deltaTime);
+        UpdateLandingCarry(Time.deltaTime);
+        UpdateAirborneState(Time.deltaTime);
         UpdateIdleAndBattleTimers(Time.deltaTime);
 
         if (!activeOneShot)
@@ -343,6 +389,8 @@ public class BasicPlayerMovement : MonoBehaviour
             EvaluateLocomotionState();
         }
 
+        UpdateSprintMomentum(Time.deltaTime);
+        RememberSprintState();
         PlayState(currentState, false);
         UpdateAnimatorParameters();
     }
@@ -436,6 +484,11 @@ public class BasicPlayerMovement : MonoBehaviour
         hasMoveInput = moveInput.sqrMagnitude > InputDeadZone * InputDeadZone && moveDirection.sqrMagnitude > 0.001f;
         sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         aimHeld = Input.GetMouseButton(aimMouseButton);
+
+        if (hasMoveInput)
+        {
+            landingCarryTimer = 0f;
+        }
     }
 
     private void EvaluateRequests()
@@ -517,7 +570,16 @@ public class BasicPlayerMovement : MonoBehaviour
         if (isCrouching && sprintHeld && hasMoveInput)
         {
             crouchWanted = false;
-            StartOneShot(PlayerState.CrouchToSprint, crouchToSprintDuration);
+            pendingAfterStand = PendingAfterStand.None;
+            StartOneShot(PlayerState.CrouchToStanding, crouchToStandingDuration);
+            return;
+        }
+
+        if (wasLongSprinting && grounded && !hasMoveInput && !isCrouching)
+        {
+            wasLongSprinting = false;
+            sprintMomentumTimer = 0f;
+            StartOneShot(PlayerState.RunToStop, runToStopDuration);
             return;
         }
 
@@ -566,8 +628,31 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void StartJump()
     {
-        verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
-        StartOneShot(PlayerState.Jump, jumpDuration);
+        if (jumpConsumedUntilGrounded)
+        {
+            return;
+        }
+
+        bool fromMovement = hasMoveInput;
+        jumpStartedFromMovement = fromMovement;
+        jumpCarryDirection = fromMovement ? moveDirection.normalized : GetFlatForward(transform);
+        jumpHorizontalSpeed = CalculateJumpHorizontalSpeed(fromMovement);
+        jumpExpectedAirTime = CalculateJumpAirTime();
+        jumpLandingCarryDistance = CalculateLandingCarryDistance(jumpHorizontalSpeed, jumpExpectedAirTime);
+
+        if (fromMovement)
+        {
+            SnapFacing(jumpCarryDirection);
+        }
+
+        verticalVelocity = CalculateJumpVelocity();
+        lastJumpStartTime = Time.time;
+        landingCarryTimer = 0f;
+        landingCarrySpeed = 0f;
+        jumpConsumedUntilGrounded = true;
+        jumpLeftGround = false;
+        airborneTimer = 0f;
+        StartOneShot(fromMovement ? PlayerState.Jump : PlayerState.IdleJump, jumpDuration);
     }
 
     private void StartPickUp()
@@ -594,9 +679,17 @@ public class BasicPlayerMovement : MonoBehaviour
         SetRollControllerShape(IsRollState(state));
         if (ShouldLockHorizontalMotionForAction(state))
         {
-            horizontalVelocity = Vector3.zero;
+            ClearActionMomentum();
         }
         PlayState(state, true);
+    }
+
+    private void ClearActionMomentum()
+    {
+        horizontalVelocity = Vector3.zero;
+        landingCarryTimer = 0f;
+        sprintMomentumTimer = 0f;
+        wasLongSprinting = false;
     }
 
     private void UpdateActiveOneShot(float deltaTime)
@@ -619,9 +712,9 @@ public class BasicPlayerMovement : MonoBehaviour
             return false;
         }
 
-        if (currentState == PlayerState.Jump && !grounded && stateTimer < activeStateDuration + 0.35f)
+        if (IsJumpState(currentState))
         {
-            return false;
+            return HasJumpActionFinished();
         }
 
         if (IsReversePlaybackState(currentState))
@@ -652,6 +745,26 @@ public class BasicPlayerMovement : MonoBehaviour
         return stateTimer >= activeStateDuration;
     }
 
+    private bool HasJumpActionFinished()
+    {
+        if (stateTimer < activeStateDuration)
+        {
+            return false;
+        }
+
+        if (stateTimer < Mathf.Max(jumpGroundLockTime, minimumActionDuration))
+        {
+            return false;
+        }
+
+        if (!jumpLeftGround && stateTimer < activeStateDuration + jumpGroundLockTime)
+        {
+            return false;
+        }
+
+        return grounded;
+    }
+
     private void CompleteOneShot()
     {
         PlayerState completedState = currentState;
@@ -677,11 +790,6 @@ public class BasicPlayerMovement : MonoBehaviour
             ConsumePendingAfterStand();
             return;
         }
-        else if (completedState == PlayerState.CrouchToSprint)
-        {
-            isCrouching = false;
-            crouchWanted = false;
-        }
         else if (completedState == PlayerState.Throw || completedState == PlayerState.PickingUp)
         {
             if (returnToCrouchAfterAction && crouchWanted && !EnemyThreatActive)
@@ -692,6 +800,10 @@ public class BasicPlayerMovement : MonoBehaviour
             }
 
             returnToCrouchAfterAction = false;
+        }
+        else if (IsJumpState(completedState))
+        {
+            BeginLandingCarryIfNeeded();
         }
 
         EvaluateLocomotionState();
@@ -729,6 +841,133 @@ public class BasicPlayerMovement : MonoBehaviour
         EvaluateLocomotionState();
     }
 
+    private float CalculateJumpVelocity()
+    {
+        return Mathf.Sqrt(Mathf.Max(0f, jumpHeight * -2f * gravity));
+    }
+
+    private float CalculateJumpAirTime()
+    {
+        float gravityMagnitude = Mathf.Abs(gravity);
+        if (gravityMagnitude <= 0.001f)
+        {
+            return 0f;
+        }
+
+        return (CalculateJumpVelocity() * 2f) / gravityMagnitude;
+    }
+
+    private float CalculateJumpHorizontalSpeed(bool fromMovement)
+    {
+        if (!fromMovement)
+        {
+            return 0f;
+        }
+
+        float inputSpeed = sprintHeld ? sprintSpeed : slowRunSpeed;
+        float currentSpeed = new Vector2(horizontalVelocity.x, horizontalVelocity.z).magnitude;
+        return Mathf.Max(inputSpeed, currentSpeed) * jumpForwardSpeedMultiplier;
+    }
+
+    private float CalculateLandingCarryDistance(float launchSpeed, float airTime)
+    {
+        float calculatedDistance = launchSpeed * airTime * landingCarryDistanceRatio;
+        return Mathf.Clamp(calculatedDistance, 0f, landingCarryDistance);
+    }
+
+    private void BeginLandingCarryIfNeeded()
+    {
+        if (!jumpStartedFromMovement || !grounded || jumpLandingCarryDistance <= 0f)
+        {
+            jumpStartedFromMovement = false;
+            return;
+        }
+
+        landingCarryDirection = jumpCarryDirection.sqrMagnitude > 0.001f ? jumpCarryDirection.normalized : GetFlatForward(transform);
+        landingCarrySpeed = Mathf.Max(slowRunSpeed * 0.5f, jumpHorizontalSpeed * landingCarrySpeedMultiplier);
+        landingCarryTimer = Mathf.Min(landingCarryDuration, jumpLandingCarryDistance / Mathf.Max(landingCarrySpeed, 0.1f));
+        jumpStartedFromMovement = false;
+    }
+
+    private void UpdateLandingCarry(float deltaTime)
+    {
+        if (landingCarryTimer <= 0f)
+        {
+            return;
+        }
+
+        if (hasMoveInput)
+        {
+            landingCarryTimer = 0f;
+            return;
+        }
+
+        landingCarryTimer = Mathf.Max(0f, landingCarryTimer - deltaTime);
+    }
+
+    private void UpdateAirborneState(float deltaTime)
+    {
+        if (grounded)
+        {
+            airborneTimer = 0f;
+            if (jumpConsumedUntilGrounded
+                && !activeOneShot
+                && !IsJumpKeyHeld()
+                && Time.time - lastJumpStartTime >= jumpInputCooldown)
+            {
+                jumpConsumedUntilGrounded = false;
+                jumpLeftGround = false;
+            }
+
+            return;
+        }
+
+        if (jumpConsumedUntilGrounded)
+        {
+            jumpLeftGround = true;
+        }
+
+        airborneTimer += deltaTime;
+    }
+
+    private bool HasLandingCarry
+    {
+        get { return landingCarryTimer > 0f && !hasMoveInput && grounded; }
+    }
+
+    private void UpdateSprintMomentum(float deltaTime)
+    {
+        bool sprintingWithInput = currentState == PlayerState.Sprint && sprintHeld && hasMoveInput && !isCrouching && !activeOneShot;
+        if (sprintingWithInput)
+        {
+            sprintMomentumTimer += deltaTime;
+            return;
+        }
+
+        if (currentState != PlayerState.RunToStop)
+        {
+            sprintMomentumTimer = 0f;
+        }
+    }
+
+    private void RememberSprintState()
+    {
+        wasLongSprinting = currentState == PlayerState.Sprint
+            && sprintHeld
+            && hasMoveInput
+            && sprintMomentumTimer >= sprintMomentumDelay;
+    }
+
+    private bool SprintMomentumActive
+    {
+        get
+        {
+            return sprintMomentumDelay > 0f
+                && sprintMomentumTimer >= sprintMomentumDelay
+                && currentState == PlayerState.Sprint;
+        }
+    }
+
     private void EvaluateLocomotionState()
     {
         if (activeOneShot)
@@ -736,9 +975,21 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
+        if (ShouldUseFloatingState())
+        {
+            currentState = PlayerState.Floating;
+            return;
+        }
+
         if (isCrouching)
         {
             currentState = hasMoveInput ? PlayerState.CrouchWalking : PlayerState.CrouchIdle;
+            return;
+        }
+
+        if (HasLandingCarry)
+        {
+            currentState = PlayerState.SlowRun;
             return;
         }
 
@@ -767,6 +1018,11 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         currentState = PlayerState.IdleNeutral;
+    }
+
+    private bool ShouldUseFloatingState()
+    {
+        return !grounded && airborneTimer >= floatFallDelay && verticalVelocity <= floatFallVerticalSpeed;
     }
 
     private void MoveCharacter(float deltaTime)
@@ -828,7 +1084,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
         float targetSpeed = GetTargetSpeedForState();
         Vector3 targetVelocity = targetSpeed > 0f ? GetTargetMoveDirection() * targetSpeed : Vector3.zero;
-        float rate = targetSpeed > 0f ? acceleration : deceleration;
+        float rate = targetSpeed > 0f ? GetAccelerationForTargetVelocity(targetVelocity) : deceleration;
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, rate * deltaTime);
         return horizontalVelocity * deltaTime;
     }
@@ -850,7 +1106,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return true;
         }
 
-        if (currentState == PlayerState.Jump && rootMotionDrivesJump)
+        if (IsJumpState(currentState) && rootMotionDrivesJump)
         {
             return true;
         }
@@ -868,8 +1124,7 @@ public class BasicPlayerMovement : MonoBehaviour
         return currentState == PlayerState.SlowRun
             || currentState == PlayerState.Sprint
             || currentState == PlayerState.RunningBackward
-            || currentState == PlayerState.CrouchWalking
-            || currentState == PlayerState.CrouchToSprint;
+            || currentState == PlayerState.CrouchWalking;
     }
 
     private bool ShouldUseAnimatorRootRotation()
@@ -886,14 +1141,14 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         return state == PlayerState.IdleToRoll
             || state == PlayerState.SprintingToRoll
-            || state == PlayerState.Jump
+            || IsJumpState(state)
             || state == PlayerState.PickingUp
             || state == PlayerState.Throw;
     }
 
     private static bool IsReversePlaybackState(PlayerState state)
     {
-        return state == PlayerState.StandingToCrouch;
+        return false;
     }
 
     private static bool IsCrouchTransitionState(PlayerState state)
@@ -916,9 +1171,14 @@ public class BasicPlayerMovement : MonoBehaviour
         return state == PlayerState.IdleToRoll || state == PlayerState.SprintingToRoll;
     }
 
+    private static bool IsJumpState(PlayerState state)
+    {
+        return state == PlayerState.IdleJump || state == PlayerState.Jump;
+    }
+
     private static bool ShouldLockHorizontalMotionForAction(PlayerState state)
     {
-        return state != PlayerState.Jump && !IsRollState(state);
+        return !IsJumpState(state) && !IsRollState(state);
     }
 
     private void CaptureStandingControllerShape()
@@ -994,12 +1254,13 @@ public class BasicPlayerMovement : MonoBehaviour
         return state == PlayerState.SlowRun
             || state == PlayerState.Sprint
             || state == PlayerState.RunningBackward
+            || state == PlayerState.Floating
             || state == PlayerState.CrouchWalking;
     }
 
     private bool ShouldSnapToGroundForCurrentState()
     {
-        return currentState != PlayerState.Jump;
+        return !IsJumpState(currentState);
     }
 
     private bool ShouldFallbackToCodeMotion()
@@ -1017,7 +1278,7 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         return (currentState == PlayerState.IdleToRoll && rootMotionDrivesRoll)
             || (currentState == PlayerState.SprintingToRoll && rootMotionDrivesRoll)
-            || (currentState == PlayerState.Jump && rootMotionDrivesJump)
+            || (IsJumpState(currentState) && rootMotionDrivesJump)
             || (rootMotionDrivesLocomotion && !codeDrivesInPlaceLocomotion && !activeOneShot);
     }
 
@@ -1049,6 +1310,11 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private float GetTargetSpeedForState()
     {
+        if (HasLandingCarry)
+        {
+            return Mathf.Max(landingCarrySpeed, 0f);
+        }
+
         if (activeOneShot && ShouldLockHorizontalMotionForAction(currentState))
         {
             return 0f;
@@ -1069,8 +1335,18 @@ public class BasicPlayerMovement : MonoBehaviour
             return sprintSpeed;
         }
 
-        if (currentState == PlayerState.SlowRun || currentState == PlayerState.Jump)
+        if (currentState == PlayerState.Floating)
         {
+            return hasMoveInput ? slowRunSpeed : new Vector2(horizontalVelocity.x, horizontalVelocity.z).magnitude;
+        }
+
+        if (currentState == PlayerState.SlowRun || IsJumpState(currentState))
+        {
+            if (IsJumpState(currentState) && jumpStartedFromMovement && jumpHorizontalSpeed > 0f)
+            {
+                return jumpHorizontalSpeed;
+            }
+
             return hasMoveInput ? (sprintHeld ? sprintSpeed : slowRunSpeed) : 0f;
         }
 
@@ -1079,6 +1355,26 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private Vector3 GetTargetMoveDirection()
     {
+        if (HasLandingCarry)
+        {
+            return landingCarryDirection.sqrMagnitude > 0.001f ? landingCarryDirection.normalized : GetFlatForward(transform);
+        }
+
+        if (IsJumpState(currentState) && jumpStartedFromMovement && jumpCarryDirection.sqrMagnitude > 0.001f)
+        {
+            return jumpCarryDirection.normalized;
+        }
+
+        if (currentState == PlayerState.Floating && !hasMoveInput)
+        {
+            Vector3 velocityDirection = horizontalVelocity;
+            velocityDirection.y = 0f;
+            if (velocityDirection.sqrMagnitude > 0.001f)
+            {
+                return velocityDirection.normalized;
+            }
+        }
+
         if (hasMoveInput)
         {
             return moveDirection.normalized;
@@ -1089,6 +1385,11 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void UpdateFacing()
     {
+        if (ShouldLockFacingForCurrentAction())
+        {
+            return;
+        }
+
         Vector3 facingDirection;
 
         if (currentState == PlayerState.IdleToRoll || currentState == PlayerState.SprintingToRoll)
@@ -1109,6 +1410,11 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         RotateToward(facingDirection);
+    }
+
+    private bool ShouldLockFacingForCurrentAction()
+    {
+        return activeOneShot && (currentState == PlayerState.PickingUp || currentState == PlayerState.Throw);
     }
 
     private Vector3 GetLocomotionFacingDirection()
@@ -1156,7 +1462,17 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool WantsToJump()
     {
-        return Input.GetButtonDown("Jump") || Input.GetKeyDown(KeyCode.Space);
+        if (activeOneShot || !grounded || jumpConsumedUntilGrounded || Time.time - lastJumpStartTime < jumpInputCooldown)
+        {
+            return false;
+        }
+
+        return jumpKey != KeyCode.None && Input.GetKeyDown(jumpKey);
+    }
+
+    private bool IsJumpKeyHeld()
+    {
+        return jumpKey != KeyCode.None && Input.GetKey(jumpKey);
     }
 
     private bool WantsToThrow()
@@ -1208,10 +1524,22 @@ public class BasicPlayerMovement : MonoBehaviour
         if (currentState == PlayerState.Sprint || (sprintHeld && hasMoveInput))
         {
             float angle = Vector3.Angle(GetFlatForward(transform), targetDirection);
-            return angle > 110f ? sprintTurnSpeed * 0.75f : sprintTurnSpeed;
+            float activeSprintTurnSpeed = SprintMomentumActive ? sprintMomentumTurnSpeed : sprintTurnSpeed;
+            return angle > 110f ? activeSprintTurnSpeed * 0.75f : activeSprintTurnSpeed;
         }
 
         return turnSpeed;
+    }
+
+    private float GetAccelerationForTargetVelocity(Vector3 targetVelocity)
+    {
+        if (!SprintMomentumActive || horizontalVelocity.sqrMagnitude < 0.04f || targetVelocity.sqrMagnitude < 0.04f)
+        {
+            return acceleration;
+        }
+
+        float angle = Vector3.Angle(horizontalVelocity, targetVelocity);
+        return angle > 25f ? acceleration * sprintMomentumAccelerationMultiplier : acceleration;
     }
 
     private void SnapFacing(Vector3 direction)
@@ -1328,6 +1656,11 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         float minimumDuration = GetMinimumActionDuration(state);
         float duration = Mathf.Max(minimumDuration, fallbackDuration);
+
+        if (IsJumpState(state) && !useAnimatorStateLengthForJump)
+        {
+            return duration;
+        }
 
         AnimatorStateInfo stateInfo;
         bool isCurrentState;
@@ -1463,6 +1796,8 @@ public class BasicPlayerMovement : MonoBehaviour
                 return slowRunState;
             case PlayerState.Sprint:
                 return sprintState;
+            case PlayerState.RunToStop:
+                return runToStopState;
             case PlayerState.StandingToCrouch:
                 return standingToCrouchState;
             case PlayerState.CrouchIdle:
@@ -1471,14 +1806,16 @@ public class BasicPlayerMovement : MonoBehaviour
                 return crouchWalkingState;
             case PlayerState.CrouchToStanding:
                 return crouchToStandingState;
-            case PlayerState.CrouchToSprint:
-                return crouchToSprintState;
             case PlayerState.IdleToRoll:
                 return idleToRollState;
             case PlayerState.SprintingToRoll:
                 return sprintingToRollState;
             case PlayerState.RunningBackward:
                 return runningBackwardState;
+            case PlayerState.Floating:
+                return floatingState;
+            case PlayerState.IdleJump:
+                return idleJumpState;
             case PlayerState.Jump:
                 return jumpState;
             case PlayerState.PickingUp:
@@ -1497,7 +1834,10 @@ public class BasicPlayerMovement : MonoBehaviour
         stateFallbacks[idleSadState] = new[] { "IdleChill", "Sad Idle" };
         stateFallbacks[idleBattleState] = new[] { "Idle", "IdleBattle" };
         stateFallbacks[sprintState] = new[] { "FastRun", "Fast Run" };
+        stateFallbacks[runToStopState] = new[] { sprintState, "Run To Stop" };
         stateFallbacks[sprintingToRollState] = new[] { "RunToRolling", "Run To Rolling" };
+        stateFallbacks[floatingState] = new[] { jumpState, idleJumpState, "Floating" };
+        stateFallbacks[idleJumpState] = new[] { jumpState, "Jump" };
         stateFallbacks[crouchIdleState] = new[] { idleNeutralState, "Idle" };
         stateFallbacks[pickingUpState] = new[] { idleNeutralState, "Idle" };
     }
@@ -1512,7 +1852,7 @@ public class BasicPlayerMovement : MonoBehaviour
         float planarSpeed = new Vector2(horizontalVelocity.x, horizontalVelocity.z).magnitude;
         float normalizedSpeed = Mathf.InverseLerp(0f, sprintSpeed, planarSpeed);
         bool rolling = currentState == PlayerState.IdleToRoll || currentState == PlayerState.SprintingToRoll;
-        bool jumping = currentState == PlayerState.Jump || !grounded;
+        bool jumping = IsJumpState(currentState) || !grounded;
         bool pickingUp = currentState == PlayerState.PickingUp;
         bool throwing = currentState == PlayerState.Throw;
         bool sprinting = currentState == PlayerState.Sprint;

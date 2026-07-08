@@ -12,14 +12,16 @@ public static class CapstonePlayerSetup
     private const string IdleBattleGuid = "5be2ca04da0951c4d945c78004c6f75d";
     private const string SlowRunGuid = "48917c912e9f1444babc48600de9f89d";
     private const string SprintGuid = "67c8151bfac8543428614cbaa518af51";
-    private const string StandingToCrouchedGuid = "34f3156609079794480dc5e9c3291ddb";
+    private const string StandingToCrouchedGuid = "327e65e3bf4354e4a981a6241e0ae866";
     private const string CrouchIdleGuid = "305dd9f6f04de5140ae1b62c3738f97d";
     private const string CrouchedWalkingGuid = "ae600b20d521dae42b80d101aa4a92a6";
     private const string CrouchedToStandingGuid = "34f3156609079794480dc5e9c3291ddb";
-    private const string CrouchedToSprintingGuid = "6c1b77285c076d3499d90fec919798d5";
     private const string IdleToRollGuid = "bbb126017a6250e46b21d4d1d84297f3";
     private const string RunToRollingGuid = "bb84197e6ab9a584db837cec0b5b3db3";
     private const string RunningBackwardGuid = "0bb15fcde6a37f548ae84d57dfff6597";
+    private const string RunToStopGuid = "f88d3e95bed763a4e91a7171012aefd9";
+    private const string FloatingGuid = "4ab4f19062225d04bba3a79fd8d65d08";
+    private const string IdleJumpGuid = "6ec978b00b006b4449584b161535eb3e";
     private const string JumpGuid = "22254f4b549ca624294118b2aea4e4b9";
     private const string PickingUpGuid = "e13fe1e094bbec348acc00a515191bcd";
     private const string ThrowGuid = "8d5141b03c6d1fc41869a230679ba972";
@@ -260,7 +262,18 @@ public static class CapstonePlayerSetup
             || movement.applyAnimatorRootRotationToVisual
             || movement.keepAnimatorTransformPinned
             || !movement.snapFeetToGround
+            || Mathf.Abs(movement.sprintMomentumDelay - 1f) > 0.001f
+            || Mathf.Abs(movement.jumpInputCooldown - 0.18f) > 0.001f
+            || Mathf.Abs(movement.jumpGroundLockTime - 0.12f) > 0.001f
+            || Mathf.Abs(movement.jumpForwardSpeedMultiplier - 1f) > 0.001f
+            || Mathf.Abs(movement.landingCarryDistanceRatio - 0.25f) > 0.001f
+            || Mathf.Abs(movement.landingCarrySpeedMultiplier - 0.5f) > 0.001f
+            || Mathf.Abs(movement.floatFallDelay - 0.18f) > 0.001f
+            || Mathf.Abs(movement.floatFallVerticalSpeed + 3f) > 0.001f
+            || Mathf.Abs(movement.landingCarryDistance - 2.5f) > 0.001f
             || Mathf.Abs(movement.groundContactOffset) > 0.001f
+            || Mathf.Abs(movement.idleRollDuration - 1.9f) > 0.001f
+            || Mathf.Abs(movement.sprintRollDuration - 1.15f) > 0.001f
             || Mathf.Abs(movement.standingToCrouchDuration - CrouchTransitionDuration) > 0.001f
             || Mathf.Abs(movement.crouchToStandingDuration - CrouchTransitionDuration) > 0.001f
             || !movement.resizeControllerDuringRoll
@@ -271,8 +284,12 @@ public static class CapstonePlayerSetup
             || PlayerRigidbodyNeedsTiltLock(movement.gameObject)
             || movement.idleNeutralState != "IdleNeutral"
             || movement.sprintState != "Sprint"
+            || movement.runToStopState != "RunToStop"
             || movement.crouchWalkingState != "CrouchWalking"
-            || movement.sprintingToRollState != "SprintingToRoll";
+            || movement.sprintingToRollState != "SprintingToRoll"
+            || movement.useAnimatorStateLengthForJump
+            || movement.floatingState != "Floating"
+            || movement.idleJumpState != "IdleJump";
     }
 
     private static bool PlayerRigidbodyNeedsTiltLock(GameObject player)
@@ -338,6 +355,9 @@ public static class CapstonePlayerSetup
         movement.cameraRelativeMovement = true;
         movement.turnSpeed = 720f;
         movement.sprintTurnSpeed = 420f;
+        movement.sprintMomentumDelay = 1f;
+        movement.sprintMomentumTurnSpeed = 260f;
+        movement.sprintMomentumAccelerationMultiplier = 0.35f;
         movement.aimTurnSpeed = 900f;
         movement.useRootMotion = false;
         movement.rootMotionDrivesLocomotion = false;
@@ -363,10 +383,20 @@ public static class CapstonePlayerSetup
         movement.acceleration = 18f;
         movement.deceleration = 24f;
         movement.turnSpeed = 720f;
+        movement.jumpKey = KeyCode.Space;
+        movement.jumpInputCooldown = 0.18f;
+        movement.jumpGroundLockTime = 0.12f;
         movement.jumpHeight = 1.35f;
+        movement.landingCarryDistance = 2.5f;
+        movement.landingCarryDuration = 0.55f;
+        movement.jumpForwardSpeedMultiplier = 1f;
+        movement.landingCarryDistanceRatio = 0.25f;
+        movement.landingCarrySpeedMultiplier = 0.5f;
+        movement.floatFallDelay = 0.18f;
+        movement.floatFallVerticalSpeed = -3f;
         movement.rollKey = KeyCode.Q;
-        movement.idleRollDuration = 2.15f;
-        movement.sprintRollDuration = 1.35f;
+        movement.idleRollDuration = 1.9f;
+        movement.sprintRollDuration = 1.15f;
         movement.idleRollDistance = 2.6f;
         movement.sprintRollDistance = 3.7f;
         movement.resizeControllerDuringRoll = true;
@@ -386,7 +416,9 @@ public static class CapstonePlayerSetup
         movement.jumpDuration = 0.95f;
         movement.pickUpDuration = 1.15f;
         movement.throwDuration = 0.95f;
+        movement.runToStopDuration = 0.7f;
         movement.useAnimatorStateLengthForActions = true;
+        movement.useAnimatorStateLengthForJump = false;
         movement.actionExitNormalizedTime = 0.98f;
         movement.minimumActionDuration = 0.08f;
 
@@ -395,14 +427,16 @@ public static class CapstonePlayerSetup
         movement.idleBattleState = "IdleBattle";
         movement.slowRunState = "SlowRun";
         movement.sprintState = "Sprint";
+        movement.runToStopState = "RunToStop";
         movement.standingToCrouchState = "StandingToCrouch";
         movement.crouchIdleState = "CrouchIdle";
         movement.crouchWalkingState = "CrouchWalking";
         movement.crouchToStandingState = "CrouchToStanding";
-        movement.crouchToSprintState = "CrouchToSprint";
         movement.idleToRollState = "IdleToRoll";
         movement.sprintingToRollState = "SprintingToRoll";
         movement.runningBackwardState = "RunningBackward";
+        movement.floatingState = "Floating";
+        movement.idleJumpState = "IdleJump";
         movement.jumpState = "Jump";
         movement.pickingUpState = "PickingUp";
         movement.throwState = "Throw";
@@ -740,16 +774,18 @@ public static class CapstonePlayerSetup
             new StateSpec("SlowRun", SlowRunGuid, true, true, new Vector3(500f, 80f, 0f), 1f, "Slow Run", "Run"),
             new StateSpec("Sprint", SprintGuid, true, true, new Vector3(500f, 190f, 0f), 1f, "Sprint", "Fast Run"),
             new StateSpec("RunningBackward", RunningBackwardGuid, true, true, new Vector3(500f, 300f, 0f), 1f, "Running Backward"),
-            new StateSpec("StandingToCrouch", StandingToCrouchedGuid, false, false, new Vector3(780f, 80f, 0f), -1f, "Crouch To Standing Idle(Thaythechuan)", "Crouch To Standing Idle", "Crouch To Standing", "Crouched To Standing"),
+            new StateSpec("RunToStop", RunToStopGuid, false, false, new Vector3(500f, 410f, 0f), 1f, "Run To Stop", "Running To Stop"),
+            new StateSpec("Floating", FloatingGuid, true, false, new Vector3(500f, 520f, 0f), 1f, "Floating", "Float"),
+            new StateSpec("StandingToCrouch", StandingToCrouchedGuid, false, false, new Vector3(780f, 80f, 0f), 1f, "Sword And Shield Crouch", "Sword and Shield Crouch"),
             new StateSpec("CrouchIdle", CrouchIdleGuid, true, false, new Vector3(780f, 190f, 0f), 1f, "Crouch Idle", "Crouched Idle"),
             new StateSpec("CrouchWalking", CrouchedWalkingGuid, true, true, new Vector3(780f, 300f, 0f), 1f, "Crouched Walking"),
             new StateSpec("CrouchToStanding", CrouchedToStandingGuid, false, false, new Vector3(780f, 410f, 0f), 1f, "Crouch To Standing Idle(Thaythechuan)", "Crouch To Standing Idle", "Crouch To Standing", "Crouched To Standing"),
-            new StateSpec("CrouchToSprint", CrouchedToSprintingGuid, false, true, new Vector3(780f, 520f, 0f), 1f, "Crouched To Sprinting", "Crouch To Sprint"),
-            new StateSpec("IdleToRoll", IdleToRollGuid, false, true, new Vector3(1060f, 80f, 0f), 1f, "Idle to Roll", "Idle To Roll"),
-            new StateSpec("SprintingToRoll", RunToRollingGuid, false, true, new Vector3(1060f, 190f, 0f), 1f, "Run To Rolling", "Sprinting To Roll", "Run To Roll"),
-            new StateSpec("Jump", JumpGuid, false, true, new Vector3(1060f, 300f, 0f), 1f, "JumpChuan", "Jump"),
-            new StateSpec("PickingUp", PickingUpGuid, false, false, new Vector3(1060f, 410f, 0f), 1f, "Picking Up Object", "Picking Up"),
-            new StateSpec("Throw", ThrowGuid, false, false, new Vector3(1060f, 520f, 0f), 1f, "Throw (chuan)", "Throw", "GunShot01"),
+            new StateSpec("IdleToRoll", IdleToRollGuid, false, true, new Vector3(1060f, 80f, 0f), 1.12f, "Idle to Roll", "Idle To Roll"),
+            new StateSpec("SprintingToRoll", RunToRollingGuid, false, true, new Vector3(1060f, 190f, 0f), 1.15f, "Run To Rolling", "Sprinting To Roll", "Run To Roll"),
+            new StateSpec("IdleJump", IdleJumpGuid, false, false, new Vector3(1060f, 300f, 0f), 1f, "Jump", "Idle Jump", "NEwVefects_Vexa@Jump"),
+            new StateSpec("Jump", JumpGuid, false, true, new Vector3(1060f, 410f, 0f), 1f, "JumpChuan", "Jump"),
+            new StateSpec("PickingUp", PickingUpGuid, false, false, new Vector3(1060f, 520f, 0f), 1f, "Picking Up Object", "Picking Up"),
+            new StateSpec("Throw", ThrowGuid, false, false, new Vector3(1060f, 630f, 0f), 1f, "Throw (chuan)", "Throw", "GunShot01"),
         };
     }
 
