@@ -751,10 +751,17 @@ MonoBehaviour:
   positionSmoothTime: 0.12
   focusSmoothTime: 0.18
   maxFocusLag: 2
+  verticalFollowSmoothTime: 0.08
+  maxVerticalLag: 0.7
   mouseSensitivity: 2.2
-  minPitch: -25
-  maxPitch: 65
+  minPitch: -10
+  maxPitch: 45
   lockCursorOnPlay: 1
+  enableScrollZoom: 1
+  minZoomDistance: 3
+  maxZoomDistance: 7
+  zoomSpeed: 1.25
+  zoomSmoothTime: 0.08
   aimOffset: {x: 0.75, y: 1.8, z: -2.75}
   aimLookHeight: 1.45
   aimLookAhead: 10
@@ -1100,9 +1107,29 @@ PrefabInstance:
       value: -71.615456
       objectReference: {fileID: 0}
     - target: {fileID: 2818233002663514387, guid: af66125fc77de28428e08afd4fd94286, type: 3}
+      propertyPath: jumpHeight
+      value: 1.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818233002663514387, guid: af66125fc77de28428e08afd4fd94286, type: 3}
       propertyPath: cameraTransform
       value: 
       objectReference: {fileID: 782329615}
+    - target: {fileID: 2818233002663514387, guid: af66125fc77de28428e08afd4fd94286, type: 3}
+      propertyPath: idleRollDistance
+      value: 3.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818233002663514387, guid: af66125fc77de28428e08afd4fd94286, type: 3}
+      propertyPath: idleRollDuration
+      value: 0.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818233002663514387, guid: af66125fc77de28428e08afd4fd94286, type: 3}
+      propertyPath: sprintRollDistance
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 2818233002663514387, guid: af66125fc77de28428e08afd4fd94286, type: 3}
+      propertyPath: sprintRollDuration
+      value: 0.6
+      objectReference: {fileID: 0}
     - target: {fileID: 2989447315125471008, guid: af66125fc77de28428e08afd4fd94286, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 6.7196984

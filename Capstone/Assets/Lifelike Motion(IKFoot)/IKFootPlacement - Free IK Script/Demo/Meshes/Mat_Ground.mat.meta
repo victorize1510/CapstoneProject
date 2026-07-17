@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b97ac7766cb4fff43bc22eef1d2bba1d
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 315249
+  packageName: IKFootPlacement - Free IK Script
+  packageVersion: 1.0
+  assetPath: Assets/Lifelike Motion/IKFootPlacement - Free IK Script/Demo/Meshes/Mat_Ground.mat
+  uploadId: 764232

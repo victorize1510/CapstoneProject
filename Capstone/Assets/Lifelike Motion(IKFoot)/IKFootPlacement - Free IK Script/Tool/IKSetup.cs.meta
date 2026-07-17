@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 0db3b2b58a41c954cba9d814012536c1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 315249
+  packageName: IKFootPlacement - Free IK Script
+  packageVersion: 1.0
+  assetPath: Assets/Lifelike Motion/IKFootPlacement - Free IK Script/Tool/IKSetup.cs
+  uploadId: 764232

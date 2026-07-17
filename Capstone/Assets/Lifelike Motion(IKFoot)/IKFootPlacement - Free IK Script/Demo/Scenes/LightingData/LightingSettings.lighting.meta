@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 093d8200101a9564abc5ee07b63cd3bc
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 4890085278179872738
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 315249
+  packageName: IKFootPlacement - Free IK Script
+  packageVersion: 1.0
+  assetPath: Assets/Lifelike Motion/IKFootPlacement - Free IK Script/Demo/Scenes/LightingData/LightingSettings.lighting
+  uploadId: 764232

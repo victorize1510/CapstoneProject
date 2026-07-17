@@ -11,10 +11,19 @@ public class BasicCameraFollow : MonoBehaviour
     public float positionSmoothTime = 0.12f;
     public float focusSmoothTime = 0.18f;
     public float maxFocusLag = 2f;
+    public float verticalFollowSmoothTime = 0.08f;
+    public float maxVerticalLag = 0.7f;
     public float mouseSensitivity = 2.2f;
-    public float minPitch = -25f;
-    public float maxPitch = 65f;
+    public float minPitch = -10f;
+    public float maxPitch = 45f;
     public bool lockCursorOnPlay = true;
+
+    [Header("Scroll Zoom")]
+    public bool enableScrollZoom = true;
+    public float minZoomDistance = 3f;
+    public float maxZoomDistance = 7f;
+    public float zoomSpeed = 1.25f;
+    public float zoomSmoothTime = 0.08f;
 
     [Header("Aim Camera")]
     public Vector3 aimOffset = new Vector3(0.75f, 1.8f, -2.75f);
@@ -28,10 +37,16 @@ public class BasicCameraFollow : MonoBehaviour
     private float yaw;
     private float pitch = 18f;
     private float aimBlend;
+    private float currentZoomDistance;
+    private float targetZoomDistance;
+    private float zoomVelocity;
+    private float smoothedTargetY;
+    private float targetYVelocity;
     private Vector3 positionVelocity;
     private Vector3 focusVelocity;
     private Vector3 focusPoint;
     private bool focusInitialized;
+    private bool targetYInitialized;
 
     public bool IsAiming
     {
@@ -48,11 +63,23 @@ public class BasicCameraFollow : MonoBehaviour
         }
     }
 
+    private void OnValidate()
+    {
+        minZoomDistance = Mathf.Max(0.5f, minZoomDistance);
+        maxZoomDistance = Mathf.Max(minZoomDistance, maxZoomDistance);
+        zoomSpeed = Mathf.Max(0.05f, zoomSpeed);
+        zoomSmoothTime = Mathf.Max(0.01f, zoomSmoothTime);
+        verticalFollowSmoothTime = Mathf.Max(0.01f, verticalFollowSmoothTime);
+        maxVerticalLag = Mathf.Max(0.05f, maxVerticalLag);
+    }
+
     private void Start()
     {
         TryFindTarget();
         InitializeAnglesFromCurrentCamera();
         InitializeFocusPoint();
+        InitializeZoomDistance();
+        InitializeTargetHeight();
 
         if (lockCursorOnPlay)
         {
@@ -79,6 +106,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         UpdateCursorLock();
         UpdateMouseLook();
+        UpdateScrollZoom();
         UpdateAimBlend();
         FollowTarget();
     }
@@ -94,6 +122,8 @@ public class BasicCameraFollow : MonoBehaviour
         if (player != null)
         {
             target = player.transform;
+            focusInitialized = false;
+            targetYInitialized = false;
         }
     }
 
@@ -134,6 +164,26 @@ public class BasicCameraFollow : MonoBehaviour
         focusVelocity = Vector3.zero;
     }
 
+    private void InitializeTargetHeight()
+    {
+        if (target == null)
+        {
+            return;
+        }
+
+        smoothedTargetY = target.position.y;
+        targetYVelocity = 0f;
+        targetYInitialized = true;
+    }
+
+    private void InitializeZoomDistance()
+    {
+        float distance = Mathf.Clamp(GetBaseOrbitDistance(), minZoomDistance, maxZoomDistance);
+        currentZoomDistance = distance;
+        targetZoomDistance = distance;
+        zoomVelocity = 0f;
+    }
+
     private void UpdateCursorLock()
     {
         if (!lockCursorOnPlay)
@@ -161,6 +211,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
         pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+        // Keep vertical orbit readable; wide pitch makes third-person control feel unstable.
         pitch = Mathf.Clamp(pitch, minPitch, maxPitch);
     }
 
@@ -170,18 +221,40 @@ public class BasicCameraFollow : MonoBehaviour
         aimBlend = Mathf.MoveTowards(aimBlend, targetBlend, aimBlendSpeed * Time.deltaTime);
     }
 
+    private void UpdateScrollZoom()
+    {
+        if (!enableScrollZoom)
+        {
+            return;
+        }
+
+        EnsureZoomInitialized();
+        float scroll = Input.mouseScrollDelta.y;
+        if (Mathf.Abs(scroll) < 0.001f)
+        {
+            return;
+        }
+
+        targetZoomDistance = Mathf.Clamp(targetZoomDistance - scroll * zoomSpeed, minZoomDistance, maxZoomDistance);
+    }
+
     private void FollowTarget()
     {
         float deltaTime = Mathf.Max(Time.deltaTime, 0.0001f);
+        EnsureZoomInitialized();
+        Vector3 smoothedTargetPosition = GetSmoothedTargetPosition(deltaTime);
+        targetZoomDistance = Mathf.Clamp(targetZoomDistance, minZoomDistance, maxZoomDistance);
+        currentZoomDistance = Mathf.SmoothDamp(currentZoomDistance, targetZoomDistance, ref zoomVelocity, zoomSmoothTime, Mathf.Infinity, deltaTime);
+
         Quaternion cameraYaw = Quaternion.Euler(0f, yaw, 0f);
         Quaternion cameraRotation = Quaternion.Euler(pitch, yaw, 0f);
-        Vector3 normalOffset = cameraRotation * offset;
+        Vector3 normalOffset = cameraRotation * GetZoomedOrbitOffset();
         Vector3 shoulderOffset = cameraYaw * aimOffset;
         Vector3 blendedOffset = Vector3.Lerp(normalOffset, shoulderOffset, aimBlend);
 
-        Vector3 normalFocus = target.position + Vector3.up * lookHeight;
+        Vector3 normalFocus = smoothedTargetPosition + Vector3.up * lookHeight;
         Vector3 aimDirection = cameraRotation * Vector3.forward;
-        Vector3 aimFocus = target.position + Vector3.up * aimLookHeight + aimDirection * aimLookAhead;
+        Vector3 aimFocus = smoothedTargetPosition + Vector3.up * aimLookHeight + aimDirection * aimLookAhead;
         Vector3 desiredFocus = Vector3.Lerp(normalFocus, aimFocus, aimBlend);
         if (!focusInitialized)
         {
@@ -200,13 +273,53 @@ public class BasicCameraFollow : MonoBehaviour
         // Aim looks toward a point ahead of the player, but the camera position
         // must stay anchored to the player. Using focusPoint here makes the
         // camera drift forward while aiming and breaks the over-shoulder view.
-        Vector3 desiredPosition = target.position + blendedOffset;
+        Vector3 desiredPosition = smoothedTargetPosition + blendedOffset;
         float blendedFollowSpeed = Mathf.Lerp(followSpeed, followSpeed * 1.35f, aimBlend);
         float speedRatio = followSpeed > 0.001f ? blendedFollowSpeed / followSpeed : 1f;
         float smoothTime = Mathf.Max(0.01f, positionSmoothTime / Mathf.Max(0.1f, speedRatio));
 
         transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref positionVelocity, smoothTime, Mathf.Infinity, deltaTime);
         transform.rotation = Quaternion.LookRotation(focusPoint - transform.position, Vector3.up);
+    }
+
+    private Vector3 GetSmoothedTargetPosition(float deltaTime)
+    {
+        if (!targetYInitialized)
+        {
+            InitializeTargetHeight();
+        }
+
+        float targetY = target.position.y;
+        smoothedTargetY = Mathf.SmoothDamp(smoothedTargetY, targetY, ref targetYVelocity, verticalFollowSmoothTime, Mathf.Infinity, deltaTime);
+        float yOffset = smoothedTargetY - targetY;
+        if (Mathf.Abs(yOffset) > maxVerticalLag)
+        {
+            smoothedTargetY = targetY + Mathf.Sign(yOffset) * maxVerticalLag;
+            targetYVelocity = 0f;
+        }
+
+        return new Vector3(target.position.x, smoothedTargetY, target.position.z);
+    }
+
+    private void EnsureZoomInitialized()
+    {
+        if (currentZoomDistance > 0f && targetZoomDistance > 0f)
+        {
+            return;
+        }
+
+        InitializeZoomDistance();
+    }
+
+    private Vector3 GetZoomedOrbitOffset()
+    {
+        Vector3 baseOffset = offset.sqrMagnitude > 0.001f ? offset : new Vector3(0f, 2.2f, -4.5f);
+        return baseOffset.normalized * currentZoomDistance;
+    }
+
+    private float GetBaseOrbitDistance()
+    {
+        return Mathf.Max(0.1f, offset.magnitude);
     }
 
     private void OnGUI()

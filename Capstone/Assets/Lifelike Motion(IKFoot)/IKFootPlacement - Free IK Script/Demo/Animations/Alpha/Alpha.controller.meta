@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 9fcc5b8ee76256242b2a6e6373a4bd3f
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 315249
+  packageName: IKFootPlacement - Free IK Script
+  packageVersion: 1.0
+  assetPath: Assets/Lifelike Motion/IKFootPlacement - Free IK Script/Demo/Animations/Alpha/Alpha.controller
+  uploadId: 764232

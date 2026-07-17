@@ -7,7 +7,7 @@ public static class CapstonePlayerSetup
 {
     private const string ControllerGuid = "7055637715af6304e8460cbc24b40236";
     private const string VexaPrefabGuid = "af66125fc77de28428e08afd4fd94286";
-    private const string NeutralIdleGuid = "e504240169a5ef74aae29a1e7e38854b";
+    private const string NeutralIdleGuid = "cd535e84d9d86ba4795bf9d8ffd8d2b3";
     private const string SadIdleGuid = "a2e1a10679dea714083014a61923af83";
     private const string IdleBattleGuid = "5be2ca04da0951c4d945c78004c6f75d";
     private const string SlowRunGuid = "48917c912e9f1444babc48600de9f89d";
@@ -19,16 +19,17 @@ public static class CapstonePlayerSetup
     private const string IdleToRollGuid = "bbb126017a6250e46b21d4d1d84297f3";
     private const string RunToRollingGuid = "bb84197e6ab9a584db837cec0b5b3db3";
     private const string RunningBackwardGuid = "0bb15fcde6a37f548ae84d57dfff6597";
-    private const string RunToStopGuid = "f88d3e95bed763a4e91a7171012aefd9";
     private const string FloatingGuid = "4ab4f19062225d04bba3a79fd8d65d08";
-    private const string IdleJumpGuid = "6ec978b00b006b4449584b161535eb3e";
     private const string JumpGuid = "22254f4b549ca624294118b2aea4e4b9";
     private const string PickingUpGuid = "e13fe1e094bbec348acc00a515191bcd";
     private const string ThrowGuid = "8d5141b03c6d1fc41869a230679ba972";
     private const float CrouchTransitionDuration = 0.5f;
     private const float RollControllerHeight = 0.9f;
     private const float RollControllerRadius = 0.3f;
+    private const float JumpControllerHeight = 2.25f;
+    private const float JumpControllerRadius = 0.35f;
     private static readonly Vector3 RollControllerCenter = new Vector3(0f, 0.45f, 0f);
+    private static readonly Vector3 JumpControllerCenter = new Vector3(0f, 1.125f, 0f);
 
     private static readonly string AnimationsRoot = "Assets/Animations/Th\u1EAFng";
     private static readonly string ControllerFallbackPath = AnimationsRoot + "/PlayerBasic.controller";
@@ -262,7 +263,6 @@ public static class CapstonePlayerSetup
             || movement.applyAnimatorRootRotationToVisual
             || movement.keepAnimatorTransformPinned
             || !movement.snapFeetToGround
-            || Mathf.Abs(movement.sprintMomentumDelay - 1f) > 0.001f
             || Mathf.Abs(movement.jumpInputCooldown - 0.18f) > 0.001f
             || Mathf.Abs(movement.jumpGroundLockTime - 0.12f) > 0.001f
             || Mathf.Abs(movement.jumpForwardSpeedMultiplier - 1f) > 0.001f
@@ -272,25 +272,31 @@ public static class CapstonePlayerSetup
             || Mathf.Abs(movement.floatFallVerticalSpeed + 3f) > 0.001f
             || Mathf.Abs(movement.landingCarryDistance - 2.5f) > 0.001f
             || Mathf.Abs(movement.groundContactOffset) > 0.001f
-            || Mathf.Abs(movement.idleRollDuration - 1.9f) > 0.001f
-            || Mathf.Abs(movement.sprintRollDuration - 1.15f) > 0.001f
+            || Mathf.Abs(movement.idleRollDuration - 0.78f) > 0.001f
+            || Mathf.Abs(movement.sprintRollDuration - 0.55f) > 0.001f
+            || Mathf.Abs(movement.idleRollDistance - 5.2f) > 0.001f
+            || Mathf.Abs(movement.sprintRollDistance - 7.2f) > 0.001f
             || Mathf.Abs(movement.standingToCrouchDuration - CrouchTransitionDuration) > 0.001f
             || Mathf.Abs(movement.crouchToStandingDuration - CrouchTransitionDuration) > 0.001f
             || !movement.resizeControllerDuringRoll
             || Mathf.Abs(movement.rollControllerHeight - RollControllerHeight) > 0.001f
             || Mathf.Abs(movement.rollControllerRadius - RollControllerRadius) > 0.001f
             || (movement.rollControllerCenter - RollControllerCenter).sqrMagnitude > 0.0001f
+            || movement.resizeControllerDuringJump
+            || Mathf.Abs(movement.jumpControllerHeight - JumpControllerHeight) > 0.001f
+            || Mathf.Abs(movement.jumpControllerRadius - JumpControllerRadius) > 0.001f
+            || (movement.jumpControllerCenter - JumpControllerCenter).sqrMagnitude > 0.0001f
             || expectedAnimator.GetComponent<AnimatorRootMotionRelay>() != null
             || PlayerRigidbodyNeedsTiltLock(movement.gameObject)
             || movement.idleNeutralState != "IdleNeutral"
             || movement.sprintState != "Sprint"
-            || movement.runToStopState != "RunToStop"
             || movement.crouchWalkingState != "CrouchWalking"
             || movement.sprintingToRollState != "SprintingToRoll"
             || movement.useAnimatorStateLengthForJump
             || movement.floatingState != "Floating"
             || movement.idleJumpState != "IdleJump";
     }
+
 
     private static bool PlayerRigidbodyNeedsTiltLock(GameObject player)
     {
@@ -329,9 +335,9 @@ public static class CapstonePlayerSetup
 
         CharacterController characterController = GetOrAddComponent<CharacterController>(player);
         Undo.RecordObject(characterController, "Setup character controller");
-        characterController.height = 1.8f;
-        characterController.radius = 0.35f;
-        characterController.center = new Vector3(0f, 0.9f, 0f);
+            characterController.height = 1.9f;
+            characterController.radius = 0.35f;
+            characterController.center = new Vector3(0f, 0.95f, 0f);
         characterController.stepOffset = 0.35f;
         characterController.slopeLimit = 45f;
         characterController.skinWidth = 0.02f;
@@ -354,10 +360,6 @@ public static class CapstonePlayerSetup
         movement.cameraTransform = Camera.main != null ? Camera.main.transform : null;
         movement.cameraRelativeMovement = true;
         movement.turnSpeed = 720f;
-        movement.sprintTurnSpeed = 420f;
-        movement.sprintMomentumDelay = 1f;
-        movement.sprintMomentumTurnSpeed = 260f;
-        movement.sprintMomentumAccelerationMultiplier = 0.35f;
         movement.aimTurnSpeed = 900f;
         movement.useRootMotion = false;
         movement.rootMotionDrivesLocomotion = false;
@@ -386,19 +388,25 @@ public static class CapstonePlayerSetup
         movement.jumpKey = KeyCode.Space;
         movement.jumpInputCooldown = 0.18f;
         movement.jumpGroundLockTime = 0.12f;
-        movement.jumpHeight = 1.35f;
+        movement.jumpHeight = 2.75f;
+        movement.fallGravityMultiplier = 1.45f;
         movement.landingCarryDistance = 2.5f;
         movement.landingCarryDuration = 0.55f;
         movement.jumpForwardSpeedMultiplier = 1f;
         movement.landingCarryDistanceRatio = 0.25f;
         movement.landingCarrySpeedMultiplier = 0.5f;
+        movement.landingNudgeDistance = 0.35f;
+        movement.resizeControllerDuringJump = false;
+        movement.jumpControllerHeight = JumpControllerHeight;
+        movement.jumpControllerRadius = JumpControllerRadius;
+        movement.jumpControllerCenter = JumpControllerCenter;
         movement.floatFallDelay = 0.18f;
         movement.floatFallVerticalSpeed = -3f;
         movement.rollKey = KeyCode.Q;
-        movement.idleRollDuration = 1.9f;
-        movement.sprintRollDuration = 1.15f;
-        movement.idleRollDistance = 2.6f;
-        movement.sprintRollDistance = 3.7f;
+        movement.idleRollDuration = 0.78f;
+        movement.sprintRollDuration = 0.55f;
+        movement.idleRollDistance = 5.2f;
+        movement.sprintRollDistance = 7.2f;
         movement.resizeControllerDuringRoll = true;
         movement.rollControllerHeight = RollControllerHeight;
         movement.rollControllerRadius = RollControllerRadius;
@@ -416,7 +424,6 @@ public static class CapstonePlayerSetup
         movement.jumpDuration = 0.95f;
         movement.pickUpDuration = 1.15f;
         movement.throwDuration = 0.95f;
-        movement.runToStopDuration = 0.7f;
         movement.useAnimatorStateLengthForActions = true;
         movement.useAnimatorStateLengthForJump = false;
         movement.actionExitNormalizedTime = 0.98f;
@@ -427,7 +434,6 @@ public static class CapstonePlayerSetup
         movement.idleBattleState = "IdleBattle";
         movement.slowRunState = "SlowRun";
         movement.sprintState = "Sprint";
-        movement.runToStopState = "RunToStop";
         movement.standingToCrouchState = "StandingToCrouch";
         movement.crouchIdleState = "CrouchIdle";
         movement.crouchWalkingState = "CrouchWalking";
@@ -446,6 +452,7 @@ public static class CapstonePlayerSetup
         {
             Undo.DestroyObjectImmediate(relay);
         }
+
     }
 
     private static void RemoveUnexpectedAnimatorSetup(GameObject player, Transform animatorTarget)
@@ -497,13 +504,22 @@ public static class CapstonePlayerSetup
         follow.positionSmoothTime = 0.12f;
         follow.focusSmoothTime = 0.18f;
         follow.maxFocusLag = 2f;
+        follow.verticalFollowSmoothTime = 0.08f;
+        follow.maxVerticalLag = 0.7f;
         follow.lookHeight = 1.2f;
         follow.aimLookHeight = 1.45f;
         follow.aimLookAhead = 10f;
         follow.aimMouseButton = 1;
         follow.aimBlendSpeed = 10f;
         follow.mouseSensitivity = 2.2f;
+        follow.minPitch = -10f;
+        follow.maxPitch = 45f;
         follow.lockCursorOnPlay = true;
+        follow.enableScrollZoom = true;
+        follow.minZoomDistance = 3f;
+        follow.maxZoomDistance = 7f;
+        follow.zoomSpeed = 1.25f;
+        follow.zoomSmoothTime = 0.08f;
         follow.showAimReticle = true;
     }
 
@@ -768,22 +784,21 @@ public static class CapstonePlayerSetup
     {
         return new StateSpec[]
         {
-            new StateSpec("IdleNeutral", NeutralIdleGuid, true, false, new Vector3(220f, 80f, 0f), 1f, "Neutral Idle", "Idle"),
+            new StateSpec("IdleNeutral", NeutralIdleGuid, true, false, new Vector3(220f, 80f, 0f), 1f, "Idle", "Neutral Idle"),
             new StateSpec("IdleSad", SadIdleGuid, true, false, new Vector3(220f, 190f, 0f), 1f, "Sad Idle", "IdleChill"),
             new StateSpec("IdleBattle", IdleBattleGuid, true, false, new Vector3(220f, 300f, 0f), 1f, "IdleBattle", "Battle Idle"),
             new StateSpec("SlowRun", SlowRunGuid, true, true, new Vector3(500f, 80f, 0f), 1f, "Slow Run", "Run"),
             new StateSpec("Sprint", SprintGuid, true, true, new Vector3(500f, 190f, 0f), 1f, "Sprint", "Fast Run"),
             new StateSpec("RunningBackward", RunningBackwardGuid, true, true, new Vector3(500f, 300f, 0f), 1f, "Running Backward"),
-            new StateSpec("RunToStop", RunToStopGuid, false, false, new Vector3(500f, 410f, 0f), 1f, "Run To Stop", "Running To Stop"),
             new StateSpec("Floating", FloatingGuid, true, false, new Vector3(500f, 520f, 0f), 1f, "Floating", "Float"),
             new StateSpec("StandingToCrouch", StandingToCrouchedGuid, false, false, new Vector3(780f, 80f, 0f), 1f, "Sword And Shield Crouch", "Sword and Shield Crouch"),
             new StateSpec("CrouchIdle", CrouchIdleGuid, true, false, new Vector3(780f, 190f, 0f), 1f, "Crouch Idle", "Crouched Idle"),
             new StateSpec("CrouchWalking", CrouchedWalkingGuid, true, true, new Vector3(780f, 300f, 0f), 1f, "Crouched Walking"),
             new StateSpec("CrouchToStanding", CrouchedToStandingGuid, false, false, new Vector3(780f, 410f, 0f), 1f, "Crouch To Standing Idle(Thaythechuan)", "Crouch To Standing Idle", "Crouch To Standing", "Crouched To Standing"),
-            new StateSpec("IdleToRoll", IdleToRollGuid, false, true, new Vector3(1060f, 80f, 0f), 1.12f, "Idle to Roll", "Idle To Roll"),
-            new StateSpec("SprintingToRoll", RunToRollingGuid, false, true, new Vector3(1060f, 190f, 0f), 1.15f, "Run To Rolling", "Sprinting To Roll", "Run To Roll"),
-            new StateSpec("IdleJump", IdleJumpGuid, false, false, new Vector3(1060f, 300f, 0f), 1f, "Jump", "Idle Jump", "NEwVefects_Vexa@Jump"),
-            new StateSpec("Jump", JumpGuid, false, true, new Vector3(1060f, 410f, 0f), 1f, "JumpChuan", "Jump"),
+            new StateSpec("IdleToRoll", IdleToRollGuid, false, true, new Vector3(1060f, 80f, 0f), 1.35f, "Idle to Roll", "Idle To Roll"),
+            new StateSpec("SprintingToRoll", RunToRollingGuid, false, true, new Vector3(1060f, 190f, 0f), 1.45f, "Run To Rolling", "Sprinting To Roll", "Run To Roll"),
+            new StateSpec("IdleJump", JumpGuid, false, false, new Vector3(1060f, 300f, 0f), 1f, "JumpChuan", "Jump"),
+            new StateSpec("Jump", JumpGuid, false, false, new Vector3(1060f, 410f, 0f), 1f, "JumpChuan", "Jump"),
             new StateSpec("PickingUp", PickingUpGuid, false, false, new Vector3(1060f, 520f, 0f), 1f, "Picking Up Object", "Picking Up"),
             new StateSpec("Throw", ThrowGuid, false, false, new Vector3(1060f, 630f, 0f), 1f, "Throw (chuan)", "Throw", "GunShot01"),
         };

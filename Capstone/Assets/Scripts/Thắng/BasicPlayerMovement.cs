@@ -13,7 +13,6 @@ public class BasicPlayerMovement : MonoBehaviour
         IdleBattle,
         SlowRun,
         Sprint,
-        RunToStop,
         StandingToCrouch,
         CrouchIdle,
         CrouchWalking,
@@ -49,10 +48,6 @@ public class BasicPlayerMovement : MonoBehaviour
     public float acceleration = 18f;
     public float deceleration = 24f;
     public float turnSpeed = 720f;
-    public float sprintTurnSpeed = 420f;
-    public float sprintMomentumDelay = 1f;
-    public float sprintMomentumTurnSpeed = 260f;
-    public float sprintMomentumAccelerationMultiplier = 0.35f;
     public float aimTurnSpeed = 900f;
     public bool cameraRelativeMovement = true;
 
@@ -74,14 +69,20 @@ public class BasicPlayerMovement : MonoBehaviour
     public KeyCode jumpKey = KeyCode.Space;
     public float jumpInputCooldown = 0.18f;
     public float jumpGroundLockTime = 0.12f;
-    public float jumpHeight = 1.35f;
+    public float jumpHeight = 2.75f;
     public float gravity = -25f;
+    public float fallGravityMultiplier = 1.45f;
     public float groundedStickForce = -2f;
     public float landingCarryDistance = 2.5f;
     public float landingCarryDuration = 0.55f;
     public float jumpForwardSpeedMultiplier = 1f;
     public float landingCarryDistanceRatio = 0.25f;
     public float landingCarrySpeedMultiplier = 0.5f;
+    public float landingNudgeDistance = 0.35f;
+    public bool resizeControllerDuringJump = false;
+    public float jumpControllerHeight = 2.25f;
+    public float jumpControllerRadius = 0.35f;
+    public Vector3 jumpControllerCenter = new Vector3(0f, 1.125f, 0f);
     public float floatFallDelay = 0.18f;
     public float floatFallVerticalSpeed = -3f;
 
@@ -94,10 +95,10 @@ public class BasicPlayerMovement : MonoBehaviour
 
     [Header("Roll")]
     public KeyCode rollKey = KeyCode.Q;
-    public float idleRollDuration = 1.9f;
-    public float sprintRollDuration = 1.15f;
-    public float idleRollDistance = 2.6f;
-    public float sprintRollDistance = 3.7f;
+    public float idleRollDuration = 0.78f;
+    public float sprintRollDuration = 0.55f;
+    public float idleRollDistance = 5.2f;
+    public float sprintRollDistance = 7.2f;
     public bool resizeControllerDuringRoll = true;
     public float rollControllerHeight = 0.9f;
     public float rollControllerRadius = 0.3f;
@@ -119,7 +120,6 @@ public class BasicPlayerMovement : MonoBehaviour
     public float jumpDuration = 0.95f;
     public float pickUpDuration = 1.15f;
     public float throwDuration = 0.95f;
-    public float runToStopDuration = 0.7f;
     public bool useAnimatorStateLengthForActions = true;
     public bool useAnimatorStateLengthForJump = false;
     public float actionExitNormalizedTime = 0.98f;
@@ -146,7 +146,6 @@ public class BasicPlayerMovement : MonoBehaviour
     public string idleBattleState = "IdleBattle";
     public string slowRunState = "SlowRun";
     public string sprintState = "Sprint";
-    public string runToStopState = "RunToStop";
     public string standingToCrouchState = "StandingToCrouch";
     public string crouchIdleState = "CrouchIdle";
     public string crouchWalkingState = "CrouchWalking";
@@ -182,6 +181,7 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         get { return currentState == PlayerState.IdleToRoll || currentState == PlayerState.SprintingToRoll; }
     }
+
 
     public bool IsAiming
     {
@@ -223,7 +223,6 @@ public class BasicPlayerMovement : MonoBehaviour
     private float stateTimer;
     private float activeStateDuration;
     private float previousRollCurveValue;
-    private float sprintMomentumTimer;
     private float landingCarryTimer;
     private float lastJumpStartTime = -100f;
     private float battleRelaxTimer = float.PositiveInfinity;
@@ -243,11 +242,12 @@ public class BasicPlayerMovement : MonoBehaviour
     private bool returnToCrouchAfterAction;
     private bool jumpStartedFromMovement;
     private bool jumpConsumedUntilGrounded;
+    private bool jumpInputReleasedSinceJump = true;
     private bool jumpLeftGround;
-    private bool wasLongSprinting;
     private bool autoEnemyNearby;
     private bool standingControllerShapeCaptured;
     private bool controllerSizedForRoll;
+    private bool controllerSizedForJump;
 
     private bool EnemyThreatActive
     {
@@ -308,19 +308,19 @@ public class BasicPlayerMovement : MonoBehaviour
         acceleration = Mathf.Max(0.1f, acceleration);
         deceleration = Mathf.Max(0.1f, deceleration);
         turnSpeed = Mathf.Max(1f, turnSpeed);
-        sprintTurnSpeed = Mathf.Max(1f, sprintTurnSpeed);
-        sprintMomentumDelay = Mathf.Max(0f, sprintMomentumDelay);
-        sprintMomentumTurnSpeed = Mathf.Max(1f, sprintMomentumTurnSpeed);
-        sprintMomentumAccelerationMultiplier = Mathf.Clamp(sprintMomentumAccelerationMultiplier, 0.05f, 1f);
         aimTurnSpeed = Mathf.Max(1f, aimTurnSpeed);
         jumpInputCooldown = Mathf.Max(0f, jumpInputCooldown);
         jumpGroundLockTime = Mathf.Max(0f, jumpGroundLockTime);
         jumpHeight = Mathf.Max(0f, jumpHeight);
+        fallGravityMultiplier = Mathf.Max(1f, fallGravityMultiplier);
         landingCarryDistance = Mathf.Max(0f, landingCarryDistance);
         landingCarryDuration = Mathf.Max(0.05f, landingCarryDuration);
         jumpForwardSpeedMultiplier = Mathf.Max(0f, jumpForwardSpeedMultiplier);
         landingCarryDistanceRatio = Mathf.Clamp01(landingCarryDistanceRatio);
         landingCarrySpeedMultiplier = Mathf.Max(0f, landingCarrySpeedMultiplier);
+        landingNudgeDistance = Mathf.Max(0f, landingNudgeDistance);
+        jumpControllerHeight = Mathf.Max(0.1f, jumpControllerHeight);
+        jumpControllerRadius = Mathf.Clamp(jumpControllerRadius, 0.01f, jumpControllerHeight * 0.5f);
         floatFallDelay = Mathf.Max(0f, floatFallDelay);
         floatFallVerticalSpeed = Mathf.Min(0f, floatFallVerticalSpeed);
         idleRollDuration = Mathf.Max(0.1f, idleRollDuration);
@@ -334,7 +334,6 @@ public class BasicPlayerMovement : MonoBehaviour
         jumpDuration = Mathf.Max(0.1f, jumpDuration);
         pickUpDuration = Mathf.Max(0.1f, pickUpDuration);
         throwDuration = Mathf.Max(0.1f, throwDuration);
-        runToStopDuration = Mathf.Max(0.1f, runToStopDuration);
         idleSadDelay = Mathf.Max(0f, idleSadDelay);
         battleRelaxDelay = Mathf.Max(0f, battleRelaxDelay);
         rootMotionScale = Mathf.Max(0f, rootMotionScale);
@@ -389,8 +388,6 @@ public class BasicPlayerMovement : MonoBehaviour
             EvaluateLocomotionState();
         }
 
-        UpdateSprintMomentum(Time.deltaTime);
-        RememberSprintState();
         PlayState(currentState, false);
         UpdateAnimatorParameters();
     }
@@ -575,14 +572,6 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (wasLongSprinting && grounded && !hasMoveInput && !isCrouching)
-        {
-            wasLongSprinting = false;
-            sprintMomentumTimer = 0f;
-            StartOneShot(PlayerState.RunToStop, runToStopDuration);
-            return;
-        }
-
     }
 
     private void ToggleCrouch()
@@ -628,7 +617,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void StartJump()
     {
-        if (jumpConsumedUntilGrounded)
+        if (jumpConsumedUntilGrounded || !jumpInputReleasedSinceJump)
         {
             return;
         }
@@ -650,6 +639,7 @@ public class BasicPlayerMovement : MonoBehaviour
         landingCarryTimer = 0f;
         landingCarrySpeed = 0f;
         jumpConsumedUntilGrounded = true;
+        jumpInputReleasedSinceJump = false;
         jumpLeftGround = false;
         airborneTimer = 0f;
         StartOneShot(fromMovement ? PlayerState.Jump : PlayerState.IdleJump, jumpDuration);
@@ -676,7 +666,15 @@ public class BasicPlayerMovement : MonoBehaviour
         idleTimer = 0f;
         lastRootMotionTime = Time.time;
         lastHorizontalRootMotionTime = Time.time;
-        SetRollControllerShape(IsRollState(state));
+        if (IsRollState(state))
+        {
+            SetRollControllerShape(true);
+        }
+        else if (IsJumpState(state))
+        {
+            SetJumpControllerShape(true);
+        }
+
         if (ShouldLockHorizontalMotionForAction(state))
         {
             ClearActionMomentum();
@@ -688,8 +686,6 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         horizontalVelocity = Vector3.zero;
         landingCarryTimer = 0f;
-        sprintMomentumTimer = 0f;
-        wasLongSprinting = false;
     }
 
     private void UpdateActiveOneShot(float deltaTime)
@@ -769,7 +765,7 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         PlayerState completedState = currentState;
         activeOneShot = false;
-        if (IsRollState(completedState))
+        if (IsRollState(completedState) || IsJumpState(completedState))
         {
             RestoreStandingControllerShape();
         }
@@ -854,7 +850,10 @@ public class BasicPlayerMovement : MonoBehaviour
             return 0f;
         }
 
-        return (CalculateJumpVelocity() * 2f) / gravityMagnitude;
+        float jumpVelocity = CalculateJumpVelocity();
+        float riseTime = jumpVelocity / gravityMagnitude;
+        float fallTime = Mathf.Sqrt((2f * jumpHeight) / (gravityMagnitude * Mathf.Max(1f, fallGravityMultiplier)));
+        return riseTime + fallTime;
     }
 
     private float CalculateJumpHorizontalSpeed(bool fromMovement)
@@ -872,17 +871,19 @@ public class BasicPlayerMovement : MonoBehaviour
     private float CalculateLandingCarryDistance(float launchSpeed, float airTime)
     {
         float calculatedDistance = launchSpeed * airTime * landingCarryDistanceRatio;
-        return Mathf.Clamp(calculatedDistance, 0f, landingCarryDistance);
+        float distance = Mathf.Max(calculatedDistance, landingNudgeDistance);
+        return Mathf.Clamp(distance, 0f, landingCarryDistance);
     }
 
     private void BeginLandingCarryIfNeeded()
     {
-        if (!jumpStartedFromMovement || !grounded || jumpLandingCarryDistance <= 0f)
+        if (!grounded || jumpLandingCarryDistance <= 0f)
         {
             jumpStartedFromMovement = false;
             return;
         }
 
+        // Keeps the last running step in the jump clip from visually snapping in place.
         landingCarryDirection = jumpCarryDirection.sqrMagnitude > 0.001f ? jumpCarryDirection.normalized : GetFlatForward(transform);
         landingCarrySpeed = Mathf.Max(slowRunSpeed * 0.5f, jumpHorizontalSpeed * landingCarrySpeedMultiplier);
         landingCarryTimer = Mathf.Min(landingCarryDuration, jumpLandingCarryDistance / Mathf.Max(landingCarrySpeed, 0.1f));
@@ -907,12 +908,17 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void UpdateAirborneState(float deltaTime)
     {
+        if (!IsJumpKeyHeld())
+        {
+            jumpInputReleasedSinceJump = true;
+        }
+
         if (grounded)
         {
             airborneTimer = 0f;
             if (jumpConsumedUntilGrounded
                 && !activeOneShot
-                && !IsJumpKeyHeld()
+                && jumpInputReleasedSinceJump
                 && Time.time - lastJumpStartTime >= jumpInputCooldown)
             {
                 jumpConsumedUntilGrounded = false;
@@ -933,39 +939,6 @@ public class BasicPlayerMovement : MonoBehaviour
     private bool HasLandingCarry
     {
         get { return landingCarryTimer > 0f && !hasMoveInput && grounded; }
-    }
-
-    private void UpdateSprintMomentum(float deltaTime)
-    {
-        bool sprintingWithInput = currentState == PlayerState.Sprint && sprintHeld && hasMoveInput && !isCrouching && !activeOneShot;
-        if (sprintingWithInput)
-        {
-            sprintMomentumTimer += deltaTime;
-            return;
-        }
-
-        if (currentState != PlayerState.RunToStop)
-        {
-            sprintMomentumTimer = 0f;
-        }
-    }
-
-    private void RememberSprintState()
-    {
-        wasLongSprinting = currentState == PlayerState.Sprint
-            && sprintHeld
-            && hasMoveInput
-            && sprintMomentumTimer >= sprintMomentumDelay;
-    }
-
-    private bool SprintMomentumActive
-    {
-        get
-        {
-            return sprintMomentumDelay > 0f
-                && sprintMomentumTimer >= sprintMomentumDelay
-                && currentState == PlayerState.Sprint;
-        }
     }
 
     private void EvaluateLocomotionState()
@@ -1047,7 +1020,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
         Vector3 horizontalDelta = BuildHorizontalDelta(deltaTime);
 
-        verticalVelocity += gravity * deltaTime;
+        verticalVelocity += GetCurrentGravity() * deltaTime;
         Vector3 motion = horizontalDelta;
         motion.y = verticalVelocity * deltaTime;
 
@@ -1061,6 +1034,12 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         horizontalVelocity = horizontalDelta / deltaTime;
+    }
+
+    private float GetCurrentGravity()
+    {
+        // Stronger falling gravity keeps the collider matched to snappy jump clips.
+        return verticalVelocity < 0f ? gravity * fallGravityMultiplier : gravity;
     }
 
     private Vector3 BuildHorizontalDelta(float deltaTime)
@@ -1084,7 +1063,8 @@ public class BasicPlayerMovement : MonoBehaviour
 
         float targetSpeed = GetTargetSpeedForState();
         Vector3 targetVelocity = targetSpeed > 0f ? GetTargetMoveDirection() * targetSpeed : Vector3.zero;
-        float rate = targetSpeed > 0f ? GetAccelerationForTargetVelocity(targetVelocity) : deceleration;
+        // Sprint only changes speed; direction changes stay responsive.
+        float rate = targetSpeed > 0f ? acceleration : deceleration;
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, rate * deltaTime);
         return horizontalVelocity * deltaTime;
     }
@@ -1183,7 +1163,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void CaptureStandingControllerShape()
     {
-        if (characterController == null || standingControllerShapeCaptured || controllerSizedForRoll)
+        if (characterController == null || standingControllerShapeCaptured || controllerSizedForRoll || controllerSizedForJump)
         {
             return;
         }
@@ -1223,15 +1203,44 @@ public class BasicPlayerMovement : MonoBehaviour
         RestoreStandingControllerShape();
     }
 
+    private void SetJumpControllerShape(bool jumping)
+    {
+        if (!resizeControllerDuringJump || characterController == null)
+        {
+            return;
+        }
+
+        CaptureStandingControllerShape();
+        if (!standingControllerShapeCaptured)
+        {
+            return;
+        }
+
+        if (jumping)
+        {
+            if (controllerSizedForJump)
+            {
+                return;
+            }
+
+            ApplyControllerShape(jumpControllerHeight, jumpControllerRadius, jumpControllerCenter);
+            controllerSizedForJump = true;
+            return;
+        }
+
+        RestoreStandingControllerShape();
+    }
+
     private void RestoreStandingControllerShape()
     {
-        if (!controllerSizedForRoll || characterController == null || !standingControllerShapeCaptured)
+        if ((!controllerSizedForRoll && !controllerSizedForJump) || characterController == null || !standingControllerShapeCaptured)
         {
             return;
         }
 
         ApplyControllerShape(standingControllerHeight, standingControllerRadius, standingControllerCenter);
         controllerSizedForRoll = false;
+        controllerSizedForJump = false;
         SnapCharacterToGround(true);
     }
 
@@ -1511,35 +1520,12 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         Quaternion targetRotation = Quaternion.LookRotation(direction.normalized, Vector3.up);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, GetTurnSpeed(direction) * Time.deltaTime);
+        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, GetTurnSpeed() * Time.deltaTime);
     }
 
-    private float GetTurnSpeed(Vector3 targetDirection)
+    private float GetTurnSpeed()
     {
-        if (aimHeld)
-        {
-            return aimTurnSpeed;
-        }
-
-        if (currentState == PlayerState.Sprint || (sprintHeld && hasMoveInput))
-        {
-            float angle = Vector3.Angle(GetFlatForward(transform), targetDirection);
-            float activeSprintTurnSpeed = SprintMomentumActive ? sprintMomentumTurnSpeed : sprintTurnSpeed;
-            return angle > 110f ? activeSprintTurnSpeed * 0.75f : activeSprintTurnSpeed;
-        }
-
-        return turnSpeed;
-    }
-
-    private float GetAccelerationForTargetVelocity(Vector3 targetVelocity)
-    {
-        if (!SprintMomentumActive || horizontalVelocity.sqrMagnitude < 0.04f || targetVelocity.sqrMagnitude < 0.04f)
-        {
-            return acceleration;
-        }
-
-        float angle = Vector3.Angle(horizontalVelocity, targetVelocity);
-        return angle > 25f ? acceleration * sprintMomentumAccelerationMultiplier : acceleration;
+        return aimHeld ? aimTurnSpeed : turnSpeed;
     }
 
     private void SnapFacing(Vector3 direction)
@@ -1796,8 +1782,6 @@ public class BasicPlayerMovement : MonoBehaviour
                 return slowRunState;
             case PlayerState.Sprint:
                 return sprintState;
-            case PlayerState.RunToStop:
-                return runToStopState;
             case PlayerState.StandingToCrouch:
                 return standingToCrouchState;
             case PlayerState.CrouchIdle:
@@ -1834,9 +1818,9 @@ public class BasicPlayerMovement : MonoBehaviour
         stateFallbacks[idleSadState] = new[] { "IdleChill", "Sad Idle" };
         stateFallbacks[idleBattleState] = new[] { "Idle", "IdleBattle" };
         stateFallbacks[sprintState] = new[] { "FastRun", "Fast Run" };
-        stateFallbacks[runToStopState] = new[] { sprintState, "Run To Stop" };
         stateFallbacks[sprintingToRollState] = new[] { "RunToRolling", "Run To Rolling" };
-        stateFallbacks[floatingState] = new[] { jumpState, idleJumpState, "Floating" };
+        // Falling should never fall back to Jump, or it can look like a second jump.
+        stateFallbacks[floatingState] = new[] { idleNeutralState };
         stateFallbacks[idleJumpState] = new[] { jumpState, "Jump" };
         stateFallbacks[crouchIdleState] = new[] { idleNeutralState, "Idle" };
         stateFallbacks[pickingUpState] = new[] { idleNeutralState, "Idle" };

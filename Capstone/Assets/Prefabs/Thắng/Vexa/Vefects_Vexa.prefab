@@ -2814,13 +2814,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 1.8
+  m_Height: 1.9
   m_Radius: 0.35
   m_SlopeLimit: 45
   m_StepOffset: 0.35
   m_SkinWidth: 0.02
   m_MinMoveDistance: 0
-  m_Center: {x: 0, y: 0.9, z: 0}
+  m_Center: {x: 0, y: 0.95, z: 0}
 --- !u!114 &2818233002663514387
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2842,10 +2842,6 @@ MonoBehaviour:
   acceleration: 18
   deceleration: 24
   turnSpeed: 720
-  sprintTurnSpeed: 420
-  sprintMomentumDelay: 1
-  sprintMomentumTurnSpeed: 260
-  sprintMomentumAccelerationMultiplier: 0.35
   aimTurnSpeed: 900
   cameraRelativeMovement: 1
   useRootMotion: 0
@@ -2863,14 +2859,20 @@ MonoBehaviour:
   jumpKey: 32
   jumpInputCooldown: 0.18
   jumpGroundLockTime: 0.12
-  jumpHeight: 1.35
+  jumpHeight: 2.75
   gravity: -25
+  fallGravityMultiplier: 1.45
   groundedStickForce: -2
   landingCarryDistance: 2.5
   landingCarryDuration: 0.55
   jumpForwardSpeedMultiplier: 1
   landingCarryDistanceRatio: 0.25
   landingCarrySpeedMultiplier: 0.5
+  landingNudgeDistance: 0.35
+  resizeControllerDuringJump: 0
+  jumpControllerHeight: 2.25
+  jumpControllerRadius: 0.35
+  jumpControllerCenter: {x: 0, y: 1.125, z: 0}
   floatFallDelay: 0.18
   floatFallVerticalSpeed: -3
   snapFeetToGround: 1
@@ -2881,10 +2883,10 @@ MonoBehaviour:
   groundSnapProbeHeight: 0.35
   groundContactOffset: 0
   rollKey: 113
-  idleRollDuration: 1.9
-  sprintRollDuration: 1.15
-  idleRollDistance: 2.6
-  sprintRollDistance: 3.7
+  idleRollDuration: 0.78
+  sprintRollDuration: 0.55
+  idleRollDistance: 5.2
+  sprintRollDistance: 7.2
   resizeControllerDuringRoll: 1
   rollControllerHeight: 0.9
   rollControllerRadius: 0.3
@@ -2925,7 +2927,6 @@ MonoBehaviour:
   jumpDuration: 0.95
   pickUpDuration: 1.15
   throwDuration: 0.95
-  runToStopDuration: 0.7
   useAnimatorStateLengthForActions: 1
   useAnimatorStateLengthForJump: 0
   actionExitNormalizedTime: 0.98
@@ -2952,7 +2953,6 @@ MonoBehaviour:
   idleBattleState: IdleBattle
   slowRunState: SlowRun
   sprintState: Sprint
-  runToStopState: RunToStop
   standingToCrouchState: StandingToCrouch
   crouchIdleState: CrouchIdle
   crouchWalkingState: CrouchWalking
