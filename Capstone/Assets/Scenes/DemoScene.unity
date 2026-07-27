@@ -10610,7 +10610,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxSunIntensity: 1.5
-  maxMoonIntensity: 0.1
+  maxMoonIntensity: 0.2
   sunVisual: {fileID: 890927716}
   moonVisual: {fileID: 1424978741}
 --- !u!4 &1159801623
