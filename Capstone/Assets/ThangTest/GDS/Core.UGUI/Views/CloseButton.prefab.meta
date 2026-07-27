@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: dd32a68a4a42f2a4c920f55f57de2c59
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/CloseButton.prefab
+  uploadId: 958570

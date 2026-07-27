@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: d4b70bde9be96c2448473be3371c2ce5
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/02-Intermediate/04-CreateRandomItem/UGUI/CreateRandomItem_Ui_Controller.cs
+  uploadId: 958570

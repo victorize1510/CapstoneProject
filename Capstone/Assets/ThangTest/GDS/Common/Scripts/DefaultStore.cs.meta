@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 891b7899cae9c5042a70d5e2d4fbaa3d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Scripts/DefaultStore.cs
+  uploadId: 958570

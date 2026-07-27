@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: a076987f0ddcb1e4b9b62f6c331264a4
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Demos/01-Basic Sandbox (Minecraft)/UGUI/Basic_UiController_UGUI.cs
+  uploadId: 958570

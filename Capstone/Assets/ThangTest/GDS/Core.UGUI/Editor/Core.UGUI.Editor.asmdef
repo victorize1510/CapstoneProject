@@ -1,0 +1,20 @@
+{
+    "name": "Core.UGUI.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e63e70b93c9c9e54cbf88e4637951ec2",
+        "GUID:ee6e202b31d2d1243897e7ff8af94e74",
+        "GUID:584fdba40c282f84ea7c47ca6e741438"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

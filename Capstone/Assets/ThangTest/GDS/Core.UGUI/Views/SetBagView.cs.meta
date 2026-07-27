@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c20cbe31f9e8db34b9547aeee23c9e02
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/SetBagView.cs
+  uploadId: 958570

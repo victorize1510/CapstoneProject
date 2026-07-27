@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: d18790ed7410b6240baf03ff4a7a0869
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/BaseTooltipView.cs
+  uploadId: 958570

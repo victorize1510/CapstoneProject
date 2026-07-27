@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bc156cc4dae15d74aae2c083e4121e67
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/Button.prefab
+  uploadId: 958570

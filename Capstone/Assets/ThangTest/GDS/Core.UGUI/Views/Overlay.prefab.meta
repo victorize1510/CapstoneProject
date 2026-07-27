@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0d581a7cdfa707d4ea2cf7cf5bbaf2e3
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/Overlay.prefab
+  uploadId: 958570

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 08c01e1dc0079394a8b65f4ab2bff7a5
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/02-Intermediate/04-CreateRandomItem/UGUI/CreateRandomItem_UGUI.unity
+  uploadId: 958570

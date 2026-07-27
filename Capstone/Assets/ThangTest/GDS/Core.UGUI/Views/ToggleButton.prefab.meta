@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 621d0fb0364e7c14ebfee1cfdfd75e00
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/ToggleButton.prefab
+  uploadId: 958570

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: be89ba822e35d0a428c94df4fa4fe45a
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/SO/Items/Common_Gloves.asset
+  uploadId: 958570

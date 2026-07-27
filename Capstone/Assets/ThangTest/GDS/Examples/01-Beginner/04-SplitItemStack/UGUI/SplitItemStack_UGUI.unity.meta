@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 66a09781d1609f940ac3ca5fc6393a75
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/04-SplitItemStack/UGUI/SplitItemStack_UGUI.unity
+  uploadId: 958570

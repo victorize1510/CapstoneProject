@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: de3822991401ecd4f813c32b4fe56535
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/02-EquipItems/UGUI/EquipItems_UGUI.unity
+  uploadId: 958570

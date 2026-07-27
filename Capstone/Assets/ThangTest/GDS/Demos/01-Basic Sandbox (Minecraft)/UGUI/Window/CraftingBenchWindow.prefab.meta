@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c03d03941beefc444a36c3d2056b0844
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Demos/01-Basic Sandbox (Minecraft)/UGUI/Window/CraftingBenchWindow.prefab
+  uploadId: 958570

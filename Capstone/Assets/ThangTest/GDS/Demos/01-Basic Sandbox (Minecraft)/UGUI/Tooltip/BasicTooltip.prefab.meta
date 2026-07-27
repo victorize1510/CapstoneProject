@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: dcd6f79802de20743ab123c99a01a04d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Demos/01-Basic Sandbox (Minecraft)/UGUI/Tooltip/BasicTooltip.prefab
+  uploadId: 958570

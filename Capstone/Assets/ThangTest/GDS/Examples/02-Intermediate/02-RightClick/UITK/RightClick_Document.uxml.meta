@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 7ae5e454584a13849b2b7861bf91ea4e
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 13804, guid: 0000000000000000e000000000000000, type: 0}
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/02-Intermediate/02-RightClick/UITK/RightClick_Document.uxml
+  uploadId: 958570

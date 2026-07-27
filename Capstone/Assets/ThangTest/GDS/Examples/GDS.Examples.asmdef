@@ -1,0 +1,21 @@
+{
+    "name": "GDS.Examples",
+    "rootNamespace": "",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:e63e70b93c9c9e54cbf88e4637951ec2",
+        "GUID:5b081e7137f713d46abc62f47ea9b454",
+        "GUID:ee6e202b31d2d1243897e7ff8af94e74",
+        "GUID:a9d7e2f0e8f810446bd06abacbe75c8f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

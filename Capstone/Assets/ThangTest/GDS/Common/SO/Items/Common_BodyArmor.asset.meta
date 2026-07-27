@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7fc44f73fe47c5c418c46c353603ef03
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/SO/Items/Common_BodyArmor.asset
+  uploadId: 958570

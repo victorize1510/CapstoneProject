@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 029152b34f3e6464288f102d3230eb93
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/03-SwapItems/SwapItems_Catalog.asset
+  uploadId: 958570

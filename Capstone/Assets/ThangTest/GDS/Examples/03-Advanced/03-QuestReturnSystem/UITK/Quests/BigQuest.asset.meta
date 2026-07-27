@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 894194d2977fb8048bc4fcd5125a5507
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/03-Advanced/03-QuestReturnSystem/UITK/Quests/BigQuest.asset
+  uploadId: 958570

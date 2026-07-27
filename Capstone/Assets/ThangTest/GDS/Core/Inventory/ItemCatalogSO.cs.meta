@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4ec1a39236f3dd34c87f182ae0769289
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core/Inventory/ItemCatalogSO.cs
+  uploadId: 958570

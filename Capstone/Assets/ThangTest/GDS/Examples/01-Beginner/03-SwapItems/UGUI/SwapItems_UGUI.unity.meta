@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 3a375b558211c63419813529791c6201
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/03-SwapItems/UGUI/SwapItems_UGUI.unity
+  uploadId: 958570

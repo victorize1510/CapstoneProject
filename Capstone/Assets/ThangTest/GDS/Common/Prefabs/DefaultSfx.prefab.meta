@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5608818bd6cc4234f84422cd4a4dc52a
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Prefabs/DefaultSfx.prefab
+  uploadId: 958570

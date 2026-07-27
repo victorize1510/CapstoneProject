@@ -1,0 +1,155 @@
+{
+    "version": 1,
+    "name": "Default_Actions",
+    "maps": [
+        {
+            "name": "GameUi",
+            "id": "3bea1f52-a3ae-434c-ad2b-18ae1fc586a5",
+            "actions": [
+                {
+                    "name": "ToggleUi",
+                    "type": "Button",
+                    "id": "9052ab27-fd4b-4b81-bbc0-2ea9dc61c5cb",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "CloseUi",
+                    "type": "Button",
+                    "id": "4133b061-a1d8-46eb-8dc3-233b75f451af",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleCharacterSheet",
+                    "type": "Button",
+                    "id": "28e14aef-033c-41ce-98a2-48b43b6e9451",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Shortcut1",
+                    "type": "Button",
+                    "id": "3e0c55ce-0fb6-4425-b38e-5bdbba631b77",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Shortcut2",
+                    "type": "Button",
+                    "id": "e6f49470-229c-450c-9254-d28da206bd2d",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Shortcut3",
+                    "type": "Button",
+                    "id": "7c4d52ee-66a4-4dca-8061-11d7a1d5f1ae",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Shortcut4",
+                    "type": "Button",
+                    "id": "e934f461-84fd-43c3-a0f3-bc56b9438b67",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "e973e039-23a6-491b-a58b-d8b32e63cc3a",
+                    "path": "<Keyboard>/tab",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleUi",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6995c28e-2ea6-429a-bd9f-2cd735f10a7e",
+                    "path": "<Keyboard>/c",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleCharacterSheet",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "62287b25-c09e-446a-a569-dfbfb7dce88d",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "CloseUi",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8d814a0b-800a-4b48-a5e4-0fa97cc80d93",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shortcut1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1f6c97c1-41e4-46d5-bf1a-640a49e8571f",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shortcut2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "abc97abf-52b5-4d22-9144-05b13af71460",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shortcut3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e44dcddd-6ae9-4cb0-8300-dc1e92f93783",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Shortcut4",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

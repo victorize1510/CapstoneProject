@@ -1,0 +1,76 @@
+.debug-label-grid {
+  position: absolute;
+  color: rgb(185, 185, 185);
+  opacity: 0.5;
+  display: none;
+}
+
+.ghost-item {
+  width: auto;
+  height: auto;
+  opacity: 0.75;
+}
+
+.ghost-item .item-view {
+  border-width: 0;
+}
+
+.item-view {
+  transform-origin: -50% -50%;
+  border-width: 0px;
+}
+
+.item-image-transition {
+  transition: rotate;
+  transition-duration: 250ms;
+}
+
+.item-view .item-image {
+  width: 64px;
+  height: 64px;
+  transform-origin: 0 0;
+  position: absolute;
+  /* border-width: 2px;
+  border-color: blue; */
+}
+
+.item-shape {
+  background-color: #00a;
+  opacity: 0.05;
+  width: 100%;
+  height: 100%;
+}
+
+.shape-cell {
+  background-color: #00a;
+  opacity: 0.05;
+}
+
+.hovered .item-shape,
+.hovered .shape-cell {
+  background-color: green;
+}
+
+.overlapping .item-shape,
+.overlapping .shape-cell {
+  background-color: yellow;
+  opacity: 0.05;
+}
+
+.grid-ghost-view .shape-cell {
+  background-color: green;
+  opacity: 0.1;
+}
+
+.illegal.grid-ghost-view .shape-cell {
+  background-color: red;
+  opacity: 0.05;
+}
+
+.slot:hover {
+  border-color: #666;
+}
+
+.grid-slot.disabled {
+  display: none;
+}

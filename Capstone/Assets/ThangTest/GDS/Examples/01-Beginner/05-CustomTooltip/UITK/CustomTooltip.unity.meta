@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ba2eed8586bf28848a4517f51435ef57
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/05-CustomTooltip/UITK/CustomTooltip.unity
+  uploadId: 958570

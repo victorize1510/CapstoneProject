@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 019c01bc77eec474d85c373c6e3e778f
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/02-Intermediate/04-CreateRandomItem/UITK/CreateRandomItem.unity
+  uploadId: 958570

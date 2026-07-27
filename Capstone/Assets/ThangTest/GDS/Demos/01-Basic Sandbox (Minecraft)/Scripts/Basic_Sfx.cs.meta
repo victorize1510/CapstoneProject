@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: fc8a31c3ec7661d4790413c5cdef08cd
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Demos/01-Basic Sandbox (Minecraft)/Scripts/Basic_Sfx.cs
+  uploadId: 958570

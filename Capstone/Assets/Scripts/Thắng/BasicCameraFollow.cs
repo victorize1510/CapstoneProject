@@ -4,6 +4,9 @@ public class BasicCameraFollow : MonoBehaviour
 {
     public Transform target;
 
+    [Header("Mode")]
+    public bool useFreeLookMouseMode = true;
+
     [Header("Orbit Camera")]
     public Vector3 offset = new Vector3(0f, 2.2f, -4.5f);
     public float lookHeight = 1.2f;
@@ -18,6 +21,12 @@ public class BasicCameraFollow : MonoBehaviour
     public float maxPitch = 45f;
     public bool lockCursorOnPlay = true;
 
+    [Header("Mouse Control")]
+    public bool showCursorInPlay = false;
+    public bool rotateOnlyWhileRightMouseHeld = false;
+    public bool lockCursorWhileRotating = true;
+    public int rotateMouseButton = 1;
+
     [Header("Scroll Zoom")]
     public bool enableScrollZoom = true;
     public float minZoomDistance = 3f;
@@ -26,17 +35,41 @@ public class BasicCameraFollow : MonoBehaviour
     public float zoomSmoothTime = 0.08f;
 
     [Header("Aim Camera")]
-    public Vector3 aimOffset = new Vector3(0.75f, 1.8f, -2.75f);
-    public float aimLookHeight = 1.45f;
-    public float aimLookAhead = 10f;
+    public bool enableAimCamera = true;
+    public Vector3 aimOffset = new Vector3(0.85f, 1.75f, -2.55f);
+    public float aimLookHeight = 1.35f;
+    public float aimLookAhead = 8f;
     public int aimMouseButton = 1;
     public float aimBlendSpeed = 10f;
-    public bool showAimReticle = true;
+    public float aimBlendSmoothTime = 0.08f;
+    public float aimFocusSmoothTime = 0.1f;
+    public float aimPositionSmoothTime = 0.08f;
+    public bool showAimReticle = false;
     public Color reticleColor = new Color(1f, 1f, 1f, 0.85f);
+
+    [Header("Enemy Lock")]
+    public bool enableEnemyLock = true;
+    public int lockMouseButton = 2;
+    public LayerMask lockMask = ~0;
+    public float lockRayDistance = 250f;
+    public float lockSphereRadius = 1.25f;
+    public float lockSearchRadius = 8f;
+    public float lockScreenRadius = 120f;
+    public float lockBreakDistance = 35f;
+    public float lockLookHeight = 0f;
+    public float lockYawSpeed = 720f;
+    public Vector3 lockCameraOffset = new Vector3(0.8f, 1.9f, -3.15f);
+    public float lockBlendSpeed = 10f;
+    public bool useScreenCenterWhenCursorLocked = true;
+    public bool showLockReticle = true;
+    public bool showLockMarker = true;
+    public Color lockMarkerColor = new Color(1f, 0.85f, 0.2f, 0.95f);
 
     private float yaw;
     private float pitch = 18f;
     private float aimBlend;
+    private float aimBlendVelocity;
+    private float lockBlend;
     private float currentZoomDistance;
     private float targetZoomDistance;
     private float zoomVelocity;
@@ -45,6 +78,8 @@ public class BasicCameraFollow : MonoBehaviour
     private Vector3 positionVelocity;
     private Vector3 focusVelocity;
     private Vector3 focusPoint;
+    private DummyEnemy lockedEnemy;
+    private readonly RaycastHit[] lockHits = new RaycastHit[16];
     private bool focusInitialized;
     private bool targetYInitialized;
 
@@ -63,6 +98,23 @@ public class BasicCameraFollow : MonoBehaviour
         }
     }
 
+    public bool HasLockedEnemy
+    {
+        get { return lockedEnemy != null && lockedEnemy.IsAlive; }
+    }
+
+    public bool TryGetLockedTargetPosition(out Vector3 position)
+    {
+        if (HasLockedEnemy)
+        {
+            position = lockedEnemy.TargetPosition;
+            return true;
+        }
+
+        position = Vector3.zero;
+        return false;
+    }
+
     private void OnValidate()
     {
         minZoomDistance = Mathf.Max(0.5f, minZoomDistance);
@@ -71,32 +123,43 @@ public class BasicCameraFollow : MonoBehaviour
         zoomSmoothTime = Mathf.Max(0.01f, zoomSmoothTime);
         verticalFollowSmoothTime = Mathf.Max(0.01f, verticalFollowSmoothTime);
         maxVerticalLag = Mathf.Max(0.05f, maxVerticalLag);
+        lockRayDistance = Mathf.Max(1f, lockRayDistance);
+        lockSphereRadius = Mathf.Max(0.05f, lockSphereRadius);
+        lockSearchRadius = Mathf.Max(0.5f, lockSearchRadius);
+        lockScreenRadius = Mathf.Max(8f, lockScreenRadius);
+        lockBreakDistance = Mathf.Max(1f, lockBreakDistance);
+        lockYawSpeed = Mathf.Max(1f, lockYawSpeed);
+        lockBlendSpeed = Mathf.Max(0.1f, lockBlendSpeed);
+        aimBlendSpeed = Mathf.Max(0.1f, aimBlendSpeed);
+        aimBlendSmoothTime = Mathf.Max(0.01f, aimBlendSmoothTime);
+        aimFocusSmoothTime = Mathf.Max(0.01f, aimFocusSmoothTime);
+        aimPositionSmoothTime = Mathf.Max(0.01f, aimPositionSmoothTime);
     }
 
     private void Start()
     {
+        ApplyCameraModeDefaults();
         TryFindTarget();
         InitializeAnglesFromCurrentCamera();
         InitializeFocusPoint();
         InitializeZoomDistance();
         InitializeTargetHeight();
 
-        if (lockCursorOnPlay)
-        {
-            LockCursor();
-        }
+        ApplyCursorState();
     }
 
     private void OnApplicationFocus(bool hasFocus)
     {
-        if (hasFocus && lockCursorOnPlay)
+        ApplyCameraModeDefaults();
+        if (hasFocus)
         {
-            LockCursor();
+            ApplyCursorState();
         }
     }
 
     private void LateUpdate()
     {
+        ApplyCameraModeDefaults();
         TryFindTarget();
 
         if (target == null)
@@ -105,6 +168,7 @@ public class BasicCameraFollow : MonoBehaviour
         }
 
         UpdateCursorLock();
+        UpdateEnemyLockInput();
         UpdateMouseLook();
         UpdateScrollZoom();
         UpdateAimBlend();
@@ -125,6 +189,25 @@ public class BasicCameraFollow : MonoBehaviour
             focusInitialized = false;
             targetYInitialized = false;
         }
+    }
+
+    private void ApplyCameraModeDefaults()
+    {
+        if (!useFreeLookMouseMode)
+        {
+            return;
+        }
+
+        lockCursorOnPlay = true;
+        showCursorInPlay = false;
+        rotateOnlyWhileRightMouseHeld = false;
+        lockCursorWhileRotating = true;
+        enableAimCamera = true;
+        showAimReticle = false;
+        enableEnemyLock = true;
+        lockLookHeight = 0f;
+        useScreenCenterWhenCursorLocked = true;
+        showLockReticle = true;
     }
 
     private void InitializeAnglesFromCurrentCamera()
@@ -186,25 +269,61 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void UpdateCursorLock()
     {
-        if (!lockCursorOnPlay)
+        if (IsGameplayInputBlocked())
         {
+            UnlockCursor();
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (showCursorInPlay)
         {
             UnlockCursor();
+            return;
         }
 
-        if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(aimMouseButton))
+        if (rotateOnlyWhileRightMouseHeld)
         {
-            LockCursor();
+            if (Input.GetMouseButton(rotateMouseButton))
+            {
+                if (lockCursorWhileRotating)
+                {
+                    LockCursor();
+                }
+
+                return;
+            }
+
+            UnlockCursor();
+            return;
+        }
+
+        if (lockCursorOnPlay)
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                UnlockCursor();
+            }
+
+            if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonDown(aimMouseButton) || Input.GetMouseButtonDown(lockMouseButton))
+            {
+                LockCursor();
+            }
         }
     }
 
     private void UpdateMouseLook()
     {
-        if (lockCursorOnPlay && Cursor.lockState != CursorLockMode.Locked)
+        if (IsGameplayInputBlocked())
+        {
+            return;
+        }
+
+        if (rotateOnlyWhileRightMouseHeld && !Input.GetMouseButton(rotateMouseButton))
+        {
+            return;
+        }
+
+        if (!showCursorInPlay && !rotateOnlyWhileRightMouseHeld && lockCursorOnPlay && Cursor.lockState != CursorLockMode.Locked)
         {
             return;
         }
@@ -217,12 +336,198 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void UpdateAimBlend()
     {
-        float targetBlend = Input.GetMouseButton(aimMouseButton) ? 1f : 0f;
-        aimBlend = Mathf.MoveTowards(aimBlend, targetBlend, aimBlendSpeed * Time.deltaTime);
+        float targetBlend = enableAimCamera && Input.GetMouseButton(aimMouseButton) ? 1f : 0f;
+        aimBlend = Mathf.SmoothDamp(aimBlend, targetBlend, ref aimBlendVelocity, aimBlendSmoothTime, aimBlendSpeed, Time.deltaTime);
+        if (Mathf.Abs(aimBlend - targetBlend) < 0.001f)
+        {
+            aimBlend = targetBlend;
+            aimBlendVelocity = 0f;
+        }
+    }
+
+    private void UpdateEnemyLockInput()
+    {
+        if (IsGameplayInputBlocked())
+        {
+            return;
+        }
+
+        if (!enableEnemyLock)
+        {
+            lockedEnemy = null;
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(lockMouseButton))
+        {
+            if (lockedEnemy != null)
+            {
+                lockedEnemy = null;
+                focusInitialized = false;
+                return;
+            }
+
+            DummyEnemy candidate = FindLockCandidate();
+            if (candidate != null)
+            {
+                lockedEnemy = candidate;
+                focusInitialized = false;
+            }
+            else
+            {
+                lockedEnemy = null;
+            }
+        }
+
+        if (lockedEnemy != null && !lockedEnemy.IsAlive)
+        {
+            Vector3 searchPoint = lockedEnemy.TargetPosition;
+            lockedEnemy = FindNearestAliveEnemy(searchPoint, lockedEnemy);
+            focusInitialized = false;
+        }
+    }
+
+    private DummyEnemy FindLockCandidate()
+    {
+        Camera cameraToUse = GetComponent<Camera>();
+        if (cameraToUse == null)
+        {
+            cameraToUse = Camera.main;
+        }
+
+        if (cameraToUse == null)
+        {
+            return null;
+        }
+
+        Ray ray = cameraToUse.ScreenPointToRay(GetLockScreenPoint());
+        DummyEnemy enemy = FindEnemyFromRaycast(Physics.RaycastNonAlloc(ray, lockHits, lockRayDistance, lockMask, QueryTriggerInteraction.Collide));
+        if (enemy != null)
+        {
+            return enemy;
+        }
+
+        enemy = FindEnemyFromRaycast(Physics.SphereCastNonAlloc(ray, lockSphereRadius, lockHits, lockRayDistance, lockMask, QueryTriggerInteraction.Collide));
+        if (enemy != null)
+        {
+            return enemy;
+        }
+
+        return FindEnemyNearMouse(cameraToUse);
+    }
+
+    private DummyEnemy FindEnemyFromRaycast(int hitCount)
+    {
+        DummyEnemy bestEnemy = null;
+        float bestDistance = float.PositiveInfinity;
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            DummyEnemy enemy = lockHits[i].collider != null ? lockHits[i].collider.GetComponentInParent<DummyEnemy>() : null;
+            if (enemy == null || !enemy.IsAlive)
+            {
+                continue;
+            }
+
+            if (lockHits[i].distance < bestDistance)
+            {
+                bestDistance = lockHits[i].distance;
+                bestEnemy = enemy;
+            }
+        }
+
+        return bestEnemy;
+    }
+
+    private DummyEnemy FindEnemyNearMouse(Camera cameraToUse)
+    {
+        DummyEnemy[] enemies = Object.FindObjectsByType<DummyEnemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        DummyEnemy bestEnemy = null;
+        float bestScore = float.PositiveInfinity;
+        Vector2 mouse = GetLockScreenPoint();
+
+        foreach (DummyEnemy enemy in enemies)
+        {
+            if (enemy == null || !enemy.IsAlive)
+            {
+                continue;
+            }
+
+            Vector3 screen = cameraToUse.WorldToScreenPoint(enemy.TargetPosition);
+            if (screen.z <= 0f)
+            {
+                continue;
+            }
+
+            float screenDistance = Vector2.Distance(mouse, new Vector2(screen.x, screen.y));
+            if (screenDistance > lockScreenRadius)
+            {
+                continue;
+            }
+
+            float worldDistance = target != null ? Vector3.Distance(target.position, enemy.TargetPosition) : screen.z;
+            if (target != null && worldDistance > lockSearchRadius)
+            {
+                continue;
+            }
+
+            float score = screenDistance + worldDistance * 2f;
+            if (score < bestScore)
+            {
+                bestScore = score;
+                bestEnemy = enemy;
+            }
+        }
+
+        return bestEnemy;
+    }
+
+    private DummyEnemy FindNearestAliveEnemy(Vector3 searchPoint, DummyEnemy ignoredEnemy)
+    {
+        DummyEnemy bestEnemy = null;
+        float bestDistance = float.PositiveInfinity;
+        DummyEnemy[] enemies = Object.FindObjectsByType<DummyEnemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        foreach (DummyEnemy enemy in enemies)
+        {
+            if (enemy == null || enemy == ignoredEnemy || !enemy.IsAlive)
+            {
+                continue;
+            }
+
+            float distance = FlatDistance(searchPoint, enemy.TargetPosition);
+            if (distance > lockSearchRadius)
+            {
+                continue;
+            }
+
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestEnemy = enemy;
+            }
+        }
+
+        return bestEnemy;
+    }
+
+    private Vector3 GetLockScreenPoint()
+    {
+        if (useScreenCenterWhenCursorLocked)
+        {
+            return new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
+        }
+
+        return Input.mousePosition;
     }
 
     private void UpdateScrollZoom()
     {
+        if (IsGameplayInputBlocked())
+        {
+            return;
+        }
+
         if (!enableScrollZoom)
         {
             return;
@@ -243,6 +548,10 @@ public class BasicCameraFollow : MonoBehaviour
         float deltaTime = Mathf.Max(Time.deltaTime, 0.0001f);
         EnsureZoomInitialized();
         Vector3 smoothedTargetPosition = GetSmoothedTargetPosition(deltaTime);
+        UpdateLockedEnemyTracking(smoothedTargetPosition, deltaTime);
+        bool hasLockTarget = HasValidLockTarget(smoothedTargetPosition);
+        float targetLockBlend = hasLockTarget ? 1f : 0f;
+        lockBlend = Mathf.MoveTowards(lockBlend, targetLockBlend, lockBlendSpeed * deltaTime);
         targetZoomDistance = Mathf.Clamp(targetZoomDistance, minZoomDistance, maxZoomDistance);
         currentZoomDistance = Mathf.SmoothDamp(currentZoomDistance, targetZoomDistance, ref zoomVelocity, zoomSmoothTime, Mathf.Infinity, deltaTime);
 
@@ -250,19 +559,27 @@ public class BasicCameraFollow : MonoBehaviour
         Quaternion cameraRotation = Quaternion.Euler(pitch, yaw, 0f);
         Vector3 normalOffset = cameraRotation * GetZoomedOrbitOffset();
         Vector3 shoulderOffset = cameraYaw * aimOffset;
-        Vector3 blendedOffset = Vector3.Lerp(normalOffset, shoulderOffset, aimBlend);
+        Vector3 actionOffset = Vector3.Lerp(normalOffset, shoulderOffset, aimBlend);
+        Vector3 lockOffset = cameraYaw * lockCameraOffset;
+        Vector3 blendedOffset = Vector3.Lerp(actionOffset, lockOffset, lockBlend);
 
         Vector3 normalFocus = smoothedTargetPosition + Vector3.up * lookHeight;
         Vector3 aimDirection = cameraRotation * Vector3.forward;
         Vector3 aimFocus = smoothedTargetPosition + Vector3.up * aimLookHeight + aimDirection * aimLookAhead;
         Vector3 desiredFocus = Vector3.Lerp(normalFocus, aimFocus, aimBlend);
+        if (hasLockTarget)
+        {
+            desiredFocus = GetLockFocusPoint();
+        }
+
         if (!focusInitialized)
         {
             focusPoint = desiredFocus;
             focusInitialized = true;
         }
 
-        focusPoint = Vector3.SmoothDamp(focusPoint, desiredFocus, ref focusVelocity, focusSmoothTime, Mathf.Infinity, deltaTime);
+        float blendedFocusSmoothTime = Mathf.Lerp(focusSmoothTime, aimFocusSmoothTime, aimBlend);
+        focusPoint = Vector3.SmoothDamp(focusPoint, desiredFocus, ref focusVelocity, blendedFocusSmoothTime, Mathf.Infinity, deltaTime);
         Vector3 focusOffset = focusPoint - desiredFocus;
         if (focusOffset.sqrMagnitude > maxFocusLag * maxFocusLag)
         {
@@ -276,10 +593,45 @@ public class BasicCameraFollow : MonoBehaviour
         Vector3 desiredPosition = smoothedTargetPosition + blendedOffset;
         float blendedFollowSpeed = Mathf.Lerp(followSpeed, followSpeed * 1.35f, aimBlend);
         float speedRatio = followSpeed > 0.001f ? blendedFollowSpeed / followSpeed : 1f;
-        float smoothTime = Mathf.Max(0.01f, positionSmoothTime / Mathf.Max(0.1f, speedRatio));
+        float normalSmoothTime = Mathf.Max(0.01f, positionSmoothTime / Mathf.Max(0.1f, speedRatio));
+        float smoothTime = Mathf.Lerp(normalSmoothTime, aimPositionSmoothTime, aimBlend);
 
         transform.position = Vector3.SmoothDamp(transform.position, desiredPosition, ref positionVelocity, smoothTime, Mathf.Infinity, deltaTime);
         transform.rotation = Quaternion.LookRotation(focusPoint - transform.position, Vector3.up);
+    }
+
+    private void UpdateLockedEnemyTracking(Vector3 smoothedTargetPosition, float deltaTime)
+    {
+        if (!HasValidLockTarget(smoothedTargetPosition))
+        {
+            lockedEnemy = null;
+            return;
+        }
+
+        Vector3 direction = GetLockFocusPoint() - smoothedTargetPosition;
+        direction.y = 0f;
+        if (direction.sqrMagnitude <= 0.001f)
+        {
+            return;
+        }
+
+        float targetYaw = Quaternion.LookRotation(direction.normalized, Vector3.up).eulerAngles.y;
+        yaw = Mathf.MoveTowardsAngle(yaw, targetYaw, lockYawSpeed * deltaTime);
+    }
+
+    private bool HasValidLockTarget(Vector3 fromPosition)
+    {
+        if (lockedEnemy == null || !lockedEnemy.IsAlive)
+        {
+            return false;
+        }
+
+        return FlatDistance(fromPosition, lockedEnemy.TargetPosition) <= lockBreakDistance;
+    }
+
+    private Vector3 GetLockFocusPoint()
+    {
+        return lockedEnemy != null ? lockedEnemy.TargetPosition + Vector3.up * lockLookHeight : focusPoint;
     }
 
     private Vector3 GetSmoothedTargetPosition(float deltaTime)
@@ -324,11 +676,24 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!showAimReticle || aimBlend < 0.55f)
+        if (showAimReticle && !IsGameplayInputBlocked() && IsAiming)
         {
-            return;
+            DrawCenterReticle();
         }
 
+        if (showLockReticle && !IsGameplayInputBlocked() && HasLockedEnemy)
+        {
+            DrawCenterReticle();
+        }
+
+        if (showLockMarker && lockedEnemy != null && lockedEnemy.IsAlive)
+        {
+            DrawLockMarker();
+        }
+    }
+
+    private void DrawCenterReticle()
+    {
         float centerX = Screen.width * 0.5f;
         float centerY = Screen.height * 0.5f;
         Color oldColor = GUI.color;
@@ -338,6 +703,42 @@ public class BasicCameraFollow : MonoBehaviour
         GUI.DrawTexture(new Rect(centerX + 4f, centerY, 5f, 1f), Texture2D.whiteTexture);
         GUI.DrawTexture(new Rect(centerX, centerY - 9f, 1f, 5f), Texture2D.whiteTexture);
         GUI.DrawTexture(new Rect(centerX, centerY + 4f, 1f, 5f), Texture2D.whiteTexture);
+        GUI.color = oldColor;
+    }
+
+    private void DrawLockMarker()
+    {
+        Camera cameraToUse = GetComponent<Camera>();
+        if (cameraToUse == null)
+        {
+            cameraToUse = Camera.main;
+        }
+
+        if (cameraToUse == null)
+        {
+            return;
+        }
+
+        Vector3 screen = cameraToUse.WorldToScreenPoint(GetLockFocusPoint());
+        if (screen.z <= 0f)
+        {
+            return;
+        }
+
+        float x = screen.x;
+        float y = Screen.height - screen.y;
+        float size = 34f;
+        float corner = 9f;
+        Color oldColor = GUI.color;
+        GUI.color = lockMarkerColor;
+        GUI.DrawTexture(new Rect(x - size * 0.5f, y - size * 0.5f, corner, 2f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(x - size * 0.5f, y - size * 0.5f, 2f, corner), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(x + size * 0.5f - corner, y - size * 0.5f, corner, 2f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(x + size * 0.5f - 2f, y - size * 0.5f, 2f, corner), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(x - size * 0.5f, y + size * 0.5f - 2f, corner, 2f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(x - size * 0.5f, y + size * 0.5f - corner, 2f, corner), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(x + size * 0.5f - corner, y + size * 0.5f - 2f, corner, 2f), Texture2D.whiteTexture);
+        GUI.DrawTexture(new Rect(x + size * 0.5f - 2f, y + size * 0.5f - corner, 2f, corner), Texture2D.whiteTexture);
         GUI.color = oldColor;
     }
 
@@ -353,6 +754,22 @@ public class BasicCameraFollow : MonoBehaviour
         Cursor.visible = true;
     }
 
+    private void ApplyCursorState()
+    {
+        if (showCursorInPlay || rotateOnlyWhileRightMouseHeld || !lockCursorOnPlay)
+        {
+            UnlockCursor();
+            return;
+        }
+
+        LockCursor();
+    }
+
+    private static bool IsGameplayInputBlocked()
+    {
+        return Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
+    }
+
     private float NormalizePitch(float angle)
     {
         if (angle > 180f)
@@ -361,5 +778,12 @@ public class BasicCameraFollow : MonoBehaviour
         }
 
         return angle;
+    }
+
+    private static float FlatDistance(Vector3 a, Vector3 b)
+    {
+        a.y = 0f;
+        b.y = 0f;
+        return Vector3.Distance(a, b);
     }
 }

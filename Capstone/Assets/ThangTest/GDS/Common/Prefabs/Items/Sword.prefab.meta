@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1a39da71ef455c342abc8eca80894e30
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Prefabs/Items/Sword.prefab
+  uploadId: 958570

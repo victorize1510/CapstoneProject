@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0b44091988ffa5443844d03a389a9dbb
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Systems/TooltipSystem.prefab
+  uploadId: 958570

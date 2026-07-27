@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: df96da6a11b1fca4e83a6e38f6f96db8
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/03-Advanced/02-CraftingBench/UITK/CraftingBench_UITK.unity
+  uploadId: 958570

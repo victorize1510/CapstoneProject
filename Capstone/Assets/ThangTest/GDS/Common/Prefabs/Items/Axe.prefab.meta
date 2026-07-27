@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 10ee558ccb0beb649b43a6dfdf2352fb
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Prefabs/Items/Axe.prefab
+  uploadId: 958570

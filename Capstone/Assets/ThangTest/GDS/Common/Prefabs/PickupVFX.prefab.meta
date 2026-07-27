@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9d2d3d2d4222ee542ae3318c55a86510
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Prefabs/PickupVFX.prefab
+  uploadId: 958570

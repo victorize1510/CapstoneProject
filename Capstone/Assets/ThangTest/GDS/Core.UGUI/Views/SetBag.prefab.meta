@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d952f8f679a433f44905fe4a96bfbb3d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/SetBag.prefab
+  uploadId: 958570

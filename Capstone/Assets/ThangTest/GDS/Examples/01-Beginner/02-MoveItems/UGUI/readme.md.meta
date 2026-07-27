@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6b5c72ad7a98afe46a7d201872870f17
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/02-MoveItems/UGUI/readme.md
+  uploadId: 958570

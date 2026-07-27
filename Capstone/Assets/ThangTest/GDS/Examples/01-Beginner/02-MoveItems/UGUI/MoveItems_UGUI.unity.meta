@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5ccae05f5354add4ea73080bb393b5dc
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/02-MoveItems/UGUI/MoveItems_UGUI.unity
+  uploadId: 958570

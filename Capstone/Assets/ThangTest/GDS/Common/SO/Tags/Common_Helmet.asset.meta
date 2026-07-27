@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 566c2f0ec846d22439d712e01ad99965
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/SO/Tags/Common_Helmet.asset
+  uploadId: 958570

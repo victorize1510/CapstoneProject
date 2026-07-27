@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ec1a39236f3dd34c87f182ae0769289, type: 3}
+  m_Name: Minimal_Catalog
+  m_EditorClassIdentifier: 
+  Items:
+  - rid: 4002583129959956529
+  - rid: 4002583129959956530
+  - rid: 4002583129959956531
+  - rid: 4002583129959956532
+  - rid: 4002583129959956533
+  references:
+    version: 2
+    RefIds:
+    - rid: 4002583129959956529
+      type: {class: Item, ns: GDS.Core, asm: GDS.Core}
+      data:
+        Id: YBXoyf
+        Name: Apple
+        StackSize: 40
+        Base: {fileID: 11400000, guid: 64800d12d450dc840b5e1b47c104c567, type: 2}
+    - rid: 4002583129959956530
+      type: {class: Item, ns: GDS.Core, asm: GDS.Core}
+      data:
+        Id: 8uqj5N
+        Name: Apple
+        StackSize: 80
+        Base: {fileID: 11400000, guid: 64800d12d450dc840b5e1b47c104c567, type: 2}
+    - rid: 4002583129959956531
+      type: {class: Item, ns: GDS.Core, asm: GDS.Core}
+      data:
+        Id: JmeOfC
+        Name: Helmet
+        StackSize: 1
+        Base: {fileID: 11400000, guid: 41693377a75f1ce4da8365a8a6016c37, type: 2}
+    - rid: 4002583129959956532
+      type: {class: Item, ns: GDS.Core, asm: GDS.Core}
+      data:
+        Id: J0Ssxs
+        Name: Body Armor
+        StackSize: 1
+        Base: {fileID: 11400000, guid: 7fc44f73fe47c5c418c46c353603ef03, type: 2}
+    - rid: 4002583129959956533
+      type: {class: Item, ns: GDS.Core, asm: GDS.Core}
+      data:
+        Id: eDZ18R
+        Name: Axe
+        StackSize: 1
+        Base: {fileID: 11400000, guid: 6a03cc77580523041b03f3541781662b, type: 2}

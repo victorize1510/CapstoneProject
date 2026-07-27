@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: e8f0e686170fe6b42b949020fd4bac7c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/03-Advanced/03-QuestReturnSystem/UITK/QuestData.cs
+  uploadId: 958570

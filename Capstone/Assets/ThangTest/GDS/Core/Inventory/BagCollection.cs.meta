@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 02ab92d7c9135be49b4fd07512a3bf99
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core/Inventory/BagCollection.cs
+  uploadId: 958570

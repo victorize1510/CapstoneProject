@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7a8e0015453bd9b469a94f5257df1bdf
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Prefabs/SpawnPoint.prefab
+  uploadId: 958570

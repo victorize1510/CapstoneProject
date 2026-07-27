@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: f69734d1bfa60374fbbfa3889aaba4df
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/02-Intermediate/04-DefaultListView/UITK/DefaultListView.unity
+  uploadId: 958570

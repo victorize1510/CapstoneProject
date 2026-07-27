@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ef8cca58ee8c69e4f917c086b8e479bb
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core/Inventory/ListBagCollection.cs
+  uploadId: 958570

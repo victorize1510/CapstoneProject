@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 74ca91078615b4748946d864da7d8d31
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core/Attribute/HelpBoxAttribute.cs
+  uploadId: 958570

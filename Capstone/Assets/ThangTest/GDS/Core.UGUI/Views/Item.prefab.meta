@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bf94efd2225bd0649a64406c3f02d284
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/Item.prefab
+  uploadId: 958570

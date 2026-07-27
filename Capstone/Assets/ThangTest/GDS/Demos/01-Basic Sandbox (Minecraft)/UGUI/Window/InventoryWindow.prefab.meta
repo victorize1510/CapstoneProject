@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 538b159676f12074394796034c0fed3d
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Demos/01-Basic Sandbox (Minecraft)/UGUI/Window/InventoryWindow.prefab
+  uploadId: 958570

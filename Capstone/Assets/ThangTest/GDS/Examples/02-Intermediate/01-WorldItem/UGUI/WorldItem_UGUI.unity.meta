@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 10d87b56bf29b244eb836c37e807b6ef
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/02-Intermediate/01-WorldItem/UGUI/WorldItem_UGUI.unity
+  uploadId: 958570

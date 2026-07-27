@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a8c32a9a08c663a43aae97cf46de319d
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/05-CustomTooltip/UGUI/readme.md
+  uploadId: 958570

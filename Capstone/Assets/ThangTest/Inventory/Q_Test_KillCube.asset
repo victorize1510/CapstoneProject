@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69acce52bc0c61b4caec19b67da37309, type: 3}
+  m_Name: Q_Test_KillCube
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.QuestDefinition
+  questId: test_kill_cube
+  title: "\u0110\xE1nh th\u1EED Cube"
+  description: '1 con cube '
+  questType: 0
+  recommendedLevel: 1
+  objectives:
+  - objectiveId: kill_cube
+    title: "\u0110\xE1nh b\u1EA1i qu\xE1i"
+    description: 
+    objectiveType: 2
+    requiredAmount: 1
+    optional: 0
+  locationName: "Khu \u0111\u1ED3ng c\u1ECF"
+  worldPosition: {x: 4, y: 1, z: 0}
+  rewards:
+  - rewardId: 1
+    displayName: Coin
+    rewardType: 1
+    amount: 100
+    icon: {fileID: 0}
+  timeLimit: 0
+  canAbandon: 0

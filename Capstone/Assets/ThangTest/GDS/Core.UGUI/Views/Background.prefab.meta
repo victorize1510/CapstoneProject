@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b802ba60e6f7e3c459c5172d2aa5ef2f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/Background.prefab
+  uploadId: 958570

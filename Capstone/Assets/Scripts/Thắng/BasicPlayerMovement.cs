@@ -83,6 +83,12 @@ public class BasicPlayerMovement : MonoBehaviour
     public float jumpControllerHeight = 2.25f;
     public float jumpControllerRadius = 0.35f;
     public Vector3 jumpControllerCenter = new Vector3(0f, 1.125f, 0f);
+    public bool liftControllerCenterDuringJump = true;
+    public float jumpControllerCenterLift = 0.25f;
+    public AnimationCurve jumpControllerCenterLiftCurve = new AnimationCurve(
+        new Keyframe(0f, 0f),
+        new Keyframe(0.45f, 1f),
+        new Keyframe(1f, 0f));
     public float floatFallDelay = 0.18f;
     public float floatFallVerticalSpeed = -3f;
 
@@ -113,6 +119,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     [Header("Actions")]
     public KeyCode pickUpKey = KeyCode.E;
+    public bool enableAimMode = false;
     public int aimMouseButton = 1;
     public bool rightMouseButtonThrows = false;
     public bool requirePickupTarget = false;
@@ -321,6 +328,7 @@ public class BasicPlayerMovement : MonoBehaviour
         landingNudgeDistance = Mathf.Max(0f, landingNudgeDistance);
         jumpControllerHeight = Mathf.Max(0.1f, jumpControllerHeight);
         jumpControllerRadius = Mathf.Clamp(jumpControllerRadius, 0.01f, jumpControllerHeight * 0.5f);
+        jumpControllerCenterLift = Mathf.Max(0f, jumpControllerCenterLift);
         floatFallDelay = Mathf.Max(0f, floatFallDelay);
         floatFallVerticalSpeed = Mathf.Min(0f, floatFallVerticalSpeed);
         idleRollDuration = Mathf.Max(0.1f, idleRollDuration);
@@ -352,6 +360,11 @@ public class BasicPlayerMovement : MonoBehaviour
             rollMotionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
         }
 
+        if (jumpControllerCenterLiftCurve == null || jumpControllerCenterLiftCurve.length == 0)
+        {
+            jumpControllerCenterLiftCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 0f);
+        }
+
         SanitizeRigidbody();
     }
 
@@ -377,6 +390,7 @@ public class BasicPlayerMovement : MonoBehaviour
             EvaluateRequests();
         }
 
+        UpdateJumpControllerCenterLift();
         UpdateFacing();
         MoveCharacter(Time.deltaTime);
         UpdateLandingCarry(Time.deltaTime);
@@ -480,7 +494,7 @@ public class BasicPlayerMovement : MonoBehaviour
         moveDirection = GetMoveDirection(moveInput);
         hasMoveInput = moveInput.sqrMagnitude > InputDeadZone * InputDeadZone && moveDirection.sqrMagnitude > 0.001f;
         sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-        aimHeld = Input.GetMouseButton(aimMouseButton);
+        aimHeld = enableAimMode && Input.GetMouseButton(aimMouseButton);
 
         if (hasMoveInput)
         {
@@ -498,7 +512,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(rollKey))
+        if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && Input.GetKeyDown(rollKey))
         {
             if (isCrouching)
             {
@@ -558,7 +572,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(crouchKey) || Input.GetKeyDown(alternateCrouchKey))
+        if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && (Input.GetKeyDown(crouchKey) || Input.GetKeyDown(alternateCrouchKey)))
         {
             ToggleCrouch();
             return;
@@ -1231,6 +1245,34 @@ public class BasicPlayerMovement : MonoBehaviour
         RestoreStandingControllerShape();
     }
 
+    private void UpdateJumpControllerCenterLift()
+    {
+        if (!liftControllerCenterDuringJump || characterController == null || !IsJumpState(currentState))
+        {
+            return;
+        }
+
+        CaptureStandingControllerShape();
+        if (!standingControllerShapeCaptured)
+        {
+            return;
+        }
+
+        float duration = Mathf.Max(activeStateDuration, minimumActionDuration, 0.0001f);
+        float normalizedTime = Mathf.Clamp01(stateTimer / duration);
+        float liftWeight = jumpControllerCenterLiftCurve != null && jumpControllerCenterLiftCurve.length > 0
+            ? Mathf.Max(0f, jumpControllerCenterLiftCurve.Evaluate(normalizedTime))
+            : 0f;
+
+        float height = resizeControllerDuringJump ? jumpControllerHeight : standingControllerHeight;
+        float radius = resizeControllerDuringJump ? jumpControllerRadius : standingControllerRadius;
+        Vector3 center = resizeControllerDuringJump ? jumpControllerCenter : standingControllerCenter;
+        center.y += jumpControllerCenterLift * liftWeight;
+
+        ApplyControllerShape(height, radius, center);
+        controllerSizedForJump = true;
+    }
+
     private void RestoreStandingControllerShape()
     {
         if ((!controllerSizedForRoll && !controllerSizedForJump) || characterController == null || !standingControllerShapeCaptured)
@@ -1394,6 +1436,13 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void UpdateFacing()
     {
+        Vector3 lockedTargetDirection;
+        if (TryGetLockedTargetDirection(out lockedTargetDirection))
+        {
+            RotateToward(lockedTargetDirection);
+            return;
+        }
+
         if (ShouldLockFacingForCurrentAction())
         {
             return;
@@ -1419,6 +1468,20 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         RotateToward(facingDirection);
+    }
+
+    private bool TryGetLockedTargetDirection(out Vector3 direction)
+    {
+        direction = Vector3.zero;
+
+        if (cameraFollow == null || !cameraFollow.TryGetLockedTargetPosition(out Vector3 targetPosition))
+        {
+            return false;
+        }
+
+        direction = targetPosition - transform.position;
+        direction.y = 0f;
+        return direction.sqrMagnitude > 0.001f;
     }
 
     private bool ShouldLockFacingForCurrentAction()

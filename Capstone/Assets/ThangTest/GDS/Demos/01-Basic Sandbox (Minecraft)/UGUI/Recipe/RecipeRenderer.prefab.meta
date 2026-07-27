@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d3cd26380bc35664383666e6f969b262
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Demos/01-Basic Sandbox (Minecraft)/UGUI/Recipe/RecipeRenderer.prefab
+  uploadId: 958570

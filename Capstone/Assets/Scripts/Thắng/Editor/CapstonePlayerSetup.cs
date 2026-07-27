@@ -28,6 +28,7 @@ public static class CapstonePlayerSetup
     private const float RollControllerRadius = 0.3f;
     private const float JumpControllerHeight = 2.25f;
     private const float JumpControllerRadius = 0.35f;
+    private const float JumpControllerCenterLift = 0.25f;
     private static readonly Vector3 RollControllerCenter = new Vector3(0f, 0.45f, 0f);
     private static readonly Vector3 JumpControllerCenter = new Vector3(0f, 1.125f, 0f);
 
@@ -286,12 +287,15 @@ public static class CapstonePlayerSetup
             || Mathf.Abs(movement.jumpControllerHeight - JumpControllerHeight) > 0.001f
             || Mathf.Abs(movement.jumpControllerRadius - JumpControllerRadius) > 0.001f
             || (movement.jumpControllerCenter - JumpControllerCenter).sqrMagnitude > 0.0001f
+            || !movement.liftControllerCenterDuringJump
+            || Mathf.Abs(movement.jumpControllerCenterLift - JumpControllerCenterLift) > 0.001f
             || expectedAnimator.GetComponent<AnimatorRootMotionRelay>() != null
             || PlayerRigidbodyNeedsTiltLock(movement.gameObject)
             || movement.idleNeutralState != "IdleNeutral"
             || movement.sprintState != "Sprint"
             || movement.crouchWalkingState != "CrouchWalking"
             || movement.sprintingToRollState != "SprintingToRoll"
+            || movement.enableAimMode
             || movement.useAnimatorStateLengthForJump
             || movement.floatingState != "Floating"
             || movement.idleJumpState != "IdleJump";
@@ -400,6 +404,12 @@ public static class CapstonePlayerSetup
         movement.jumpControllerHeight = JumpControllerHeight;
         movement.jumpControllerRadius = JumpControllerRadius;
         movement.jumpControllerCenter = JumpControllerCenter;
+        movement.liftControllerCenterDuringJump = true;
+        movement.jumpControllerCenterLift = JumpControllerCenterLift;
+        movement.jumpControllerCenterLiftCurve = new AnimationCurve(
+            new Keyframe(0f, 0f),
+            new Keyframe(0.45f, 1f),
+            new Keyframe(1f, 0f));
         movement.floatFallDelay = 0.18f;
         movement.floatFallVerticalSpeed = -3f;
         movement.rollKey = KeyCode.Q;
@@ -416,6 +426,7 @@ public static class CapstonePlayerSetup
         movement.crouchKey = KeyCode.LeftControl;
         movement.alternateCrouchKey = KeyCode.RightControl;
         movement.pickUpKey = KeyCode.E;
+        movement.enableAimMode = false;
         movement.aimMouseButton = 1;
         movement.rightMouseButtonThrows = false;
         movement.requirePickupTarget = false;
@@ -498,8 +509,9 @@ public static class CapstonePlayerSetup
         Undo.RecordObject(follow, "Setup basic open-world camera");
         follow.enabled = true;
         follow.target = target;
+        follow.useFreeLookMouseMode = true;
         follow.offset = new Vector3(0f, 2.2f, -4.5f);
-        follow.aimOffset = new Vector3(0.75f, 1.8f, -2.75f);
+        follow.aimOffset = new Vector3(0.85f, 1.75f, -2.55f);
         follow.followSpeed = 10f;
         follow.positionSmoothTime = 0.12f;
         follow.focusSmoothTime = 0.18f;
@@ -507,10 +519,18 @@ public static class CapstonePlayerSetup
         follow.verticalFollowSmoothTime = 0.08f;
         follow.maxVerticalLag = 0.7f;
         follow.lookHeight = 1.2f;
-        follow.aimLookHeight = 1.45f;
-        follow.aimLookAhead = 10f;
+        follow.showCursorInPlay = false;
+        follow.rotateOnlyWhileRightMouseHeld = false;
+        follow.lockCursorWhileRotating = true;
+        follow.rotateMouseButton = 1;
+        follow.enableAimCamera = true;
+        follow.aimLookHeight = 1.35f;
+        follow.aimLookAhead = 8f;
         follow.aimMouseButton = 1;
         follow.aimBlendSpeed = 10f;
+        follow.aimBlendSmoothTime = 0.08f;
+        follow.aimFocusSmoothTime = 0.1f;
+        follow.aimPositionSmoothTime = 0.08f;
         follow.mouseSensitivity = 2.2f;
         follow.minPitch = -10f;
         follow.maxPitch = 45f;
@@ -520,7 +540,21 @@ public static class CapstonePlayerSetup
         follow.maxZoomDistance = 7f;
         follow.zoomSpeed = 1.25f;
         follow.zoomSmoothTime = 0.08f;
-        follow.showAimReticle = true;
+        follow.showAimReticle = false;
+        follow.enableEnemyLock = true;
+        follow.lockMouseButton = 2;
+        follow.lockRayDistance = 250f;
+        follow.lockSphereRadius = 1.25f;
+        follow.lockSearchRadius = 8f;
+        follow.lockScreenRadius = 120f;
+        follow.lockBreakDistance = 35f;
+        follow.lockLookHeight = 0f;
+        follow.lockYawSpeed = 720f;
+        follow.lockCameraOffset = new Vector3(0.8f, 1.9f, -3.15f);
+        follow.lockBlendSpeed = 10f;
+        follow.useScreenCenterWhenCursorLocked = true;
+        follow.showLockReticle = true;
+        follow.showLockMarker = true;
     }
 
     private static void DisableCinemachineCamera(Camera camera)

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8a77ade790809d9478c60a0f7c9cf4c6
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/Scrollbar.prefab
+  uploadId: 958570

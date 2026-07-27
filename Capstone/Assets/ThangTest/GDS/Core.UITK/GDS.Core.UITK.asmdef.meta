@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a9d7e2f0e8f810446bd06abacbe75c8f
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UITK/GDS.Core.UITK.asmdef
+  uploadId: 958570

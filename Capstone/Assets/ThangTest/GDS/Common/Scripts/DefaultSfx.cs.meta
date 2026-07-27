@@ -1,0 +1,25 @@
+fileFormatVersion: 2
+guid: 8f6238d88af332a42be8940b3d554ed8
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - Fail: {fileID: 8300000, guid: 52e9c1aaba5d81543accce908a60ca91, type: 3}
+  - Pick: {fileID: 8300000, guid: 9319d04c5ce39be499fe2c6cf06f0f6d, type: 3}
+  - Place: {fileID: 8300000, guid: dad6637fb5932b746bb7fe6602571712, type: 3}
+  - Buy: {fileID: 8300000, guid: cd9c185d3ed61b1438ee8f357dd47db7, type: 3}
+  - Sell: {fileID: 8300000, guid: afcb317e84880914c8b52b2f86e30d10, type: 3}
+  - Craft: {fileID: 8300000, guid: 455f2f151f35604489069e96383b6f75, type: 3}
+  - Rotate: {fileID: 8300000, guid: 5ca4f418c7909354489b3c9786606e16, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Scripts/DefaultSfx.cs
+  uploadId: 958570

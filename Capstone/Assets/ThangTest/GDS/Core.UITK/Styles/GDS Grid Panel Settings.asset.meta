@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 4e0e192c127d84c4ea8918e1dcf5f424
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UITK/Styles/GDS Grid Panel Settings.asset
+  uploadId: 958570

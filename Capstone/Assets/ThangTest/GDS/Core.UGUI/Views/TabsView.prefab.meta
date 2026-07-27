@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d7d649986a9f8fb4290963145fae14e9
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Views/TabsView.prefab
+  uploadId: 958570

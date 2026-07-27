@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6e2b382172145f349a881a13de3bb0f2
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Common/Prefabs/Ground.prefab
+  uploadId: 958570

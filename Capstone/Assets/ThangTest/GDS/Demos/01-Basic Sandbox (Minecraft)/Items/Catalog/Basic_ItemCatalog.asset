@@ -1,0 +1,122 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ec1a39236f3dd34c87f182ae0769289, type: 3}
+  m_Name: Basic_ItemCatalog
+  m_EditorClassIdentifier: 
+  Items:
+  - rid: 4002583174194921650
+  - rid: 4002583174194921651
+  - rid: 4002583174194921652
+  - rid: 4002583174194921653
+  - rid: 4002583174194921654
+  - rid: 4002583174194921655
+  - rid: 4002583174194921656
+  - rid: 4002583174194921657
+  - rid: 4002583174194921658
+  - rid: 4002583174194921660
+  - rid: 4002583174194921661
+  references:
+    version: 2
+    RefIds:
+    - rid: 4002583174194921650
+      type: {class: Basic_Armor, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: j2MGYt
+        Name: Iron Helmet
+        StackSize: 0
+        Base: {fileID: 11400000, guid: 53b9c06bcda346c419459c811ece7ea9, type: 2}
+        Rarity: 0
+        Defense: 9
+    - rid: 4002583174194921651
+      type: {class: Basic_Armor, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: 0MMgM1
+        Name: Leather Armor
+        StackSize: 0
+        Base: {fileID: 11400000, guid: 4451d960569da1242a5a9608ebab18a7, type: 2}
+        Rarity: 0
+        Defense: 11
+    - rid: 4002583174194921652
+      type: {class: Basic_Armor, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: Y06ei7
+        Name: Leather Gloves
+        StackSize: 0
+        Base: {fileID: 11400000, guid: 0e6ca56f1349bc24ab02799229c0a30d, type: 2}
+        Rarity: 0
+        Defense: 9
+    - rid: 4002583174194921653
+      type: {class: Basic_Armor, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: cCnR8j
+        Name: Steel Boots
+        StackSize: 0
+        Base: {fileID: 11400000, guid: f603caf3ca903154ba3f167e770f7059, type: 2}
+        Rarity: 0
+        Defense: 23
+    - rid: 4002583174194921654
+      type: {class: Basic_Weapon, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: qPz3jH
+        Name: Axe
+        StackSize: 0
+        Base: {fileID: 11400000, guid: e20feb698029eda46a7ca6c5d6595148, type: 2}
+        Rarity: 0
+        AttackDamage: 15
+    - rid: 4002583174194921655
+      type: {class: Basic_Item, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: iDCGnj
+        Name: Wood
+        StackSize: 100
+        Base: {fileID: 11400000, guid: 7931f39210517e24ab7792d25520263b, type: 2}
+        Rarity: 0
+    - rid: 4002583174194921656
+      type: {class: Basic_Item, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: WQsMKK
+        Name: Wood
+        StackSize: 100
+        Base: {fileID: 11400000, guid: 7931f39210517e24ab7792d25520263b, type: 2}
+        Rarity: 0
+    - rid: 4002583174194921657
+      type: {class: Basic_Item, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: OZLl44
+        Name: Steel
+        StackSize: 100
+        Base: {fileID: 11400000, guid: e69c7cbcf2a81754b9ea02013e3b4757, type: 2}
+        Rarity: 0
+    - rid: 4002583174194921658
+      type: {class: Basic_Item, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: PWE25D
+        Name: Steel
+        StackSize: 100
+        Base: {fileID: 11400000, guid: e69c7cbcf2a81754b9ea02013e3b4757, type: 2}
+        Rarity: 0
+    - rid: 4002583174194921660
+      type: {class: Basic_Item, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: uwc4y9
+        Name: Gem
+        StackSize: 100
+        Base: {fileID: 11400000, guid: 1bc473c80f8a9e340aed4ad922f20ef4, type: 2}
+        Rarity: 0
+    - rid: 4002583174194921661
+      type: {class: Basic_Item, ns: GDS.Demos.Basic, asm: GDS.Demos.Basic}
+      data:
+        Id: oICN8H
+        Name: Apple
+        StackSize: 100
+        Base: {fileID: 11400000, guid: f37b5389aaef70b45bbde0c0e9f6e4a4, type: 2}
+        Rarity: 0

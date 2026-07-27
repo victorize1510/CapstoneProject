@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 14294f7ed31a8474aa2eca1bd5ffe6df
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Examples/01-Beginner/02-EquipItems/EquipItems_Catalog.asset
+  uploadId: 958570

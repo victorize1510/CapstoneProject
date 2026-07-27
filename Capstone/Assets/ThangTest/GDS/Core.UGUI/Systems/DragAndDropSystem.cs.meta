@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 883bc1a9c962d0546a6ea770d5e33ee2
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Systems/DragAndDropSystem.cs
+  uploadId: 958570

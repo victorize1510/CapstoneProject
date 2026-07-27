@@ -1,0 +1,131 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="MonsterInventory.uss" />
+
+    <ui:VisualElement name="monster-inventory-root" class="inventory-root">
+        <ui:VisualElement name="quest-inventory-shell" class="quest-inventory-shell">
+            <ui:VisualElement name="quest-panel" class="quest-panel">
+                <ui:VisualElement class="quest-header">
+                    <ui:Label name="quest-title-label" text="Quest Journal" class="quest-title" />
+                    <ui:Label name="tracked-quest-label" text="Tracked: -" class="quest-caption" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="quest-content">
+                    <ui:VisualElement name="quest-tabs" class="quest-tabs">
+                        <ui:Button name="quest-tab-main" text="Main" class="quest-tab is-selected" />
+                        <ui:Button name="quest-tab-side" text="Side" class="quest-tab" />
+                        <ui:Button name="quest-tab-daily" text="Daily" class="quest-tab" />
+                        <ui:Button name="quest-tab-completed" text="Completed" class="quest-tab" />
+                    </ui:VisualElement>
+
+                    <ui:ScrollView name="quest-list-scroll" class="quest-list-scroll">
+                    </ui:ScrollView>
+                    <ui:Label name="quest-empty-label" text="No quests" class="quest-empty-label" />
+
+                    <ui:ScrollView name="quest-detail-scroll" class="quest-detail-scroll">
+                        <ui:VisualElement class="quest-detail-panel">
+                            <ui:Label name="quest-detail-title" text="Select a quest" class="quest-detail-title" />
+                            <ui:VisualElement class="quest-detail-meta-row">
+                                <ui:Label name="quest-type-pill" text="-" class="quest-pill" />
+                                <ui:Label name="quest-level-pill" text="Lv. -" class="quest-pill" />
+                            </ui:VisualElement>
+                            <ui:Label name="quest-description-label" text="No quest selected." class="quest-description" />
+
+                            <ui:Label text="Objectives" class="quest-section-title" />
+                            <ui:VisualElement name="quest-objective-list" class="objective-list" />
+
+                            <ui:VisualElement class="quest-progress-row">
+                                <ui:Label text="Progress" class="quest-progress-label" />
+                                <ui:Label name="quest-progress-value" text="0 / 0" class="quest-progress-value" />
+                            </ui:VisualElement>
+                            <ui:ProgressBar name="quest-progress-bar" class="quest-progress-bar" value="0" low-value="0" high-value="100" title="0%" />
+
+                            <ui:VisualElement class="quest-state-grid">
+                                <ui:VisualElement name="quest-status-row" class="quest-state-row">
+                                    <ui:Label text="Status" class="quest-state-label" />
+                                    <ui:Label name="quest-status-value" text="-" class="quest-state-value" />
+                                </ui:VisualElement>
+                                <ui:VisualElement name="quest-location-row" class="quest-state-row">
+                                    <ui:Label text="Location" class="quest-state-label" />
+                                    <ui:Label name="quest-location-value" text="-" class="quest-state-value" />
+                                </ui:VisualElement>
+                                <ui:VisualElement name="quest-distance-row" class="quest-state-row">
+                                    <ui:Label text="Distance" class="quest-state-label" />
+                                    <ui:Label name="quest-distance-value" text="-" class="quest-state-value" />
+                                </ui:VisualElement>
+                                <ui:VisualElement name="quest-time-row" class="quest-state-row">
+                                    <ui:Label text="Time Remaining" class="quest-state-label" />
+                                    <ui:Label name="quest-time-value" text="-" class="quest-state-value" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+
+                            <ui:Label name="quest-rewards-title" text="Rewards" class="quest-section-title" />
+                            <ui:VisualElement name="quest-reward-list" class="reward-list" />
+                        </ui:VisualElement>
+                    </ui:ScrollView>
+
+                    <ui:VisualElement name="quest-actions" class="quest-actions">
+                        <ui:Button name="track-quest-button" text="Track" class="quest-action-button primary-quest-action" />
+                        <ui:Button name="untrack-quest-button" text="Untrack" class="quest-action-button" />
+                        <ui:Button name="show-map-button" text="Show On Map" class="quest-action-button" />
+                        <ui:Button name="abandon-quest-button" text="Abandon" class="quest-action-button danger-quest-action" />
+                        <ui:Button name="open-journal-button" text="Open Journal" class="quest-action-button" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement name="inventory-panel" class="inventory-panel">
+                <ui:VisualElement name="inventory-shell" class="inventory-shell">
+                    <ui:VisualElement name="inventory-header" class="inventory-header">
+                        <ui:Label name="title-label" text="Bag" class="title-label" />
+                        <ui:VisualElement class="header-meta">
+                            <ui:Label text="Category" class="meta-caption" />
+                            <ui:Label name="category-value-label" text="All" class="meta-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="header-meta">
+                            <ui:Label text="Items" class="meta-caption" />
+                            <ui:Label name="capacity-label" text="0 / 0" class="meta-value" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:VisualElement name="inventory-body" class="inventory-body">
+                        <ui:VisualElement name="category-panel" class="category-panel">
+                            <ui:Button name="category-all" text="All" class="category-button is-selected" />
+                            <ui:Button name="category-capture-ball" text="Capture Ball" class="category-button" />
+                            <ui:Button name="category-medicine" text="Medicine" class="category-button" />
+                            <ui:Button name="category-food" text="Food" class="category-button" />
+                            <ui:Button name="category-material" text="Material" class="category-button" />
+                            <ui:Button name="category-equipment" text="Equipment" class="category-button" />
+                            <ui:Button name="category-key-item" text="Key Item" class="category-button" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="list-panel" class="list-panel">
+                            <ui:ListView name="item-list" class="item-list" fixed-item-height="62" selection-type="Single" />
+                            <ui:Label name="no-items-label" text="No items" class="no-items-label" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="detail-panel" class="detail-panel">
+                            <ui:VisualElement name="detail-icon" class="detail-icon" />
+                            <ui:Label name="detail-name" text="Select an item" class="detail-name" />
+                            <ui:Label name="detail-category" text="Category: -" class="detail-line" />
+                            <ui:Label name="detail-quantity" text="Quantity: -" class="detail-line" />
+                            <ui:Label name="detail-description" text="No item selected." class="detail-description" />
+
+                            <ui:VisualElement class="effect-box">
+                                <ui:Label text="Effect" class="effect-title" />
+                                <ui:Label name="detail-effect" text="-" class="effect-text" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:VisualElement name="inventory-footer" class="inventory-footer">
+                        <ui:Button name="use-button" text="Use" class="action-button primary-action" />
+                        <ui:Button name="give-button" text="Give" class="action-button" />
+                        <ui:Button name="equip-button" text="Equip" class="action-button" />
+                        <ui:Button name="drop-button" text="Drop" class="action-button danger-action" />
+                        <ui:Button name="cancel-button" text="Cancel" class="action-button" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

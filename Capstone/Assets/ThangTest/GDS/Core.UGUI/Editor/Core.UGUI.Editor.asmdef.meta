@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5b271959e46a46e48acd6cc5716340e4
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 283656
+  packageName: Inventory Framework FREE
+  packageVersion: 3.0
+  assetPath: Assets/GDS/Core.UGUI/Editor/Core.UGUI.Editor.asmdef
+  uploadId: 958570

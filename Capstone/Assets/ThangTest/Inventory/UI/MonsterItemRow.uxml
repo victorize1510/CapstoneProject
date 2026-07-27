@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="monster-item-row" class="item-row">
+        <ui:VisualElement name="row-icon" class="item-row-icon" />
+        <ui:VisualElement class="item-row-text">
+            <ui:Label name="row-name" text="Item Name" class="item-row-name" />
+            <ui:Label name="row-category" text="Category" class="item-row-category" />
+        </ui:VisualElement>
+        <ui:Label name="row-quantity" text="x0" class="item-row-quantity" />
+    </ui:VisualElement>
+</ui:UXML>
