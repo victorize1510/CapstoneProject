@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.7764706, g: 0.7517257, b: 0.7735849, a: 1}
   m_AmbientEquatorColor: {r: 0.60294116, g: 0.60294116, b: 0.60294116, a: 1}
   m_AmbientGroundColor: {r: 0.24264705, g: 0.24264705, b: 0.24264705, a: 1}
-  m_AmbientIntensity: 2.17
+  m_AmbientIntensity: 1.36
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.05500177, g: 0.11953485, b: 0.2830189, a: 1}
   m_SkyboxMaterial: {fileID: 2100000, guid: 54a6c6f8ce243e345829e0192d212591, type: 2}
@@ -8159,7 +8159,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &890927717
 Transform:
   m_ObjectHideFlags: 0
@@ -8169,8 +8169,8 @@ Transform:
   m_GameObject: {fileID: 890927716}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.4, y: 0, z: -21.9}
-  m_LocalScale: {x: 2, y: 2, z: 2}
+  m_LocalPosition: {x: 16.890015, y: 0, z: -1099}
+  m_LocalScale: {x: 120, y: 120, z: 120}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2003931977}
@@ -10583,8 +10583,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DayNightCycle
   sunLight: {fileID: 2003931976}
   moonLight: {fileID: 1231863060}
-  dayLengthInMinutes: 1
-  timeOfDay: 0.354
+  dayLengthInMinutes: 10
+  timeOfDay: 0
   sunIntensityCurve:
     serializedVersion: 2
     m_Curve:
@@ -10610,7 +10610,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   maxSunIntensity: 1.5
-  maxMoonIntensity: 1.27
+  maxMoonIntensity: 0.1
   sunVisual: {fileID: 890927716}
   moonVisual: {fileID: 1424978741}
 --- !u!4 &1159801623
@@ -11307,7 +11307,7 @@ Light:
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_ColorTemperature: 6500
+  m_ColorTemperature: 3788
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 9.42e-43, y: 2.7354246e-38, z: 0, w: -4.86306e+20}
   m_UseBoundingSphereOverride: 0
@@ -13703,8 +13703,8 @@ Transform:
   m_GameObject: {fileID: 1424978741}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 16.89, y: -0, z: -879}
-  m_LocalScale: {x: 50, y: 50, z: 50}
+  m_LocalPosition: {x: 16.89, y: -0, z: -974.6}
+  m_LocalScale: {x: 70, y: 70, z: 70}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1231863062}
@@ -18948,8 +18948,8 @@ Light:
   m_Enabled: 1
   serializedVersion: 12
   m_Type: 1
-  m_Color: {r: 1, g: 0.845453, b: 0.34528297, a: 0.5921569}
-  m_Intensity: 1.1
+  m_Color: {r: 1, g: 1, b: 1, a: 0.5921569}
+  m_Intensity: 0.5
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -18992,7 +18992,7 @@ Light:
   m_LightShadowCasterMode: 0
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_ColorTemperature: 15000
+  m_ColorTemperature: 19451
   m_UseColorTemperature: 0
   m_BoundingSphereOverride: {x: 9.42e-43, y: 2.7354246e-38, z: 0, w: -4.86306e+20}
   m_UseBoundingSphereOverride: 0
@@ -19013,7 +19013,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 500, y: 0, z: 500}
-  m_LocalScale: {x: 50, y: 50, z: 50}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 890927717}
