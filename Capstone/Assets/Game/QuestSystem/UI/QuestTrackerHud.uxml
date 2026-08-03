@@ -2,24 +2,10 @@
     <Style src="QuestTrackerHud.uss" />
 
     <ui:VisualElement name="quest-tracker-root" class="quest-tracker-root">
-        <ui:VisualElement name="quest-tracker-card" class="quest-tracker-card">
-            <ui:Label name="quest-tracker-title" text="No tracked quest" class="quest-tracker-title" />
-            <ui:Label name="quest-tracker-description" text="" class="quest-tracker-description" />
+        <ui:ScrollView name="quest-tracker-scroll" class="quest-tracker-scroll">
+            <ui:VisualElement name="quest-tracker-list" class="quest-tracker-list" />
+        </ui:ScrollView>
 
-            <ui:VisualElement name="quest-tracker-objective-list" class="quest-tracker-objective-list" />
-
-            <ui:VisualElement class="quest-tracker-progress-header">
-                <ui:Label text="Progress" class="quest-tracker-small-label" />
-                <ui:Label name="quest-tracker-progress-text" text="0 / 0" class="quest-tracker-progress-text" />
-            </ui:VisualElement>
-            <ui:ProgressBar name="quest-tracker-progress-bar" value="0" low-value="0" high-value="100" title="" class="quest-tracker-progress-bar" />
-
-            <ui:VisualElement name="quest-tracker-distance-row" class="quest-tracker-info-row">
-                <ui:Label text="Distance" class="quest-tracker-info-key" />
-                <ui:Label name="quest-tracker-distance" text="-" class="quest-tracker-info-value" />
-            </ui:VisualElement>
-
-            <ui:Label name="quest-tracker-empty" text="No main quest tracked" class="quest-tracker-empty" />
-        </ui:VisualElement>
+        <ui:Label name="quest-tracker-empty" text="" class="quest-tracker-empty" />
     </ui:VisualElement>
 </ui:UXML>

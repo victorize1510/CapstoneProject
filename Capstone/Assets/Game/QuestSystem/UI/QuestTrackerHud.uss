@@ -1,168 +1,222 @@
 .quest-tracker-root {
     position: absolute;
-    top: 26px;
-    left: 26px;
-    width: 300px;
-    max-width: 30%;
-    min-width: 240px;
-    justify-content: flex-start;
-    align-items: stretch;
-    pointer-events: none;
+    top: 132px;
+    left: 10px;
+    width: 340px;
+    height: 184px;
+    max-height: 24%;
 }
 
-.quest-tracker-card {
-    padding: 11px 13px 12px 13px;
-    background-color: rgba(34, 42, 29, 0.88);
-    border-left-width: 3px;
-    border-top-width: 1px;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
-    border-left-color: rgb(215, 178, 91);
-    border-top-color: rgba(215, 178, 91, 0.45);
-    border-right-color: rgba(215, 178, 91, 0.35);
-    border-bottom-color: rgba(215, 178, 91, 0.35);
-    border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-
-.quest-tracker-topline {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-}
-
-.quest-tracker-eyebrow {
-    color: rgb(207, 220, 177);
-    font-size: 10px;
-    -unity-font-style: bold;
-}
-
-.quest-tracker-pill {
-    padding: 2px 7px 2px 7px;
-    color: rgb(42, 36, 25);
-    background-color: rgb(214, 178, 95);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    font-size: 10px;
-    -unity-font-style: bold;
-}
-
-.quest-tracker-title {
-    color: rgb(248, 237, 205);
-    font-size: 17px;
-    -unity-font-style: bold;
-    white-space: normal;
-}
-
-.quest-tracker-meta {
-    margin-top: 2px;
-    color: rgb(181, 197, 151);
-    font-size: 12px;
-}
-
-.quest-tracker-description {
-    margin-top: 6px;
-    color: rgb(228, 219, 191);
-    font-size: 11px;
-    white-space: normal;
-}
-
-.quest-tracker-objective-list {
-    margin-top: 8px;
-}
-
-.quest-tracker-objective {
-    flex-direction: row;
-    align-items: flex-start;
-    margin-bottom: 4px;
-}
-
-.quest-tracker-objective-bullet {
-    width: 7px;
-    height: 7px;
-    margin-top: 5px;
-    margin-right: 7px;
-    background-color: rgb(215, 178, 91);
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-
-.quest-tracker-objective-text {
+.quest-tracker-scroll {
     flex-grow: 1;
-    color: rgb(242, 231, 201);
-    font-size: 12px;
-    white-space: normal;
+    min-height: 0;
+    padding-left: 0;
+    padding-right: 8px;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-color: rgba(0, 0, 0, 0);
 }
 
-.quest-tracker-objective.is-complete .quest-tracker-objective-bullet {
-    background-color: rgb(118, 176, 104);
+.quest-tracker-scroll .unity-scroll-view__content-container {
+    padding-left: 0;
+    padding-right: 0;
 }
 
-.quest-tracker-objective.is-complete .quest-tracker-objective-text {
-    color: rgb(172, 195, 155);
+.quest-tracker-scroll .unity-scroller {
+    width: 4px;
+    background-color: rgba(0, 0, 0, 0);
 }
 
-.quest-tracker-progress-header {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 6px;
+.quest-tracker-scroll .unity-scroller__slider {
+    background-color: rgba(64, 101, 80, 0.28);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
 }
 
-.quest-tracker-small-label {
-    color: rgb(207, 220, 177);
-    font-size: 10px;
-}
-
-.quest-tracker-progress-text {
-    color: rgb(248, 237, 205);
-    font-size: 10px;
-    -unity-font-style: bold;
-}
-
-.quest-tracker-progress-bar {
-    height: 6px;
-    margin-top: 4px;
-    margin-bottom: 6px;
-}
-
-.quest-tracker-progress-bar .unity-progress-bar__background {
-    background-color: rgba(14, 22, 18, 0.75);
-}
-
-.quest-tracker-progress-bar .unity-progress-bar__progress {
-    background-color: rgb(106, 151, 83);
-}
-
-.quest-tracker-info-row,
-.quest-tracker-reward-row {
-    flex-direction: row;
-    margin-top: 4px;
-}
-
-.quest-tracker-info-key {
-    min-width: 58px;
-    color: rgb(193, 181, 143);
-    font-size: 10px;
-}
-
-.quest-tracker-info-value,
-.quest-tracker-rewards {
+.quest-tracker-list {
     flex-grow: 1;
-    color: rgb(238, 229, 196);
-    font-size: 10px;
-    white-space: normal;
 }
 
 .quest-tracker-empty {
-    color: rgb(207, 220, 177);
-    font-size: 11px;
+    display: none;
+}
+
+.quest-tracker-card {
+    height: 148px;
+    margin-bottom: 12px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.quest-tracker-card.is-tracked {
+    border-left-color: rgba(0, 0, 0, 0);
+}
+
+.quest-tracker-title-row {
+    height: 36px;
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+}
+
+.quest-tracker-title-background {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    flex-direction: row;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.quest-tracker-title-fade {
+    flex-grow: 1;
+}
+
+.quest-tracker-title-fade-0 {
+    background-color: rgba(244, 236, 211, 0.34);
+}
+
+.quest-tracker-title-fade-1 {
+    background-color: rgba(244, 236, 211, 0.32);
+}
+
+.quest-tracker-title-fade-2 {
+    background-color: rgba(244, 236, 211, 0.3);
+}
+
+.quest-tracker-title-fade-3 {
+    background-color: rgba(244, 236, 211, 0.28);
+}
+
+.quest-tracker-title-fade-4 {
+    background-color: rgba(244, 236, 211, 0.26);
+}
+
+.quest-tracker-title-fade-5 {
+    background-color: rgba(244, 236, 211, 0.24);
+}
+
+.quest-tracker-title-fade-6 {
+    background-color: rgba(244, 236, 211, 0.22);
+}
+
+.quest-tracker-title-fade-7 {
+    background-color: rgba(244, 236, 211, 0.2);
+}
+
+.quest-tracker-title-fade-8 {
+    background-color: rgba(244, 236, 211, 0.18);
+}
+
+.quest-tracker-title-fade-9 {
+    background-color: rgba(244, 236, 211, 0.16);
+}
+
+.quest-tracker-title-fade-10 {
+    background-color: rgba(244, 236, 211, 0.14);
+}
+
+.quest-tracker-title-fade-11 {
+    background-color: rgba(244, 236, 211, 0.12);
+}
+
+.quest-tracker-title-fade-12 {
+    background-color: rgba(244, 236, 211, 0.1);
+}
+
+.quest-tracker-title-fade-13 {
+    background-color: rgba(244, 236, 211, 0.075);
+}
+
+.quest-tracker-title-fade-14 {
+    background-color: rgba(244, 236, 211, 0.045);
+}
+
+.quest-tracker-title-fade-15 {
+    background-color: rgba(244, 236, 211, 0.015);
+}
+
+.quest-tracker-title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    color: rgb(6, 6, 5);
+    background-color: rgba(0, 0, 0, 0);
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 3px;
+    font-size: 20px;
     -unity-font-style: bold;
+    white-space: normal;
+    -unity-text-outline-width: 0;
+    -unity-text-outline-color: rgba(0, 0, 0, 0);
+}
+
+.quest-tracker-objective {
+    margin-top: 9px;
+    padding-left: 10px;
+    padding-right: 6px;
+    color: rgb(8, 8, 7);
+    font-size: 15px;
+    -unity-font-style: bold;
+    white-space: normal;
+    -unity-text-outline-width: 0;
+    -unity-text-outline-color: rgba(0, 0, 0, 0);
+}
+
+.quest-tracker-progress-row {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 64px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.quest-tracker-progress-bar {
+    flex-grow: 1;
+    height: 8px;
+    margin-right: 0;
+}
+
+.quest-tracker-progress-bar .unity-progress-bar__background {
+    background-color: rgba(28, 31, 26, 0.18);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.quest-tracker-progress-bar .unity-progress-bar__progress {
+    background-color: rgba(45, 128, 101, 0.9);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.quest-tracker-distance {
+    margin-top: 14px;
+    padding-left: 10px;
+    padding-right: 6px;
+    color: rgb(8, 8, 7);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-outline-width: 0;
+    -unity-text-outline-color: rgba(0, 0, 0, 0);
 }

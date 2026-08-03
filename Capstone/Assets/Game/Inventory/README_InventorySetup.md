@@ -5,7 +5,7 @@
 1. Mo scene can dung inventory.
 2. Tren thanh menu Unity chon:
 
-   `Game Tools > Inventory > Create Monster Inventory UI`
+   `Game Tools > GameToolThang > Inventory > Create Monster Inventory UI`
 
 3. Tool se tim hoac tao GameObject ten `InventoryUI`.
 4. Tool se tu them/gan:
@@ -51,7 +51,7 @@ Neu tool khong tim thay `MonsterInventoryAdapter`, no se hien warning ro rang va
 
 1. Tao GameObject moi, vi du `InventoryBackend`.
 2. Add Component `MonsterInventoryAdapter`.
-3. Chay lai menu `Game Tools > Inventory > Create Monster Inventory UI`.
+3. Chay lai menu `Game Tools > GameToolThang > Inventory > Create Monster Inventory UI`.
 
 ## Cac asset UI tool se tim
 

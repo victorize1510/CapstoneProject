@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
+using Capstone.Game.QuestSystem.UI;
 
 namespace Capstone.Game.Inventory {
     [DisallowMultipleComponent]
@@ -32,6 +33,8 @@ namespace Capstone.Game.Inventory {
         bool keyboardNavigationMode;
         Vector3 lastMousePosition;
         VisualElement registeredRoot;
+        VisualElement questPanelElement;
+        QuestPanelController questPanelController;
         int handledFrame = -1;
 
         public static bool GameplayInputBlocked { get; private set; }
@@ -123,11 +126,21 @@ namespace Capstone.Game.Inventory {
             document = document != null ? document : GetComponent<UIDocument>();
             if (document == null && inventory != null) document = inventory.GetComponent<UIDocument>();
             if (document == null) document = GetComponentInChildren<UIDocument>(true);
+            ResolveQuestPanelController();
 
             playerControlLock = playerControlLock != null ? playerControlLock : GetComponent<LocalPlayerControlLock>();
             if (playerControlLock == null) playerControlLock = GetComponentInParent<LocalPlayerControlLock>();
             if (playerControlLock == null && inventory != null) playerControlLock = inventory.GetComponent<LocalPlayerControlLock>();
             if (playerControlLock == null) playerControlLock = gameObject.AddComponent<LocalPlayerControlLock>();
+        }
+
+        void ResolveQuestPanelController() {
+            if (questPanelController != null) return;
+
+            questPanelController = GetComponent<QuestPanelController>();
+            if (questPanelController == null) questPanelController = GetComponentInChildren<QuestPanelController>(true);
+            if (questPanelController == null && inventory != null) questPanelController = inventory.GetComponent<QuestPanelController>();
+            if (questPanelController == null) questPanelController = FindFirstObjectByType<QuestPanelController>();
         }
 
         void SubscribeInventory() {
@@ -142,6 +155,7 @@ namespace Capstone.Game.Inventory {
             if (document == null || document.rootVisualElement == null) return;
 
             registeredRoot = document.rootVisualElement;
+            questPanelElement = registeredRoot.Q<VisualElement>("quest-panel");
             registeredRoot.RegisterCallback<KeyDownEvent>(HandleUiKeyDown, TrickleDown.TrickleDown);
         }
 
@@ -150,6 +164,7 @@ namespace Capstone.Game.Inventory {
 
             registeredRoot.UnregisterCallback<KeyDownEvent>(HandleUiKeyDown, TrickleDown.TrickleDown);
             registeredRoot = null;
+            questPanelElement = null;
         }
 
         void HandleUiKeyDown(KeyDownEvent evt) {
@@ -192,6 +207,11 @@ namespace Capstone.Game.Inventory {
                 return true;
             }
 
+            if (TryHandleQuestPanelKey(key)) {
+                MarkHandled();
+                return true;
+            }
+
             if (key == previousCategoryKey) {
                 inventory.SelectPreviousCategory();
                 MarkHandled();
@@ -225,6 +245,63 @@ namespace Capstone.Game.Inventory {
             }
 
             return false;
+        }
+
+        bool TryHandleQuestPanelKey(KeyCode key) {
+            if (!IsQuestPanelNavigationKey(key) || !IsPointerOverQuestPanel()) return false;
+
+            ResolveQuestPanelController();
+            if (questPanelController == null) return false;
+
+            if (key == previousCategoryKey) {
+                questPanelController.SelectPreviousTab();
+                return true;
+            }
+
+            if (key == nextCategoryKey) {
+                questPanelController.SelectNextTab();
+                return true;
+            }
+
+            if (key == KeyCode.W || key == KeyCode.UpArrow) {
+                questPanelController.SelectPreviousQuest();
+                EnterKeyboardItemNavigation();
+                return true;
+            }
+
+            if (key == KeyCode.S || key == KeyCode.DownArrow) {
+                questPanelController.SelectNextQuest();
+                EnterKeyboardItemNavigation();
+                return true;
+            }
+
+            if (key == confirmKey || key == alternateConfirmKey) {
+                questPanelController.ConfirmSelectedQuest();
+                return true;
+            }
+
+            return false;
+        }
+
+        bool IsPointerOverQuestPanel() {
+            if (document == null || document.rootVisualElement == null) return false;
+            if (questPanelElement == null) questPanelElement = document.rootVisualElement.Q<VisualElement>("quest-panel");
+            if (questPanelElement == null || questPanelElement.panel == null) return false;
+
+            var screenPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+            var panelPosition = RuntimePanelUtils.ScreenToPanel(questPanelElement.panel, screenPosition);
+            return questPanelElement.worldBound.Contains(panelPosition);
+        }
+
+        bool IsQuestPanelNavigationKey(KeyCode key) {
+            return key == previousCategoryKey
+                || key == nextCategoryKey
+                || key == KeyCode.W
+                || key == KeyCode.UpArrow
+                || key == KeyCode.S
+                || key == KeyCode.DownArrow
+                || key == confirmKey
+                || key == alternateConfirmKey;
         }
 
         void MarkHandled() {

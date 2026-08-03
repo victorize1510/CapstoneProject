@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace Capstone.Game.QuestSystem.Editor {
     public static class QuestTrackerHudSetupTool {
-        const string MenuPath = "Game Tools/Quest/Create Quest Tracker HUD";
+        const string MenuPath = "Game Tools/GameToolThang/Quest/Create Quest Tracker HUD";
         const string HudObjectName = "QuestTrackerHUD";
         const string UiFolder = "Assets/Game/QuestSystem/UI";
         const string HudUxmlPath = UiFolder + "/QuestTrackerHud.uxml";

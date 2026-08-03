@@ -100,6 +100,7 @@ public class BasicPlayerMovement : MonoBehaviour
     public float groundContactOffset = 0f;
 
     [Header("Roll")]
+    public bool enableRoll = false;
     public KeyCode rollKey = KeyCode.Q;
     public float idleRollDuration = 0.78f;
     public float sprintRollDuration = 0.55f;
@@ -122,6 +123,7 @@ public class BasicPlayerMovement : MonoBehaviour
     public bool enableAimMode = false;
     public int aimMouseButton = 1;
     public bool rightMouseButtonThrows = false;
+    public bool faceLockedEnemy = false;
     public bool requirePickupTarget = false;
     public bool hasPickupTarget = false;
     public float jumpDuration = 0.95f;
@@ -512,7 +514,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && Input.GetKeyDown(rollKey))
+        if (enableRoll && !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && Input.GetKeyDown(rollKey))
         {
             if (isCrouching)
             {
@@ -1474,6 +1476,11 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         direction = Vector3.zero;
 
+        if (!faceLockedEnemy)
+        {
+            return false;
+        }
+
         if (cameraFollow == null || !cameraFollow.TryGetLockedTargetPosition(out Vector3 targetPosition))
         {
             return false;
@@ -1931,6 +1938,11 @@ public class BasicPlayerMovement : MonoBehaviour
         if (cameraTransform == null && Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
+        }
+
+        if (cameraFollow != null && !cameraFollow.isActiveAndEnabled)
+        {
+            cameraFollow = null;
         }
 
         if (cameraTransform != null && cameraFollow == null)

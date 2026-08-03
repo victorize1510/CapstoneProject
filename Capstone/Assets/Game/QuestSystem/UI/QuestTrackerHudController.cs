@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,37 +12,23 @@ namespace Capstone.Game.QuestSystem.UI {
         [SerializeField] Transform localPlayer = null;
         [SerializeField] bool autoFindQuestManager = true;
         [SerializeField] bool autoFindLocalPlayer = true;
-        [SerializeField] bool showOnlyMainQuest = true;
-        [SerializeField] bool fallbackToFirstActiveMainQuest = true;
-        [SerializeField] bool hideWhenNoQuest = true;
-        [SerializeField] float refreshInterval = 0.2f;
+        [SerializeField] bool hideWhenNoQuest = false;
+        [SerializeField, Min(0.05f)] float refreshInterval = 0.2f;
+
+        readonly List<DistanceBinding> distanceBindings = new List<DistanceBinding>();
 
         VisualElement root;
-        VisualElement card;
-        Label typeLabel;
-        Label titleLabel;
-        Label metaLabel;
-        Label descriptionLabel;
-        VisualElement objectiveList;
-        ProgressBar progressBar;
-        Label progressText;
-        VisualElement locationRow;
-        Label locationLabel;
-        VisualElement distanceRow;
-        Label distanceLabel;
-        VisualElement timeRow;
-        Label timeLabel;
-        VisualElement rewardRow;
-        Label rewardsLabel;
+        VisualElement list;
+        ScrollView scrollView;
         Label emptyLabel;
-        QuestRuntimeState displayedQuest;
         float nextRefreshTime;
+        string lastQuestSignature = string.Empty;
 
         void OnEnable() {
             ResolveReferences();
             CacheElements();
             SubscribeToQuestManager();
-            Refresh();
+            Refresh(true);
         }
 
         void OnDisable() {
@@ -50,9 +37,16 @@ namespace Capstone.Game.QuestSystem.UI {
 
         void Update() {
             if (Time.unscaledTime < nextRefreshTime) return;
+            nextRefreshTime = Time.unscaledTime + refreshInterval;
 
-            nextRefreshTime = Time.unscaledTime + Mathf.Max(0.05f, refreshInterval);
-            RefreshDynamicValues();
+            ResolveLocalPlayer();
+            string signature = BuildQuestSignature();
+            if (signature != lastQuestSignature) {
+                Refresh(true);
+                return;
+            }
+
+            RefreshDistanceLabels();
         }
 
         public void Bind(UIDocument newDocument, QuestManager newQuestManager = null, Transform newLocalPlayer = null) {
@@ -63,39 +57,40 @@ namespace Capstone.Game.QuestSystem.UI {
             ResolveReferences();
             CacheElements();
             SubscribeToQuestManager();
-            Refresh();
+            Refresh(true);
         }
 
         void ResolveReferences() {
             document = document != null ? document : GetComponent<UIDocument>();
             if (questManager == null && autoFindQuestManager) questManager = FindFirstObjectByType<QuestManager>();
-            if (localPlayer == null && autoFindLocalPlayer) localPlayer = FindLocalPlayer();
+            ResolveLocalPlayer();
+        }
+
+        void ResolveLocalPlayer() {
+            if (localPlayer != null || !autoFindLocalPlayer) return;
+
+            try {
+                GameObject taggedPlayer = GameObject.FindGameObjectWithTag("Player");
+                if (taggedPlayer != null) {
+                    localPlayer = taggedPlayer.transform;
+                    return;
+                }
+            } catch (UnityException) {
+            }
+
+            GameObject namedPlayer = GameObject.Find("Player");
+            if (namedPlayer != null) localPlayer = namedPlayer.transform;
         }
 
         void CacheElements() {
-            if (document == null) return;
+            if (document == null || document.rootVisualElement == null) return;
 
             root = document.rootVisualElement.Q<VisualElement>("quest-tracker-root");
-            if (root == null) {
-                root = document.rootVisualElement;
-            }
+            if (root == null) root = document.rootVisualElement;
 
-            card = root.Q<VisualElement>("quest-tracker-card");
-            typeLabel = root.Q<Label>("quest-tracker-type");
-            titleLabel = root.Q<Label>("quest-tracker-title");
-            metaLabel = root.Q<Label>("quest-tracker-meta");
-            descriptionLabel = root.Q<Label>("quest-tracker-description");
-            objectiveList = root.Q<VisualElement>("quest-tracker-objective-list");
-            progressBar = root.Q<ProgressBar>("quest-tracker-progress-bar");
-            progressText = root.Q<Label>("quest-tracker-progress-text");
-            locationRow = root.Q<VisualElement>("quest-tracker-location-row");
-            locationLabel = root.Q<Label>("quest-tracker-location");
-            distanceRow = root.Q<VisualElement>("quest-tracker-distance-row");
-            distanceLabel = root.Q<Label>("quest-tracker-distance");
-            timeRow = root.Q<VisualElement>("quest-tracker-time-row");
-            timeLabel = root.Q<Label>("quest-tracker-time");
-            rewardRow = root.Q<VisualElement>("quest-tracker-reward-row");
-            rewardsLabel = root.Q<Label>("quest-tracker-rewards");
+            scrollView = root.Q<ScrollView>("quest-tracker-scroll");
+            list = root.Q<VisualElement>("quest-tracker-list");
+            if (list == null && scrollView != null) list = scrollView.contentContainer;
             emptyLabel = root.Q<Label>("quest-tracker-empty");
         }
 
@@ -116,191 +111,177 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void HandleQuestsChanged() {
-            Refresh();
+            Refresh(true);
         }
 
         void HandleTrackedQuestChanged(QuestRuntimeState quest) {
-            Refresh();
+            Refresh(true);
         }
 
-        void Refresh() {
-            displayedQuest = ResolveQuestToDisplay();
-            bool hasQuest = displayedQuest != null && displayedQuest.Definition != null;
+        void Refresh(bool rebuild) {
+            if (root == null) return;
 
-            SetVisible(root, hasQuest || !hideWhenNoQuest);
-            SetVisible(card, hasQuest || !hideWhenNoQuest);
-            SetVisible(emptyLabel, !hasQuest && !hideWhenNoQuest);
+            List<QuestRuntimeState> quests = GetVisibleQuests();
+            lastQuestSignature = BuildQuestSignature(quests);
 
-            if (!hasQuest) {
-                SetQuestContentVisible(false);
-                return;
+            SetVisible(root, quests.Count > 0 || !hideWhenNoQuest);
+            SetVisible(scrollView, quests.Count > 0);
+            SetVisible(emptyLabel, quests.Count == 0);
+
+            if (!rebuild) return;
+
+            RebuildQuestList(quests);
+        }
+
+        void RebuildQuestList(List<QuestRuntimeState> quests) {
+            if (list == null) return;
+
+            list.Clear();
+            distanceBindings.Clear();
+
+            foreach (QuestRuntimeState quest in quests) {
+                list.Add(CreateQuestCard(quest));
             }
 
-            SetQuestContentVisible(true);
-
-            QuestDefinition definition = displayedQuest.Definition;
-            SetText(typeLabel, FormatType(definition.QuestType));
-            SetText(titleLabel, GetQuestTitle(displayedQuest));
-            SetText(metaLabel, "Lv. " + definition.RecommendedLevel + "  |  " + FormatStatus(displayedQuest.Status));
-            SetText(descriptionLabel, definition.Description);
-            SetVisible(descriptionLabel, !string.IsNullOrWhiteSpace(definition.Description));
-
-            RefreshObjectives();
-            RefreshProgress();
-            RefreshLocation();
-            RefreshTime();
-            RefreshRewards();
+            RefreshDistanceLabels();
         }
 
-        void RefreshDynamicValues() {
-            if (displayedQuest == null) return;
+        VisualElement CreateQuestCard(QuestRuntimeState quest) {
+            var card = new VisualElement();
+            card.AddToClassList("quest-tracker-card");
+            card.EnableInClassList("is-tracked", quest.IsTracked);
 
-            QuestRuntimeState currentQuest = ResolveQuestToDisplay();
-            if (currentQuest != displayedQuest) {
-                Refresh();
-                return;
+            var titleRow = new VisualElement();
+            titleRow.AddToClassList("quest-tracker-title-row");
+
+            var titleBackground = new VisualElement();
+            titleBackground.AddToClassList("quest-tracker-title-background");
+            for (int i = 0; i < 16; i++) {
+                var fade = new VisualElement();
+                fade.AddToClassList("quest-tracker-title-fade");
+                fade.AddToClassList("quest-tracker-title-fade-" + i);
+                titleBackground.Add(fade);
+            }
+            titleRow.Add(titleBackground);
+
+            var title = new Label(GetQuestTitle(quest));
+            title.AddToClassList("quest-tracker-title");
+            titleRow.Add(title);
+            card.Add(titleRow);
+
+            var objective = new Label(GetPrimaryObjectiveText(quest));
+            objective.AddToClassList("quest-tracker-objective");
+            card.Add(objective);
+
+            int current;
+            int required;
+            float percent = CalculateProgress(quest, out current, out required);
+
+            var progressRow = new VisualElement();
+            progressRow.AddToClassList("quest-tracker-progress-row");
+
+            var progressBar = new ProgressBar {
+                lowValue = 0f,
+                highValue = 100f,
+                value = percent * 100f,
+                title = string.Empty
+            };
+            progressBar.AddToClassList("quest-tracker-progress-bar");
+            progressRow.Add(progressBar);
+            card.Add(progressRow);
+
+            if (HasLocation(quest)) {
+                var distance = new Label("-");
+                distance.AddToClassList("quest-tracker-distance");
+                card.Add(distance);
+                distanceBindings.Add(new DistanceBinding(distance, quest));
             }
 
-            RefreshLocation();
-            RefreshTime();
+            return card;
         }
 
-        QuestRuntimeState ResolveQuestToDisplay() {
-            if (questManager == null) return null;
-
-            QuestRuntimeState trackedQuest = questManager.GetTrackedQuest();
-            if (IsAllowedQuest(trackedQuest)) return trackedQuest;
-            if (!fallbackToFirstActiveMainQuest) return null;
+        List<QuestRuntimeState> GetVisibleQuests() {
+            if (questManager == null) return new List<QuestRuntimeState>();
 
             return questManager.GetActiveQuests()
-                .FirstOrDefault(quest => quest != null && quest.Definition != null && quest.Definition.QuestType == QuestType.Main);
+                .Where(quest => quest != null && quest.Definition != null)
+                .OrderBy(quest => GetQuestTypeSortOrder(quest.Definition.QuestType))
+                .ThenByDescending(quest => quest.IsTracked)
+                .ThenBy(quest => GetQuestTitle(quest))
+                .ToList();
         }
 
-        bool IsAllowedQuest(QuestRuntimeState quest) {
-            if (quest == null || quest.Definition == null || quest.Status != QuestStatus.Active) return false;
-            return !showOnlyMainQuest || quest.Definition.QuestType == QuestType.Main;
-        }
+        void RefreshDistanceLabels() {
+            foreach (DistanceBinding binding in distanceBindings) {
+                if (binding.Label == null || binding.Quest == null || binding.Quest.Definition == null) continue;
 
-        void RefreshObjectives() {
-            if (objectiveList == null) return;
+                if (localPlayer == null) {
+                    binding.Label.text = GetLocationName(binding.Quest.Definition);
+                    continue;
+                }
 
-            objectiveList.Clear();
-            if (displayedQuest.Objectives.Count == 0) {
-                objectiveList.Add(CreateObjectiveRow("No objectives", false));
-                return;
-            }
-
-            foreach (QuestObjectiveProgress progress in displayedQuest.Objectives.Where(objective => objective != null)) {
-                QuestObjectiveDefinition definition = FindObjectiveDefinition(progress.ObjectiveId);
-                objectiveList.Add(CreateObjectiveRow(FormatObjectiveText(definition, progress), progress.IsComplete));
+                float distance = Vector3.Distance(localPlayer.position, binding.Quest.Definition.WorldPosition);
+                binding.Label.text = GetLocationName(binding.Quest.Definition) + "  " + FormatDistance(distance);
             }
         }
 
-        VisualElement CreateObjectiveRow(string text, bool complete) {
-            var row = new VisualElement();
-            row.AddToClassList("quest-tracker-objective");
-            row.EnableInClassList("is-complete", complete);
-
-            var bullet = new VisualElement();
-            bullet.AddToClassList("quest-tracker-objective-bullet");
-            row.Add(bullet);
-
-            var label = new Label(text);
-            label.AddToClassList("quest-tracker-objective-text");
-            row.Add(label);
-
-            return row;
+        string BuildQuestSignature() {
+            return BuildQuestSignature(GetVisibleQuests());
         }
 
-        void RefreshProgress() {
-            int current = 0;
-            int required = 0;
+        static string BuildQuestSignature(List<QuestRuntimeState> quests) {
+            return string.Join("|", quests.Select(FormatQuestSignature));
+        }
 
-            foreach (QuestObjectiveProgress objective in displayedQuest.Objectives.Where(objective => objective != null && !objective.Optional)) {
-                current += objective.CurrentAmount;
+        static string FormatQuestSignature(QuestRuntimeState quest) {
+            if (quest == null) return string.Empty;
+
+            string objectives = string.Join(",", quest.Objectives
+                .Where(objective => objective != null)
+                .Select(objective => objective.ObjectiveId + ":" + objective.CurrentAmount + "/" + objective.RequiredAmount + ":" + objective.IsComplete));
+
+            return quest.QuestId + ":" + quest.Status + ":" + quest.IsTracked + ":" + objectives;
+        }
+
+        static float CalculateProgress(QuestRuntimeState quest, out int current, out int required) {
+            current = 0;
+            required = 0;
+
+            foreach (QuestObjectiveProgress objective in quest.Objectives.Where(objective => objective != null && !objective.Optional)) {
+                current += Mathf.Clamp(objective.CurrentAmount, 0, objective.RequiredAmount);
                 required += objective.RequiredAmount;
             }
 
             if (required <= 0) {
-                current = displayedQuest.HasRequiredObjectivesComplete() ? 1 : 0;
+                current = quest.HasRequiredObjectivesComplete() ? 1 : 0;
                 required = 1;
             }
 
-            float percent = required > 0 ? Mathf.Clamp01((float)current / required) * 100f : 0f;
-            if (progressBar != null) {
-                progressBar.value = percent;
-                progressBar.title = string.Empty;
+            return required > 0 ? Mathf.Clamp01((float)current / required) : 0f;
+        }
+
+        static string GetPrimaryObjectiveText(QuestRuntimeState quest) {
+            QuestObjectiveProgress progress = quest.Objectives.FirstOrDefault(objective => objective != null && !objective.IsComplete)
+                ?? quest.Objectives.FirstOrDefault(objective => objective != null);
+
+            if (progress == null) return "No objectives";
+
+            QuestObjectiveDefinition definition = quest.Definition.Objectives.FirstOrDefault(objective => objective != null && objective.ObjectiveId == progress.ObjectiveId);
+            string title = definition != null && !string.IsNullOrWhiteSpace(definition.Title)
+                ? definition.Title
+                : progress.ObjectiveId;
+
+            string optional = progress.Optional ? " (Optional)" : string.Empty;
+            return title + optional + "  " + progress.CurrentAmount + " / " + progress.RequiredAmount;
+        }
+
+        static int GetQuestTypeSortOrder(QuestType type) {
+            switch (type) {
+                case QuestType.Main: return 0;
+                case QuestType.Side: return 1;
+                case QuestType.Daily: return 2;
+                default: return 3;
             }
-
-            SetText(progressText, current + " / " + required);
-        }
-
-        void RefreshLocation() {
-            bool hasLocation = HasLocation(displayedQuest);
-            SetVisible(locationRow, hasLocation);
-            SetVisible(distanceRow, hasLocation && localPlayer != null);
-
-            if (!hasLocation || displayedQuest.Definition == null) return;
-
-            SetText(locationLabel, GetLocationName(displayedQuest.Definition));
-            if (localPlayer != null) {
-                float distance = Vector3.Distance(localPlayer.position, displayedQuest.Definition.WorldPosition);
-                SetText(distanceLabel, FormatDistance(distance));
-            }
-        }
-
-        void RefreshTime() {
-            bool hasTimeLimit = displayedQuest.Definition != null && displayedQuest.Definition.HasTimeLimit;
-            SetVisible(timeRow, hasTimeLimit);
-            if (!hasTimeLimit) return;
-
-            float elapsed = Mathf.Max(0f, Time.time - displayedQuest.AcceptedTime);
-            float remaining = Mathf.Max(0f, displayedQuest.Definition.TimeLimit - elapsed);
-            SetText(timeLabel, FormatTime(remaining));
-        }
-
-        void RefreshRewards() {
-            if (rewardRow == null || rewardsLabel == null || displayedQuest.Definition == null) return;
-
-            var rewards = displayedQuest.Definition.Rewards
-                .Where(reward => reward != null && !string.IsNullOrWhiteSpace(reward.DisplayName))
-                .Select(reward => reward.DisplayName + " x" + reward.Amount)
-                .ToArray();
-
-            bool hasRewards = rewards.Length > 0;
-            SetVisible(rewardRow, hasRewards);
-            if (hasRewards) SetText(rewardsLabel, string.Join(", ", rewards));
-        }
-
-        void SetQuestContentVisible(bool visible) {
-            SetVisible(typeLabel, visible);
-            SetVisible(titleLabel, visible);
-            SetVisible(metaLabel, visible);
-            SetVisible(descriptionLabel, visible);
-            SetVisible(objectiveList, visible);
-            SetVisible(progressBar, visible);
-            SetVisible(progressText, visible);
-            SetVisible(locationRow, false);
-            SetVisible(distanceRow, false);
-            SetVisible(timeRow, false);
-            SetVisible(rewardRow, false);
-        }
-
-        QuestObjectiveDefinition FindObjectiveDefinition(string objectiveId) {
-            if (displayedQuest == null || displayedQuest.Definition == null) return null;
-            return displayedQuest.Definition.Objectives.FirstOrDefault(objective => objective != null && objective.ObjectiveId == objectiveId);
-        }
-
-        static Transform FindLocalPlayer() {
-            try {
-                GameObject taggedPlayer = GameObject.FindGameObjectWithTag("Player");
-                if (taggedPlayer != null) return taggedPlayer.transform;
-            } catch (UnityException) {
-                // Some prototype scenes do not define a Player tag yet.
-            }
-
-            GameObject namedPlayer = GameObject.Find("Player");
-            return namedPlayer != null ? namedPlayer.transform : null;
         }
 
         static bool HasLocation(QuestRuntimeState quest) {
@@ -321,44 +302,10 @@ namespace Capstone.Game.QuestSystem.UI {
             return string.IsNullOrWhiteSpace(quest.QuestId) ? "Untitled Quest" : quest.QuestId;
         }
 
-        static string FormatObjectiveText(QuestObjectiveDefinition definition, QuestObjectiveProgress progress) {
-            string title = definition != null && !string.IsNullOrWhiteSpace(definition.Title)
-                ? definition.Title
-                : progress.ObjectiveId;
-
-            string optional = progress.Optional ? " (Optional)" : string.Empty;
-            return title + optional + "  " + progress.CurrentAmount + " / " + progress.RequiredAmount;
-        }
-
-        static string FormatType(QuestType type) {
-            switch (type) {
-                case QuestType.Side: return "Side";
-                case QuestType.Daily: return "Daily";
-                case QuestType.Other: return "Other";
-                default: return "Main";
-            }
-        }
-
-        static string FormatStatus(QuestStatus status) {
-            switch (status) {
-                case QuestStatus.Completed: return "Completed";
-                case QuestStatus.Failed: return "Failed";
-                case QuestStatus.Abandoned: return "Abandoned";
-                default: return "In Progress";
-            }
-        }
-
         static string FormatDistance(float distance) {
             return distance >= 1000f
                 ? (distance / 1000f).ToString("0.0") + " km"
                 : Mathf.RoundToInt(distance) + " m";
-        }
-
-        static string FormatTime(float seconds) {
-            TimeSpan timeSpan = TimeSpan.FromSeconds(Mathf.Max(0f, seconds));
-            return timeSpan.TotalHours >= 1d
-                ? string.Format("{0:0}:{1:00}:{2:00}", Math.Floor(timeSpan.TotalHours), timeSpan.Minutes, timeSpan.Seconds)
-                : string.Format("{0:0}:{1:00}", timeSpan.Minutes, timeSpan.Seconds);
         }
 
         static void SetVisible(VisualElement element, bool visible) {
@@ -366,9 +313,14 @@ namespace Capstone.Game.QuestSystem.UI {
             element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        static void SetText(Label label, string text) {
-            if (label == null) return;
-            label.text = string.IsNullOrWhiteSpace(text) ? "-" : text;
+        readonly struct DistanceBinding {
+            public readonly Label Label;
+            public readonly QuestRuntimeState Quest;
+
+            public DistanceBinding(Label label, QuestRuntimeState quest) {
+                Label = label;
+                Quest = quest;
+            }
         }
     }
 }

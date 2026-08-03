@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -8,7 +9,9 @@ namespace Capstone.Game.QuestSystem {
     public sealed class QuestManager : MonoBehaviour {
         [SerializeField] List<QuestDefinition> questCatalog = new List<QuestDefinition>();
         [SerializeField] List<QuestRuntimeState> activeQuests = new List<QuestRuntimeState>();
+        [SerializeField, Min(0f)] float autoCompleteDelay = 0.65f;
 
+        readonly HashSet<string> pendingCompletionQuestIds = new HashSet<string>();
         readonly List<IQuestProgressSource> progressSources = new List<IQuestProgressSource>();
 
         public event Action QuestsChanged;
@@ -41,6 +44,11 @@ namespace Capstone.Game.QuestSystem {
 
             var state = new QuestRuntimeState(definition, Time.time);
             activeQuests.Add(state);
+            if (definition.QuestType == QuestType.Main) {
+                SetOnlyTrackedQuest(state);
+                TrackedQuestChanged?.Invoke(state);
+            }
+
             QuestAccepted?.Invoke(state);
             PublishQuestChanged(state);
             return true;
@@ -55,11 +63,7 @@ namespace Capstone.Game.QuestSystem {
             var state = FindActiveQuest(questId);
             if (state == null) return false;
 
-            foreach (var quest in activeQuests) {
-                quest?.SetTracked(false);
-            }
-
-            state.SetTracked(true);
+            SetOnlyTrackedQuest(state);
             TrackedQuestChanged?.Invoke(state);
             PublishQuestChanged(state);
             return true;
@@ -92,6 +96,7 @@ namespace Capstone.Game.QuestSystem {
         }
 
         public bool CompleteQuest(string questId) {
+            pendingCompletionQuestIds.Remove(questId);
             var state = FindActiveQuest(questId);
             if (state == null) return false;
 
@@ -103,6 +108,7 @@ namespace Capstone.Game.QuestSystem {
         }
 
         public bool FailQuest(string questId) {
+            pendingCompletionQuestIds.Remove(questId);
             var state = FindActiveQuest(questId);
             if (state == null) return false;
 
@@ -114,6 +120,7 @@ namespace Capstone.Game.QuestSystem {
         }
 
         public bool AbandonQuest(string questId) {
+            pendingCompletionQuestIds.Remove(questId);
             var state = FindActiveQuest(questId);
             if (state == null || state.Definition == null || !state.Definition.CanAbandon) return false;
 
@@ -179,10 +186,32 @@ namespace Capstone.Game.QuestSystem {
             PublishQuestChanged(state);
 
             if (state.HasRequiredObjectivesComplete()) {
-                CompleteQuest(state.QuestId);
+                BeginAutoCompleteQuest(state);
             }
 
             return true;
+        }
+
+        void BeginAutoCompleteQuest(QuestRuntimeState state) {
+            if (state == null || string.IsNullOrWhiteSpace(state.QuestId)) return;
+            if (!pendingCompletionQuestIds.Add(state.QuestId)) return;
+
+            if (autoCompleteDelay <= 0f) {
+                FinishPendingQuest(state.QuestId);
+                return;
+            }
+
+            StartCoroutine(CompleteAfterDelay(state.QuestId, autoCompleteDelay));
+        }
+
+        IEnumerator CompleteAfterDelay(string questId, float delay) {
+            yield return new WaitForSecondsRealtime(delay);
+            FinishPendingQuest(questId);
+        }
+
+        void FinishPendingQuest(string questId) {
+            pendingCompletionQuestIds.Remove(questId);
+            CompleteQuest(questId);
         }
 
         QuestRuntimeState FindQuest(string questId) {
@@ -195,6 +224,14 @@ namespace Capstone.Game.QuestSystem {
 
         QuestDefinition FindDefinition(string questId) {
             return questCatalog.FirstOrDefault(quest => quest != null && quest.QuestId == questId);
+        }
+
+        void SetOnlyTrackedQuest(QuestRuntimeState trackedState) {
+            foreach (var quest in activeQuests) {
+                quest?.SetTracked(false);
+            }
+
+            trackedState?.SetTracked(true);
         }
 
         void PublishQuestChanged(QuestRuntimeState state) {

@@ -38,11 +38,10 @@ namespace Capstone.Game.QuestSystem.UI {
         Label timeValue;
         Label rewardsTitle;
         VisualElement rewardList;
-        Button trackButton;
-        Button untrackButton;
+        Button trackToggleButton;
         Button showMapButton;
         Button abandonButton;
-        Button openJournalButton;
+        Action<Vector3> showOnMapRequested;
 
         QuestPanelTab currentTab = QuestPanelTab.Main;
         QuestRuntimeState selectedQuest;
@@ -50,11 +49,40 @@ namespace Capstone.Game.QuestSystem.UI {
         float nextLiveValueRefreshTime;
         bool controlsRegistered;
 
-        public event Action<Vector3> ShowOnMapRequested;
         public event Action<QuestRuntimeState> QuestSelected;
-        public event Action OpenJournalRequested;
+        public event Action<Vector3> ShowOnMapRequested {
+            add {
+                showOnMapRequested += value;
+                RefreshActionButtons();
+            }
+            remove {
+                showOnMapRequested -= value;
+                RefreshActionButtons();
+            }
+        }
 
         public QuestRuntimeState SelectedQuest => selectedQuest;
+
+        public void SelectNextTab() {
+            ShiftTab(1);
+        }
+
+        public void SelectPreviousTab() {
+            ShiftTab(-1);
+        }
+
+        public void SelectNextQuest() {
+            ShiftSelectedQuest(1);
+        }
+
+        public void SelectPreviousQuest() {
+            ShiftSelectedQuest(-1);
+        }
+
+        public void ConfirmSelectedQuest() {
+            if (selectedQuest == null || selectedQuest.Status != QuestStatus.Active) return;
+            ToggleTrackSelectedQuest();
+        }
 
         void OnEnable() {
             ResolveReferences();
@@ -148,11 +176,9 @@ namespace Capstone.Game.QuestSystem.UI {
             timeValue = rootElement.Q<Label>("quest-time-value");
             rewardsTitle = rootElement.Q<Label>("quest-rewards-title");
             rewardList = rootElement.Q<VisualElement>("quest-reward-list");
-            trackButton = rootElement.Q<Button>("track-quest-button");
-            untrackButton = rootElement.Q<Button>("untrack-quest-button");
+            trackToggleButton = rootElement.Q<Button>("track-quest-button");
             showMapButton = rootElement.Q<Button>("show-map-button");
             abandonButton = rootElement.Q<Button>("abandon-quest-button");
-            openJournalButton = rootElement.Q<Button>("open-journal-button");
         }
 
         void RegisterControls() {
@@ -164,11 +190,9 @@ namespace Capstone.Game.QuestSystem.UI {
             RegisterTabButton("quest-tab-daily", QuestPanelTab.Daily);
             RegisterTabButton("quest-tab-completed", QuestPanelTab.Completed);
 
-            if (trackButton != null) trackButton.clicked += TrackSelectedQuest;
-            if (untrackButton != null) untrackButton.clicked += UntrackSelectedQuest;
+            if (trackToggleButton != null) trackToggleButton.clicked += ToggleTrackSelectedQuest;
             if (showMapButton != null) showMapButton.clicked += ShowSelectedQuestOnMap;
             if (abandonButton != null) abandonButton.clicked += AbandonSelectedQuest;
-            if (openJournalButton != null) openJournalButton.clicked += OpenJournal;
 
             controlsRegistered = true;
         }
@@ -183,11 +207,9 @@ namespace Capstone.Game.QuestSystem.UI {
                 button.clicked -= SelectCompletedTab;
             }
 
-            if (trackButton != null) trackButton.clicked -= TrackSelectedQuest;
-            if (untrackButton != null) untrackButton.clicked -= UntrackSelectedQuest;
+            if (trackToggleButton != null) trackToggleButton.clicked -= ToggleTrackSelectedQuest;
             if (showMapButton != null) showMapButton.clicked -= ShowSelectedQuestOnMap;
             if (abandonButton != null) abandonButton.clicked -= AbandonSelectedQuest;
-            if (openJournalButton != null) openJournalButton.clicked -= OpenJournal;
 
             tabButtons.Clear();
             controlsRegistered = false;
@@ -251,6 +273,35 @@ namespace Capstone.Game.QuestSystem.UI {
             currentTab = tab;
             selectedQuestId = null;
             RefreshAll();
+        }
+
+        void ShiftTab(int direction) {
+            var order = new[] {
+                QuestPanelTab.Main,
+                QuestPanelTab.Side,
+                QuestPanelTab.Daily,
+                QuestPanelTab.Completed
+            };
+
+            int currentIndex = Array.IndexOf(order, currentTab);
+            if (currentIndex < 0) currentIndex = 0;
+
+            int nextIndex = (currentIndex + direction + order.Length) % order.Length;
+            SelectTab(order[nextIndex]);
+        }
+
+        void ShiftSelectedQuest(int direction) {
+            if (filteredQuests.Count == 0) return;
+
+            int currentIndex = selectedQuest != null ? filteredQuests.IndexOf(selectedQuest) : -1;
+            if (currentIndex < 0) currentIndex = direction > 0 ? -1 : 0;
+
+            int nextIndex = Mathf.Clamp(currentIndex + direction, 0, filteredQuests.Count - 1);
+            SelectQuest(filteredQuests[nextIndex]);
+
+            if (questListScroll != null && nextIndex >= 0 && nextIndex < questListScroll.contentContainer.childCount) {
+                questListScroll.ScrollTo(questListScroll.contentContainer[nextIndex]);
+            }
         }
 
         void RefreshAll() {
@@ -388,6 +439,7 @@ namespace Capstone.Game.QuestSystem.UI {
             if (rewardList != null) rewardList.Clear();
 
             SetVisible(statusRow, true);
+            SetVisible(locationValue, false);
             SetVisible(locationRow, false);
             SetVisible(distanceRow, false);
             SetVisible(timeRow, false);
@@ -466,8 +518,8 @@ namespace Capstone.Game.QuestSystem.UI {
             bool hasLocation = HasLocation(selectedQuest);
 
             SetVisible(locationRow, hasLocation);
+            SetVisible(locationValue, hasLocation);
             SetVisible(distanceRow, hasLocation);
-            SetVisible(showMapButton, hasLocation);
 
             if (locationValue != null) {
                 locationValue.text = hasLocation
@@ -485,7 +537,6 @@ namespace Capstone.Game.QuestSystem.UI {
 
             SetVisible(locationRow, hasLocation);
             SetVisible(distanceRow, hasLocation);
-            SetVisible(showMapButton, hasLocation);
             SetVisible(timeRow, hasTimeLimit);
 
             if (hasLocation && distanceValue != null) {
@@ -537,14 +588,27 @@ namespace Capstone.Game.QuestSystem.UI {
             var hasQuest = selectedQuest != null && selectedQuest.Definition != null;
             var isActive = hasQuest && selectedQuest.Status == QuestStatus.Active;
             var hasLocation = hasQuest && HasLocation(selectedQuest);
+            var hasMapReceiver = showOnMapRequested != null;
 
-            SetButtonEnabled(trackButton, isActive && !selectedQuest.IsTracked);
-            SetButtonEnabled(untrackButton, isActive && selectedQuest.IsTracked);
-            SetButtonEnabled(showMapButton, hasLocation);
+            if (trackToggleButton != null) {
+                trackToggleButton.text = hasQuest && selectedQuest.IsTracked ? "Untrack" : "Track";
+                trackToggleButton.tooltip = hasQuest && selectedQuest.IsTracked
+                    ? "Stop marking this quest for future map guidance."
+                    : "Mark this quest for future map and minimap guidance.";
+                trackToggleButton.EnableInClassList("primary-quest-action", isActive && !selectedQuest.IsTracked);
+            }
+
+            if (showMapButton != null) {
+                showMapButton.tooltip = hasMapReceiver
+                    ? "Send this quest location to the map system."
+                    : "Map system is not connected yet.";
+            }
+
+            SetButtonEnabled(trackToggleButton, isActive);
+            SetButtonEnabled(showMapButton, hasLocation && hasMapReceiver);
             SetButtonEnabled(abandonButton, isActive && selectedQuest.Definition.CanAbandon);
-            SetButtonEnabled(openJournalButton, hasQuest);
 
-            SetVisible(showMapButton, hasLocation);
+            SetVisible(showMapButton, hasLocation && hasMapReceiver);
         }
 
         void RefreshTrackedLabel() {
@@ -554,29 +618,25 @@ namespace Capstone.Game.QuestSystem.UI {
             trackedQuestLabel.text = trackedQuest != null ? "Tracked: " + GetQuestTitle(trackedQuest) : "Tracked: -";
         }
 
-        void TrackSelectedQuest() {
+        void ToggleTrackSelectedQuest() {
             if (questManager == null || selectedQuest == null) return;
-            questManager.TrackQuest(selectedQuest.QuestId);
-        }
 
-        void UntrackSelectedQuest() {
-            if (questManager == null || selectedQuest == null) return;
-            questManager.UntrackQuest(selectedQuest.QuestId);
+            if (selectedQuest.IsTracked) {
+                questManager.UntrackQuest(selectedQuest.QuestId);
+            } else {
+                questManager.TrackQuest(selectedQuest.QuestId);
+            }
         }
 
         void ShowSelectedQuestOnMap() {
-            if (selectedQuest == null || selectedQuest.Definition == null || !HasLocation(selectedQuest)) return;
+            if (selectedQuest == null || selectedQuest.Definition == null || !HasLocation(selectedQuest) || showOnMapRequested == null) return;
 
-            ShowOnMapRequested?.Invoke(selectedQuest.Definition.WorldPosition);
+            showOnMapRequested.Invoke(selectedQuest.Definition.WorldPosition);
         }
 
         void AbandonSelectedQuest() {
             if (questManager == null || selectedQuest == null) return;
             questManager.AbandonQuest(selectedQuest.QuestId);
-        }
-
-        void OpenJournal() {
-            OpenJournalRequested?.Invoke();
         }
 
         void UpdateTabButtons() {

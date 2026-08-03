@@ -57,7 +57,7 @@ public static class CapstonePlayerSetup
         }
     }
 
-    [MenuItem("Tools/Capstone/Repair Player Setup In Open Scene")]
+    [MenuItem("Tools/ToolCuaThang/Capstone/Repair Player Setup In Open Scene")]
     public static void RepairPlayerControllerSetup()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -77,7 +77,7 @@ public static class CapstonePlayerSetup
         Debug.Log("[Capstone] Player setup repair finished. Controller rebuilt: " + needsRebuild + ". Players fixed: " + fixedPlayers + ". Camera fixed: " + fixedCamera);
     }
 
-    [MenuItem("Tools/Capstone/Create Vexa Basic Player In Scene")]
+    [MenuItem("Tools/ToolCuaThang/Capstone/Create Vexa Basic Player In Scene")]
     public static void CreateVexaBasicPlayer()
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(GetAssetPath(VexaPrefabGuid));
@@ -107,7 +107,7 @@ public static class CapstonePlayerSetup
         EditorSceneManager.MarkSceneDirty(player.scene);
     }
 
-    [MenuItem("Tools/Capstone/Rebuild Player Animator Controller")]
+    [MenuItem("Tools/ToolCuaThang/Capstone/Rebuild Player Animator Controller")]
     public static void RebuildPlayerAnimatorController()
     {
         EnsureAnimatorController(true);
@@ -117,7 +117,7 @@ public static class CapstonePlayerSetup
         EditorUtility.DisplayDialog("Player controller rebuilt", "Rebuilt PlayerBasic. Players refreshed: " + fixedPlayers + ". Camera refreshed: " + fixedCamera, "OK");
     }
 
-    [MenuItem("Tools/Capstone/Fix Player Animator Missing")]
+    [MenuItem("Tools/ToolCuaThang/Capstone/Fix Player Animator Missing")]
     public static void FixPlayerAnimatorMissing()
     {
         int fixedCount = FixPlayersInOpenScenes(true, true);
@@ -125,7 +125,7 @@ public static class CapstonePlayerSetup
         EditorUtility.DisplayDialog("Player animator fixed", "Fixed player animator setup count: " + fixedCount + ". Camera refreshed: " + fixedCamera, "OK");
     }
 
-    [MenuItem("Tools/Capstone/Setup Selected Basic Player")]
+    [MenuItem("Tools/ToolCuaThang/Capstone/Setup Selected Basic Player")]
     public static void SetupSelectedBasicPlayer()
     {
         GameObject player = Selection.activeGameObject;
@@ -141,7 +141,7 @@ public static class CapstonePlayerSetup
         EditorSceneManager.MarkSceneDirty(player.scene);
     }
 
-    [MenuItem("Tools/Capstone/Setup Selected Basic Player", true)]
+    [MenuItem("Tools/ToolCuaThang/Capstone/Setup Selected Basic Player", true)]
     public static bool ValidateSetupSelectedBasicPlayer()
     {
         return Selection.activeGameObject != null;
@@ -205,31 +205,8 @@ public static class CapstonePlayerSetup
             return true;
         }
 
-        System.Type brainType = FindType("Unity.Cinemachine.CinemachineBrain");
-        System.Type cameraType = FindType("Unity.Cinemachine.CinemachineCamera");
-        if (brainType == null || cameraType == null)
-        {
-            BasicCameraFollow fallbackFollow = camera.GetComponent<BasicCameraFollow>();
-            return fallbackFollow == null || fallbackFollow.target != target;
-        }
-
-        if (camera.GetComponent(brainType) == null)
-        {
-            return true;
-        }
-
-        GameObject virtualCameraObject = GameObject.Find("FreeLook Camera");
-        if (virtualCameraObject == null)
-        {
-            virtualCameraObject = GameObject.Find("CM Player Follow Camera");
-        }
-        if (virtualCameraObject == null)
-        {
-            return true;
-        }
-
-        Component cinemachineCamera = virtualCameraObject.GetComponent(cameraType);
-        return cinemachineCamera == null || GetMember(cinemachineCamera, "Follow") as Transform != target;
+        BasicCameraFollow follow = camera.GetComponent<BasicCameraFollow>();
+        return follow == null || !follow.enabled || follow.target != target;
     }
 
     private static bool PlayerNeedsSetup(BasicPlayerMovement movement)
@@ -547,13 +524,16 @@ public static class CapstonePlayerSetup
         follow.lockSphereRadius = 1.25f;
         follow.lockSearchRadius = 8f;
         follow.lockScreenRadius = 120f;
+        follow.lockNearestVisibleEnemy = true;
+        follow.lockVisibleViewportPadding = 0.02f;
+        follow.lockVisibleCenterWeight = 1.5f;
         follow.lockBreakDistance = 35f;
         follow.lockLookHeight = 0f;
         follow.lockYawSpeed = 720f;
         follow.lockCameraOffset = new Vector3(0.8f, 1.9f, -3.15f);
         follow.lockBlendSpeed = 10f;
         follow.useScreenCenterWhenCursorLocked = true;
-        follow.showLockReticle = true;
+        follow.showLockReticle = false;
         follow.showLockMarker = true;
     }
 
@@ -581,125 +561,6 @@ public static class CapstonePlayerSetup
             Undo.RecordObject(virtualCameraObject, "Disable Cinemachine virtual camera");
             virtualCameraObject.SetActive(false);
         }
-    }
-
-    private static bool SetupCinemachineCamera(Camera camera, Transform target)
-    {
-        System.Type brainType = FindType("Unity.Cinemachine.CinemachineBrain");
-        System.Type cameraType = FindType("Unity.Cinemachine.CinemachineCamera");
-        System.Type orbitalFollowType = FindType("Unity.Cinemachine.CinemachineOrbitalFollow");
-        System.Type rotationComposerType = FindType("Unity.Cinemachine.CinemachineRotationComposer");
-        System.Type freeLookModifierType = FindType("Unity.Cinemachine.CinemachineFreeLookModifier");
-        System.Type inputAxisControllerType = FindType("Unity.Cinemachine.CinemachineInputAxisController");
-        System.Type thirdPersonFollowType = FindType("Unity.Cinemachine.CinemachineThirdPersonFollow");
-
-        if (brainType == null || cameraType == null || orbitalFollowType == null || rotationComposerType == null)
-        {
-            return false;
-        }
-
-        Component brain = GetOrAddComponent(camera.gameObject, brainType);
-        SetSerializedBool(brain, "ShowCameraFrustum", false);
-
-        GameObject virtualCameraObject = GameObject.Find("FreeLook Camera");
-        if (virtualCameraObject == null)
-        {
-            virtualCameraObject = GameObject.Find("CM Player Follow Camera");
-        }
-        if (virtualCameraObject == null)
-        {
-            virtualCameraObject = new GameObject("FreeLook Camera");
-            Undo.RegisterCreatedObjectUndo(virtualCameraObject, "Create Cinemachine free look camera");
-        }
-
-        Undo.RecordObject(virtualCameraObject, "Setup Cinemachine free look camera");
-        virtualCameraObject.name = "FreeLook Camera";
-        virtualCameraObject.transform.position = target.position + new Vector3(0f, 2.25f, -4f);
-        virtualCameraObject.transform.LookAt(target.position + Vector3.up * 2.25f);
-
-        Component cinemachineCamera = GetOrAddComponent(virtualCameraObject, cameraType);
-        SetMember(cinemachineCamera, "Follow", target);
-        SetMember(cinemachineCamera, "LookAt", null);
-        SetMember(cinemachineCamera, "Priority", 20);
-        SetSerializedFloat(cinemachineCamera, "Lens.FieldOfView", 60.000004f);
-        SetSerializedFloat(cinemachineCamera, "Lens.OrthographicSize", 5f);
-        SetSerializedFloat(cinemachineCamera, "Lens.NearClipPlane", 0.3f);
-        SetSerializedFloat(cinemachineCamera, "Lens.FarClipPlane", 1000f);
-
-        Component orbitalFollow = GetOrAddComponent(virtualCameraObject, orbitalFollowType);
-        BasicPlayerMovement movement = target.GetComponent<BasicPlayerMovement>();
-        if (movement != null)
-        {
-            Undo.RecordObject(movement, "Assign movement camera");
-            movement.cameraTransform = camera.transform;
-        }
-        SetSerializedVector3(orbitalFollow, "TargetOffset", new Vector3(0f, 1.2f, 0f));
-        SetSerializedInt(orbitalFollow, "TrackerSettings.BindingMode", 4);
-        SetSerializedVector3(orbitalFollow, "TrackerSettings.PositionDamping", new Vector3(0.8f, 0.9f, 0.8f));
-        SetSerializedInt(orbitalFollow, "TrackerSettings.AngularDampingMode", 0);
-        SetSerializedVector3(orbitalFollow, "TrackerSettings.RotationDamping", new Vector3(1.2f, 1.2f, 1.2f));
-        SetSerializedFloat(orbitalFollow, "TrackerSettings.QuaternionDamping", 1.2f);
-        SetSerializedInt(orbitalFollow, "OrbitStyle", 1);
-        SetSerializedFloat(orbitalFollow, "Radius", 5f);
-        SetSerializedFloat(orbitalFollow, "Orbits.Top.Radius", 2f);
-        SetSerializedFloat(orbitalFollow, "Orbits.Top.Height", 5f);
-        SetSerializedFloat(orbitalFollow, "Orbits.Center.Radius", 4f);
-        SetSerializedFloat(orbitalFollow, "Orbits.Center.Height", 2.25f);
-        SetSerializedFloat(orbitalFollow, "Orbits.Bottom.Radius", 2.5f);
-        SetSerializedFloat(orbitalFollow, "Orbits.Bottom.Height", 0.1f);
-        SetSerializedFloat(orbitalFollow, "Orbits.SplineCurvature", 0.5f);
-        SetSerializedInt(orbitalFollow, "RecenteringTarget", 2);
-        SetSerializedFloat(orbitalFollow, "HorizontalAxis.Value", 0f);
-        SetSerializedFloat(orbitalFollow, "HorizontalAxis.Center", 0f);
-        SetSerializedVector2(orbitalFollow, "HorizontalAxis.Range", new Vector2(-180f, 180f));
-        SetSerializedBool(orbitalFollow, "HorizontalAxis.Wrap", true);
-        SetSerializedBool(orbitalFollow, "HorizontalAxis.Recentering.Enabled", false);
-        SetSerializedFloat(orbitalFollow, "VerticalAxis.Value", 17.5f);
-        SetSerializedFloat(orbitalFollow, "VerticalAxis.Center", 17.5f);
-        SetSerializedVector2(orbitalFollow, "VerticalAxis.Range", new Vector2(-10f, 45f));
-        SetSerializedBool(orbitalFollow, "VerticalAxis.Wrap", false);
-        SetSerializedBool(orbitalFollow, "VerticalAxis.Recentering.Enabled", false);
-        SetSerializedFloat(orbitalFollow, "RadialAxis.Value", 1f);
-        SetSerializedFloat(orbitalFollow, "RadialAxis.Center", 1f);
-        SetSerializedVector2(orbitalFollow, "RadialAxis.Range", new Vector2(1f, 1f));
-        SetSerializedBool(orbitalFollow, "RadialAxis.Wrap", false);
-
-        Component rotationComposer = GetOrAddComponent(virtualCameraObject, rotationComposerType);
-        SetSerializedVector2(rotationComposer, "Composition.ScreenPosition", new Vector2(0f, 0.08f));
-        SetSerializedBool(rotationComposer, "Composition.DeadZone.Enabled", true);
-        SetSerializedVector2(rotationComposer, "Composition.DeadZone.Size", new Vector2(0.82f, 0.68f));
-        SetSerializedBool(rotationComposer, "Composition.HardLimits.Enabled", false);
-        SetSerializedBool(rotationComposer, "CenterOnActivate", true);
-        SetSerializedVector3(rotationComposer, "TargetOffset", new Vector3(0f, 1.2f, 0f));
-        SetSerializedVector2(rotationComposer, "Damping", new Vector2(1.8f, 1.8f));
-
-        if (freeLookModifierType != null)
-        {
-            Component freeLookModifier = GetOrAddComponent(virtualCameraObject, freeLookModifierType);
-            Behaviour freeLookBehaviour = freeLookModifier as Behaviour;
-            if (freeLookBehaviour != null)
-            {
-                Undo.RecordObject(freeLookBehaviour, "Disable Cinemachine free look modifier");
-                freeLookBehaviour.enabled = false;
-            }
-        }
-
-        if (inputAxisControllerType != null)
-        {
-            GetOrAddComponent(virtualCameraObject, inputAxisControllerType);
-        }
-
-        if (thirdPersonFollowType != null)
-        {
-            Component oldThirdPersonFollow = virtualCameraObject.GetComponent(thirdPersonFollowType);
-            if (oldThirdPersonFollow != null)
-            {
-                Undo.DestroyObjectImmediate(oldThirdPersonFollow);
-            }
-        }
-
-        EditorSceneManager.MarkSceneDirty(target.gameObject.scene);
-        return true;
     }
 
     private static void EnsureTestGround()

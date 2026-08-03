@@ -28,12 +28,14 @@ public class PetCommandInput : MonoBehaviour
     public PetController activePet;
     public PetController[] petSlots = new PetController[6];
     public Camera commandCamera;
+    public BasicCameraFollow cameraLock;
 
     [Header("Input")]
     public int commandMouseButton = 0;
     public KeyCode withdrawKey = KeyCode.Backspace;
     public bool ignoreWhileRightMouseHeld = false;
     public bool allowCommandsWhileRightMouseHeld = true;
+    public bool commandLockedEnemyFirst = true;
     public int aimMouseButton = 1;
     public bool ignoreWhenPointerOverUI = true;
 
@@ -47,13 +49,14 @@ public class PetCommandInput : MonoBehaviour
 
     private readonly RaycastHit[] hits = new RaycastHit[16];
     private readonly Collider[] nearbyColliders = new Collider[24];
-
     private void Awake()
     {
         if (commandCamera == null)
         {
             commandCamera = Camera.main;
         }
+
+        ResolveCameraLock(commandCamera);
 
         if (activePet == null)
         {
@@ -85,6 +88,13 @@ public class PetCommandInput : MonoBehaviour
         Camera cameraToUse = commandCamera != null ? commandCamera : Camera.main;
         if (cameraToUse == null)
         {
+            return;
+        }
+
+        ResolveCameraLock(cameraToUse);
+        if (commandLockedEnemyFirst && cameraLock != null && cameraLock.TryGetLockedEnemy(out DummyEnemy lockedEnemy))
+        {
+            activePet.CommandAttack(lockedEnemy);
             return;
         }
 
@@ -225,6 +235,27 @@ public class PetCommandInput : MonoBehaviour
         }
 
         return Input.mousePosition;
+    }
+
+    private void ResolveCameraLock(Camera cameraToUse)
+    {
+        if (cameraLock != null && cameraLock.isActiveAndEnabled)
+        {
+            return;
+        }
+
+        cameraLock = null;
+
+        if (cameraToUse != null)
+        {
+            cameraLock = cameraToUse.GetComponent<BasicCameraFollow>();
+            if (cameraLock != null)
+            {
+                return;
+            }
+        }
+
+        cameraLock = FindFirstObjectByType<BasicCameraFollow>();
     }
 
     private DummyEnemy FindNearestEnemy(int hitCount)

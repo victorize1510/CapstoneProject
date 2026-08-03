@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace Capstone.Game.Inventory.Editor {
     public static class MonsterInventorySetupTool {
-        const string MenuPath = "Game Tools/Inventory/Create Monster Inventory UI";
+        const string MenuPath = "Game Tools/GameToolThang/Inventory/Create Monster Inventory UI";
         const string InventoryObjectName = "InventoryUI";
         const string CreatedUiFolder = "Assets/Game/Inventory/UI";
         const string CreatedPanelSettingsPath = CreatedUiFolder + "/MonsterInventoryPanelSettings.asset";

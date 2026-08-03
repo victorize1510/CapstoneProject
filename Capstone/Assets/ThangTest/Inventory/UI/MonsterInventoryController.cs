@@ -16,6 +16,7 @@ namespace Capstone.Game.Inventory {
         [SerializeField] bool allowPlaceholderActions = true;
         [SerializeField] bool autoInstallPickupActionFeedback = true;
         [SerializeField] bool autoInstallQuestPanelController = true;
+        [SerializeField] bool autoInstallMenuHudController = true;
 
         readonly List<InventoryItemSnapshot> filteredItems = new List<InventoryItemSnapshot>();
         readonly List<Button> categoryButtons = new List<Button>();
@@ -25,6 +26,7 @@ namespace Capstone.Game.Inventory {
         Label noItemsLabel;
         Label categoryValueLabel;
         Label capacityLabel;
+        Label categoryCapacityMirror;
         Label detailName;
         Label detailCategory;
         Label detailQuantity;
@@ -46,6 +48,7 @@ namespace Capstone.Game.Inventory {
         string selectedTargetMonsterId = string.Empty;
 
         const string QuestPanelControllerTypeName = "Capstone.Game.QuestSystem.UI.QuestPanelController, Assembly-CSharp";
+        const string MenuHudControllerTypeName = "Capstone.Game.Inventory.InventoryMenuHudController, Assembly-CSharp";
 
         public event Action<bool> VisibilityChanged;
         public event Action<InventoryActionRequest> UseItem;
@@ -64,6 +67,7 @@ namespace Capstone.Game.Inventory {
             ResolveReferences();
             EnsureInputController();
             EnsurePickupActionFeedback();
+            EnsureMenuHudController();
             CacheElements();
             EnsureQuestPanelController();
             RegisterCategoryButtons();
@@ -100,6 +104,19 @@ namespace Capstone.Game.Inventory {
             feedback.Bind(this);
         }
 
+        void EnsureMenuHudController() {
+            if (!Application.isPlaying || !autoInstallMenuHudController || document == null) return;
+
+            var menuHudType = Type.GetType(MenuHudControllerTypeName);
+            if (menuHudType == null || !typeof(MonoBehaviour).IsAssignableFrom(menuHudType)) return;
+
+            var menuHud = GetComponent(menuHudType);
+            if (menuHud == null) menuHud = gameObject.AddComponent(menuHudType);
+
+            var bindMethod = menuHudType.GetMethod("Bind", new[] { typeof(UIDocument) });
+            bindMethod?.Invoke(menuHud, new object[] { document });
+        }
+
         void EnsureQuestPanelController() {
             if (!Application.isPlaying || !autoInstallQuestPanelController || document == null) return;
 
@@ -120,6 +137,7 @@ namespace Capstone.Game.Inventory {
             noItemsLabel = rootElement.Q<Label>("no-items-label");
             categoryValueLabel = rootElement.Q<Label>("category-value-label");
             capacityLabel = rootElement.Q<Label>("capacity-label");
+            categoryCapacityMirror = rootElement.Q<Label>("category-capacity-mirror");
             detailIcon = rootElement.Q<VisualElement>("detail-icon");
             detailName = rootElement.Q<Label>("detail-name");
             detailCategory = rootElement.Q<Label>("detail-category");
@@ -311,7 +329,9 @@ namespace Capstone.Game.Inventory {
             if (adapter != null) filteredItems.AddRange(adapter.GetItems(currentCategory));
 
             if (categoryValueLabel != null) categoryValueLabel.text = FormatCategory(currentCategory);
-            if (capacityLabel != null) capacityLabel.text = adapter != null ? $"{adapter.OccupiedSlotCount} / {adapter.Capacity}" : "0 / 0";
+            string capacityText = adapter != null ? $"{adapter.OccupiedSlotCount} / {adapter.Capacity}" : "0 / 0";
+            if (capacityLabel != null) capacityLabel.text = capacityText;
+            if (categoryCapacityMirror != null) categoryCapacityMirror.text = capacityText;
 
             var hasItems = filteredItems.Count > 0;
             int nextSelectedIndex = hasItems ? GetNextSelectionIndex(previousItemBase, previousIndex) : -1;
