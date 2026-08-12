@@ -162595,7 +162595,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb64bdda96caf4defbc10835dd520b28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  guid: 38b290aa-3b76-48b5-afb1-5c001622a767
 --- !u!4 &995753364
 Transform:
   m_ObjectHideFlags: 0
@@ -298097,20 +298096,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 436275a13d4459746955fc6db5953473, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _active: 1
-  _enableRotation: 1
-  _mouseSense: 1.8
-  _enableTranslation: 1
-  _translationSpeed: 55
-  _enableMovement: 1
-  _movementSpeed: 10
-  _boostedSpeed: 50
-  _boostSpeed: 304
-  _moveUp: 101
-  _moveDown: 113
-  _enableSpeedAcceleration: 0
-  _speedAccelerationFactor: 1.5
-  _initPositonButton: 114
 --- !u!114 &1764142545
 MonoBehaviour:
   m_ObjectHideFlags: 0
