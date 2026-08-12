@@ -10,6 +10,7 @@ namespace Capstone.Game.Inventory {
         [SerializeField] List<MonoBehaviour> componentsToDisable = new List<MonoBehaviour>();
 
         readonly List<ComponentState> savedStates = new List<ComponentState>();
+        readonly List<MonoBehaviour> softLockedComponents = new List<MonoBehaviour>();
 
         public bool IsLocked { get; private set; }
 
@@ -18,10 +19,16 @@ namespace Capstone.Game.Inventory {
 
             ResolveComponents();
             savedStates.Clear();
+            softLockedComponents.Clear();
 
             foreach (var component in componentsToDisable) {
                 if (component == null || component == this) continue;
                 if (!IsLocalAuthority(component.gameObject)) continue;
+
+                if (TrySetSoftInputLock(component, true)) {
+                    softLockedComponents.Add(component);
+                    continue;
+                }
 
                 savedStates.Add(new ComponentState(component, component.enabled));
                 component.enabled = false;
@@ -33,12 +40,21 @@ namespace Capstone.Game.Inventory {
         public void UnlockControls() {
             if (!IsLocked) return;
 
+            foreach (var component in softLockedComponents) {
+                if (component != null) TrySetSoftInputLock(component, false);
+            }
+
             foreach (var state in savedStates) {
                 if (state.Component != null) state.Component.enabled = state.WasEnabled;
             }
 
+            softLockedComponents.Clear();
             savedStates.Clear();
             IsLocked = false;
+        }
+
+        void OnDisable() {
+            UnlockControls();
         }
 
         void ResolveComponents() {
@@ -124,6 +140,20 @@ namespace Capstone.Game.Inventory {
             if (property != null && property.GetIndexParameters().Length == 0 && ReferenceEquals(property.GetValue(behaviour), target)) return true;
 
             return false;
+        }
+
+        static bool TrySetSoftInputLock(MonoBehaviour component, bool locked) {
+            if (component == null) return false;
+
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            var method = component.GetType().GetMethod("SetGameplayInputLocked", flags);
+            if (method == null) return false;
+
+            var parameters = method.GetParameters();
+            if (parameters.Length != 1 || parameters[0].ParameterType != typeof(bool)) return false;
+
+            method.Invoke(component, new object[] { locked });
+            return true;
         }
 
         static bool IsLocalAuthority(GameObject source) {

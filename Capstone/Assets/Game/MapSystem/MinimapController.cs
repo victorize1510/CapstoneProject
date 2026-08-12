@@ -25,11 +25,26 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] Vector2 worldCenter = Vector2.zero;
         [SerializeField] Vector2 worldSize = new Vector2(120f, 120f);
 
+        [Header("UI Layout")]
+        [SerializeField] bool enforceTopLeftLayout = true;
+        [SerializeField] Vector2 minimapSize = new Vector2(236f, 236f);
+        [SerializeField] Vector2 topLeftOffset = new Vector2(28f, -28f);
+        [SerializeField, Min(0f)] float maskInset = 20f;
+        [SerializeField, Min(0f)] float frameOverscan = 30f;
+
+        RenderTexture runtimeMinimapTexture;
+
         public MinimapManager Manager => minimapManager;
         public Camera Camera => minimapCamera;
         public Transform Target => target;
 
         void Awake() {
+            ResolveReferences();
+            ApplySettings();
+            EnsureOpaqueMinimapVisuals();
+        }
+
+        void OnEnable() {
             ResolveReferences();
             ApplySettings();
             EnsureOpaqueMinimapVisuals();
@@ -42,12 +57,21 @@ namespace Capstone.Game.MapSystem {
         }
 
         void LateUpdate() {
-            if (!keepCameraAboveTarget || minimapCamera == null || target == null) return;
+            if (keepCameraAboveTarget && minimapCamera != null && target != null) {
+                EnsureMinimapRenderTexture();
+                Vector3 desired = ClampCameraPosition(new Vector3(target.position.x, cameraHeight, target.position.z));
+                float t = followSharpness <= 0f ? 1f : 1f - Mathf.Exp(-followSharpness * Time.unscaledDeltaTime);
+                minimapCamera.transform.position = Vector3.Lerp(minimapCamera.transform.position, desired, t);
+                minimapCamera.transform.rotation = Quaternion.Euler(90f, rotateWithTarget ? target.eulerAngles.y : 0f, 0f);
+            }
 
-            Vector3 desired = ClampCameraPosition(new Vector3(target.position.x, cameraHeight, target.position.z));
-            float t = followSharpness <= 0f ? 1f : 1f - Mathf.Exp(-followSharpness * Time.unscaledDeltaTime);
-            minimapCamera.transform.position = Vector3.Lerp(minimapCamera.transform.position, desired, t);
-            minimapCamera.transform.rotation = Quaternion.Euler(90f, rotateWithTarget ? target.eulerAngles.y : 0f, 0f);
+            EnsureOpaqueMinimapVisuals();
+        }
+
+        void OnDestroy() {
+            if (runtimeMinimapTexture == null) return;
+            runtimeMinimapTexture.Release();
+            Destroy(runtimeMinimapTexture);
         }
 
         public void SetTarget(Transform newTarget) {
@@ -85,6 +109,8 @@ namespace Capstone.Game.MapSystem {
         }
 
         void ApplySettings() {
+            RenderTexture texture = EnsureMinimapRenderTexture();
+
             if (minimapManager != null) {
                 if (target != null) minimapManager.SetTargetObject(target.gameObject);
                 if (minimapCamera != null) minimapManager.SetCamera(minimapCamera.gameObject);
@@ -95,6 +121,11 @@ namespace Capstone.Game.MapSystem {
                 minimapManager.backgroundColor = new Color(0.015f, 0.035f, 0.035f, 1f);
                 minimapManager.minimapOpacity = 1f;
                 minimapManager.minimapColor = Color.white;
+                minimapManager.haveBorder = false;
+                minimapManager.haveZoomButtons = false;
+                minimapManager.displayDirections = false;
+                minimapManager.displayGrid = false;
+                if (texture != null) minimapManager.renderTexture = texture;
             }
 
             if (minimapCamera != null) {
@@ -108,6 +139,7 @@ namespace Capstone.Game.MapSystem {
                 minimapCamera.farClipPlane = Mathf.Max(cameraHeight + 200f, 300f);
                 minimapCamera.clearFlags = CameraClearFlags.SolidColor;
                 minimapCamera.backgroundColor = new Color(0.015f, 0.035f, 0.035f, 1f);
+                if (texture != null) minimapCamera.targetTexture = texture;
                 if (applyCullingMask) minimapCamera.cullingMask = cullingMask;
             }
         }
@@ -117,6 +149,27 @@ namespace Capstone.Game.MapSystem {
             Transform root = minimapManager != null ? minimapManager.transform : null;
             Transform mask = root != null ? root.Find("Minimap Mask") : null;
             if (mask == null) return;
+
+            RectTransform rootRect = root.GetComponent<RectTransform>();
+            if (enforceTopLeftLayout && rootRect != null) ConfigureMinimapRoot(rootRect);
+
+            Transform zoomButtons = root.Find("Minimap Zoom Buttons");
+            if (zoomButtons != null) zoomButtons.gameObject.SetActive(false);
+
+            Transform border = root.Find("Minimap Border");
+            if (border != null) border.gameObject.SetActive(false);
+
+            Transform directions = root.Find("Minimap Directions");
+            if (directions != null) directions.gameObject.SetActive(false);
+
+            Image rootImage = root.GetComponent<Image>();
+            if (rootImage != null) {
+                rootImage.color = Color.clear;
+                rootImage.raycastTarget = false;
+            }
+
+            RectTransform maskRect = mask.GetComponent<RectTransform>();
+            if (maskRect != null) Inset(maskRect, maskInset);
 
             Image maskImage = mask.GetComponent<Image>();
             if (maskImage != null) {
@@ -138,10 +191,34 @@ namespace Capstone.Game.MapSystem {
             if (display != null) {
                 display.color = Color.white;
                 display.raycastTarget = false;
-                if (minimapManager != null && minimapManager.renderTexture != null) display.texture = minimapManager.renderTexture;
+                RenderTexture texture = EnsureMinimapRenderTexture();
+                if (texture != null) display.texture = texture;
                 Stretch(display.rectTransform);
                 display.transform.SetSiblingIndex(1);
             }
+
+            ConfigureCustomFrame(root.Find("Thang Minimap Frame"));
+        }
+
+        RenderTexture EnsureMinimapRenderTexture() {
+            RenderTexture texture = minimapManager != null ? minimapManager.renderTexture : null;
+            if (texture == null) texture = runtimeMinimapTexture;
+
+            if (texture == null) {
+                runtimeMinimapTexture = new RenderTexture(512, 512, 16, RenderTextureFormat.ARGB32) {
+                    name = "Minimap_RT_Runtime",
+                    useMipMap = false,
+                    autoGenerateMips = false,
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp
+                };
+                texture = runtimeMinimapTexture;
+            }
+
+            if (!texture.IsCreated()) texture.Create();
+            if (minimapManager != null) minimapManager.renderTexture = texture;
+            if (minimapCamera != null) minimapCamera.targetTexture = texture;
+            return texture;
         }
 
         static Image EnsureRuntimeImage(Transform parent, string name, Color color) {
@@ -172,6 +249,49 @@ namespace Capstone.Game.MapSystem {
             rect.localScale = Vector3.one;
         }
 
+        static void Inset(RectTransform rect, float inset) {
+            if (rect == null) return;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(inset, inset);
+            rect.offsetMax = new Vector2(-inset, -inset);
+            rect.localScale = Vector3.one;
+        }
+
+        void ConfigureCustomFrame(Transform frameTransform) {
+            if (frameTransform == null) return;
+
+            RectTransform frame = frameTransform.GetComponent<RectTransform>();
+            if (frame != null) {
+                frame.anchorMin = Vector2.zero;
+                frame.anchorMax = Vector2.one;
+                frame.pivot = new Vector2(0.5f, 0.5f);
+                frame.offsetMin = new Vector2(-frameOverscan, -frameOverscan);
+                frame.offsetMax = new Vector2(frameOverscan, frameOverscan);
+                frame.localScale = Vector3.one;
+            }
+
+            Image image = frameTransform.GetComponent<Image>();
+            if (image != null) {
+                image.color = Color.white;
+                image.raycastTarget = false;
+                image.preserveAspect = true;
+            }
+
+            frameTransform.SetAsLastSibling();
+            frameTransform.gameObject.SetActive(true);
+        }
+
+        void ConfigureMinimapRoot(RectTransform rect) {
+            rect.anchorMin = new Vector2(0f, 1f);
+            rect.anchorMax = new Vector2(0f, 1f);
+            rect.pivot = new Vector2(0f, 1f);
+            rect.anchoredPosition = topLeftOffset;
+            rect.sizeDelta = new Vector2(Mathf.Max(120f, minimapSize.x), Mathf.Max(120f, minimapSize.y));
+            rect.localScale = Vector3.one;
+        }
+
         Vector3 ClampCameraPosition(Vector3 position) {
             position.y = cameraHeight;
             if (!clampToWorldBounds || minimapCamera == null) return position;
@@ -193,6 +313,9 @@ namespace Capstone.Game.MapSystem {
 
         void OnValidate() {
             worldSize = new Vector2(Mathf.Max(1f, worldSize.x), Mathf.Max(1f, worldSize.y));
+            minimapSize = new Vector2(Mathf.Max(120f, minimapSize.x), Mathf.Max(120f, minimapSize.y));
+            maskInset = Mathf.Max(0f, maskInset);
+            frameOverscan = Mathf.Max(0f, frameOverscan);
         }
 
         static T FindFirst<T>() where T : Object {

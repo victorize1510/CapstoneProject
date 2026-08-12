@@ -1,4 +1,4 @@
-﻿using AAMAP;
+using AAMAP;
 using UnityEngine;
 
 namespace Capstone.Game.MapSystem {
@@ -14,6 +14,7 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] Transform playerTarget = null;
         [SerializeField] bool autoFindPlayer = true;
         [SerializeField] bool rotateMinimapWithPlayer = false;
+        [SerializeField] bool minimapDisabled = true;
 
         [Header("World Map")]
         [SerializeField] bool startMapClosed = true;
@@ -37,6 +38,7 @@ namespace Capstone.Game.MapSystem {
             ApplyBindings();
 
             if (startMapClosed && mapManager != null && mapManager.IsMapEnabled()) {
+                PrepareMapManagerForCustomUi();
                 mapManager.DisableMap();
             }
         }
@@ -74,17 +76,22 @@ namespace Capstone.Game.MapSystem {
             }
 
             if (minimapManager != null) {
-                if (playerTarget != null) minimapManager.SetTargetObject(playerTarget.gameObject);
-                if (minimapCamera != null) minimapManager.SetCamera(minimapCamera);
-                minimapManager.rotateWithTarget = rotateMinimapWithPlayer;
+                if (minimapDisabled) {
+                    minimapManager.gameObject.SetActive(false);
+                    if (minimapCamera != null) minimapCamera.SetActive(false);
+                } else {
+                    if (playerTarget != null) minimapManager.SetTargetObject(playerTarget.gameObject);
+                    if (minimapCamera != null) minimapManager.SetCamera(minimapCamera);
+                    minimapManager.rotateWithTarget = rotateMinimapWithPlayer;
+                }
             }
 
             if (mapManager != null) {
+                PrepareMapManagerForCustomUi();
                 if (mapCamera != null) mapManager.SetMapCamera(mapCamera);
-                if (minimapManager != null) {
-                    mapManager.minimapManager = minimapManager;
-                    mapManager.minimapGameObject = minimapManager.gameObject;
-                }
+                mapManager.disableMinimap = true;
+                mapManager.minimapManager = null;
+                mapManager.minimapGameObject = null;
             }
         }
 
@@ -102,8 +109,21 @@ namespace Capstone.Game.MapSystem {
             mapManager.SetCameraOrthograpicSize(defaultMapOrthographicSize);
 
             if (openMap && !mapManager.IsMapEnabled()) {
+                PrepareMapManagerForCustomUi();
                 mapManager.EnableMap();
             }
+        }
+
+        void PrepareMapManagerForCustomUi() {
+            if (mapManager == null) return;
+
+            // Custom controllers manage minimap visibility and UI chrome.
+            mapManager.disableMinimap = true;
+            mapManager.haveBorder = false;
+            mapManager.haveZoomButtons = false;
+            mapManager.haveExitButton = false;
+            mapManager.displayDirections = false;
+            mapManager.displayGrid = false;
         }
 
         public static Transform FindPlayerTarget() {

@@ -57,10 +57,50 @@ namespace Capstone.Game.MapSystem {
 
             if (FindFirst<MapSystemController>() == null) issues.Add("Missing MapSystemController.");
             if (FindFirst<MinimapController>() == null) issues.Add("Missing MinimapController.");
-            if (FindFirst<WorldMapController>() == null) issues.Add("Missing WorldMapController.");
+            WorldMapController worldMapController = FindFirst<WorldMapController>();
+            if (worldMapController == null) issues.Add("Missing WorldMapController.");
             if (FindFirst<MapInputController>() == null) issues.Add("Missing MapInputController.");
             if (FindFirst<MapMarkerManager>() == null) issues.Add("Missing MapMarkerManager.");
             if (FindFirst<MapIconRegistry>() == null) issues.Add("Missing MapIconRegistry.");
+
+            if (mapManager != null) {
+                if (mapManager.renderTexture == null) issues.Add("World MapManager renderTexture is missing.");
+                else if (Application.isPlaying && !mapManager.renderTexture.IsCreated()) issues.Add("World Map renderTexture exists but is not created at runtime yet.");
+
+                Transform mapMask = mapManager.transform.Find("Map Mask");
+                if (mapMask == null) {
+                    issues.Add("World Map is missing Map Mask viewport.");
+                } else {
+                    if (mapMask.GetComponent<Mask>() == null && mapMask.GetComponent<RectMask2D>() == null) {
+                        issues.Add("Map Mask should have Mask or RectMask2D.");
+                    }
+
+                    RawImage display = FindChildComponent<RawImage>(mapMask, "Map Display");
+                    if (display == null) issues.Add("Map Mask is missing Map Display RawImage.");
+                    else {
+                        if (display.texture == null) issues.Add("Map Display RawImage texture is missing.");
+                        if (display.color.a < 0.99f) issues.Add("Map Display RawImage alpha is below 1 and may look transparent.");
+                    }
+                }
+            }
+
+            if (worldMapController != null) {
+                if (worldMapController.MinimumVisiblePercent > worldMapController.InitialVisiblePercent) {
+                    issues.Add("World Map minimumVisiblePercent is greater than initialVisiblePercent.");
+                }
+                if (worldMapController.InitialVisiblePercent > worldMapController.MaximumVisiblePercent) {
+                    issues.Add("World Map initialVisiblePercent is greater than maximumVisiblePercent.");
+                }
+                if (worldMapController.MaximumVisiblePercent > 0.30f) {
+                    issues.Add("World Map maximumVisiblePercent is above 0.30, so zoom-out may show too much map.");
+                }
+                if (worldMapController.MapInteractionRect == null) {
+                    issues.Add("WorldMapController is missing mapInteractionRect.");
+                }
+                if (worldMapController.WorldSize.x <= 1f || worldMapController.WorldSize.y <= 1f) {
+                    issues.Add("WorldMapController worldSize is too small.");
+                }
+            }
 
             return issues;
         }
@@ -68,6 +108,14 @@ namespace Capstone.Game.MapSystem {
         static Camera FindCamera(string objectName) {
             GameObject found = GameObject.Find(objectName);
             return found != null ? found.GetComponent<Camera>() : null;
+        }
+
+        static T FindChildComponent<T>(Transform root, string childName) where T : Component {
+            if (root == null) return null;
+            foreach (Transform child in root.GetComponentsInChildren<Transform>(true)) {
+                if (child.name == childName) return child.GetComponent<T>();
+            }
+            return null;
         }
 
         static T FindFirst<T>() where T : Object {

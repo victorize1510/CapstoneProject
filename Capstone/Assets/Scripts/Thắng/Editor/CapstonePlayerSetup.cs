@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -57,7 +57,6 @@ public static class CapstonePlayerSetup
         }
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Repair Player Setup In Open Scene")]
     public static void RepairPlayerControllerSetup()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode)
@@ -77,7 +76,6 @@ public static class CapstonePlayerSetup
         Debug.Log("[Capstone] Player setup repair finished. Controller rebuilt: " + needsRebuild + ". Players fixed: " + fixedPlayers + ". Camera fixed: " + fixedCamera);
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Create Vexa Basic Player In Scene")]
     public static void CreateVexaBasicPlayer()
     {
         GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(GetAssetPath(VexaPrefabGuid));
@@ -107,7 +105,6 @@ public static class CapstonePlayerSetup
         EditorSceneManager.MarkSceneDirty(player.scene);
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Rebuild Player Animator Controller")]
     public static void RebuildPlayerAnimatorController()
     {
         EnsureAnimatorController(true);
@@ -117,7 +114,6 @@ public static class CapstonePlayerSetup
         EditorUtility.DisplayDialog("Player controller rebuilt", "Rebuilt PlayerBasic. Players refreshed: " + fixedPlayers + ". Camera refreshed: " + fixedCamera, "OK");
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Fix Player Animator Missing")]
     public static void FixPlayerAnimatorMissing()
     {
         int fixedCount = FixPlayersInOpenScenes(true, true);
@@ -125,7 +121,6 @@ public static class CapstonePlayerSetup
         EditorUtility.DisplayDialog("Player animator fixed", "Fixed player animator setup count: " + fixedCount + ". Camera refreshed: " + fixedCamera, "OK");
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Setup Selected Basic Player")]
     public static void SetupSelectedBasicPlayer()
     {
         GameObject player = Selection.activeGameObject;
@@ -141,7 +136,6 @@ public static class CapstonePlayerSetup
         EditorSceneManager.MarkSceneDirty(player.scene);
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Setup Selected Basic Player", true)]
     public static bool ValidateSetupSelectedBasicPlayer()
     {
         return Selection.activeGameObject != null;
@@ -1170,4 +1164,5 @@ public static class CapstonePlayerSetup
         }
     }
 }
+
 

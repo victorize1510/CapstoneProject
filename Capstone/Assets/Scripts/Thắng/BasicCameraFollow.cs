@@ -106,6 +106,7 @@ public class BasicCameraFollow : MonoBehaviour
     private bool focusInitialized;
     private bool targetYInitialized;
     private bool previousTargetPositionInitialized;
+    private bool gameplayInputLocked;
 
     public bool IsAiming
     {
@@ -143,6 +144,17 @@ public class BasicCameraFollow : MonoBehaviour
     {
         enemy = HasLockedEnemy ? lockedEnemy : null;
         return enemy != null;
+    }
+
+    public void SetGameplayInputLocked(bool locked)
+    {
+        gameplayInputLocked = locked;
+        if (!locked)
+        {
+            return;
+        }
+
+        aimBlendVelocity = 0f;
     }
 
     private void OnValidate()
@@ -388,7 +400,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void UpdateAimBlend()
     {
-        float targetBlend = enableAimCamera && rightMouseZoomsCamera && Input.GetMouseButton(aimMouseButton) ? 1f : 0f;
+        float targetBlend = !IsGameplayInputBlocked() && enableAimCamera && rightMouseZoomsCamera && Input.GetMouseButton(aimMouseButton) ? 1f : 0f;
         aimBlend = Mathf.SmoothDamp(aimBlend, targetBlend, ref aimBlendVelocity, aimBlendSmoothTime, aimBlendSpeed, Time.deltaTime);
         if (Mathf.Abs(aimBlend - targetBlend) < 0.001f)
         {
@@ -1156,9 +1168,9 @@ public class BasicCameraFollow : MonoBehaviour
         LockCursor();
     }
 
-    private static bool IsGameplayInputBlocked()
+    private bool IsGameplayInputBlocked()
     {
-        return Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
+        return gameplayInputLocked || Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
     }
 
     private float NormalizePitch(float angle)

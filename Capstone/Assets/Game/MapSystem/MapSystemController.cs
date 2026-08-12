@@ -1,4 +1,4 @@
-﻿using AAMAP;
+using AAMAP;
 using Capstone.Game.Inventory;
 using UnityEngine;
 
@@ -15,6 +15,7 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] LocalPlayerControlLock controlLock = null;
         [SerializeField] Transform playerTarget = null;
         [SerializeField] bool autoFindPlayer = true;
+        [SerializeField] bool disableMinimap = true;
 
         public AAMapRuntimeBinder Binder => aaBinder;
         public MinimapController Minimap => minimap;
@@ -55,7 +56,8 @@ namespace Capstone.Game.MapSystem {
                 aaBinder.ApplyBindings();
             }
 
-            if (minimap != null) minimap.SetTarget(playerTarget);
+            if (disableMinimap) DisableMinimapSceneObjects();
+            else if (minimap != null) minimap.SetTarget(playerTarget);
             if (worldMap != null) worldMap.SetTarget(playerTarget);
             if (input != null) input.SetReferences(this, worldMap, worldMap != null ? worldMap.MapManager : null, controlLock);
             if (iconRegistry != null) iconRegistry.SetMarkerManager(markerManager);
@@ -89,6 +91,15 @@ namespace Capstone.Game.MapSystem {
             else if (aaBinder != null) aaBinder.FocusMap(worldPosition, openMap);
         }
 
+        void DisableMinimapSceneObjects() {
+            if (minimap != null) minimap.enabled = false;
+
+            MinimapManager manager = FindFirst<MinimapManager>();
+            if (manager != null) manager.gameObject.SetActive(false);
+
+            GameObject cameraObject = GameObject.Find("Minimap Camera");
+            if (cameraObject != null) cameraObject.SetActive(false);
+        }
         static T FindFirst<T>() where T : Object {
             T[] items = FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             return items.Length > 0 ? items[0] : null;

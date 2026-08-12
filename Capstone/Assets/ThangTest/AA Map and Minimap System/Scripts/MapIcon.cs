@@ -112,6 +112,11 @@ namespace AAMAP
         /// </summary>
         private void FindMeshRenderer()
         {
+            if (visualsObject == null)
+            {
+                return;
+            }
+
             meshRenderer = visualsObject.GetComponent<MeshRenderer>();
 
             if (meshRenderer == null)
@@ -142,35 +147,40 @@ namespace AAMAP
             else
             {
                 iconTexture = texture;
-
-                if (meshRenderer.sharedMaterials[0].HasProperty("_MainTex"))
+                Material material;
+                if (!TryGetIconMaterial(out material))
                 {
-                    meshRenderer.sharedMaterials[0].SetTexture("_MainTex", texture);
+                    return;
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_BaseMap"))
+                if (material.HasProperty("_MainTex"))
                 {
-                    meshRenderer.sharedMaterials[0].SetTexture("_BaseMap", texture);
+                    material.SetTexture("_MainTex", texture);
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_BaseColorMap"))
+                if (material.HasProperty("_BaseMap"))
                 {
-                    meshRenderer.sharedMaterials[0].SetTexture("_BaseColorMap", texture);
+                    material.SetTexture("_BaseMap", texture);
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_EmissionMap"))
+                if (material.HasProperty("_BaseColorMap"))
                 {
-                    meshRenderer.sharedMaterials[0].SetTexture("_EmissionMap", texture);
+                    material.SetTexture("_BaseColorMap", texture);
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_EmissiveMap"))
+                if (material.HasProperty("_EmissionMap"))
                 {
-                    meshRenderer.sharedMaterials[0].SetTexture("_EmissiveMap", texture);
+                    material.SetTexture("_EmissionMap", texture);
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_EmissiveColorMap"))
+                if (material.HasProperty("_EmissiveMap"))
                 {
-                    meshRenderer.sharedMaterials[0].SetTexture("_EmissiveColorMap", texture);
+                    material.SetTexture("_EmissiveMap", texture);
+                }
+
+                if (material.HasProperty("_EmissiveColorMap"))
+                {
+                    material.SetTexture("_EmissiveColorMap", texture);
                 }
             }
         }
@@ -196,25 +206,30 @@ namespace AAMAP
             else
             {
                 iconColor = color;
-
-                if (meshRenderer.sharedMaterials[0].HasProperty("_Color"))
+                Material material;
+                if (!TryGetIconMaterial(out material))
                 {
-                    meshRenderer.sharedMaterials[0].SetColor("_Color", color);
+                    return;
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_BaseColor"))
+                if (material.HasProperty("_Color"))
                 {
-                    meshRenderer.sharedMaterials[0].SetColor("_BaseColor", color);
+                    material.SetColor("_Color", color);
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_EmissionColor"))
+                if (material.HasProperty("_BaseColor"))
                 {
-                    meshRenderer.sharedMaterials[0].SetColor("_EmissionColor", color);
+                    material.SetColor("_BaseColor", color);
                 }
 
-                if (meshRenderer.sharedMaterials[0].HasProperty("_EmissiveColor"))
+                if (material.HasProperty("_EmissionColor"))
                 {
-                    meshRenderer.sharedMaterials[0].SetColor("_EmissiveColor", color);
+                    material.SetColor("_EmissionColor", color);
+                }
+
+                if (material.HasProperty("_EmissiveColor"))
+                {
+                    material.SetColor("_EmissiveColor", color);
                 }
             }
         }
@@ -360,9 +375,9 @@ namespace AAMAP
         /// </summary>
         private void InitializeIconMesh()
         {
-            if (iconTexture != null && meshRenderer != null)
+            if (iconTexture != null)
             {
-                meshRenderer.sharedMaterials[0].SetTexture("_MainTex", iconTexture);
+                SetIconTexture(iconTexture);
             }
         }
 
@@ -476,13 +491,61 @@ namespace AAMAP
             if (material != null)
             {
                 iconMaterial = material;
-                meshRenderer.sharedMaterials[0] = material;
+                if (meshRenderer != null)
+                {
+                    Material[] materials = meshRenderer.sharedMaterials;
+                    if (materials == null || materials.Length == 0)
+                    {
+                        materials = new Material[1];
+                    }
+
+                    materials[0] = material;
+                    meshRenderer.sharedMaterials = materials;
+                }
+
                 iconColor = material.color;
             }
             else
             {
                 Debug.LogWarning(errorMessagePrefix + "You cannot assign a null value as the new material of the map icon.\n");
             }
+        }
+
+        private bool TryGetIconMaterial(out Material material)
+        {
+            material = null;
+
+            if (meshRenderer == null)
+            {
+                Debug.LogWarning(errorMessagePrefix + "Failed to update the map icon because the Mesh Renderer component is missing." + errorMessageSuffix);
+                DisableIcon();
+                return false;
+            }
+
+            Material[] materials = meshRenderer.sharedMaterials;
+            if (materials != null && materials.Length > 0 && materials[0] != null)
+            {
+                material = materials[0];
+                iconMaterial = material;
+                return true;
+            }
+
+            if (iconMaterial != null)
+            {
+                if (materials == null || materials.Length == 0)
+                {
+                    materials = new Material[1];
+                }
+
+                materials[0] = iconMaterial;
+                meshRenderer.sharedMaterials = materials;
+                material = iconMaterial;
+                return true;
+            }
+
+            Debug.LogWarning(errorMessagePrefix + "Failed to update the map icon because no material is assigned to \"" + gameObject.name + " > Visuals\"." + errorMessageSuffix);
+            DisableIcon();
+            return false;
         }
 
     }

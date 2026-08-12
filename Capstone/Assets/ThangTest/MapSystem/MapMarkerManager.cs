@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using AaMapIcon = AAMAP.MapIcon;
 
 namespace Capstone.Game.MapSystem {
@@ -41,16 +42,28 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] bool autoCreateEnemyMarkers = true;
         [SerializeField, Min(0.1f)] float markerScanInterval = 0.75f;
 
+        [Header("Icon Presentation")]
+        [SerializeField] bool useMarkerTextureOverrides = false;
+        [SerializeField] Vector3 defaultIconScale = new Vector3(0.28f, 1f, 0.28f);
+        [SerializeField] Vector3 playerIconScale = new Vector3(0.32f, 1f, 0.32f);
+        [SerializeField] Vector3 bossIconScale = new Vector3(0.42f, 1f, 0.42f);
+
         [Header("Filters")]
         [SerializeField] List<MapMarkerType> hiddenMarkerTypes = new List<MapMarkerType>();
 
         readonly Dictionary<MapMarker, AaMapIcon> iconsByMarker = new Dictionary<MapMarker, AaMapIcon>();
         float nextScanTime;
 
+        void Awake() {
+            ResolveReferences();
+            ScanMarkers();
+        }
+
         void OnEnable() {
             MapMarker.MarkerEnabled += RegisterMarker;
             MapMarker.MarkerDisabled += UnregisterMarker;
             MapMarker.MarkerChanged += RefreshMarkerIcon;
+            ResolveReferences();
         }
 
         void OnDisable() {
@@ -118,6 +131,7 @@ namespace Capstone.Game.MapSystem {
 
             marker.ConfigureRotation(markerType != MapMarkerType.Player, true, 0f);
             RegisterMarker(marker);
+            RefreshMarkerIcon(marker);
             return marker;
         }
 
@@ -180,12 +194,27 @@ namespace Capstone.Game.MapSystem {
 
         void AutoCreateMarkers() {
             if (autoCreatePlayerMarker) {
-                Transform player = mapBinder != null ? mapBinder.PlayerTarget : null;
+                Transform player = ResolvePlayerMarkerTarget(mapBinder != null ? mapBinder.PlayerTarget : null);
                 if (player != null) EnsureRuntimeMarker(player.gameObject, MapMarkerType.Player, "player", "Player");
             }
 
             if (autoCreatePetMarkers) EnsureMarkersForBehaviour("PetController", MapMarkerType.Pet);
             if (autoCreateEnemyMarkers) EnsureMarkersForBehaviour("DummyEnemy", MapMarkerType.Enemy);
+        }
+
+        static Transform ResolvePlayerMarkerTarget(Transform candidate) {
+            if (candidate == null) candidate = AAMapRuntimeBinder.FindPlayerTarget();
+            if (candidate == null) return null;
+
+            foreach (var behaviour in candidate.GetComponentsInParent<MonoBehaviour>(true)) {
+                if (behaviour != null && behaviour.GetType().Name == "BasicPlayerMovement") return behaviour.transform;
+            }
+
+            foreach (var behaviour in candidate.GetComponentsInChildren<MonoBehaviour>(true)) {
+                if (behaviour != null && behaviour.GetType().Name == "BasicPlayerMovement") return behaviour.transform;
+            }
+
+            return candidate;
         }
 
         void EnsureMarkersForBehaviour(string behaviourTypeName, MapMarkerType markerType) {
@@ -210,6 +239,7 @@ namespace Capstone.Game.MapSystem {
             AaMapIcon icon = iconObject.GetComponent<AaMapIcon>();
             if (icon == null) icon = iconObject.GetComponentInChildren<AaMapIcon>();
             if (icon == null) icon = iconObject.AddComponent<AaMapIcon>();
+            iconObject.SetActive(true);
             return icon;
         }
 
@@ -235,13 +265,16 @@ namespace Capstone.Game.MapSystem {
         void ConfigureIcon(MapMarker marker, AaMapIcon icon) {
             if (marker == null || icon == null) return;
 
-            Texture texture = marker.IconTexture != null ? marker.IconTexture : GetDefaultTexture(marker.MarkerType);
+            Texture defaultTexture = GetDefaultTexture(marker.MarkerType);
+            Texture texture = ShouldUseMarkerTexture(marker) ? marker.IconTexture : defaultTexture;
+            if (texture == null) texture = marker.IconTexture;
             Color color = marker.IconColor == default(Color) ? GetDefaultColor(marker.MarkerType) : marker.IconColor;
+            Vector3 scale = ResolveIconScale(marker);
 
             icon.iconTexture = texture;
             icon.iconColor = color;
             icon.iconOffset = marker.IconOffset;
-            icon.iconScale = marker.IconScale;
+            icon.iconScale = scale;
             icon.iconRotation = marker.IconRotation;
             icon.rotateWithCamera = marker.RotateWithMinimapCamera;
             icon.haveCustomRotation = marker.UseMapCameraRotation;
@@ -255,7 +288,29 @@ namespace Capstone.Game.MapSystem {
             EnsureIconVisuals(icon, texture, color);
 
             icon.transform.localPosition = marker.IconOffset;
-            icon.transform.localScale = marker.IconScale;
+            icon.transform.localScale = scale;
+        }
+
+        bool ShouldUseMarkerTexture(MapMarker marker) {
+            if (marker == null || marker.IconTexture == null) return false;
+            return useMarkerTextureOverrides || marker.MarkerType == MapMarkerType.Custom;
+        }
+
+        Vector3 ResolveIconScale(MapMarker marker) {
+            if (marker == null) return defaultIconScale;
+
+            Vector3 markerScale = marker.IconScale;
+            bool legacyLargeScale = markerScale.x >= 2.5f || markerScale.z >= 2.5f;
+            if (!legacyLargeScale) return markerScale;
+
+            switch (marker.MarkerType) {
+                case MapMarkerType.Player:
+                    return playerIconScale;
+                case MapMarkerType.Boss:
+                    return bossIconScale;
+                default:
+                    return defaultIconScale;
+            }
         }
 
         void EnsureIconVisuals(AaMapIcon icon, Texture texture, Color color) {
@@ -320,6 +375,7 @@ namespace Capstone.Game.MapSystem {
 
         static Material CreateIconMaterial(Texture texture, Color color, Material source = null) {
             Material material = source != null ? new Material(source) : new Material(FindIconShader());
+            ConfigureTransparentIconMaterial(material);
             SetMaterialTexture(material, texture);
             SetMaterialColor(material, color);
             return material;
@@ -330,6 +386,23 @@ namespace Capstone.Game.MapSystem {
             if (shader == null) shader = Shader.Find("Unlit/Transparent");
             if (shader == null) shader = Shader.Find("Unlit/Texture");
             return shader != null ? shader : Shader.Find("Standard");
+        }
+
+        static void ConfigureTransparentIconMaterial(Material material) {
+            if (material == null) return;
+
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.renderQueue = (int)RenderQueue.Transparent;
+
+            if (material.HasProperty("_Surface")) material.SetFloat("_Surface", 1f);
+            if (material.HasProperty("_Blend")) material.SetFloat("_Blend", 0f);
+            if (material.HasProperty("_SrcBlend")) material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            if (material.HasProperty("_DstBlend")) material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            if (material.HasProperty("_ZWrite")) material.SetFloat("_ZWrite", 0f);
+            if (material.HasProperty("_AlphaClip")) material.SetFloat("_AlphaClip", 0f);
+
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.DisableKeyword("_ALPHATEST_ON");
         }
 
         static void SetMaterialTexture(Material material, Texture texture) {
@@ -352,3 +425,5 @@ namespace Capstone.Game.MapSystem {
         }
     }
 }
+
+

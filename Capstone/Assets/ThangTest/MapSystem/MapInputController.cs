@@ -18,14 +18,22 @@ namespace Capstone.Game.MapSystem {
         [Header("Keys")]
         [SerializeField] KeyCode toggleMapKey = KeyCode.M;
         [SerializeField] KeyCode closeMapKey = KeyCode.Escape;
+        [SerializeField] KeyCode zoomInKey = KeyCode.KeypadPlus;
+        [SerializeField] KeyCode zoomOutKey = KeyCode.Minus;
+        [SerializeField] KeyCode alternateZoomOutKey = KeyCode.KeypadMinus;
 #if ENABLE_INPUT_SYSTEM
         [SerializeField] Key toggleMapInputKey = Key.M;
         [SerializeField] Key closeMapInputKey = Key.Escape;
+        [SerializeField] Key zoomInInputKey = Key.NumpadPlus;
+        [SerializeField] Key alternateZoomInInputKey = Key.Equals;
+        [SerializeField] Key zoomOutInputKey = Key.Minus;
+        [SerializeField] Key alternateZoomOutInputKey = Key.NumpadMinus;
 #endif
 
         [Header("Behaviour")]
         [SerializeField] bool lockPlayerWhileOpen = true;
         [SerializeField] bool showCursorWhileOpen = true;
+        [SerializeField] bool enableOpenCloseHotkeys = true;
         [SerializeField, Min(0f)] float dragDeadZone = 0.1f;
 
         bool cursorStateSaved;
@@ -60,12 +68,12 @@ namespace Capstone.Game.MapSystem {
             ResolveReferences();
             DisableBuiltInMapInput();
 
-            if (WasTogglePressed()) {
+            if (enableOpenCloseHotkeys && WasTogglePressed()) {
                 ToggleMap();
                 return;
             }
 
-            if (IsOpen && WasClosePressed()) {
+            if (enableOpenCloseHotkeys && IsOpen && WasClosePressed()) {
                 CloseMap();
                 return;
             }
@@ -93,7 +101,10 @@ namespace Capstone.Game.MapSystem {
 
             if (mapSystem != null) mapSystem.OpenWorldMap(true);
             else if (worldMap != null) worldMap.OpenMap(false);
-            else if (mapManager != null) mapManager.EnableMap();
+            else if (mapManager != null) {
+                PrepareMapManagerForCustomUi();
+                mapManager.EnableMap();
+            }
         }
 
         public void CloseMap() {
@@ -101,7 +112,10 @@ namespace Capstone.Game.MapSystem {
 
             if (mapSystem != null) mapSystem.CloseWorldMap();
             else if (worldMap != null) worldMap.CloseMap();
-            else if (mapManager != null) mapManager.DisableMap();
+            else if (mapManager != null) {
+                PrepareMapManagerForCustomUi();
+                mapManager.DisableMap();
+            }
 
             dragging = false;
 
@@ -142,12 +156,24 @@ namespace Capstone.Game.MapSystem {
             DisableBuiltInMapInput();
         }
 
+        public void SetOpenCloseHotkeysEnabled(bool enabled) {
+            enableOpenCloseHotkeys = enabled;
+        }
+
         void HandleWorldMapPointerInput() {
             if (worldMap == null) return;
 
             float scroll = ReadScrollDelta();
             if (Mathf.Abs(scroll) > 0.01f) {
                 worldMap.Zoom(scroll);
+            }
+
+            if (WasZoomInPressed()) {
+                worldMap.Zoom(1f);
+            }
+
+            if (WasZoomOutPressed()) {
+                worldMap.Zoom(-1f);
             }
 
             Vector2 pointer = ReadPointerPosition();
@@ -198,6 +224,18 @@ namespace Capstone.Game.MapSystem {
             if (mapManager == null) return;
             mapManager.enablingShortcut = KeyCode.None;
             mapManager.disablingShortcut = KeyCode.None;
+            PrepareMapManagerForCustomUi();
+        }
+
+        void PrepareMapManagerForCustomUi() {
+            if (mapManager == null) return;
+
+            mapManager.disableMinimap = false;
+            mapManager.haveBorder = false;
+            mapManager.haveZoomButtons = false;
+            mapManager.haveExitButton = false;
+            mapManager.displayDirections = false;
+            mapManager.displayGrid = false;
         }
 
         void SaveCursorState() {
@@ -229,6 +267,30 @@ namespace Capstone.Game.MapSystem {
             return Keyboard.current != null && closeMapInputKey != Key.None && Keyboard.current[closeMapInputKey].wasPressedThisFrame;
 #elif ENABLE_LEGACY_INPUT_MANAGER
             return Input.GetKeyDown(closeMapKey);
+#else
+            return false;
+#endif
+        }
+
+        bool WasZoomInPressed() {
+#if ENABLE_INPUT_SYSTEM
+            return Keyboard.current != null
+                   && ((zoomInInputKey != Key.None && Keyboard.current[zoomInInputKey].wasPressedThisFrame)
+                       || (alternateZoomInInputKey != Key.None && Keyboard.current[alternateZoomInInputKey].wasPressedThisFrame));
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(zoomInKey);
+#else
+            return false;
+#endif
+        }
+
+        bool WasZoomOutPressed() {
+#if ENABLE_INPUT_SYSTEM
+            return Keyboard.current != null
+                   && ((zoomOutInputKey != Key.None && Keyboard.current[zoomOutInputKey].wasPressedThisFrame)
+                       || (alternateZoomOutInputKey != Key.None && Keyboard.current[alternateZoomOutInputKey].wasPressedThisFrame));
+#elif ENABLE_LEGACY_INPUT_MANAGER
+            return Input.GetKeyDown(zoomOutKey) || Input.GetKeyDown(alternateZoomOutKey);
 #else
             return false;
 #endif

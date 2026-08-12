@@ -10,6 +10,7 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         IdleNeutral,
         IdleSad,
+        IdleHappy,
         IdleBattle,
         SlowRun,
         Sprint,
@@ -50,6 +51,10 @@ public class BasicPlayerMovement : MonoBehaviour
     public float turnSpeed = 720f;
     public float aimTurnSpeed = 900f;
     public bool cameraRelativeMovement = true;
+
+    [Header("Feature Toggles")]
+    public bool enableJump = true;
+    public bool enableCrouch = true;
 
     [Header("Animation Motion")]
     public bool useRootMotion = false;
@@ -139,6 +144,7 @@ public class BasicPlayerMovement : MonoBehaviour
     public bool isEnemyNearby = false;
     public bool isEnemyDetectedPlayer = false;
     public float idleSadDelay = 5f;
+    public float idleAlternateInterval = 3f;
     public float battleRelaxDelay = 5f;
 
     [Header("Optional Enemy Probe")]
@@ -152,6 +158,7 @@ public class BasicPlayerMovement : MonoBehaviour
     [Header("Animator States")]
     public string idleNeutralState = "IdleNeutral";
     public string idleSadState = "IdleSad";
+    public string idleHappyState = "IdleHappy";
     public string idleBattleState = "IdleBattle";
     public string slowRunState = "SlowRun";
     public string sprintState = "Sprint";
@@ -242,6 +249,7 @@ public class BasicPlayerMovement : MonoBehaviour
     private float standingControllerHeight;
     private float standingControllerRadius;
     private bool activeOneShot;
+    private bool gameplayInputLocked;
     private bool grounded;
     private bool hasMoveInput;
     private bool sprintHeld;
@@ -345,6 +353,7 @@ public class BasicPlayerMovement : MonoBehaviour
         pickUpDuration = Mathf.Max(0.1f, pickUpDuration);
         throwDuration = Mathf.Max(0.1f, throwDuration);
         idleSadDelay = Mathf.Max(0f, idleSadDelay);
+        idleAlternateInterval = Mathf.Max(0.1f, idleAlternateInterval);
         battleRelaxDelay = Mathf.Max(0f, battleRelaxDelay);
         rootMotionScale = Mathf.Max(0f, rootMotionScale);
         rootMotionFallbackDelay = Mathf.Max(0f, rootMotionFallbackDelay);
@@ -414,6 +423,21 @@ public class BasicPlayerMovement : MonoBehaviour
         {
             PinAnimatorTransform();
         }
+    }
+
+    public void SetGameplayInputLocked(bool locked)
+    {
+        gameplayInputLocked = locked;
+        if (!locked)
+        {
+            return;
+        }
+
+        moveInput = Vector2.zero;
+        moveDirection = Vector3.zero;
+        hasMoveInput = false;
+        sprintHeld = false;
+        aimHeld = false;
     }
 
     public void ApplyAnimatorRootMotion(Vector3 animatorDeltaPosition, Quaternion animatorDeltaRotation)
@@ -491,6 +515,16 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void ReadInput()
     {
+        if (IsGameplayInputBlocked())
+        {
+            moveInput = Vector2.zero;
+            moveDirection = Vector3.zero;
+            hasMoveInput = false;
+            sprintHeld = false;
+            aimHeld = false;
+            return;
+        }
+
         moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         moveInput = Vector2.ClampMagnitude(moveInput, 1f);
         moveDirection = GetMoveDirection(moveInput);
@@ -506,6 +540,8 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void EvaluateRequests()
     {
+        bool inputBlocked = IsGameplayInputBlocked();
+
         if (EnemyThreatActive && isCrouching)
         {
             crouchWanted = false;
@@ -514,7 +550,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (enableRoll && !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && Input.GetKeyDown(rollKey))
+        if (!inputBlocked && enableRoll && Input.GetKeyDown(rollKey))
         {
             if (isCrouching)
             {
@@ -529,7 +565,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (WantsToJump())
+        if (!inputBlocked && WantsToJump())
         {
             if (isCrouching)
             {
@@ -544,7 +580,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (WantsToThrow())
+        if (!inputBlocked && WantsToThrow())
         {
             if (isCrouching)
             {
@@ -559,7 +595,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(pickUpKey) && CanPickUp)
+        if (!inputBlocked && Input.GetKeyDown(pickUpKey) && CanPickUp)
         {
             if (isCrouching)
             {
@@ -574,13 +610,13 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && (Input.GetKeyDown(crouchKey) || Input.GetKeyDown(alternateCrouchKey)))
+        if (!inputBlocked && enableCrouch && (Input.GetKeyDown(crouchKey) || Input.GetKeyDown(alternateCrouchKey)))
         {
             ToggleCrouch();
             return;
         }
 
-        if (isCrouching && sprintHeld && hasMoveInput)
+        if (!inputBlocked && enableCrouch && isCrouching && sprintHeld && hasMoveInput)
         {
             crouchWanted = false;
             pendingAfterStand = PendingAfterStand.None;
@@ -592,6 +628,11 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private void ToggleCrouch()
     {
+        if (!enableCrouch)
+        {
+            return;
+        }
+
         if (isCrouching)
         {
             crouchWanted = false;
@@ -1002,11 +1043,36 @@ public class BasicPlayerMovement : MonoBehaviour
 
         if (isInSafeArea && idleTimer >= idleSadDelay)
         {
-            currentState = PlayerState.IdleSad;
+            currentState = GetIdleVariationState();
             return;
         }
 
         currentState = PlayerState.IdleNeutral;
+    }
+
+    private PlayerState GetIdleVariationState()
+    {
+        if (animator == null)
+        {
+            return PlayerState.IdleSad;
+        }
+
+        bool hasSadIdle = HasAnimatorState(idleSadState);
+        bool hasHappyIdle = HasAnimatorState(idleHappyState);
+
+        if (!hasHappyIdle)
+        {
+            return PlayerState.IdleSad;
+        }
+
+        if (!hasSadIdle)
+        {
+            return PlayerState.IdleHappy;
+        }
+
+        float elapsedAfterDelay = Mathf.Max(0f, idleTimer - idleSadDelay);
+        int variationIndex = Mathf.FloorToInt(elapsedAfterDelay / idleAlternateInterval);
+        return variationIndex % 2 == 0 ? PlayerState.IdleSad : PlayerState.IdleHappy;
     }
 
     private bool ShouldUseFloatingState()
@@ -1541,6 +1607,11 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool WantsToJump()
     {
+        if (!enableJump || IsGameplayInputBlocked())
+        {
+            return false;
+        }
+
         if (activeOneShot || !grounded || jumpConsumedUntilGrounded || Time.time - lastJumpStartTime < jumpInputCooldown)
         {
             return false;
@@ -1551,17 +1622,32 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool IsJumpKeyHeld()
     {
+        if (!enableJump || IsGameplayInputBlocked())
+        {
+            return false;
+        }
+
         return jumpKey != KeyCode.None && Input.GetKey(jumpKey);
     }
 
     private bool WantsToThrow()
     {
+        if (IsGameplayInputBlocked())
+        {
+            return false;
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             return true;
         }
 
         return rightMouseButtonThrows && Input.GetMouseButtonDown(aimMouseButton);
+    }
+
+    private bool IsGameplayInputBlocked()
+    {
+        return gameplayInputLocked || Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
     }
 
     private Vector3 GetMoveDirection(Vector2 input)
@@ -1846,6 +1932,8 @@ public class BasicPlayerMovement : MonoBehaviour
         {
             case PlayerState.IdleSad:
                 return idleSadState;
+            case PlayerState.IdleHappy:
+                return idleHappyState;
             case PlayerState.IdleBattle:
                 return idleBattleState;
             case PlayerState.SlowRun:
@@ -1886,6 +1974,7 @@ public class BasicPlayerMovement : MonoBehaviour
         stateFallbacks.Clear();
         stateFallbacks[idleNeutralState] = new[] { "Idle", "Neutral Idle" };
         stateFallbacks[idleSadState] = new[] { "IdleChill", "Sad Idle" };
+        stateFallbacks[idleHappyState] = new[] { idleSadState, "Happy Idle", "IdleChill", idleNeutralState, "Idle" };
         stateFallbacks[idleBattleState] = new[] { "Idle", "IdleBattle" };
         stateFallbacks[sprintState] = new[] { "FastRun", "Fast Run" };
         stateFallbacks[sprintingToRollState] = new[] { "RunToRolling", "Run To Rolling" };
@@ -1948,6 +2037,76 @@ public class BasicPlayerMovement : MonoBehaviour
         if (cameraTransform != null && cameraFollow == null)
         {
             cameraFollow = cameraTransform.GetComponent<BasicCameraFollow>();
+        }
+    }
+
+    public void SetPlayerAnimator(Animator newAnimator, bool restartCurrentState = true)
+    {
+        if (animator == newAnimator)
+        {
+            if (animator != null)
+            {
+                animator.applyRootMotion = useRootMotion;
+                CacheAnimatorParameters();
+                if (restartCurrentState)
+                {
+                    currentStateHash = 0;
+                    PlayState(currentState, true);
+                }
+            }
+            return;
+        }
+
+        if (animator != null)
+        {
+            AnimatorRootMotionRelay oldRelay = animator.GetComponent<AnimatorRootMotionRelay>();
+            if (oldRelay != null && oldRelay.movement == this)
+            {
+                oldRelay.movement = null;
+            }
+        }
+
+        animator = newAnimator;
+        animatorTransform = null;
+        animatorLocalPosition = Vector3.zero;
+        animatorLocalRotation = Quaternion.identity;
+        currentStateHash = 0;
+
+        ConfigureAnimator();
+        CacheAnimatorParameters();
+        CaptureAnimatorAnchor();
+
+        if (restartCurrentState)
+        {
+            PlayState(currentState, true);
+            UpdateAnimatorParameters();
+        }
+    }
+
+    public void SetAvailableActions(bool jump, bool crouch, bool roll)
+    {
+        enableJump = jump;
+        enableCrouch = crouch;
+        enableRoll = roll;
+
+        if (!enableCrouch && isCrouching)
+        {
+            isCrouching = false;
+            crouchWanted = false;
+            pendingAfterStand = PendingAfterStand.None;
+            returnToCrouchAfterAction = false;
+
+            if (currentState == PlayerState.CrouchIdle
+                || currentState == PlayerState.CrouchWalking
+                || IsCrouchTransitionState(currentState))
+            {
+                activeOneShot = false;
+                RestoreStandingControllerShape();
+                currentState = PlayerState.IdleNeutral;
+                currentStateHash = 0;
+                EvaluateLocomotionState();
+                PlayState(currentState, true);
+            }
         }
     }
 

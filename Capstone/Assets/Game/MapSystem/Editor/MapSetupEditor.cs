@@ -16,6 +16,8 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.MapSystem.Editor {
     public static class MapSetupEditor {
         const string GeneratedFolder = "Assets/Game/MapSystem/Generated";
+        const string SpriteFolder = "Assets/Game/MapSystem/Sprites";
+        const string MapMinimapSpriteFolder = "Assets/Game/MapSystem/Sprites/MapMinimap";
         const string AaPackageMarker = "AA Map and Minimap System";
 
         enum GeneratedIconShape {
@@ -35,6 +37,7 @@ namespace Capstone.Game.MapSystem.Editor {
             }
 
             EnsureFolders();
+            EnsureMapMinimapSpriteImports();
 
             Transform player = FindSelectedOrScenePlayer();
             if (player == null) Debug.LogWarning("Map setup: cannot find Player. Select Player or add BasicPlayerMovement/tag Player, then run setup again.");
@@ -44,8 +47,12 @@ namespace Capstone.Game.MapSystem.Editor {
             float mapSide = Mathf.Max(60f, mapBounds.size.x, mapBounds.size.z);
             Vector2 mapSize = new Vector2(mapSide, mapSide);
             const float worldMapAspect = 16f / 9f;
-            float worldMapDefaultSize = CalculateFitOrthographicSize(mapBounds, worldMapAspect, 1.02f);
-            float worldMapMaxSize = Mathf.Max(worldMapDefaultSize * 1.25f, worldMapDefaultSize + 1f);
+            const float initialVisiblePercent = 0.12f;
+            const float minimumVisiblePercent = 0.05f;
+            const float maximumVisiblePercent = 0.30f;
+            float worldMapInitialSize = CalculatePercentOrthographicSize(mapSize, worldMapAspect, initialVisiblePercent);
+            float worldMapCloseSize = CalculatePercentOrthographicSize(mapSize, worldMapAspect, minimumVisiblePercent);
+            float worldMapFarSize = CalculatePercentOrthographicSize(mapSize, worldMapAspect, maximumVisiblePercent);
 
             Canvas canvas = EnsureCanvas();
             EnsureEventSystem();
@@ -66,16 +73,22 @@ namespace Capstone.Game.MapSystem.Editor {
 
             ConfigureCanvas(canvas);
             ConfigureMinimap(minimapObject, minimapManager, minimapCameraObject, minimapTexture, player);
-            ConfigureWorldMap(worldMapObject, mapManager, mapCameraObject, worldMapTexture, minimapObject, mapCenter, worldMapDefaultSize, worldMapMaxSize);
+            ConfigureWorldMap(worldMapObject, mapManager, mapCameraObject, worldMapTexture, minimapObject, mapCenter, worldMapInitialSize, worldMapCloseSize, worldMapFarSize);
             ConfigureCamera(minimapCamera, player != null ? player.position : Vector3.zero, 60f, 28f, minimapTexture);
-            ConfigureCamera(mapCamera, new Vector3(mapCenter.x, 0f, mapCenter.y), 180f, worldMapDefaultSize, worldMapTexture);
+            ConfigureCamera(mapCamera, player != null ? player.position : new Vector3(mapCenter.x, 0f, mapCenter.y), 180f, worldMapInitialSize, worldMapTexture);
+            DisableSceneMinimap(minimapObject, minimapCameraObject);
 
             RectTransform mapRect = FindChildComponent<RectTransform>(worldMapObject.transform, "Map Mask");
             if (mapRect == null) mapRect = worldMapObject.GetComponent<RectTransform>();
-            RectTransform overlay = EnsureWorldMapOverlay(worldMapObject.transform, out Text regionLabel, out Button clearWaypoint, out List<WorldMapController.MapFilterBinding> filters);
-            Button closeButton = FindChildComponent<Button>(worldMapObject.transform, "Map Exit Button");
-            Button zoomInButton = FindChildComponent<Button>(worldMapObject.transform, "Zoom In Button");
-            Button zoomOutButton = FindChildComponent<Button>(worldMapObject.transform, "Zoom Out Button");
+            RectTransform overlay = EnsureWorldMapOverlay(
+                worldMapObject.transform,
+                out Text regionLabel,
+                out Button closeButton,
+                out Button zoomInButton,
+                out Button zoomOutButton,
+                out Button centerOnPlayerButton,
+                out Button clearWaypoint,
+                out List<WorldMapController.MapFilterBinding> filters);
 
             GameObject root = EnsureRootObject("MapSystem");
             EnsureIconContainers(root.transform);
@@ -91,13 +104,14 @@ namespace Capstone.Game.MapSystem.Editor {
             QuestMapMarkerBridge questBridge = GetOrAddComponent<QuestMapMarkerBridge>(root);
             QuestPanelMapConnector questConnector = GetOrAddComponent<QuestPanelMapConnector>(root);
             LocalPlayerControlLock controlLock = FindFirst<LocalPlayerControlLock>();
-            Texture2D questIcon = EnsureGeneratedIcon("MapIcon_Quest", GeneratedIconShape.Star);
+            Texture questIcon = FindCustomIconTexture("Thang_Icon_Quest") ?? FindAAMapIconTexture("Map Icon 6") ?? EnsureGeneratedIcon("MapIcon_Quest", GeneratedIconShape.Star);
 
             SetObjectReference(binder, "minimapManager", minimapManager);
             SetObjectReference(binder, "mapManager", mapManager);
             SetObjectReference(binder, "minimapCamera", minimapCameraObject);
             SetObjectReference(binder, "mapCamera", mapCameraObject);
             SetObjectReference(binder, "playerTarget", player);
+            SetBool(binder, "minimapDisabled", true);
 
             SetObjectReference(minimapController, "minimapManager", minimapManager);
             SetObjectReference(minimapController, "minimapCamera", minimapCamera);
@@ -105,6 +119,8 @@ namespace Capstone.Game.MapSystem.Editor {
             SetBool(minimapController, "clampToWorldBounds", true);
             SetVector2(minimapController, "worldCenter", mapCenter);
             SetVector2(minimapController, "worldSize", mapSize);
+            minimapController.enabled = false;
+            EditorUtility.SetDirty(minimapController);
 
             SetObjectReference(worldMapController, "mapManager", mapManager);
             SetObjectReference(worldMapController, "mapCamera", mapCamera);
@@ -115,19 +131,25 @@ namespace Capstone.Game.MapSystem.Editor {
             SetObjectReference(worldMapController, "closeButton", closeButton);
             SetObjectReference(worldMapController, "zoomInButton", zoomInButton);
             SetObjectReference(worldMapController, "zoomOutButton", zoomOutButton);
+            SetObjectReference(worldMapController, "centerOnPlayerButton", centerOnPlayerButton);
             SetObjectReference(worldMapController, "clearWaypointButton", clearWaypoint);
             SetObjectReference(worldMapController, "iconRegistry", iconRegistry);
             SetObjectReference(worldMapController, "playerTarget", player);
+            SetObjectReference(worldMapController, "customFrame", FindChildComponent<RectTransform>(overlay, "Thang World Map Frame"));
             SetBool(worldMapController, "clampToWorldBounds", true);
             SetVector2(worldMapController, "worldCenter", mapCenter);
             SetVector2(worldMapController, "worldSize", mapSize);
-            SetFloat(worldMapController, "defaultOrthographicSize", worldMapDefaultSize);
-            SetFloat(worldMapController, "maxOrthographicSize", worldMapMaxSize);
+            SetVector4(worldMapController, "worldBoundsInsetPercent", new Vector4(0.07f, 0f, 0.03f, 0.16f));
+            SetBool(worldMapController, "useMapSetBounds", true);
+            SetFloat(worldMapController, "minimumVisiblePercent", minimumVisiblePercent);
+            SetFloat(worldMapController, "initialVisiblePercent", initialVisiblePercent);
+            SetFloat(worldMapController, "maximumVisiblePercent", maximumVisiblePercent);
             SetFilterBindings(worldMapController, filters);
 
             SetObjectReference(markerManager, "mapBinder", binder);
             SetObjectReference(markerManager, "mapIconPrefab", mapIconPrefab);
             AssignDefaultMarkerIcons(markerManager);
+            ConfigureMarkerPresentation(markerManager);
             SetObjectReference(iconRegistry, "markerManager", markerManager);
             SetObjectReference(inputController, "mapSystem", mapSystem);
             SetObjectReference(inputController, "mapBinder", binder);
@@ -143,7 +165,8 @@ namespace Capstone.Game.MapSystem.Editor {
             SetObjectReference(mapSystem, "input", inputController);
             SetObjectReference(mapSystem, "controlLock", controlLock);
             SetObjectReference(mapSystem, "playerTarget", player);
-            SetObjectReferenceIfEmpty(questBridge, "trackedQuestIcon", questIcon);
+            SetBool(mapSystem, "disableMinimap", true);
+            SetObjectReference(questBridge, "trackedQuestIcon", questIcon);
             SetObjectReference(questConnector, "mapSystem", mapSystem);
 
             binder.SetReferences(minimapManager, mapManager, minimapCameraObject, mapCameraObject, player);
@@ -160,11 +183,10 @@ namespace Capstone.Game.MapSystem.Editor {
             AssetDatabase.SaveAssets();
 
             bool ok = validator.ValidateSetup(true);
-            Debug.Log(ok ? "Map setup finished. Press M in Play Mode to test World Map." : "Map setup finished with warnings. Use Tools > ToolCuaThang > Game Map > Validate Setup.");
-
-            if (EditorUtility.DisplayDialog("Map setup complete", "Minimap/World Map setup finished. Save the open scene now?", "Save Scene", "Not Now")) {
-                EditorSceneManager.SaveOpenScenes();
-            }
+            EditorSceneManager.SaveOpenScenes();
+            Debug.Log(ok
+                ? "Map setup finished and scene saved. Press M in Play Mode to test World Map."
+                : "Map setup finished with warnings and scene saved. Use Tools > ToolCuaThang > Game Map > Validate Setup.");
         }
 
         [MenuItem("Tools/ToolCuaThang/Game Map/Validate Setup")]
@@ -182,6 +204,8 @@ namespace Capstone.Game.MapSystem.Editor {
             EnsureFolder("Assets/Game", "MapSystem");
             EnsureFolder("Assets/Game/MapSystem", "Editor");
             EnsureFolder("Assets/Game/MapSystem", "Generated");
+            EnsureFolder("Assets/Game/MapSystem", "Sprites");
+            EnsureFolder("Assets/Game/MapSystem/Sprites", "MapMinimap");
         }
 
         static Canvas EnsureCanvas() {
@@ -245,11 +269,11 @@ namespace Capstone.Game.MapSystem.Editor {
             RectTransform rect = obj.GetComponent<RectTransform>();
             if (rect != null) {
                 Undo.RecordObject(rect, "Configure minimap rect");
-                rect.anchorMin = new Vector2(1f, 1f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.pivot = new Vector2(1f, 1f);
-                rect.anchoredPosition = new Vector2(-28f, -28f);
-                rect.sizeDelta = new Vector2(230f, 230f);
+                rect.anchorMin = new Vector2(0f, 1f);
+                rect.anchorMax = new Vector2(0f, 1f);
+                rect.pivot = new Vector2(0f, 1f);
+                rect.anchoredPosition = new Vector2(28f, -28f);
+                rect.sizeDelta = new Vector2(236f, 236f);
                 rect.localScale = Vector3.one;
             }
 
@@ -262,18 +286,21 @@ namespace Capstone.Game.MapSystem.Editor {
                 manager.backgroundColor = new Color(0.015f, 0.035f, 0.035f, 1f);
                 manager.minimapOpacity = 1f;
                 manager.minimapColor = Color.white;
-                manager.haveBorder = true;
-                manager.haveZoomButtons = true;
+                manager.haveBorder = false;
+                manager.haveZoomButtons = false;
+                manager.displayDirections = false;
+                manager.displayGrid = false;
                 manager.minimapHeight = 60f;
                 manager.minimapRange = 28f;
                 manager.renderTexture = texture;
                 Sprite circle = FindSprite("Minimap Shape Circle");
                 if (circle != null) manager.minimapShape = circle;
-                Sprite border = FindSprite("Minimap Circle Border 6") ?? FindSprite("Minimap Circle Border 1");
+                Sprite border = FindCustomSprite("Thang_Minimap_Frame") ?? FindSprite("Minimap Circle Border 6") ?? FindSprite("Minimap Circle Border 1");
                 if (border != null) manager.borderSprite = border;
             }
 
             RectTransform mask = EnsureMaskChild(obj.transform, "Minimap Mask", manager != null ? manager.minimapShape : null);
+            ConfigureMinimapMask(mask);
             RectTransform backgroundFiller = EnsureOpaqueImageChild(mask, "Minimap Background Filler", new Color(0.015f, 0.035f, 0.035f, 1f));
             backgroundFiller.transform.SetAsFirstSibling();
             RectTransform grid = EnsureOpaqueImageChild(mask, "Minimap Grid", Color.clear);
@@ -286,41 +313,72 @@ namespace Capstone.Game.MapSystem.Editor {
                 Stretch(display.GetComponent<RectTransform>());
                 display.transform.SetSiblingIndex(1);
             }
+
+            Sprite customFrame = FindCustomSprite("Thang_Minimap_Frame");
+            if (customFrame != null) {
+                RectTransform frame = EnsureImageChild(obj.transform, "Thang Minimap Frame", customFrame, Color.white, Image.Type.Simple, true);
+                ConfigureMinimapFrame(frame);
+                frame.SetAsLastSibling();
+            }
+
+            SetTransparentImage(obj.GetComponent<Image>());
+            SetChildActive(obj.transform, "Minimap Border", false);
+            SetChildActive(obj.transform, "Minimap Directions", false);
+            SetChildActive(obj.transform, "Minimap Zoom Buttons", false);
         }
 
-        static void ConfigureWorldMap(GameObject obj, MapManager manager, GameObject cameraObject, RenderTexture texture, GameObject minimapObject, Vector2 mapCenter, float defaultSize, float maxSize) {
+        static void DisableSceneMinimap(GameObject minimapObject, GameObject minimapCameraObject) {
+            if (minimapObject != null) {
+                Undo.RecordObject(minimapObject, "Disable minimap panel");
+                minimapObject.SetActive(false);
+            }
+
+            if (minimapCameraObject != null) {
+                Undo.RecordObject(minimapCameraObject, "Disable minimap camera");
+                minimapCameraObject.SetActive(false);
+            }
+        }
+        static void ConfigureWorldMap(GameObject obj, MapManager manager, GameObject cameraObject, RenderTexture texture, GameObject minimapObject, Vector2 mapCenter, float initialSize, float closeSize, float farSize) {
             RectTransform rect = obj.GetComponent<RectTransform>();
             if (rect != null) {
                 Undo.RecordObject(rect, "Configure world map rect");
                 Stretch(rect);
             }
 
+            Image backdrop = EnsureImage(obj, new Color(0.015f, 0.03f, 0.03f, 0.96f));
+            backdrop.raycastTarget = true;
+
             if (manager != null) {
                 Undo.RecordObject(manager, "Configure world map manager");
+                obj.SetActive(true);
                 manager.mapEnabled = false;
                 manager.enablingShortcut = KeyCode.None;
                 manager.disablingShortcut = KeyCode.None;
                 manager.SetMapCamera(cameraObject);
                 manager.cameraPosition = new Vector3(mapCenter.x, 180f, mapCenter.y);
-                manager.cameraOrthographicSize = defaultSize;
-                manager.minimumRange = Mathf.Min(70f, defaultSize);
-                manager.maximumRange = Mathf.Max(maxSize, defaultSize);
+                manager.cameraOrthographicSize = initialSize;
+                manager.minimumRange = Mathf.Min(closeSize, farSize);
+                manager.maximumRange = Mathf.Max(closeSize, farSize);
+                manager.haveBorder = false;
                 manager.haveZoomButtons = false;
                 manager.haveExitButton = false;
+                manager.displayDirections = false;
+                manager.displayGrid = false;
                 manager.clearFlags = MapClearFlags.SolidColor;
                 manager.cameraBGColor = new Color(0.02f, 0.04f, 0.05f, 1f);
                 manager.haveBackgroundImage = false;
-                manager.disableMinimap = false;
-                manager.minimapGameObject = minimapObject;
-                manager.minimapManager = minimapObject != null ? minimapObject.GetComponent<MinimapManager>() : null;
+                manager.disableMinimap = true;
+                manager.minimapGameObject = null;
+                manager.minimapManager = null;
                 manager.renderTexture = texture;
-                Sprite shape = FindSprite("Map Shape Square") ?? FindSprite("Map Shape Rounded Square");
+                Sprite shape = FindSprite("Map Shape Rounded Rectangle") ?? FindSprite("Map Shape Sharp Rectangle") ?? FindSprite("Map Shape Square");
                 if (shape != null) manager.mapShape = shape;
                 manager.mapColor = Color.white;
                 manager.mapOpacity = 1f;
             }
 
             RectTransform mask = EnsureMaskChild(obj.transform, "Map Mask", manager != null ? manager.mapShape : null);
+            ConfigureWorldMapViewport(mask);
             RectTransform backgroundFiller = EnsureOpaqueImageChild(mask, "Map Background Filler", new Color(0.015f, 0.035f, 0.035f, 1f));
             backgroundFiller.transform.SetAsFirstSibling();
             RectTransform background = EnsureOpaqueImageChild(mask, "Map Background", Color.clear);
@@ -332,15 +390,17 @@ namespace Capstone.Game.MapSystem.Editor {
                 Undo.RecordObject(display, "Configure world map display");
                 display.texture = texture;
                 display.color = Color.white;
+                display.material = null;
                 Stretch(display.GetComponent<RectTransform>());
                 display.transform.SetSiblingIndex(1);
             }
 
             SetChildActive(obj.transform, "Map Mask", true);
-            SetChildActive(obj.transform, "Map Border", true);
+            SetChildActive(obj.transform, "Map Border", false);
             SetChildActive(obj.transform, "Map Directions", false);
             SetChildActive(obj.transform, "Map Zoom Buttons", false);
             SetChildActive(obj.transform, "Map Exit Button", false);
+            SetChildActive(obj.transform, "Thang World Map Frame", false);
             obj.transform.SetAsLastSibling();
         }
 
@@ -360,11 +420,38 @@ namespace Capstone.Game.MapSystem.Editor {
             camera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
         }
 
-        static RectTransform EnsureWorldMapOverlay(Transform worldMap, out Text regionLabel, out Button clearWaypointButton, out List<WorldMapController.MapFilterBinding> filters) {
+        static void ApplyMapCameraLayerMask(Camera camera) {
+            if (camera == null) return;
+
+            string[] excludedLayers = { "Water", "Suimono_Water", "Suimono_Depth", "Suimono_Screen", "TransparentFX", "SmallVFX", "MedVFX", "LargeVFX" };
+            int mask = camera.cullingMask;
+            for (int i = 0; i < excludedLayers.Length; i++) {
+                int layer = LayerMask.NameToLayer(excludedLayers[i]);
+                if (layer >= 0) mask &= ~(1 << layer);
+            }
+
+            camera.cullingMask = mask;
+        }
+        static RectTransform EnsureWorldMapOverlay(
+            Transform worldMap,
+            out Text regionLabel,
+            out Button closeButton,
+            out Button zoomInButton,
+            out Button zoomOutButton,
+            out Button centerOnPlayerButton,
+            out Button clearWaypointButton,
+            out List<WorldMapController.MapFilterBinding> filters) {
             filters = new List<WorldMapController.MapFilterBinding>();
             RectTransform overlay = EnsureUIChild(worldMap, "World Map Overlay");
             Stretch(overlay);
             overlay.gameObject.SetActive(false);
+
+            Sprite customFrame = FindCustomSprite("Thang_WorldMap_Frame");
+            if (customFrame != null) {
+                RectTransform frame = EnsureImageChild(overlay, "Thang World Map Frame", customFrame, Color.white, Image.Type.Sliced, false);
+                ConfigureWorldMapFrame(frame);
+                frame.SetAsLastSibling();
+            }
 
             RectTransform region = EnsureUIChild(overlay, "Region Name");
             region.anchorMin = new Vector2(0.5f, 1f);
@@ -374,7 +461,47 @@ namespace Capstone.Game.MapSystem.Editor {
             region.sizeDelta = new Vector2(420f, 44f);
             Image regionBg = EnsureImage(region.gameObject, new Color(0.05f, 0.14f, 0.13f, 0.7f));
             regionBg.raycastTarget = false;
-            regionLabel = EnsureText(region, "Region Text", "Region", 24, TextAnchor.MiddleCenter, new Color(0.92f, 0.86f, 0.68f, 1f));
+            regionLabel = EnsureText(region, "Region Text", "Region", 24, TextAnchor.MiddleCenter, Color.black);
+
+            RectTransform close = EnsureUIChild(overlay, "Close Button");
+            close.anchorMin = new Vector2(1f, 1f);
+            close.anchorMax = new Vector2(1f, 1f);
+            close.pivot = new Vector2(1f, 1f);
+            close.anchoredPosition = new Vector2(-34f, -30f);
+            close.sizeDelta = new Vector2(48f, 48f);
+            closeButton = EnsureSpriteButton(close, "X", FindCustomSprite("Thang_Button_Close") ?? FindSprite("Map Exit Button 1"), Color.white);
+
+            RectTransform zoomControls = EnsureUIChild(overlay, "Zoom Controls");
+            zoomControls.anchorMin = new Vector2(1f, 1f);
+            zoomControls.anchorMax = new Vector2(1f, 1f);
+            zoomControls.pivot = new Vector2(1f, 1f);
+            zoomControls.anchoredPosition = new Vector2(-92f, -108f);
+            zoomControls.sizeDelta = new Vector2(170f, 56f);
+            EnsureImage(zoomControls.gameObject, new Color(0.04f, 0.10f, 0.09f, 0.74f));
+
+            RectTransform zoomIn = EnsureUIChild(zoomControls, "Zoom In Button");
+            zoomIn.anchorMin = new Vector2(0f, 0.5f);
+            zoomIn.anchorMax = new Vector2(0f, 0.5f);
+            zoomIn.pivot = new Vector2(0f, 0.5f);
+            zoomIn.anchoredPosition = new Vector2(10f, 0f);
+            zoomIn.sizeDelta = new Vector2(42f, 42f);
+            zoomInButton = EnsureSpriteButton(zoomIn, "+", FindCustomSprite("Thang_Button_ZoomIn") ?? FindSprite("Zoom In Icon 1"), Color.white);
+
+            RectTransform zoomOut = EnsureUIChild(zoomControls, "Zoom Out Button");
+            zoomOut.anchorMin = new Vector2(0f, 0.5f);
+            zoomOut.anchorMax = new Vector2(0f, 0.5f);
+            zoomOut.pivot = new Vector2(0f, 0.5f);
+            zoomOut.anchoredPosition = new Vector2(62f, 0f);
+            zoomOut.sizeDelta = new Vector2(42f, 42f);
+            zoomOutButton = EnsureSpriteButton(zoomOut, "-", FindCustomSprite("Thang_Button_ZoomOut") ?? FindSprite("Zoom Out Icon 1"), Color.white);
+
+            RectTransform center = EnsureUIChild(zoomControls, "Center On Player Button");
+            center.anchorMin = new Vector2(0f, 0.5f);
+            center.anchorMax = new Vector2(0f, 0.5f);
+            center.pivot = new Vector2(0f, 0.5f);
+            center.anchoredPosition = new Vector2(114f, 0f);
+            center.sizeDelta = new Vector2(42f, 42f);
+            centerOnPlayerButton = EnsureSpriteButton(center, "P", FindCustomSprite("Thang_Button_Center") ?? FindSprite("Map Icon 1"), Color.white);
 
             RectTransform filterBar = EnsureUIChild(overlay, "Filter Bar");
             filterBar.anchorMin = new Vector2(0.5f, 0f);
@@ -397,7 +524,7 @@ namespace Capstone.Game.MapSystem.Editor {
             clear.pivot = new Vector2(1f, 0f);
             clear.anchoredPosition = new Vector2(-36f, 34f);
             clear.sizeDelta = new Vector2(170f, 42f);
-            clearWaypointButton = EnsureButton(clear, "Clear Waypoint", new Color(0.42f, 0.24f, 0.18f, 0.9f));
+            clearWaypointButton = EnsureButton(clear, "Clear Waypoint", new Color(0.86f, 0.78f, 0.58f, 0.94f));
             return overlay;
         }
 
@@ -423,7 +550,7 @@ namespace Capstone.Game.MapSystem.Editor {
             check.sizeDelta = new Vector2(16f, 16f);
             toggle.graphic = EnsureImage(check.gameObject, new Color(0.87f, 0.72f, 0.38f, 1f));
 
-            Text text = EnsureText(root, "Label", label, 15, TextAnchor.MiddleLeft, new Color(0.92f, 0.86f, 0.68f, 1f));
+            Text text = EnsureText(root, "Label", label, 15, TextAnchor.MiddleLeft, Color.black);
             RectTransform textRect = text.GetComponent<RectTransform>();
             textRect.offsetMin = new Vector2(30f, 0f);
             textRect.offsetMax = new Vector2(-6f, 0f);
@@ -560,7 +687,7 @@ namespace Capstone.Game.MapSystem.Editor {
             RectTransform rect = EnsureUIChild(parent, name);
             Stretch(rect);
 
-            Image image = EnsureImage(rect.gameObject, Color.clear);
+            Image image = EnsureImage(rect.gameObject, Color.white);
             image.raycastTarget = false;
             if (shape != null) image.sprite = shape;
 
@@ -578,12 +705,66 @@ namespace Capstone.Game.MapSystem.Editor {
             return image;
         }
 
+        static void SetTransparentImage(Image image) {
+            if (image == null) return;
+            Undo.RecordObject(image, "Make map image transparent");
+            image.color = Color.clear;
+            image.raycastTarget = false;
+        }
+
         static RectTransform EnsureOpaqueImageChild(Transform parent, string name, Color color) {
             RectTransform rect = EnsureUIChild(parent, name);
             Image image = EnsureImage(rect.gameObject, color);
             image.raycastTarget = false;
             Stretch(rect);
             return rect;
+        }
+
+        static RectTransform EnsureImageChild(Transform parent, string name, Sprite sprite, Color color, Image.Type imageType, bool preserveAspect) {
+            RectTransform rect = EnsureUIChild(parent, name);
+            Image image = EnsureImage(rect.gameObject, color);
+            image.raycastTarget = false;
+            image.sprite = sprite;
+            image.type = imageType;
+            image.preserveAspect = preserveAspect;
+            rect.gameObject.SetActive(sprite != null);
+            return rect;
+        }
+
+        static void ConfigureWorldMapFrame(RectTransform rect) {
+            if (rect == null) return;
+
+            Undo.RecordObject(rect, "Configure world map custom frame");
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = new Vector2(1408f, 848f);
+            rect.localScale = Vector3.one;
+        }
+
+        static void ConfigureMinimapMask(RectTransform rect) {
+            if (rect == null) return;
+
+            Undo.RecordObject(rect, "Configure minimap mask");
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(20f, 20f);
+            rect.offsetMax = new Vector2(-20f, -20f);
+            rect.localScale = Vector3.one;
+        }
+
+        static void ConfigureMinimapFrame(RectTransform rect) {
+            if (rect == null) return;
+
+            Undo.RecordObject(rect, "Configure minimap custom frame");
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(-30f, -30f);
+            rect.offsetMax = new Vector2(30f, 30f);
+            rect.localScale = Vector3.one;
         }
 
         static Text EnsureText(RectTransform parent, string name, string value, int size, TextAnchor anchor, Color color) {
@@ -605,8 +786,36 @@ namespace Capstone.Game.MapSystem.Editor {
             Button button = rect.GetComponent<Button>();
             if (button == null) button = Undo.AddComponent<Button>(rect.gameObject);
             button.targetGraphic = image;
-            EnsureText(rect, "Text", label, 18, TextAnchor.MiddleCenter, new Color(0.95f, 0.89f, 0.72f, 1f));
+            EnsureText(rect, "Text", label, 18, TextAnchor.MiddleCenter, Color.black);
             return button;
+        }
+
+        static Button EnsureSpriteButton(RectTransform rect, string fallbackLabel, Sprite sprite, Color color) {
+            Image image = EnsureImage(rect.gameObject, color);
+            image.raycastTarget = true;
+            image.sprite = sprite;
+            image.preserveAspect = sprite != null;
+
+            Button button = rect.GetComponent<Button>();
+            if (button == null) button = Undo.AddComponent<Button>(rect.gameObject);
+            button.targetGraphic = image;
+
+            Transform text = rect.Find("Text");
+            if (sprite != null) {
+                if (text != null) text.gameObject.SetActive(false);
+            } else {
+                Text label = EnsureText(rect, "Text", fallbackLabel, 22, TextAnchor.MiddleCenter, new Color(0.04f, 0.04f, 0.04f, 1f));
+                label.gameObject.SetActive(true);
+            }
+
+            return button;
+        }
+
+        static void ConfigureWorldMapViewport(RectTransform rect) {
+            if (rect == null) return;
+
+            Undo.RecordObject(rect, "Configure world map viewport");
+            Stretch(rect);
         }
 
         static void Stretch(RectTransform rect) {
@@ -629,6 +838,67 @@ namespace Capstone.Game.MapSystem.Editor {
                 if (child.name == childName) return child.GetComponent<T>();
             }
             return null;
+        }
+
+        static Sprite FindCustomSprite(string spriteName) {
+            string path = MapMinimapSpriteFolder + "/" + spriteName + ".png";
+            if (!AssetExists(path)) return null;
+            EnsureSpriteImportSettings(path);
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        static Texture FindCustomIconTexture(string spriteName) {
+            Sprite sprite = FindCustomSprite(spriteName);
+            return sprite != null ? sprite.texture : null;
+        }
+
+        static void EnsureMapMinimapSpriteImports() {
+            if (!AssetDatabase.IsValidFolder(MapMinimapSpriteFolder)) return;
+
+            AssetDatabase.Refresh();
+            string[] guids = AssetDatabase.FindAssets("Thang_ t:Texture2D", new[] { MapMinimapSpriteFolder });
+            for (int i = 0; i < guids.Length; i++) {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                EnsureSpriteImportSettings(path);
+            }
+        }
+
+        static void EnsureSpriteImportSettings(string path) {
+            TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (importer == null) return;
+
+            string name = Path.GetFileNameWithoutExtension(path);
+            Vector4 border = GetCustomSpriteBorder(name);
+            bool changed = false;
+            changed |= SetImporterValue(importer.textureType != TextureImporterType.Sprite, () => importer.textureType = TextureImporterType.Sprite);
+            changed |= SetImporterValue(importer.spriteImportMode != SpriteImportMode.Single, () => importer.spriteImportMode = SpriteImportMode.Single);
+            changed |= SetImporterValue(!importer.alphaIsTransparency, () => importer.alphaIsTransparency = true);
+            changed |= SetImporterValue(importer.mipmapEnabled, () => importer.mipmapEnabled = false);
+            changed |= SetImporterValue(importer.wrapMode != TextureWrapMode.Clamp, () => importer.wrapMode = TextureWrapMode.Clamp);
+            changed |= SetImporterValue(importer.filterMode != FilterMode.Bilinear, () => importer.filterMode = FilterMode.Bilinear);
+            changed |= SetImporterValue(importer.textureCompression != TextureImporterCompression.Uncompressed, () => importer.textureCompression = TextureImporterCompression.Uncompressed);
+            changed |= SetImporterValue(importer.spritePixelsPerUnit != 100f, () => importer.spritePixelsPerUnit = 100f);
+            changed |= SetImporterValue(importer.spriteBorder != border, () => importer.spriteBorder = border);
+
+            if (changed) importer.SaveAndReimport();
+        }
+
+        static Vector4 GetCustomSpriteBorder(string name) {
+            if (name == "Thang_WorldMap_Frame") return new Vector4(144f, 144f, 144f, 144f);
+            if (name == "Thang_Minimap_Frame") return new Vector4(0f, 0f, 0f, 0f);
+            if (name.StartsWith("Thang_Button_")) return new Vector4(30f, 30f, 30f, 30f);
+            return Vector4.zero;
+        }
+
+        static bool SetImporterValue(bool condition, System.Action setter) {
+            if (!condition) return false;
+            setter();
+            return true;
+        }
+
+        static bool AssetExists(string projectRelativePath) {
+            string absolute = Path.Combine(Directory.GetParent(Application.dataPath).FullName, projectRelativePath);
+            return File.Exists(absolute);
         }
 
         static Transform FindSelectedOrScenePlayer() {
@@ -794,6 +1064,13 @@ namespace Capstone.Game.MapSystem.Editor {
             return Mathf.Max(halfHeight, halfWidth) * Mathf.Max(1f, padding);
         }
 
+        static float CalculatePercentOrthographicSize(Vector2 boundsSize, float aspect, float visiblePercent) {
+            float referenceLength = Mathf.Max(1f, Mathf.Min(boundsSize.x, boundsSize.y));
+            float maxVisibleLongSide = referenceLength * Mathf.Clamp(visiblePercent, 0.01f, 1f);
+            float safeAspect = Mathf.Max(0.01f, aspect);
+            return safeAspect >= 1f ? maxVisibleLongSide / (2f * safeAspect) : maxVisibleLongSide * 0.5f;
+        }
+
         static bool IsMapBoundsCandidate(Renderer renderer, Transform player) {
             if (renderer == null) return false;
 
@@ -811,16 +1088,30 @@ namespace Capstone.Game.MapSystem.Editor {
         static void AssignDefaultMarkerIcons(MapMarkerManager markerManager) {
             if (markerManager == null) return;
 
-            SetObjectReferenceIfEmpty(markerManager, "playerIcon", EnsureGeneratedIcon("MapIcon_Player", GeneratedIconShape.Triangle));
-            SetObjectReferenceIfEmpty(markerManager, "petIcon", EnsureGeneratedIcon("MapIcon_Pet", GeneratedIconShape.Circle));
-            SetObjectReferenceIfEmpty(markerManager, "enemyIcon", EnsureGeneratedIcon("MapIcon_Enemy", GeneratedIconShape.Diamond));
-            SetObjectReferenceIfEmpty(markerManager, "bossIcon", EnsureGeneratedIcon("MapIcon_Boss", GeneratedIconShape.Ring));
-            SetObjectReferenceIfEmpty(markerManager, "npcIcon", EnsureGeneratedIcon("MapIcon_NPC", GeneratedIconShape.Square));
-            SetObjectReferenceIfEmpty(markerManager, "questIcon", EnsureGeneratedIcon("MapIcon_Quest", GeneratedIconShape.Star));
-            SetObjectReferenceIfEmpty(markerManager, "itemIcon", EnsureGeneratedIcon("MapIcon_Item", GeneratedIconShape.Circle));
-            SetObjectReferenceIfEmpty(markerManager, "shopIcon", EnsureGeneratedIcon("MapIcon_Shop", GeneratedIconShape.Square));
-            SetObjectReferenceIfEmpty(markerManager, "fastTravelIcon", EnsureGeneratedIcon("MapIcon_FastTravel", GeneratedIconShape.Ring));
-            SetObjectReferenceIfEmpty(markerManager, "coopPlayerIcon", EnsureGeneratedIcon("MapIcon_CoopPlayer", GeneratedIconShape.Triangle));
+            SetObjectReference(markerManager, "playerIcon", FindCustomIconTexture("Thang_Icon_Player") ?? FindAAMapIconTexture("Map Icon 1") ?? EnsureGeneratedIcon("MapIcon_Player", GeneratedIconShape.Triangle));
+            SetObjectReference(markerManager, "petIcon", FindCustomIconTexture("Thang_Icon_Pet") ?? FindAAMapIconTexture("Map Icon 2") ?? EnsureGeneratedIcon("MapIcon_Pet", GeneratedIconShape.Circle));
+            SetObjectReference(markerManager, "enemyIcon", FindCustomIconTexture("Thang_Icon_Enemy") ?? FindAAMapIconTexture("Map Icon 3") ?? EnsureGeneratedIcon("MapIcon_Enemy", GeneratedIconShape.Diamond));
+            SetObjectReference(markerManager, "bossIcon", FindCustomIconTexture("Thang_Icon_Boss") ?? FindAAMapIconTexture("Map Icon 4") ?? EnsureGeneratedIcon("MapIcon_Boss", GeneratedIconShape.Ring));
+            SetObjectReference(markerManager, "npcIcon", FindCustomIconTexture("Thang_Icon_NPC") ?? FindAAMapIconTexture("Map Icon 5") ?? EnsureGeneratedIcon("MapIcon_NPC", GeneratedIconShape.Square));
+            SetObjectReference(markerManager, "questIcon", FindCustomIconTexture("Thang_Icon_Quest") ?? FindAAMapIconTexture("Map Icon 6") ?? EnsureGeneratedIcon("MapIcon_Quest", GeneratedIconShape.Star));
+            SetObjectReference(markerManager, "itemIcon", FindCustomIconTexture("Thang_Icon_Item") ?? FindAAMapIconTexture("Map Icon 7") ?? EnsureGeneratedIcon("MapIcon_Item", GeneratedIconShape.Circle));
+            SetObjectReference(markerManager, "shopIcon", FindCustomIconTexture("Thang_Icon_Shop") ?? FindAAMapIconTexture("Asset_Icon_1") ?? EnsureGeneratedIcon("MapIcon_Shop", GeneratedIconShape.Square));
+            SetObjectReference(markerManager, "fastTravelIcon", FindCustomIconTexture("Thang_Icon_FastTravel") ?? FindAAMapIconTexture("Asset_Icon_2") ?? EnsureGeneratedIcon("MapIcon_FastTravel", GeneratedIconShape.Ring));
+            SetObjectReference(markerManager, "coopPlayerIcon", FindCustomIconTexture("Thang_Icon_Coop") ?? FindAAMapIconTexture("Map Icon 1") ?? EnsureGeneratedIcon("MapIcon_CoopPlayer", GeneratedIconShape.Triangle));
+        }
+
+        static void ConfigureMarkerPresentation(MapMarkerManager markerManager) {
+            if (markerManager == null) return;
+
+            SetBool(markerManager, "useMarkerTextureOverrides", false);
+            SetVector3(markerManager, "defaultIconScale", new Vector3(0.28f, 1f, 0.28f));
+            SetVector3(markerManager, "playerIconScale", new Vector3(0.32f, 1f, 0.32f));
+            SetVector3(markerManager, "bossIconScale", new Vector3(0.42f, 1f, 0.42f));
+        }
+
+        static Texture FindAAMapIconTexture(string spriteName) {
+            Sprite sprite = FindSprite(spriteName);
+            return sprite != null ? sprite.texture : null;
         }
 
         static Texture2D EnsureGeneratedIcon(string assetName, GeneratedIconShape shape) {
@@ -925,6 +1216,24 @@ namespace Capstone.Game.MapSystem.Editor {
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        static void SetVector3(Object target, string propertyName, Vector3 value) {
+            if (target == null) return;
+            SerializedObject serialized = new SerializedObject(target);
+            SerializedProperty property = serialized.FindProperty(propertyName);
+            if (property == null) return;
+            property.vector3Value = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void SetVector4(Object target, string propertyName, Vector4 value) {
+            if (target == null) return;
+            SerializedObject serialized = new SerializedObject(target);
+            SerializedProperty property = serialized.FindProperty(propertyName);
+            if (property == null) return;
+            property.vector4Value = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         static void SetFilterBindings(WorldMapController controller, List<WorldMapController.MapFilterBinding> filters) {
             if (controller == null || filters == null) return;
             SerializedObject serialized = new SerializedObject(controller);
@@ -940,3 +1249,5 @@ namespace Capstone.Game.MapSystem.Editor {
         }
     }
 }
+
+

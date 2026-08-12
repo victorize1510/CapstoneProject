@@ -96,25 +96,27 @@ namespace Capstone.Game.Inventory {
         }
 
         void RefreshPlayerStats() {
-            int level = playerStatsProvider != null ? playerStatsProvider.Level : 1;
-            int currentHp = playerStatsProvider != null ? playerStatsProvider.CurrentHp : 0;
-            int maxHp = playerStatsProvider != null ? playerStatsProvider.MaxHp : 1;
-            int currentExp = playerStatsProvider != null ? playerStatsProvider.CurrentExp : 0;
-            int requiredExp = playerStatsProvider != null ? playerStatsProvider.RequiredExp : 1;
+            bool hasStats = playerStatsProvider != null && playerStatsProvider.HasPlayerStats;
+            int level = hasStats ? playerStatsProvider.Level : 0;
+            int currentHp = hasStats ? playerStatsProvider.CurrentHp : 0;
+            int maxHp = hasStats ? playerStatsProvider.MaxHp : 0;
+            int currentExp = hasStats ? playerStatsProvider.CurrentExp : 0;
+            int requiredExp = hasStats ? playerStatsProvider.RequiredExp : 0;
 
-            if (levelLabel != null) levelLabel.text = "Lv. " + level;
-            if (hpValueLabel != null) hpValueLabel.text = currentHp + " / " + maxHp;
-            if (expValueLabel != null) expValueLabel.text = currentExp + " / " + requiredExp;
+            if (levelLabel != null) levelLabel.text = hasStats && level > 0 ? "Lv. " + level : "Lv. -";
+            if (hpValueLabel != null) hpValueLabel.text = hasStats && maxHp > 0 ? currentHp + " / " + maxHp : "- / -";
+            if (expValueLabel != null) expValueLabel.text = hasStats && requiredExp > 0 ? currentExp + " / " + requiredExp : "- / -";
             SetProgress(hpBar, currentHp, maxHp);
             SetProgress(expBar, currentExp, requiredExp);
         }
 
         void RefreshCurrency() {
-            int gold = currencyProvider != null ? currencyProvider.Gold : 0;
-            int gems = currencyProvider != null ? currencyProvider.Gems : 0;
+            bool hasCurrency = currencyProvider != null && currencyProvider.HasCurrency;
+            int gold = hasCurrency ? currencyProvider.Gold : 0;
+            int gems = hasCurrency ? currencyProvider.Gems : 0;
 
-            if (goldValueLabel != null) goldValueLabel.text = gold.ToString("N0");
-            if (gemValueLabel != null) gemValueLabel.text = gems.ToString("N0");
+            if (goldValueLabel != null) goldValueLabel.text = hasCurrency ? gold.ToString("N0") : "-";
+            if (gemValueLabel != null) gemValueLabel.text = hasCurrency ? gems.ToString("N0") : "-";
         }
 
         void ConfigurePlaceholderTabs() {
@@ -132,11 +134,9 @@ namespace Capstone.Game.Inventory {
         static void SetProgress(ProgressBar bar, int current, int max) {
             if (bar == null) return;
 
-            max = Mathf.Max(1, max);
-            current = Mathf.Clamp(current, 0, max);
             bar.lowValue = 0f;
-            bar.highValue = max;
-            bar.value = current;
+            bar.highValue = Mathf.Max(1, max);
+            bar.value = max > 0 ? Mathf.Clamp(current, 0, max) : 0;
             bar.title = string.Empty;
         }
     }

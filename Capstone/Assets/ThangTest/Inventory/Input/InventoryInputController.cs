@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Cursor = UnityEngine.Cursor;
@@ -19,6 +20,8 @@ namespace Capstone.Game.Inventory {
         [SerializeField] KeyCode nextCategoryKey = KeyCode.E;
         [SerializeField] KeyCode confirmKey = KeyCode.Return;
         [SerializeField] KeyCode alternateConfirmKey = KeyCode.KeypadEnter;
+        [SerializeField] bool enableOpenCloseHotkeys = true;
+        [SerializeField] bool allowSecondaryToggleKey = false;
 
         [Header("Startup")]
         [SerializeField] bool closeOnStart = true;
@@ -37,7 +40,17 @@ namespace Capstone.Game.Inventory {
         QuestPanelController questPanelController;
         int handledFrame = -1;
 
-        public static bool GameplayInputBlocked { get; private set; }
+        static readonly HashSet<object> ExternalGameplayInputBlockers = new HashSet<object>();
+        static bool inventoryGameplayInputBlocked;
+
+        public static bool GameplayInputBlocked => inventoryGameplayInputBlocked || ExternalGameplayInputBlockers.Count > 0;
+
+        public static void SetExternalGameplayInputBlocked(object owner, bool blocked) {
+            if (owner == null) return;
+
+            if (blocked) ExternalGameplayInputBlockers.Add(owner);
+            else ExternalGameplayInputBlockers.Remove(owner);
+        }
 
         void Awake() {
             ResolveReferences();
@@ -57,7 +70,7 @@ namespace Capstone.Game.Inventory {
             if (inventory != null) inventory.VisibilityChanged -= HandleInventoryVisibilityChanged;
             UnregisterUiKeys();
             RestoreGameplayState();
-            GameplayInputBlocked = false;
+            inventoryGameplayInputBlocked = false;
         }
 
         void Update() {
@@ -178,7 +191,7 @@ namespace Capstone.Game.Inventory {
             if (isOpen) {
                 SaveCursorState();
                 playerControlLock?.LockControls();
-                GameplayInputBlocked = true;
+                inventoryGameplayInputBlocked = true;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 keyboardNavigationMode = false;
@@ -193,7 +206,7 @@ namespace Capstone.Game.Inventory {
         bool TryHandleKey(KeyCode key) {
             if (key == KeyCode.None) return false;
 
-            if (key == primaryToggleKey || key == secondaryToggleKey) {
+            if (IsOpenCloseToggleKey(key)) {
                 ToggleInventory();
                 MarkHandled();
                 return true;
@@ -245,6 +258,10 @@ namespace Capstone.Game.Inventory {
             }
 
             return false;
+        }
+
+        public void SetOpenCloseHotkeysEnabled(bool enabled) {
+            enableOpenCloseHotkeys = enabled;
         }
 
         bool TryHandleQuestPanelKey(KeyCode key) {
@@ -358,7 +375,7 @@ namespace Capstone.Game.Inventory {
 
         void RestoreGameplayState() {
             playerControlLock?.UnlockControls();
-            GameplayInputBlocked = false;
+            inventoryGameplayInputBlocked = false;
             keyboardNavigationMode = false;
             SetKeyboardNavigationMode(false);
 
@@ -371,6 +388,12 @@ namespace Capstone.Game.Inventory {
 
         static bool Pressed(KeyCode key) {
             return key != KeyCode.None && Input.GetKeyDown(key);
+        }
+
+        bool IsOpenCloseToggleKey(KeyCode key) {
+            if (!enableOpenCloseHotkeys) return false;
+            if (key == primaryToggleKey) return true;
+            return allowSecondaryToggleKey && key == secondaryToggleKey;
         }
     }
 }
