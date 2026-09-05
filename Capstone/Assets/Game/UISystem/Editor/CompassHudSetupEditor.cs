@@ -33,6 +33,7 @@ namespace Capstone.Game.UISystem.Editor {
             SetObject(serialized, "targetCamera", Camera.main);
             SetObject(serialized, "viewer", FindPlayer());
             SetBool(serialized, "buildOnAwake", true);
+            SetBool(serialized, "hideWhileUiOpen", true);
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             compass.RebuildCompass();

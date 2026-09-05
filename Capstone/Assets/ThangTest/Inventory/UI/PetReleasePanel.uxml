@@ -1,0 +1,63 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="PetReleasePanel.uss" />
+    <ui:VisualElement name="release-modal-overlay" class="release-modal-overlay">
+        <ui:VisualElement class="release-modal-dim" />
+        <ui:VisualElement name="release-modal-dialog" class="release-modal-dialog" focusable="true">
+            <ui:VisualElement class="release-header">
+                <ui:Label text="❧" class="release-ornament" />
+                <ui:Label text="RELEASE PET" class="release-title" />
+                <ui:Label text="❧" class="release-ornament mirrored" />
+                <ui:Button name="release-close-button" text="×" tooltip="Đóng" class="release-close-button" />
+            </ui:VisualElement>
+
+            <ui:ScrollView class="release-scroll" mode="Vertical">
+                <ui:VisualElement class="release-warning-copy">
+                    <ui:Label text="Bạn có chắc chắn muốn thả pet này không?" class="release-warning-title" />
+                    <ui:Label text="Pet sau khi thả sẽ không thể lấy lại." class="release-warning-body" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="release-divider"><ui:Label text="❧" /></ui:VisualElement>
+
+                <ui:VisualElement class="release-pet-card">
+                    <ui:VisualElement name="release-pet-portrait" class="release-pet-portrait">
+                        <ui:Label name="release-pet-portrait-fallback" text="?" class="release-portrait-fallback" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="release-pet-copy">
+                        <ui:Label name="release-pet-name" text="Chọn một pet" class="release-pet-name" />
+                        <ui:VisualElement class="release-info-row"><ui:Label text="Loài" class="release-info-key" /><ui:Label name="release-pet-species" text="-" class="release-info-value" /></ui:VisualElement>
+                        <ui:VisualElement class="release-info-row"><ui:Label text="Hệ" class="release-info-key" /><ui:Label name="release-pet-element" text="-" class="release-info-value accent" /></ui:VisualElement>
+                        <ui:VisualElement class="release-info-row"><ui:Label text="Rarity" class="release-info-key" /><ui:Label name="release-pet-rarity" text="-" class="release-info-value rarity" /></ui:VisualElement>
+                        <ui:VisualElement class="release-info-row"><ui:Label text="Level" class="release-info-key" /><ui:Label name="release-pet-level" text="-" class="release-info-value" /></ui:VisualElement>
+                        <ui:VisualElement class="release-info-row"><ui:Label text="Dạng tiến hóa" class="release-info-key" /><ui:Label name="release-pet-stage" text="-" class="release-info-value" /></ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="release-section">
+                    <ui:Label text="HOÀN LẠI TÀI NGUYÊN" class="release-section-title" />
+                    <ui:VisualElement name="release-refund-list" class="release-refund-list" />
+                    <ui:Label name="release-refund-empty" text="Không có tài nguyên nâng cấp để hoàn lại." class="release-refund-empty" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="release-section release-gold-section">
+                    <ui:Label text="GIÁ TRỊ RELEASE" class="release-section-title" />
+                    <ui:VisualElement class="release-gold-card">
+                        <ui:Label text="G" class="release-gold-icon" />
+                        <ui:Label text="Gold" class="release-gold-name" />
+                        <ui:Label name="release-gold-value" text="+0" class="release-gold-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:Label name="release-favorite-warning" text="★ Bỏ Yêu thích trước khi thả pet." class="release-favorite-warning" />
+            </ui:ScrollView>
+
+            <ui:VisualElement class="release-footer">
+                <ui:Label name="release-feedback" text="" class="release-feedback" />
+                <ui:VisualElement class="release-actions">
+                    <ui:Button name="release-cancel-button" text="HỦY" class="release-cancel-button" />
+                    <ui:Button name="release-confirm-button" text="THẢ PET" class="release-confirm-button" />
+                </ui:VisualElement>
+                <ui:Label name="release-daily-count" text="PET ĐÃ THẢ: 0 / 100 HÔM NAY" class="release-daily-count" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

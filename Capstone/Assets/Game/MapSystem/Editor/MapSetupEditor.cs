@@ -139,8 +139,12 @@ namespace Capstone.Game.MapSystem.Editor {
             SetBool(worldMapController, "clampToWorldBounds", true);
             SetVector2(worldMapController, "worldCenter", mapCenter);
             SetVector2(worldMapController, "worldSize", mapSize);
-            SetVector4(worldMapController, "worldBoundsInsetPercent", new Vector4(0.07f, 0f, 0.03f, 0.16f));
+            SetVector4(worldMapController, "worldBoundsInsetPercent", new Vector4(0.24f, 0.04f, 0.10f, 0.32f));
+            SetVector4(worldMapController, "minimumWorldBoundsInsetPercent", new Vector4(0.24f, 0.04f, 0.10f, 0.32f));
             SetBool(worldMapController, "useMapSetBounds", true);
+            SetBool(worldMapController, "hideTreesWaterAndEffectsOnMap", false);
+            SetBool(worldMapController, "hideTerrainTreesOnMap", false);
+            SetBool(worldMapController, "hideWaterAndEffectsOnMap", false);
             SetFloat(worldMapController, "minimumVisiblePercent", minimumVisiblePercent);
             SetFloat(worldMapController, "initialVisiblePercent", initialVisiblePercent);
             SetFloat(worldMapController, "maximumVisiblePercent", maximumVisiblePercent);
@@ -165,7 +169,7 @@ namespace Capstone.Game.MapSystem.Editor {
             SetObjectReference(mapSystem, "input", inputController);
             SetObjectReference(mapSystem, "controlLock", controlLock);
             SetObjectReference(mapSystem, "playerTarget", player);
-            SetBool(mapSystem, "disableMinimap", true);
+            SetBool(mapSystem, "disableMinimap", false);
             SetObjectReference(questBridge, "trackedQuestIcon", questIcon);
             SetObjectReference(questConnector, "mapSystem", mapSystem);
 
@@ -415,6 +419,7 @@ namespace Capstone.Game.MapSystem.Editor {
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.02f, 0.04f, 0.05f, 1f);
             camera.targetTexture = texture;
+            camera.cullingMask = ~0;
             if (texture != null && texture.height > 0) camera.aspect = (float)texture.width / texture.height;
             camera.transform.position = new Vector3(focus.x, height, focus.z);
             camera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
@@ -446,70 +451,85 @@ namespace Capstone.Game.MapSystem.Editor {
             Stretch(overlay);
             overlay.gameObject.SetActive(false);
 
+            Color panelBackground = new Color(0.98f, 0.985f, 0.965f, 0.96f);
+            Color panelBorder = new Color(0.38f, 0.55f, 0.31f, 0.95f);
+            Color textColor = new Color(0.12f, 0.28f, 0.14f, 1f);
+            Image overlaySurface = EnsureImage(overlay.gameObject, new Color(0.98f, 0.985f, 0.965f, 0.025f));
+            ConfigurePanelImage(overlaySurface, overlaySurface.color, false);
+            EnsureOutline(overlay.gameObject, panelBorder, new Vector2(2f, -2f));
+
             Sprite customFrame = FindCustomSprite("Thang_WorldMap_Frame");
+            Transform existingFrame = overlay.Find("Thang World Map Frame");
+            if (existingFrame != null) existingFrame.gameObject.SetActive(false);
             if (customFrame != null) {
                 RectTransform frame = EnsureImageChild(overlay, "Thang World Map Frame", customFrame, Color.white, Image.Type.Sliced, false);
                 ConfigureWorldMapFrame(frame);
-                frame.SetAsLastSibling();
+                frame.gameObject.SetActive(false);
             }
 
             RectTransform region = EnsureUIChild(overlay, "Region Name");
             region.anchorMin = new Vector2(0.5f, 1f);
             region.anchorMax = new Vector2(0.5f, 1f);
             region.pivot = new Vector2(0.5f, 1f);
-            region.anchoredPosition = new Vector2(0f, -32f);
-            region.sizeDelta = new Vector2(420f, 44f);
-            Image regionBg = EnsureImage(region.gameObject, new Color(0.05f, 0.14f, 0.13f, 0.7f));
-            regionBg.raycastTarget = false;
-            regionLabel = EnsureText(region, "Region Text", "Region", 24, TextAnchor.MiddleCenter, Color.black);
+            region.anchoredPosition = new Vector2(0f, -22f);
+            region.sizeDelta = new Vector2(420f, 48f);
+            Image regionBg = EnsureImage(region.gameObject, panelBackground);
+            ConfigurePanelImage(regionBg, panelBackground, false);
+            EnsureOutline(region.gameObject, panelBorder, new Vector2(1f, -1f));
+            regionLabel = EnsureText(region, "Region Text", "Region", 20, TextAnchor.MiddleCenter, textColor);
+            regionLabel.fontStyle = FontStyle.Bold;
 
             RectTransform close = EnsureUIChild(overlay, "Close Button");
             close.anchorMin = new Vector2(1f, 1f);
             close.anchorMax = new Vector2(1f, 1f);
             close.pivot = new Vector2(1f, 1f);
-            close.anchoredPosition = new Vector2(-34f, -30f);
-            close.sizeDelta = new Vector2(48f, 48f);
-            closeButton = EnsureSpriteButton(close, "X", FindCustomSprite("Thang_Button_Close") ?? FindSprite("Map Exit Button 1"), Color.white);
+            close.anchoredPosition = new Vector2(-24f, -22f);
+            close.sizeDelta = new Vector2(150f, 48f);
+            closeButton = EnsureButton(close, "<  BACK", panelBackground, textColor, 16, panelBorder);
 
             RectTransform zoomControls = EnsureUIChild(overlay, "Zoom Controls");
-            zoomControls.anchorMin = new Vector2(1f, 1f);
-            zoomControls.anchorMax = new Vector2(1f, 1f);
-            zoomControls.pivot = new Vector2(1f, 1f);
-            zoomControls.anchoredPosition = new Vector2(-92f, -108f);
-            zoomControls.sizeDelta = new Vector2(170f, 56f);
-            EnsureImage(zoomControls.gameObject, new Color(0.04f, 0.10f, 0.09f, 0.74f));
+            zoomControls.anchorMin = new Vector2(1f, 0.5f);
+            zoomControls.anchorMax = new Vector2(1f, 0.5f);
+            zoomControls.pivot = new Vector2(1f, 0.5f);
+            zoomControls.anchoredPosition = new Vector2(-22f, 0f);
+            zoomControls.sizeDelta = new Vector2(60f, 178f);
+            Image zoomControlsImage = EnsureImage(zoomControls.gameObject, new Color(0.98f, 0.985f, 0.965f, 0.88f));
+            ConfigurePanelImage(zoomControlsImage, zoomControlsImage.color, false);
+            EnsureOutline(zoomControls.gameObject, panelBorder, new Vector2(1f, -1f));
 
             RectTransform zoomIn = EnsureUIChild(zoomControls, "Zoom In Button");
-            zoomIn.anchorMin = new Vector2(0f, 0.5f);
-            zoomIn.anchorMax = new Vector2(0f, 0.5f);
-            zoomIn.pivot = new Vector2(0f, 0.5f);
-            zoomIn.anchoredPosition = new Vector2(10f, 0f);
-            zoomIn.sizeDelta = new Vector2(42f, 42f);
+            zoomIn.anchorMin = new Vector2(0.5f, 1f);
+            zoomIn.anchorMax = new Vector2(0.5f, 1f);
+            zoomIn.pivot = new Vector2(0.5f, 1f);
+            zoomIn.anchoredPosition = new Vector2(0f, -8f);
+            zoomIn.sizeDelta = new Vector2(44f, 44f);
             zoomInButton = EnsureSpriteButton(zoomIn, "+", FindCustomSprite("Thang_Button_ZoomIn") ?? FindSprite("Zoom In Icon 1"), Color.white);
 
             RectTransform zoomOut = EnsureUIChild(zoomControls, "Zoom Out Button");
-            zoomOut.anchorMin = new Vector2(0f, 0.5f);
-            zoomOut.anchorMax = new Vector2(0f, 0.5f);
-            zoomOut.pivot = new Vector2(0f, 0.5f);
-            zoomOut.anchoredPosition = new Vector2(62f, 0f);
-            zoomOut.sizeDelta = new Vector2(42f, 42f);
+            zoomOut.anchorMin = new Vector2(0.5f, 1f);
+            zoomOut.anchorMax = new Vector2(0.5f, 1f);
+            zoomOut.pivot = new Vector2(0.5f, 1f);
+            zoomOut.anchoredPosition = new Vector2(0f, -67f);
+            zoomOut.sizeDelta = new Vector2(44f, 44f);
             zoomOutButton = EnsureSpriteButton(zoomOut, "-", FindCustomSprite("Thang_Button_ZoomOut") ?? FindSprite("Zoom Out Icon 1"), Color.white);
 
             RectTransform center = EnsureUIChild(zoomControls, "Center On Player Button");
-            center.anchorMin = new Vector2(0f, 0.5f);
-            center.anchorMax = new Vector2(0f, 0.5f);
-            center.pivot = new Vector2(0f, 0.5f);
-            center.anchoredPosition = new Vector2(114f, 0f);
-            center.sizeDelta = new Vector2(42f, 42f);
+            center.anchorMin = new Vector2(0.5f, 1f);
+            center.anchorMax = new Vector2(0.5f, 1f);
+            center.pivot = new Vector2(0.5f, 1f);
+            center.anchoredPosition = new Vector2(0f, -126f);
+            center.sizeDelta = new Vector2(44f, 44f);
             centerOnPlayerButton = EnsureSpriteButton(center, "P", FindCustomSprite("Thang_Button_Center") ?? FindSprite("Map Icon 1"), Color.white);
 
             RectTransform filterBar = EnsureUIChild(overlay, "Filter Bar");
             filterBar.anchorMin = new Vector2(0.5f, 0f);
             filterBar.anchorMax = new Vector2(0.5f, 0f);
             filterBar.pivot = new Vector2(0.5f, 0f);
-            filterBar.anchoredPosition = new Vector2(0f, 34f);
-            filterBar.sizeDelta = new Vector2(980f, 46f);
-            EnsureImage(filterBar.gameObject, new Color(0.04f, 0.10f, 0.09f, 0.72f));
+            filterBar.anchoredPosition = new Vector2(0f, 22f);
+            filterBar.sizeDelta = new Vector2(908f, 48f);
+            Image filterBarImage = EnsureImage(filterBar.gameObject, new Color(0.98f, 0.985f, 0.965f, 0.90f));
+            ConfigurePanelImage(filterBarImage, filterBarImage.color, false);
+            EnsureOutline(filterBar.gameObject, panelBorder, new Vector2(1f, -1f));
 
             MapMarkerType[] types = { MapMarkerType.NPC, MapMarkerType.Pet, MapMarkerType.Enemy, MapMarkerType.Boss, MapMarkerType.QuestTarget, MapMarkerType.Shop, MapMarkerType.FastTravel, MapMarkerType.CoopPlayer };
             string[] labels = { "NPC", "Pet", "Enemy", "Boss", "Quest", "Shop", "Travel", "Co-op" };
@@ -522,9 +542,9 @@ namespace Capstone.Game.MapSystem.Editor {
             clear.anchorMin = new Vector2(1f, 0f);
             clear.anchorMax = new Vector2(1f, 0f);
             clear.pivot = new Vector2(1f, 0f);
-            clear.anchoredPosition = new Vector2(-36f, 34f);
-            clear.sizeDelta = new Vector2(170f, 42f);
-            clearWaypointButton = EnsureButton(clear, "Clear Waypoint", new Color(0.86f, 0.78f, 0.58f, 0.94f));
+            clear.anchoredPosition = new Vector2(-24f, 22f);
+            clear.sizeDelta = new Vector2(180f, 44f);
+            clearWaypointButton = EnsureButton(clear, "CLEAR WAYPOINT", panelBackground, textColor, 14, panelBorder);
             return overlay;
         }
 
@@ -533,10 +553,15 @@ namespace Capstone.Game.MapSystem.Editor {
             root.anchorMin = new Vector2(0f, 0.5f);
             root.anchorMax = new Vector2(0f, 0.5f);
             root.pivot = new Vector2(0f, 0.5f);
-            root.sizeDelta = new Vector2(104f, 34f);
-            root.anchoredPosition = new Vector2(14f + index * 116f, 0f);
+            root.sizeDelta = new Vector2(100f, 34f);
+            root.anchoredPosition = new Vector2(12f + index * 110f, 0f);
 
-            Image bg = EnsureImage(root.gameObject, new Color(0.19f, 0.31f, 0.20f, 0.95f));
+            Color panelBackground = new Color(0.98f, 0.985f, 0.965f, 0.96f);
+            Color panelBorder = new Color(0.38f, 0.55f, 0.31f, 0.95f);
+            Color textColor = new Color(0.12f, 0.28f, 0.14f, 1f);
+            Image bg = EnsureImage(root.gameObject, panelBackground);
+            ConfigurePanelImage(bg, panelBackground, true);
+            EnsureOutline(root.gameObject, panelBorder, new Vector2(1f, -1f));
             Toggle toggle = root.GetComponent<Toggle>();
             if (toggle == null) toggle = Undo.AddComponent<Toggle>(root.gameObject);
             toggle.isOn = true;
@@ -548,9 +573,9 @@ namespace Capstone.Game.MapSystem.Editor {
             check.pivot = new Vector2(0f, 0.5f);
             check.anchoredPosition = new Vector2(8f, 0f);
             check.sizeDelta = new Vector2(16f, 16f);
-            toggle.graphic = EnsureImage(check.gameObject, new Color(0.87f, 0.72f, 0.38f, 1f));
+            toggle.graphic = EnsureImage(check.gameObject, new Color(0.35f, 0.60f, 0.29f, 1f));
 
-            Text text = EnsureText(root, "Label", label, 15, TextAnchor.MiddleLeft, Color.black);
+            Text text = EnsureText(root, "Label", label, 13, TextAnchor.MiddleLeft, textColor);
             RectTransform textRect = text.GetComponent<RectTransform>();
             textRect.offsetMin = new Vector2(30f, 0f);
             textRect.offsetMax = new Vector2(-6f, 0f);
@@ -705,6 +730,24 @@ namespace Capstone.Game.MapSystem.Editor {
             return image;
         }
 
+        static void ConfigurePanelImage(Image image, Color color, bool raycastTarget) {
+            if (image == null) return;
+            image.sprite = null;
+            image.type = Image.Type.Simple;
+            image.preserveAspect = false;
+            image.color = color;
+            image.raycastTarget = raycastTarget;
+        }
+
+        static void EnsureOutline(GameObject source, Color color, Vector2 distance) {
+            if (source == null) return;
+            Outline outline = source.GetComponent<Outline>();
+            if (outline == null) outline = Undo.AddComponent<Outline>(source);
+            outline.effectColor = color;
+            outline.effectDistance = distance;
+            outline.useGraphicAlpha = false;
+        }
+
         static void SetTransparentImage(Image image) {
             if (image == null) return;
             Undo.RecordObject(image, "Make map image transparent");
@@ -781,12 +824,27 @@ namespace Capstone.Game.MapSystem.Editor {
             return text;
         }
 
-        static Button EnsureButton(RectTransform rect, string label, Color color) {
+        static Button EnsureButton(RectTransform rect, string label, Color color, Color textColor, int fontSize, Color borderColor) {
             Image image = EnsureImage(rect.gameObject, color);
+            ConfigurePanelImage(image, color, true);
+            EnsureOutline(rect.gameObject, borderColor, new Vector2(1f, -1f));
             Button button = rect.GetComponent<Button>();
             if (button == null) button = Undo.AddComponent<Button>(rect.gameObject);
             button.targetGraphic = image;
-            EnsureText(rect, "Text", label, 18, TextAnchor.MiddleCenter, Color.black);
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(0.93f, 0.98f, 0.91f, 1f);
+            colors.pressedColor = new Color(0.79f, 0.89f, 0.75f, 1f);
+            colors.selectedColor = colors.highlightedColor;
+            colors.disabledColor = new Color(0.78f, 0.80f, 0.75f, 0.65f);
+            colors.colorMultiplier = 1f;
+            colors.fadeDuration = 0.08f;
+            button.colors = colors;
+
+            Text text = EnsureText(rect, "Text", label, fontSize, TextAnchor.MiddleCenter, textColor);
+            text.fontStyle = FontStyle.Bold;
+            text.gameObject.SetActive(true);
             return button;
         }
 
@@ -856,7 +914,7 @@ namespace Capstone.Game.MapSystem.Editor {
             if (!AssetDatabase.IsValidFolder(MapMinimapSpriteFolder)) return;
 
             AssetDatabase.Refresh();
-            string[] guids = AssetDatabase.FindAssets("Thang_ t:Texture2D", new[] { MapMinimapSpriteFolder });
+            string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { MapMinimapSpriteFolder });
             for (int i = 0; i < guids.Length; i++) {
                 string path = AssetDatabase.GUIDToAssetPath(guids[i]);
                 EnsureSpriteImportSettings(path);
@@ -1094,6 +1152,9 @@ namespace Capstone.Game.MapSystem.Editor {
             SetObjectReference(markerManager, "bossIcon", FindCustomIconTexture("Thang_Icon_Boss") ?? FindAAMapIconTexture("Map Icon 4") ?? EnsureGeneratedIcon("MapIcon_Boss", GeneratedIconShape.Ring));
             SetObjectReference(markerManager, "npcIcon", FindCustomIconTexture("Thang_Icon_NPC") ?? FindAAMapIconTexture("Map Icon 5") ?? EnsureGeneratedIcon("MapIcon_NPC", GeneratedIconShape.Square));
             SetObjectReference(markerManager, "questIcon", FindCustomIconTexture("Thang_Icon_Quest") ?? FindAAMapIconTexture("Map Icon 6") ?? EnsureGeneratedIcon("MapIcon_Quest", GeneratedIconShape.Star));
+            SetObjectReference(markerManager, "mainQuestIcon", FindCustomIconTexture("Thang_Icon_MainQuest") ?? FindCustomIconTexture("Thang_Icon_Quest"));
+            SetObjectReference(markerManager, "sideQuestIcon", FindCustomIconTexture("Thang_Icon_SideQuest") ?? FindCustomIconTexture("Thang_Icon_Quest"));
+            SetObjectReference(markerManager, "waypointIcon", FindCustomIconTexture("Thang_Icon_Waypoint") ?? FindCustomIconTexture("Thang_Icon_Quest"));
             SetObjectReference(markerManager, "itemIcon", FindCustomIconTexture("Thang_Icon_Item") ?? FindAAMapIconTexture("Map Icon 7") ?? EnsureGeneratedIcon("MapIcon_Item", GeneratedIconShape.Circle));
             SetObjectReference(markerManager, "shopIcon", FindCustomIconTexture("Thang_Icon_Shop") ?? FindAAMapIconTexture("Asset_Icon_1") ?? EnsureGeneratedIcon("MapIcon_Shop", GeneratedIconShape.Square));
             SetObjectReference(markerManager, "fastTravelIcon", FindCustomIconTexture("Thang_Icon_FastTravel") ?? FindAAMapIconTexture("Asset_Icon_2") ?? EnsureGeneratedIcon("MapIcon_FastTravel", GeneratedIconShape.Ring));
@@ -1104,9 +1165,9 @@ namespace Capstone.Game.MapSystem.Editor {
             if (markerManager == null) return;
 
             SetBool(markerManager, "useMarkerTextureOverrides", false);
-            SetVector3(markerManager, "defaultIconScale", new Vector3(0.28f, 1f, 0.28f));
-            SetVector3(markerManager, "playerIconScale", new Vector3(0.32f, 1f, 0.32f));
-            SetVector3(markerManager, "bossIconScale", new Vector3(0.42f, 1f, 0.42f));
+            SetVector3(markerManager, "defaultIconScale", new Vector3(5f, 1f, 5f));
+            SetVector3(markerManager, "playerIconScale", new Vector3(5f, 1f, 5f));
+            SetVector3(markerManager, "bossIconScale", new Vector3(6f, 1f, 6f));
         }
 
         static Texture FindAAMapIconTexture(string spriteName) {
@@ -1249,5 +1310,11 @@ namespace Capstone.Game.MapSystem.Editor {
         }
     }
 }
+
+
+
+
+
+
 
 

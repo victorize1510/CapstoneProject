@@ -54,17 +54,23 @@ namespace Capstone.Game.MapSystem {
             EnsureMarker();
             if (trackedQuestMarker == null) return;
 
-            if (quest == null || quest.Definition == null || !HasLocation(quest)) {
+            if (quest == null
+                || quest.Definition == null
+                || questManager == null
+                || !questManager.TryGetQuestTarget(quest, out QuestTargetInfo target)) {
                 trackedQuestMarker.SetVisible(false);
                 return;
             }
 
             QuestDefinition definition = quest.Definition;
-            trackedQuestMarker.transform.position = definition.WorldPosition;
+            trackedQuestMarker.transform.position = target.Position;
+            string markerTitle = string.IsNullOrWhiteSpace(target.Label)
+                ? definition.Title
+                : target.Label;
             trackedQuestMarker.ConfigureRuntime(
                 MapMarkerType.QuestTarget,
-                definition.QuestId,
-                string.IsNullOrWhiteSpace(definition.Title) ? "Tracked Quest" : definition.Title,
+                definition.QuestId + ":" + target.ObjectiveId,
+                string.IsNullOrWhiteSpace(markerTitle) ? "Tracked Quest" : markerTitle,
                 trackedQuestIcon,
                 trackedQuestColor,
                 true,
@@ -88,13 +94,6 @@ namespace Capstone.Game.MapSystem {
 
         void ResolveQuestManager() {
             if (questManager == null) questManager = FindFirstObjectByType<QuestManager>();
-        }
-
-        static bool HasLocation(QuestRuntimeState quest) {
-            return quest != null
-                && quest.Definition != null
-                && (!string.IsNullOrWhiteSpace(quest.Definition.LocationName)
-                    || quest.Definition.WorldPosition != Vector3.zero);
         }
     }
 }

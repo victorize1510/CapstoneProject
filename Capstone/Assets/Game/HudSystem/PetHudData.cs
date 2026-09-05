@@ -22,6 +22,8 @@ namespace Capstone.Game.HudSystem {
     public struct PetSlotHudData {
         public bool occupied;
         public bool selected;
+        public bool summoned;
+        public bool favorite;
         public string displayName;
         public int level;
         public Sprite icon;
@@ -29,11 +31,37 @@ namespace Capstone.Game.HudSystem {
 
     [Serializable]
     public struct SkillHudData {
+        public string skillId;
+        public string[] legacySkillIds;
         public bool unlocked;
         public bool usable;
         public string displayName;
+        [Min(1)] public int skillLevel;
+        [Min(1)] public int requiredPetLevel;
+        public PetElement element;
+        [TextArea] public string description;
         public Sprite icon;
+        public string[] animatorStates;
+        [Min(0f)] public float animationDuration;
+        [Min(0f)] public float animationFade;
+        [Min(0f)] public float windupSeconds;
+        [Min(0f)] public float recoverySeconds;
         [Range(0f, 1f)] public float cooldownPercent;
+        [Min(0f)] public float cooldownSeconds;
+        [NonSerialized] public float cooldownRemainingSeconds;
+
+        public float CooldownPercent {
+            get {
+                if (cooldownSeconds > 0f && cooldownRemainingSeconds > 0f) {
+                    return Mathf.Clamp01(cooldownRemainingSeconds / cooldownSeconds);
+                }
+
+                return Mathf.Clamp01(cooldownPercent);
+            }
+        }
+
+        public bool IsCoolingDown => CooldownPercent > 0.001f || cooldownRemainingSeconds > 0.001f;
+        public int RequiredPetLevel => Mathf.Max(1, requiredPetLevel);
     }
 
     public interface IPetHudProvider {
@@ -61,5 +89,11 @@ namespace Capstone.Game.HudSystem {
 
     public interface IPetSkillRequestReceiver {
         void RequestSkill(int skillIndex);
+    }
+
+    public interface IPetSkillLoadoutDataSource {
+        int EquippedSkillSlotCount { get; }
+        IReadOnlyList<SkillHudData> GetLearnedSkills();
+        bool TryEquipLearnedSkill(int learnedSkillIndex, int equippedSlotIndex);
     }
 }

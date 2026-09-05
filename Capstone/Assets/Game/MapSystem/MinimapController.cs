@@ -33,6 +33,7 @@ namespace Capstone.Game.MapSystem {
         [SerializeField, Min(0f)] float frameOverscan = 30f;
 
         RenderTexture runtimeMinimapTexture;
+        Transform configuredVisualRoot;
 
         public MinimapManager Manager => minimapManager;
         public Camera Camera => minimapCamera;
@@ -47,7 +48,8 @@ namespace Capstone.Game.MapSystem {
         void OnEnable() {
             ResolveReferences();
             ApplySettings();
-            EnsureOpaqueMinimapVisuals();
+            Transform visualRoot = minimapManager != null ? minimapManager.transform : null;
+            if (configuredVisualRoot != visualRoot) EnsureOpaqueMinimapVisuals();
         }
 
         void Start() {
@@ -65,7 +67,8 @@ namespace Capstone.Game.MapSystem {
                 minimapCamera.transform.rotation = Quaternion.Euler(90f, rotateWithTarget ? target.eulerAngles.y : 0f, 0f);
             }
 
-            EnsureOpaqueMinimapVisuals();
+            Transform visualRoot = minimapManager != null ? minimapManager.transform : null;
+            if (configuredVisualRoot != visualRoot) EnsureOpaqueMinimapVisuals();
         }
 
         void OnDestroy() {
@@ -149,6 +152,7 @@ namespace Capstone.Game.MapSystem {
             Transform root = minimapManager != null ? minimapManager.transform : null;
             Transform mask = root != null ? root.Find("Minimap Mask") : null;
             if (mask == null) return;
+            configuredVisualRoot = root;
 
             RectTransform rootRect = root.GetComponent<RectTransform>();
             if (enforceTopLeftLayout && rootRect != null) ConfigureMinimapRoot(rootRect);

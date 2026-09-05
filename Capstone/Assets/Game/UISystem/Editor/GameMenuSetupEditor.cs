@@ -1,5 +1,7 @@
 using Capstone.Game.Inventory;
 using Capstone.Game.MapSystem;
+using Capstone.Game.ProfileSystem;
+using Capstone.Game.QuestSystem;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -34,11 +36,25 @@ namespace Capstone.Game.UISystem.Editor {
             MonsterInventoryController inventory = FindFirst<MonsterInventoryController>();
             InventoryInputController inventoryInput = FindFirst<InventoryInputController>();
             MapInputController mapInput = FindFirst<MapInputController>();
+            PlayerProfileRuntimeProvider profileProvider = GetOrAdd<PlayerProfileRuntimeProvider>(menuObject);
+            AchievementManager achievementManager = GetOrAdd<AchievementManager>(menuObject);
+            ProfilePanelController profile = GetOrAdd<ProfilePanelController>(menuObject);
+            QuestManager questManager = FindFirst<QuestManager>();
+
+            AssignObject(profileProvider, "questManager", questManager);
+            AssignObject(profileProvider, "achievementManager", achievementManager);
+            AssignObject(achievementManager, "questManager", questManager);
+
+            AssignObject(profile, "targetCanvas", canvas);
+            AssignObject(profile, "providerSource", profileProvider);
+            AssignBool(profile, "buildOnAwake", true);
+            AssignBool(profile, "closeOnStart", true);
 
             AssignObject(menu, "targetCanvas", canvas);
             AssignObject(menu, "inventory", inventory);
             AssignObject(menu, "inventoryInput", inventoryInput);
             AssignObject(menu, "mapInput", mapInput);
+            AssignObject(menu, "profile", profile);
             AssignObject(menu, "controlLock", controlLock);
             AssignBool(menu, "buildOnAwake", true);
             AssignBool(menu, "closeOnStart", true);
@@ -47,6 +63,7 @@ namespace Capstone.Game.UISystem.Editor {
             ConfigureInventoryInput(inventoryInput);
             ConfigureMapInput(mapInput);
 
+            profile.RebuildPanel();
             menu.RebuildMenu();
 
             EditorUtility.SetDirty(menuObject);

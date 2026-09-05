@@ -1,0 +1,119 @@
+<ui:UXML editor-extension-mode="False" xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="MonsterInventory.uss" />
+    <ui:Style src="BoxPanel.uss" />
+    <ui:VisualElement name="box-panel" class="box-panel">
+        <ui:VisualElement class="box-header">
+            <ui:VisualElement class="box-title-group">
+                <ui:VisualElement class="box-title-mark" />
+                <ui:VisualElement>
+                    <ui:Label text="BOX / PARTY MANAGEMENT" class="box-title" />
+                    <ui:Label text="Quản lý đội hình và kho pet" class="box-subtitle" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="box-source-label" text="Nguồn mở: TỪ MENU" class="box-source-label" />
+            <ui:Button name="box-back-button" text="←  QUAY LẠI" class="box-back-button" />
+        </ui:VisualElement>
+        <ui:VisualElement class="box-party-section">
+            <ui:VisualElement class="box-section-heading">
+                <ui:Label name="box-party-count" text="TEAM (0 / 6)" class="box-section-title" />
+                <ui:Label text="Double-click pet nguồn, sau đó click ô đích để đổi. Slot 1 là LEAD." class="box-section-hint" />
+            </ui:VisualElement>
+            <ui:VisualElement name="box-party-row" class="box-party-row" />
+        </ui:VisualElement>
+        <ui:VisualElement class="box-main-content">
+            <ui:VisualElement class="box-selected-panel">
+                <ui:VisualElement class="box-selected-top">
+                    <ui:VisualElement name="box-selected-portrait" class="box-selected-portrait">
+                        <ui:Label name="box-selected-portrait-fallback" text="?" class="box-selected-portrait-fallback" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="box-selected-summary">
+                        <ui:Label name="box-selected-name" text="Chọn một pet" class="box-selected-name" />
+                        <ui:Label name="box-selected-meta" text="Chọn pet trong Party hoặc Box để xem thông tin." class="box-selected-meta" />
+                        <ui:VisualElement class="box-large-bar-row">
+                            <ui:Label text="HP" class="box-large-bar-label" />
+                            <ui:VisualElement class="box-large-bar-track">
+                                <ui:VisualElement name="box-health-fill" class="box-large-bar-fill box-hp-fill" />
+                            </ui:VisualElement>
+                            <ui:Label name="box-selected-health" text="- / -" class="box-large-bar-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="box-large-bar-row">
+                            <ui:Label text="EXP" class="box-large-bar-label" />
+                            <ui:VisualElement class="box-large-bar-track">
+                                <ui:VisualElement name="box-experience-fill" class="box-large-bar-fill box-exp-fill" />
+                            </ui:VisualElement>
+                            <ui:Label name="box-selected-experience" text="- / -" class="box-large-bar-value" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label text="CHỈ SỐ" class="box-subsection-title" />
+                <ui:VisualElement class="box-stats-row">
+                    <ui:VisualElement class="box-stat-cell">
+                        <ui:Label text="HP" class="box-stat-name" />
+                        <ui:Label name="box-stat-health" text="-" class="box-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="box-stat-cell">
+                        <ui:Label text="ATK" class="box-stat-name" />
+                        <ui:Label name="box-stat-attack" text="-" class="box-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="box-stat-cell">
+                        <ui:Label text="DEF" class="box-stat-name" />
+                        <ui:Label name="box-stat-defense" text="-" class="box-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="box-stat-cell">
+                        <ui:Label text="SPD" class="box-stat-name" />
+                        <ui:Label name="box-stat-speed" text="-" class="box-stat-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label text="KỸ NĂNG" class="box-subsection-title" />
+                <ui:VisualElement name="box-selected-skills" class="box-selected-skills" />
+                <ui:VisualElement class="box-actions-row">
+                    <ui:Button name="box-replace-button" text="THAY THẾ" class="box-action-button box-primary-action" />
+                    <ui:Button name="box-add-button" text="ĐƯA VÀO ĐỘI" class="box-action-button box-primary-action" />
+                    <ui:Button name="box-move-button" text="DI CHUYỂN VÀO BOX" class="box-action-button" />
+                    <ui:Button name="box-details-button" text="CHI TIẾT" class="box-action-button" />
+                </ui:VisualElement>
+                <ui:Label name="box-feedback" text="Chọn pet để bắt đầu quản lý đội hình." class="box-feedback" />
+            </ui:VisualElement>
+            <ui:VisualElement class="box-storage-panel">
+                <ui:VisualElement class="box-storage-toolbar">
+                    <ui:VisualElement class="box-capacity-group">
+                        <ui:Label name="box-capacity-label" text="SLOT BOX: 0 / 60" class="box-capacity-label" />
+                        <ui:Button name="box-expand-button" text="+" tooltip="Mua thêm slot" class="box-expand-button" />
+                    </ui:VisualElement>
+                    <ui:TextField name="box-search-field" label="" value="" class="box-search-field" />
+                    <ui:DropdownField name="box-sort-field" label="Sắp xếp" class="box-sort-field" />
+                    <ui:Button name="box-filter-toggle" text="Lọc hệ" class="box-filter-toggle" />
+                </ui:VisualElement>
+                <ui:VisualElement name="box-filter-panel" class="box-filter-panel">
+                    <ui:Button name="box-filter-all" text="ALL" class="box-filter-chip is-selected" />
+                    <ui:Button name="box-filter-nature" text="Nature" class="box-filter-chip" />
+                    <ui:Button name="box-filter-fire" text="Fire" class="box-filter-chip" />
+                    <ui:Button name="box-filter-water" text="Water" class="box-filter-chip" />
+                    <ui:Button name="box-filter-wind" text="Wind" class="box-filter-chip" />
+                    <ui:Button name="box-filter-earth" text="Earth" class="box-filter-chip" />
+                    <ui:Button name="box-filter-electric" text="Electric" class="box-filter-chip" />
+                    <ui:Button name="box-filter-ice" text="Ice" class="box-filter-chip" />
+                    <ui:Button name="box-filter-light" text="Light" class="box-filter-chip" />
+                    <ui:Button name="box-filter-dark" text="Dark" class="box-filter-chip" />
+                </ui:VisualElement>
+                <ui:ScrollView name="box-storage-scroll" mode="Vertical" class="box-storage-scroll">
+                    <ui:VisualElement name="box-storage-grid" class="box-storage-grid" />
+                </ui:ScrollView>
+                <ui:Label name="box-empty-label" text="BOX CHƯA CÓ PET" class="box-empty-label" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="box-purchase-popup" class="box-purchase-overlay">
+            <ui:VisualElement class="box-purchase-card">
+                <ui:Label name="box-purchase-title" text="MUA THÊM SLOT" class="box-purchase-title" />
+                <ui:Label name="box-purchase-current" text="Hiện tại: 0 / 60" class="box-purchase-line" />
+                <ui:Label name="box-purchase-expand" text="Mở rộng: +10 slot" class="box-purchase-line" />
+                <ui:Label name="box-purchase-price" text="Giá: 5,000 Gold" class="box-purchase-line" />
+                <ui:Label name="box-purchase-after" text="Sau khi mua: 70" class="box-purchase-line box-purchase-after" />
+                <ui:VisualElement class="box-purchase-actions">
+                    <ui:Button name="box-purchase-cancel" text="HỦY" class="box-popup-button" />
+                    <ui:Button name="box-purchase-confirm" text="MUA THÊM" class="box-popup-button box-primary-action" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

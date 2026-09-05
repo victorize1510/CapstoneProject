@@ -1,0 +1,424 @@
+.heal-modal-overlay {
+    display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.heal-modal-dim {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(20, 29, 22, 0.72);
+}
+
+.heal-modal-dialog {
+    width: 660px;
+    height: 760px;
+    max-width: 92%;
+    max-height: 92%;
+    background-color: rgb(252, 252, 247);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(151, 184, 132);
+    border-right-color: rgb(151, 184, 132);
+    border-top-color: rgb(151, 184, 132);
+    border-bottom-color: rgb(151, 184, 132);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: 12px;
+}
+
+.heal-header {
+    height: 68px;
+    min-height: 68px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(215, 227, 207);
+}
+
+.heal-title {
+    color: rgb(45, 111, 40);
+    font-size: 31px;
+    -unity-font-style: bold;
+}
+
+.heal-ornament {
+    margin-left: 14px;
+    margin-right: 14px;
+    color: rgb(134, 180, 111);
+    font-size: 26px;
+}
+
+.heal-ornament.mirrored {
+    scale: -1 1;
+}
+
+.heal-close-button {
+    position: absolute;
+    right: 4px;
+    top: 10px;
+    width: 46px;
+    height: 46px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 3px;
+    color: rgb(43, 91, 42);
+    background-color: rgb(252, 252, 247);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(151, 184, 132);
+    border-right-color: rgb(151, 184, 132);
+    border-top-color: rgb(151, 184, 132);
+    border-bottom-color: rgb(151, 184, 132);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    font-size: 32px;
+}
+
+.heal-close-button:hover {
+    background-color: rgb(235, 246, 229);
+}
+
+.heal-scroll {
+    flex-grow: 1;
+    margin-top: 12px;
+}
+
+.heal-pet-card {
+    min-height: 188px;
+    flex-direction: row;
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+    background-color: rgb(255, 255, 252);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(188, 207, 177);
+    border-right-color: rgb(188, 207, 177);
+    border-top-color: rgb(188, 207, 177);
+    border-bottom-color: rgb(188, 207, 177);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.heal-pet-portrait {
+    width: 160px;
+    min-width: 160px;
+    height: 156px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(232, 245, 224);
+    -unity-background-scale-mode: scale-to-fit;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(189, 212, 175);
+    border-right-color: rgb(189, 212, 175);
+    border-top-color: rgb(189, 212, 175);
+    border-bottom-color: rgb(189, 212, 175);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.heal-portrait-fallback {
+    color: rgb(71, 132, 62);
+    font-size: 50px;
+    -unity-font-style: bold;
+}
+
+.heal-pet-copy {
+    flex-grow: 1;
+    margin-left: 24px;
+    justify-content: center;
+}
+
+.heal-pet-name {
+    margin-bottom: 9px;
+    color: rgb(31, 43, 34);
+    font-size: 25px;
+    -unity-font-style: bold;
+}
+
+.heal-info-row {
+    min-height: 28px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.heal-info-key {
+    width: 105px;
+    color: rgb(58, 67, 59);
+    font-size: 15px;
+}
+
+.heal-info-value {
+    flex-grow: 1;
+    color: rgb(31, 42, 34);
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.heal-info-value.accent,
+.heal-info-value.status {
+    color: rgb(45, 126, 42);
+}
+
+.heal-info-value.rarity {
+    color: rgb(54, 105, 190);
+    font-size: 18px;
+}
+
+.heal-preview-section,
+.heal-item-section {
+    margin-top: 14px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+.heal-section-title {
+    height: 35px;
+    color: rgb(48, 111, 43);
+    font-size: 17px;
+    -unity-font-style: bold;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(218, 228, 212);
+}
+
+.heal-health-values {
+    height: 54px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.heal-health-value {
+    width: 190px;
+    color: rgb(37, 47, 40);
+    font-size: 21px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.heal-health-value.result {
+    color: rgb(42, 133, 39);
+}
+
+.heal-health-arrow {
+    width: 60px;
+    color: rgb(52, 128, 44);
+    font-size: 31px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.heal-health-track {
+    position: relative;
+    height: 24px;
+    margin-left: 24px;
+    margin-right: 24px;
+    overflow: hidden;
+    background-color: rgb(222, 228, 219);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(141, 174, 125);
+    border-right-color: rgb(141, 174, 125);
+    border-top-color: rgb(141, 174, 125);
+    border-bottom-color: rgb(141, 174, 125);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.heal-health-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+.heal-health-fill.current {
+    left: 0;
+    background-color: rgb(61, 145, 48);
+}
+
+.heal-health-fill.recovery {
+    background-color: rgba(132, 196, 103, 0.58);
+}
+
+.heal-restored-amount {
+    height: 45px;
+    color: rgb(45, 137, 42);
+    font-size: 19px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.heal-restored-amount.is-full {
+    color: rgb(76, 111, 67);
+}
+
+.heal-item-card {
+    min-height: 104px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 18px;
+    margin-top: 8px;
+    background-color: rgb(255, 255, 252);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(187, 207, 176);
+    border-right-color: rgb(187, 207, 176);
+    border-top-color: rgb(187, 207, 176);
+    border-bottom-color: rgb(187, 207, 176);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.heal-item-icon {
+    width: 82px;
+    min-width: 82px;
+    height: 82px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(232, 245, 224);
+    -unity-background-scale-mode: scale-to-fit;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(190, 211, 178);
+    border-right-color: rgb(190, 211, 178);
+    border-top-color: rgb(190, 211, 178);
+    border-bottom-color: rgb(190, 211, 178);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.heal-item-icon-fallback {
+    color: rgb(55, 143, 49);
+    font-size: 38px;
+    -unity-font-style: bold;
+}
+
+.heal-item-copy {
+    flex-grow: 1;
+    margin-left: 20px;
+}
+
+.heal-item-name {
+    color: rgb(37, 48, 40);
+    font-size: 19px;
+    -unity-font-style: bold;
+}
+
+.heal-item-effect {
+    margin-top: 7px;
+    color: rgb(71, 80, 72);
+    font-size: 15px;
+}
+
+.heal-item-count {
+    min-width: 100px;
+    color: rgb(46, 128, 43);
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-right;
+}
+
+.heal-item-count.is-missing {
+    color: rgb(177, 65, 50);
+}
+
+.heal-footer {
+    min-height: 112px;
+    align-items: center;
+    justify-content: center;
+    border-top-width: 1px;
+    border-top-color: rgb(218, 228, 212);
+}
+
+.heal-feedback {
+    height: 28px;
+    color: rgb(164, 74, 57);
+    font-size: 13px;
+    -unity-text-align: middle-center;
+}
+
+.heal-feedback.is-success {
+    color: rgb(48, 126, 45);
+}
+
+.heal-confirm-button {
+    width: 340px;
+    height: 58px;
+    color: white;
+    background-color: rgb(65, 145, 49);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(118, 154, 91);
+    border-right-color: rgb(118, 154, 91);
+    border-top-color: rgb(118, 154, 91);
+    border-bottom-color: rgb(118, 154, 91);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 23px;
+    -unity-font-style: bold;
+}
+
+.heal-confirm-button:hover {
+    background-color: rgb(79, 162, 60);
+}
+
+.heal-confirm-button:active {
+    background-color: rgb(51, 125, 39);
+}
+
+.heal-confirm-button:disabled {
+    color: rgb(139, 148, 136);
+    background-color: rgb(220, 225, 217);
+    border-left-color: rgb(198, 207, 193);
+    border-right-color: rgb(198, 207, 193);
+    border-top-color: rgb(198, 207, 193);
+    border-bottom-color: rgb(198, 207, 193);
+}

@@ -1,0 +1,8 @@
+<ui:UXML editor-extension-mode="False" xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="MonsterInventory.uss" />
+    <ui:Style src="MenuPlaceholderPanel.uss" />
+    <ui:VisualElement name="menu-placeholder-panel" class="menu-placeholder-panel">
+        <ui:Label name="menu-placeholder-title" text="Feature" class="menu-placeholder-title" />
+        <ui:Label name="menu-placeholder-body" text="This panel is a clean placeholder. Connect the real gameplay system later." class="menu-placeholder-body" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,116 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="MonsterInventory.uss" />
+    <ui:Style src="PetDetailsPanel.uss" />
+    <ui:VisualElement name="pet-details-overlay" class="pet-details-overlay">
+        <ui:VisualElement class="pet-details-backdrop"/>
+        <ui:VisualElement class="pet-details-dialog">
+            <ui:VisualElement class="pet-details-header">
+                <ui:Label text="❧" class="pet-details-ornament"/>
+                <ui:Label text="PET DETAILS" class="pet-details-title"/>
+                <ui:Label text="❧" class="pet-details-ornament mirror"/>
+                <ui:Button name="pet-details-close-button" text="×" tooltip="Đóng" class="pet-details-close-button"/>
+            </ui:VisualElement>
+
+            <ui:ScrollView mode="Vertical" class="pet-details-scroll">
+                <ui:VisualElement class="pet-details-top-section detail-section-frame">
+                    <ui:VisualElement class="pet-details-main-portrait">
+                        <ui:VisualElement name="pet-details-portrait" class="pet-details-portrait">
+                            <ui:Label name="pet-details-portrait-fallback" text="?" class="pet-details-portrait-fallback"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pet-details-primary-grid">
+                        <ui:VisualElement class="pet-details-primary-column">
+                            <ui:VisualElement class="pet-detail-info-row"><ui:Label text="✣  Name" class="pet-detail-info-key"/><ui:Label name="pet-details-name" text="-" class="pet-detail-info-value"/></ui:VisualElement>
+                            <ui:VisualElement class="pet-detail-info-row"><ui:Label text="♞  Species" class="pet-detail-info-key"/><ui:Label name="pet-details-species" text="-" class="pet-detail-info-value"/></ui:VisualElement>
+                            <ui:VisualElement class="pet-detail-info-row"><ui:Label text="⚥  Gender" class="pet-detail-info-key"/><ui:Label name="pet-details-gender" text="-" class="pet-detail-info-value"/></ui:VisualElement>
+                            <ui:VisualElement class="pet-detail-info-row"><ui:Label text="◈  Element" class="pet-detail-info-key"/><ui:Label name="pet-details-element" text="-" class="pet-detail-info-value element"/></ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="pet-details-primary-column">
+                            <ui:VisualElement class="pet-detail-info-row"><ui:Label text="✦  Rarity" class="pet-detail-info-key"/><ui:Label name="pet-details-rarity" text="-" class="pet-detail-info-value rarity"/></ui:VisualElement>
+                            <ui:VisualElement class="pet-detail-info-row"><ui:Label text="♨  Level" class="pet-detail-info-key"/><ui:Label name="pet-details-level" text="- / -" class="pet-detail-info-value"/></ui:VisualElement>
+                            <ui:VisualElement class="pet-detail-status-row">
+                                <ui:Label text="EXP" class="pet-detail-status-key"/>
+                                <ui:VisualElement class="pet-detail-status-track"><ui:VisualElement name="pet-details-exp-fill" class="pet-detail-status-fill exp"/></ui:VisualElement>
+                                <ui:Label name="pet-details-exp-value" text="- / -" class="pet-detail-status-value"/>
+                            </ui:VisualElement>
+                            <ui:VisualElement class="pet-detail-status-row">
+                                <ui:Label text="♥  HP" class="pet-detail-status-key"/>
+                                <ui:VisualElement class="pet-detail-status-track"><ui:VisualElement name="pet-details-hp-fill" class="pet-detail-status-fill hp"/></ui:VisualElement>
+                                <ui:Label name="pet-details-hp-value" text="- / -" class="pet-detail-status-value"/>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="pet-details-middle-row">
+                    <ui:VisualElement class="pet-details-basic-panel detail-section-frame">
+                        <ui:Label text="❧  THÔNG TIN CƠ BẢN  ❧" class="pet-detail-section-title"/>
+                        <ui:VisualElement class="pet-detail-basic-row"><ui:Label text="♙  ID Pet" class="pet-detail-basic-key"/><ui:Label name="pet-details-id" text="-" class="pet-detail-basic-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-basic-row"><ui:Label text="▣  Ngày bắt" class="pet-detail-basic-key"/><ui:Label name="pet-details-capture-date" text="-" class="pet-detail-basic-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-basic-row"><ui:Label text="◉  Nơi bắt" class="pet-detail-basic-key"/><ui:Label name="pet-details-capture-location" text="-" class="pet-detail-basic-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-basic-row"><ui:Label text="♟  Huấn luyện viên" class="pet-detail-basic-key"/><ui:Label name="pet-details-trainer" text="-" class="pet-detail-basic-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-basic-row"><ui:Label text="✤  Tính cách" class="pet-detail-basic-key"/><ui:Label name="pet-details-personality" text="-" class="pet-detail-basic-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-basic-row"><ui:Label text="▤  Trạng thái Codex" class="pet-detail-basic-key"/><ui:Label name="pet-details-codex-state-basic" text="Chưa đăng ký" class="pet-detail-basic-value codex-state"/></ui:VisualElement>
+                    </ui:VisualElement>
+
+                    <ui:VisualElement class="pet-details-stats-panel detail-section-frame">
+                        <ui:Label text="❧  CHỈ SỐ  ❧" class="pet-detail-section-title"/>
+                        <ui:VisualElement class="pet-detail-stat-row"><ui:Label text="♥  HP" class="pet-detail-stat-key"/><ui:VisualElement class="pet-detail-stat-track"><ui:VisualElement name="pet-details-stat-hp-fill" class="pet-detail-stat-fill"/></ui:VisualElement><ui:Label name="pet-details-stat-hp" text="-" class="pet-detail-stat-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-stat-row"><ui:Label text="⚔  ATK" class="pet-detail-stat-key"/><ui:VisualElement class="pet-detail-stat-track"><ui:VisualElement name="pet-details-stat-atk-fill" class="pet-detail-stat-fill"/></ui:VisualElement><ui:Label name="pet-details-stat-atk" text="-" class="pet-detail-stat-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-stat-row"><ui:Label text="◈  DEF" class="pet-detail-stat-key"/><ui:VisualElement class="pet-detail-stat-track"><ui:VisualElement name="pet-details-stat-def-fill" class="pet-detail-stat-fill"/></ui:VisualElement><ui:Label name="pet-details-stat-def" text="-" class="pet-detail-stat-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-stat-row"><ui:Label text="➤  SPD" class="pet-detail-stat-key"/><ui:VisualElement class="pet-detail-stat-track"><ui:VisualElement name="pet-details-stat-spd-fill" class="pet-detail-stat-fill"/></ui:VisualElement><ui:Label name="pet-details-stat-spd" text="-" class="pet-detail-stat-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-stat-row"><ui:Label text="☼  CRI Rate" class="pet-detail-stat-key"/><ui:VisualElement class="pet-detail-stat-track"><ui:VisualElement name="pet-details-stat-crit-rate-fill" class="pet-detail-stat-fill"/></ui:VisualElement><ui:Label name="pet-details-stat-crit-rate" text="-" class="pet-detail-stat-value"/></ui:VisualElement>
+                        <ui:VisualElement class="pet-detail-stat-row"><ui:Label text="✷  CRI DMG" class="pet-detail-stat-key"/><ui:VisualElement class="pet-detail-stat-track"><ui:VisualElement name="pet-details-stat-crit-dmg-fill" class="pet-detail-stat-fill"/></ui:VisualElement><ui:Label name="pet-details-stat-crit-dmg" text="-" class="pet-detail-stat-value"/></ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="pet-details-skills-panel detail-section-frame">
+                    <ui:Label text="❧  KỸ NĂNG ĐÃ TRANG BỊ  ❧" class="pet-detail-section-title"/>
+                    <ui:VisualElement name="pet-details-skills-row" class="pet-details-skills-row">
+                        <ui:VisualElement class="pet-details-skill-card"><ui:VisualElement class="pet-details-skill-icon"><ui:Label text="1" class="pet-details-skill-fallback"/></ui:VisualElement><ui:VisualElement class="pet-details-skill-text"><ui:Label text="Skill 1" class="pet-details-skill-name"/><ui:Label text="Hệ: -" class="pet-details-skill-element"/><ui:Label text="PP - / -" class="pet-details-skill-pp"/></ui:VisualElement></ui:VisualElement>
+                        <ui:VisualElement class="pet-details-skill-card"><ui:VisualElement class="pet-details-skill-icon"><ui:Label text="2" class="pet-details-skill-fallback"/></ui:VisualElement><ui:VisualElement class="pet-details-skill-text"><ui:Label text="Skill 2" class="pet-details-skill-name"/><ui:Label text="Hệ: -" class="pet-details-skill-element"/><ui:Label text="PP - / -" class="pet-details-skill-pp"/></ui:VisualElement></ui:VisualElement>
+                        <ui:VisualElement class="pet-details-skill-card"><ui:VisualElement class="pet-details-skill-icon"><ui:Label text="3" class="pet-details-skill-fallback"/></ui:VisualElement><ui:VisualElement class="pet-details-skill-text"><ui:Label text="Skill 3" class="pet-details-skill-name"/><ui:Label text="Hệ: -" class="pet-details-skill-element"/><ui:Label text="PP - / -" class="pet-details-skill-pp"/></ui:VisualElement></ui:VisualElement>
+                        <ui:VisualElement class="pet-details-skill-card"><ui:VisualElement class="pet-details-skill-icon"><ui:Label text="4" class="pet-details-skill-fallback"/></ui:VisualElement><ui:VisualElement class="pet-details-skill-text"><ui:Label text="Skill 4" class="pet-details-skill-name"/><ui:Label text="Hệ: -" class="pet-details-skill-element"/><ui:Label text="PP - / -" class="pet-details-skill-pp"/></ui:VisualElement></ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="pet-details-codex-panel detail-section-frame">
+                    <ui:Label text="❧  CODEX / EVOLUTION  ❧" class="pet-detail-section-title"/>
+                    <ui:VisualElement class="pet-details-codex-content">
+                        <ui:VisualElement class="pet-details-codex-status">
+                            <ui:Label text="▤" class="pet-details-codex-icon"/>
+                            <ui:Label text="Trạng thái Codex" class="pet-details-codex-label"/>
+                            <ui:Label name="pet-details-codex-state" text="Chưa đăng ký" class="pet-details-codex-value"/>
+                            <ui:Label text="Số hiệu Codex" class="pet-details-codex-label"/>
+                            <ui:Label name="pet-details-codex-number" text="-" class="pet-details-codex-value"/>
+                        </ui:VisualElement>
+                        <ui:Label name="pet-details-codex-description" text="Chưa có mô tả Codex cho pet này." class="pet-details-codex-description"/>
+                        <ui:VisualElement class="pet-details-evolution-column">
+                            <ui:Label text="TIẾN HÓA" class="pet-details-evolution-title"/>
+                            <ui:VisualElement name="pet-details-evolution-flow" class="pet-details-evolution-flow">
+                                <ui:VisualElement class="pet-details-evolution-pet">
+                                    <ui:VisualElement name="pet-details-evolution-current-icon" class="pet-details-evolution-icon"><ui:Label name="pet-details-evolution-current-fallback" text="?" class="pet-details-evolution-fallback"/></ui:VisualElement>
+                                    <ui:Label name="pet-details-evolution-current-name" text="-" class="pet-details-evolution-name"/>
+                                </ui:VisualElement>
+                                <ui:Label text="→" class="pet-details-evolution-arrow"/>
+                                <ui:VisualElement class="pet-details-evolution-pet">
+                                    <ui:VisualElement name="pet-details-evolution-next-icon" class="pet-details-evolution-icon"><ui:Label name="pet-details-evolution-next-fallback" text="?" class="pet-details-evolution-fallback"/></ui:VisualElement>
+                                    <ui:Label name="pet-details-evolution-next-name" text="???" class="pet-details-evolution-name"/>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                            <ui:Label name="pet-details-evolution-max" text="Tiến hóa tối đa" class="pet-details-evolution-max"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement name="pet-details-evolution-requirements" class="pet-details-evolution-requirements">
+                            <ui:Label text="Điều kiện tiến hóa:" class="pet-details-requirement-title"/>
+                            <ui:Label name="pet-details-evolution-level" text="• Chưa thiết lập cấp độ" class="pet-details-requirement"/>
+                            <ui:Label name="pet-details-evolution-friendship" text="• Chưa thiết lập tình bạn" class="pet-details-requirement"/>
+                            <ui:Label name="pet-details-evolution-extra" text="" class="pet-details-requirement"/>
+                            <ui:Button name="pet-details-evolution-button" text="TIẾN HÓA" class="pet-details-evolution-button"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:ScrollView>
+            <ui:Label text="ⓘ  Bảng chi tiết này chỉ dùng để xem thông tin." class="pet-details-footer"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

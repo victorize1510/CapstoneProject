@@ -16,11 +16,13 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] LocalPlayerControlLock controlLock = null;
 
         [Header("Keys")]
+#if !ENABLE_INPUT_SYSTEM && ENABLE_LEGACY_INPUT_MANAGER
         [SerializeField] KeyCode toggleMapKey = KeyCode.M;
         [SerializeField] KeyCode closeMapKey = KeyCode.Escape;
         [SerializeField] KeyCode zoomInKey = KeyCode.KeypadPlus;
         [SerializeField] KeyCode zoomOutKey = KeyCode.Minus;
         [SerializeField] KeyCode alternateZoomOutKey = KeyCode.KeypadMinus;
+#endif
 #if ENABLE_INPUT_SYSTEM
         [SerializeField] Key toggleMapInputKey = Key.M;
         [SerializeField] Key closeMapInputKey = Key.Escape;
@@ -40,11 +42,17 @@ namespace Capstone.Game.MapSystem {
         bool previousCursorVisible;
         CursorLockMode previousLockState;
         bool dragging;
+        bool mapGameplayInputBlocked;
         Vector2 lastPointerPosition;
+        AAMapRuntimeBinder appliedMapBinder;
+        MapManager configuredMapManager;
+        float nextReferenceResolveTime;
+
+        const float ReferenceRetryInterval = 1f;
 
         public bool IsOpen {
             get {
-                ResolveReferences();
+                EnsureRuntimeReady();
                 if (worldMap != null) return worldMap.IsOpen;
                 return mapManager != null && mapManager.IsMapEnabled();
             }
@@ -52,12 +60,12 @@ namespace Capstone.Game.MapSystem {
 
         void Awake() {
             ResolveReferences();
-            DisableBuiltInMapInput();
+            EnsureMapConfiguration();
         }
 
         void Start() {
             ResolveReferences();
-            DisableBuiltInMapInput();
+            EnsureMapConfiguration();
 
             if (IsOpen) {
                 CloseMap();
@@ -65,8 +73,7 @@ namespace Capstone.Game.MapSystem {
         }
 
         void Update() {
-            ResolveReferences();
-            DisableBuiltInMapInput();
+            EnsureRuntimeReady();
 
             if (enableOpenCloseHotkeys && WasTogglePressed()) {
                 ToggleMap();
@@ -85,6 +92,16 @@ namespace Capstone.Game.MapSystem {
             }
         }
 
+        void OnDisable() {
+            dragging = false;
+            SetMapGameplayInputBlocked(false);
+            if (lockPlayerWhileOpen && controlLock != null) {
+                controlLock.UnlockControls(this);
+            }
+
+            RestoreCursorState();
+        }
+
         public void OpenMap() {
             ResolveReferences();
             if (IsOpen) return;
@@ -96,8 +113,10 @@ namespace Capstone.Game.MapSystem {
             }
 
             if (lockPlayerWhileOpen && controlLock != null) {
-                controlLock.LockControls();
+                controlLock.LockControls(this);
             }
+
+            SetMapGameplayInputBlocked(true);
 
             if (mapSystem != null) mapSystem.OpenWorldMap(true);
             else if (worldMap != null) worldMap.OpenMap(false);
@@ -120,9 +139,10 @@ namespace Capstone.Game.MapSystem {
             dragging = false;
 
             if (lockPlayerWhileOpen && controlLock != null) {
-                controlLock.UnlockControls();
+                controlLock.UnlockControls(this);
             }
 
+            SetMapGameplayInputBlocked(false);
             RestoreCursorState();
         }
 
@@ -153,7 +173,9 @@ namespace Capstone.Game.MapSystem {
             worldMap = world != null ? world : worldMap;
             mapManager = manager != null ? manager : mapManager;
             controlLock = playerLock != null ? playerLock : controlLock;
-            DisableBuiltInMapInput();
+            appliedMapBinder = null;
+            configuredMapManager = null;
+            EnsureMapConfiguration();
         }
 
         public void SetOpenCloseHotkeysEnabled(bool enabled) {
@@ -208,9 +230,10 @@ namespace Capstone.Game.MapSystem {
                 if (worldMap == null) worldMap = mapSystem.WorldMap;
             }
 
-            if (mapBinder != null) {
+            if (mapBinder != null && appliedMapBinder != mapBinder) {
                 mapBinder.ResolveReferences();
                 mapBinder.ApplyBindings();
+                if (mapBinder.MapManager != null) appliedMapBinder = mapBinder;
             }
 
             if (worldMap == null) worldMap = FindFirst<WorldMapController>();
@@ -218,6 +241,26 @@ namespace Capstone.Game.MapSystem {
             if (mapManager == null && mapBinder != null) mapManager = mapBinder.MapManager;
             if (mapManager == null) mapManager = FindFirst<MapManager>();
             if (controlLock == null) controlLock = FindFirst<LocalPlayerControlLock>();
+        }
+
+        void EnsureRuntimeReady() {
+            bool needsMapReference = mapSystem == null && worldMap == null && mapManager == null;
+            bool needsBinder = mapBinder != null && appliedMapBinder != mapBinder;
+            if (!needsMapReference && !needsBinder && controlLock != null) {
+                EnsureMapConfiguration();
+                return;
+            }
+
+            if (Time.unscaledTime < nextReferenceResolveTime) return;
+            nextReferenceResolveTime = Time.unscaledTime + ReferenceRetryInterval;
+            ResolveReferences();
+            EnsureMapConfiguration();
+        }
+
+        void EnsureMapConfiguration() {
+            if (mapManager == null || configuredMapManager == mapManager) return;
+            DisableBuiltInMapInput();
+            configuredMapManager = mapManager;
         }
 
         void DisableBuiltInMapInput() {
@@ -230,12 +273,19 @@ namespace Capstone.Game.MapSystem {
         void PrepareMapManagerForCustomUi() {
             if (mapManager == null) return;
 
-            mapManager.disableMinimap = false;
+            mapManager.disableMinimap = true;
             mapManager.haveBorder = false;
             mapManager.haveZoomButtons = false;
             mapManager.haveExitButton = false;
             mapManager.displayDirections = false;
             mapManager.displayGrid = false;
+        }
+
+        void SetMapGameplayInputBlocked(bool blocked) {
+            if (mapGameplayInputBlocked == blocked) return;
+
+            mapGameplayInputBlocked = blocked;
+            InventoryInputController.SetExternalGameplayInputBlocked(this, blocked);
         }
 
         void SaveCursorState() {

@@ -58,16 +58,36 @@ public class PetCommandInput : MonoBehaviour
 
         ResolveCameraLock(commandCamera);
 
+        EnsureSlots();
+
         if (activePet == null)
         {
-            activePet = FindFirstObjectByType<PetController>();
-        }
+            PetController[] candidates = FindObjectsByType<PetController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                if (candidates[i] != null && candidates[i].owner == transform)
+                {
+                    activePet = candidates[i];
+                    break;
+                }
+            }
 
-        EnsureSlots();
+            if (activePet == null && candidates.Length > 0)
+            {
+                activePet = candidates[0];
+            }
+
+            EnsureSlots();
+        }
     }
 
     private void Update()
     {
+        if (Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked)
+        {
+            return;
+        }
+
         HandlePetSlotInput();
 
         if (!Input.GetMouseButtonDown(commandMouseButton) || activePet == null)

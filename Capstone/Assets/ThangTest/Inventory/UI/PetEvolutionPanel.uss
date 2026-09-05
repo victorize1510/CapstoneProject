@@ -1,0 +1,208 @@
+.evolution-modal-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgb(30, 76, 37);
+}
+
+.evolution-scene-wash {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(9, 24, 20, 0.94);
+}
+
+.evolution-modal-content {
+    position: absolute;
+    left: 5%;
+    top: 4%;
+    right: 5%;
+    bottom: 4%;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: rgba(247, 250, 239, 0.97);
+    border-width: 2px;
+    border-color: rgb(116, 156, 94);
+    border-radius: 8px;
+    padding: 24px 36px;
+}
+
+.evolution-title {
+    font-size: 38px;
+    -unity-font-style: bold;
+    color: rgb(38, 105, 42);
+}
+
+.evolution-form-path {
+    margin-top: 5px;
+    font-size: 13px;
+    color: rgb(96, 120, 91);
+}
+
+.evolution-preview-stage {
+    width: 100%;
+    flex-grow: 1;
+    min-height: 330px;
+    max-height: 560px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.evolution-current-chip {
+    width: 180px;
+    align-items: center;
+    opacity: 0.75;
+}
+
+.evolution-current-portrait {
+    width: 116px;
+    height: 116px;
+    border-width: 1px;
+    border-color: rgb(151, 177, 137);
+    border-radius: 58px;
+    background-color: rgb(232, 241, 224);
+    -unity-background-scale-mode: scale-to-fit;
+    align-items: center;
+    justify-content: center;
+}
+
+.evolution-current-fallback,
+.evolution-target-fallback {
+    font-size: 56px;
+    -unity-font-style: bold;
+    color: rgb(79, 132, 67);
+}
+
+.evolution-current-name {
+    margin-top: 10px;
+    font-size: 18px;
+    -unity-font-style: bold;
+}
+
+.evolution-light-mark {
+    margin-left: 32px;
+    margin-right: 32px;
+    font-size: 52px;
+    color: rgb(215, 177, 72);
+}
+
+.evolution-target-wrap {
+    width: 420px;
+    height: 420px;
+    align-items: center;
+    justify-content: center;
+}
+
+.evolution-glow-ring {
+    position: absolute;
+    width: 390px;
+    height: 390px;
+    border-width: 4px;
+    border-color: rgba(185, 211, 133, 0.7);
+    border-radius: 195px;
+    background-color: rgba(220, 238, 188, 0.45);
+}
+
+.evolution-target-portrait {
+    width: 330px;
+    height: 330px;
+    -unity-background-scale-mode: scale-to-fit;
+    align-items: center;
+    justify-content: center;
+}
+
+.evolution-target-name {
+    position: absolute;
+    bottom: 4px;
+    font-size: 28px;
+    -unity-font-style: bold;
+    color: rgb(30, 98, 39);
+}
+
+.evolution-requirement {
+    min-height: 28px;
+    font-size: 16px;
+    -unity-font-style: bold;
+    color: rgb(50, 113, 45);
+}
+
+.evolution-item-row {
+    height: 30px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.evolution-item-key {
+    margin-right: 12px;
+    font-size: 12px;
+    color: rgb(103, 118, 88);
+}
+
+.evolution-item-count {
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.evolution-dialogue-box {
+    width: 680px;
+    min-height: 142px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 253, 244, 0.98);
+    border-width: 1px;
+    border-color: rgb(176, 161, 112);
+    border-radius: 6px;
+    padding: 16px 26px;
+}
+
+.evolution-dialogue {
+    white-space: normal;
+    -unity-text-align: middle-center;
+    font-size: 17px;
+    color: rgb(38, 64, 42);
+}
+
+.evolution-feedback {
+    min-height: 20px;
+    margin-top: 5px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    font-size: 12px;
+    color: rgb(128, 73, 48);
+}
+
+.evolution-actions {
+    margin-top: 12px;
+    flex-direction: row;
+}
+
+.evolution-button {
+    width: 172px;
+    height: 42px;
+    margin-left: 8px;
+    margin-right: 8px;
+    border-radius: 4px;
+    -unity-font-style: bold;
+}
+
+.evolution-button.secondary {
+    color: rgb(43, 80, 46);
+    background-color: rgb(241, 244, 233);
+    border-color: rgb(139, 164, 127);
+}
+
+.evolution-button.primary {
+    color: white;
+    background-color: rgb(61, 138, 52);
+    border-color: rgb(39, 104, 34);
+}

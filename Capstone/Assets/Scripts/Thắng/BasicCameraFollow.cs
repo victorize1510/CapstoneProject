@@ -107,6 +107,9 @@ public class BasicCameraFollow : MonoBehaviour
     private bool targetYInitialized;
     private bool previousTargetPositionInitialized;
     private bool gameplayInputLocked;
+    private float nextTargetSearchTime;
+
+    private const float TargetSearchInterval = 0.5f;
 
     public bool IsAiming
     {
@@ -191,7 +194,7 @@ public class BasicCameraFollow : MonoBehaviour
     private void Start()
     {
         ApplyCameraModeDefaults();
-        TryFindTarget();
+        TryFindTarget(true);
         InitializeAnglesFromCurrentCamera();
         InitializeFocusPoint();
         InitializeZoomDistance();
@@ -211,7 +214,6 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void LateUpdate()
     {
-        ApplyCameraModeDefaults();
         TryFindTarget();
 
         if (target == null)
@@ -227,12 +229,19 @@ public class BasicCameraFollow : MonoBehaviour
         FollowTarget();
     }
 
-    private void TryFindTarget()
+    private void TryFindTarget(bool force = false)
     {
         if (target != null)
         {
             return;
         }
+
+        if (!force && Time.unscaledTime < nextTargetSearchTime)
+        {
+            return;
+        }
+
+        nextTargetSearchTime = Time.unscaledTime + TargetSearchInterval;
 
         BasicPlayerMovement player = Object.FindFirstObjectByType<BasicPlayerMovement>();
         if (player != null)
@@ -513,12 +522,11 @@ public class BasicCameraFollow : MonoBehaviour
 
     private DummyEnemy FindEnemyNearMouse(Camera cameraToUse)
     {
-        DummyEnemy[] enemies = Object.FindObjectsByType<DummyEnemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         DummyEnemy bestEnemy = null;
         float bestScore = float.PositiveInfinity;
         Vector2 mouse = GetLockScreenPoint();
 
-        foreach (DummyEnemy enemy in enemies)
+        foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
             if (enemy == null || !enemy.IsAlive)
             {
@@ -556,12 +564,11 @@ public class BasicCameraFollow : MonoBehaviour
 
     private DummyEnemy FindNearestVisibleEnemy(Camera cameraToUse)
     {
-        DummyEnemy[] enemies = Object.FindObjectsByType<DummyEnemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         DummyEnemy bestEnemy = null;
         float bestScore = float.PositiveInfinity;
         float padding = lockVisibleViewportPadding;
 
-        foreach (DummyEnemy enemy in enemies)
+        foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
             if (enemy == null || !enemy.IsAlive)
             {
@@ -600,9 +607,8 @@ public class BasicCameraFollow : MonoBehaviour
     {
         DummyEnemy bestEnemy = null;
         float bestDistance = float.PositiveInfinity;
-        DummyEnemy[] enemies = Object.FindObjectsByType<DummyEnemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
 
-        foreach (DummyEnemy enemy in enemies)
+        foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
             if (enemy == null || enemy == ignoredEnemy || !enemy.IsAlive)
             {
@@ -689,7 +695,6 @@ public class BasicCameraFollow : MonoBehaviour
             cameraToUse = Camera.main;
         }
 
-        DummyEnemy[] enemies = Object.FindObjectsByType<DummyEnemy>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         DummyEnemy directionalCandidate = null;
         DummyEnemy fallbackCandidate = null;
         float directionalScore = float.PositiveInfinity;
@@ -700,7 +705,7 @@ public class BasicCameraFollow : MonoBehaviour
         Vector3 currentTargetPosition = lockedEnemy.TargetPosition;
         Vector3 currentScreen = cameraToUse != null ? cameraToUse.WorldToScreenPoint(currentTargetPosition) : Vector3.zero;
 
-        foreach (DummyEnemy enemy in enemies)
+        foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
             if (enemy == null || enemy == lockedEnemy || !enemy.IsAlive)
             {

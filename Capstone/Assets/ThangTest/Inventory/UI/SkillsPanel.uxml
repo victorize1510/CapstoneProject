@@ -1,0 +1,100 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="SkillsPanel.uss" />
+    <ui:VisualElement name="skills-modal-overlay" class="skills-modal-overlay">
+        <ui:VisualElement class="skills-modal-dim" />
+        <ui:VisualElement name="skills-modal-dialog" class="skills-modal-dialog">
+            <ui:VisualElement class="skills-modal-header">
+                <ui:Label text="❧" class="skills-header-ornament" />
+                <ui:Label text="SKILLS" class="skills-modal-title" />
+                <ui:Label text="❧" class="skills-header-ornament mirrored" />
+                <ui:Button name="skills-close-button" text="×" tooltip="Đóng" class="skills-close-button" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="skills-pet-summary">
+                <ui:VisualElement name="skills-pet-portrait" class="skills-pet-portrait">
+                    <ui:Label name="skills-pet-portrait-fallback" text="?" class="skills-pet-portrait-fallback" />
+                </ui:VisualElement>
+                <ui:VisualElement class="skills-pet-summary-text">
+                    <ui:Label name="skills-pet-name" text="Chọn một pet" class="skills-pet-name" />
+                    <ui:VisualElement class="skills-pet-meta-row">
+                        <ui:Label name="skills-pet-level" text="Lv. -" class="skills-pet-level" />
+                        <ui:VisualElement class="skills-pet-meta-divider" />
+                        <ui:Label name="skills-pet-element" text="Hệ -" class="skills-pet-element" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="skills-section-header">
+                <ui:VisualElement class="skills-section-line" />
+                <ui:Label text="EQUIPPED SKILLS" class="skills-section-title" />
+                <ui:VisualElement class="skills-section-line" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="skills-equipped-row" class="skills-equipped-row">
+                <ui:Button name="skills-equipped-slot-1" text="" class="skills-equipped-slot">
+                    <ui:Label text="1" class="skills-slot-number" />
+                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                </ui:Button>
+                <ui:Button name="skills-equipped-slot-2" text="" class="skills-equipped-slot">
+                    <ui:Label text="2" class="skills-slot-number" />
+                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                </ui:Button>
+                <ui:Button name="skills-equipped-slot-3" text="" class="skills-equipped-slot">
+                    <ui:Label text="3" class="skills-slot-number" />
+                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                </ui:Button>
+                <ui:Button name="skills-equipped-slot-4" text="" class="skills-equipped-slot">
+                    <ui:Label text="4" class="skills-slot-number" />
+                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                </ui:Button>
+            </ui:VisualElement>
+
+            <ui:Label name="skills-helper-label" text="Chọn skill đã học, sau đó chọn slot cần thay." class="skills-helper-label" />
+
+            <ui:VisualElement class="skills-learned-header-row">
+                <ui:Label text="LEARNED SKILLS" class="skills-learned-title" />
+                <ui:Label text="Di chuột vào skill để xem thông tin" class="skills-hover-hint" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="skills-filter-row" class="skills-filter-row">
+                <ui:Button name="skills-filter-all" text="ALL" class="skills-filter-button is-selected" />
+                <ui:Button name="skills-filter-nature" text="❧  THẢO" class="skills-filter-button" />
+                <ui:Button name="skills-filter-fire" text="♨  LỬA" class="skills-filter-button" />
+                <ui:Button name="skills-filter-water" text="◉  NƯỚC" class="skills-filter-button" />
+                <ui:Button name="skills-filter-wind" text="≋  GIÓ" class="skills-filter-button" />
+                <ui:Button name="skills-filter-earth" text="◆  ĐẤT" class="skills-filter-button" />
+                <ui:Button name="skills-filter-electric" text="ϟ  ĐIỆN" class="skills-filter-button" />
+                <ui:Button name="skills-filter-ice" text="✧  BĂNG" class="skills-filter-button" />
+                <ui:Button name="skills-filter-light" text="☼  SÁNG" class="skills-filter-button" />
+                <ui:Button name="skills-filter-dark" text="◐  TỐI" class="skills-filter-button" />
+            </ui:VisualElement>
+
+            <ui:ScrollView name="skills-learned-scroll" class="skills-learned-scroll">
+                <ui:VisualElement name="skills-learned-grid" class="skills-learned-grid">
+                    <ui:VisualElement class="skills-builder-card"><ui:Label text="SKILL ICON" class="skills-builder-icon" /><ui:Label text="Skill Name" class="skills-builder-name" /><ui:Label text="CD -" class="skills-builder-meta" /></ui:VisualElement>
+                    <ui:VisualElement class="skills-builder-card"><ui:Label text="SKILL ICON" class="skills-builder-icon" /><ui:Label text="Skill Name" class="skills-builder-name" /><ui:Label text="CD -" class="skills-builder-meta" /></ui:VisualElement>
+                    <ui:VisualElement class="skills-builder-card"><ui:Label text="SKILL ICON" class="skills-builder-icon" /><ui:Label text="Skill Name" class="skills-builder-name" /><ui:Label text="CD -" class="skills-builder-meta" /></ui:VisualElement>
+                    <ui:VisualElement class="skills-builder-card"><ui:Label text="SKILL ICON" class="skills-builder-icon" /><ui:Label text="Skill Name" class="skills-builder-name" /><ui:Label text="CD -" class="skills-builder-meta" /></ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label name="skills-empty-label" text="Pet này chưa có skill đã học phù hợp bộ lọc." class="skills-empty-label" />
+            </ui:ScrollView>
+        </ui:VisualElement>
+
+        <ui:VisualElement name="skills-hover-tooltip" class="skills-hover-tooltip" picking-mode="Ignore">
+            <ui:Label name="skills-tooltip-name" text="Skill Name" class="skills-tooltip-name" />
+            <ui:VisualElement class="skills-tooltip-divider" />
+            <ui:VisualElement class="skills-tooltip-row"><ui:Label text="Hệ" class="skills-tooltip-key" /><ui:Label name="skills-tooltip-element" text="-" class="skills-tooltip-value" /></ui:VisualElement>
+            <ui:VisualElement class="skills-tooltip-row"><ui:Label text="Cấp" class="skills-tooltip-key" /><ui:Label name="skills-tooltip-level" text="-" class="skills-tooltip-value" /></ui:VisualElement>
+            <ui:VisualElement class="skills-tooltip-row"><ui:Label text="Cooldown" class="skills-tooltip-key" /><ui:Label name="skills-tooltip-cooldown" text="-" class="skills-tooltip-value" /></ui:VisualElement>
+            <ui:Label name="skills-tooltip-description" text="Chưa có mô tả." class="skills-tooltip-description" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

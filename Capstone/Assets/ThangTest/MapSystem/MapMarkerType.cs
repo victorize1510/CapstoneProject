@@ -11,6 +11,11 @@
         Item,
         Shop,
         FastTravel,
-        CoopPlayer
+        CoopPlayer,
+        MainQuest,
+        SideQuest,
+        Travel,
+        Waypoint
     }
 }
+

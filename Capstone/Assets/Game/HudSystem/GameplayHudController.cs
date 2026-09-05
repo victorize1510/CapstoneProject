@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using Capstone.Game.Inventory;
 using Capstone.Game.QuestSystem;
+using Capstone.Game.QuestSystem.UI;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Capstone.Game.HudSystem {
@@ -29,7 +32,9 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] bool buildOnAwake = true;
         [SerializeField] bool autoFindReferences = true;
         [SerializeField] bool positionExistingMinimap = true;
+        [SerializeField] bool disableMinimapHud;
         [SerializeField] bool hideStandaloneQuestTrackerHud = true;
+        [SerializeField] bool hideWhileUiOpen = true;
         [SerializeField] bool enableSkillHotkeys = true;
         [SerializeField, Min(0.05f)] float refreshInterval = 0.15f;
 
@@ -50,24 +55,43 @@ namespace Capstone.Game.HudSystem {
         readonly List<Button> petSlotButtons = new List<Button>();
         readonly List<Text> petSlotNumbers = new List<Text>();
         readonly List<Image> petSlotIcons = new List<Image>();
+        readonly List<Image> petSlotStateStrips = new List<Image>();
+        readonly List<Text> petSlotStateLabels = new List<Text>();
         readonly List<Button> skillButtons = new List<Button>();
         readonly List<Text> skillLabels = new List<Text>();
+        readonly List<Text> skillNameLabels = new List<Text>();
         readonly List<Image> skillIcons = new List<Image>();
+        readonly List<Image> skillCooldownFills = new List<Image>();
+        readonly List<Image> skillCooldownSweeps = new List<Image>();
+        readonly List<Text> skillCooldownTexts = new List<Text>();
+
+        RectTransform skillTooltip;
+        Text skillTooltipTitle;
+        Text skillTooltipDescription;
+        Text skillTooltipCooldown;
+        int hoveredSkillIndex = -1;
 
         IPetHudProvider Provider => petHudProvider as IPetHudProvider;
         float nextRefreshTime;
+        GameObject minimapCameraObject;
+        float nextMinimapLookupTime;
+
+        const float MinimapLookupRetryInterval = 1f;
 
         void Awake() {
             ResolveReferences();
+            DisableMinimapHud();
             if (buildOnAwake) RebuildHud();
         }
 
         void OnEnable() {
             ResolveReferences();
+            DisableMinimapHud();
             HideStandaloneQuestTrackerHud();
             SubscribeProvider();
             SubscribeQuestManager();
             if (root == null && buildOnAwake) RebuildHud();
+            SyncGameplayHudVisibility();
             RefreshHud(true);
         }
 
@@ -77,6 +101,9 @@ namespace Capstone.Game.HudSystem {
         }
 
         void Update() {
+            SyncGameplayHudVisibility();
+            if (root != null && !root.gameObject.activeSelf) return;
+
             HandleSkillHotkeys();
 
             if (Time.unscaledTime < nextRefreshTime) return;
@@ -103,6 +130,7 @@ namespace Capstone.Game.HudSystem {
             BuildPetSlots(root);
             BuildPetStatus(root);
             BuildSkillBar(root);
+            BuildSkillTooltip(root);
             BuildTabHint(root);
 
             RefreshHud(true);
@@ -124,18 +152,34 @@ namespace Capstone.Game.HudSystem {
             petSlotButtons.Clear();
             petSlotNumbers.Clear();
             petSlotIcons.Clear();
+            petSlotStateStrips.Clear();
+            petSlotStateLabels.Clear();
             skillButtons.Clear();
             skillLabels.Clear();
+            skillNameLabels.Clear();
             skillIcons.Clear();
+            skillCooldownFills.Clear();
+            skillCooldownSweeps.Clear();
+            skillCooldownTexts.Clear();
+            skillTooltip = null;
+            skillTooltipTitle = null;
+            skillTooltipDescription = null;
+            skillTooltipCooldown = null;
+            hoveredSkillIndex = -1;
         }
 
         void HideStandaloneQuestTrackerHud() {
             if (!hideStandaloneQuestTrackerHud) return;
 
             GameObject legacy = GameObject.Find(LegacyQuestTrackerObjectName);
-            if (legacy == null || legacy == gameObject || legacy.transform.IsChildOf(transform)) return;
+            if (legacy != null && legacy != gameObject && !legacy.transform.IsChildOf(transform)) {
+                legacy.SetActive(false);
+            }
 
-            legacy.SetActive(false);
+            foreach (QuestTrackerHudController controller in FindObjectsByType<QuestTrackerHudController>(FindObjectsInactive.Include, FindObjectsSortMode.None)) {
+                if (controller == null || controller.gameObject == gameObject || controller.transform.IsChildOf(transform)) continue;
+                controller.gameObject.SetActive(false);
+            }
         }
 
         public void BindPetProvider(MonoBehaviour providerComponent) {
@@ -160,7 +204,7 @@ namespace Capstone.Game.HudSystem {
             if (previousQuestManager != questManager) SubscribeQuestManager();
 
             if (localPlayer == null) localPlayer = FindPlayerTransform();
-            if (minimapPanel == null) {
+            if (!disableMinimapHud && minimapPanel == null) {
                 GameObject minimap = GameObject.Find("MinimapPanel");
                 if (minimap != null) minimapPanel = minimap.GetComponent<RectTransform>();
             }
@@ -265,6 +309,11 @@ namespace Capstone.Game.HudSystem {
         }
 
         void PositionMinimap() {
+            if (disableMinimapHud) {
+                DisableMinimapHud();
+                return;
+            }
+
             if (minimapPanel == null) return;
 
             minimapPanel.SetParent(targetCanvas.transform, false);
@@ -277,6 +326,11 @@ namespace Capstone.Game.HudSystem {
         }
 
         void BuildMinimapFallback(RectTransform parent) {
+            if (disableMinimapHud) {
+                minimapPlaceholder = null;
+                return;
+            }
+
             minimapPlaceholder = CreatePanel(parent, "MinimapPlaceholder", new Color(0.02f, 0.10f, 0.11f, 0.82f));
             SetTopLeft(minimapPlaceholder, LeftMargin, TopMargin, MinimapSize, MinimapSize);
             minimapPlaceholder.gameObject.SetActive(minimapPanel == null);
@@ -290,7 +344,9 @@ namespace Capstone.Game.HudSystem {
 
         void BuildQuestTracker(RectTransform parent) {
             RectTransform panel = CreatePanel(parent, "QuestTrackerPanel", new Color(0.02f, 0.05f, 0.04f, 0.08f));
-            SetTopLeft(panel, LeftMargin, TopMargin + MinimapSize + 18f, 340f, 214f);
+            float top = disableMinimapHud ? 96f : TopMargin + MinimapSize + 18f;
+            float height = disableMinimapHud ? 174f : 214f;
+            SetTopLeft(panel, LeftMargin, top, 350f, height);
 
             questList = CreateRect(panel, "QuestList");
             Stretch(questList, new Vector2(0f, 0f), new Vector2(0f, 0f));
@@ -330,9 +386,17 @@ namespace Capstone.Game.HudSystem {
                 Image icon = CreateImage(buttonRect, "Icon", new Color(0.80f, 0.68f, 0.45f, 0.55f));
                 SetCenter(icon.rectTransform, 0f, 4f, 28f, 28f);
 
+                Image stateStrip = CreateImage(buttonRect, "StateStrip", Color.clear);
+                SetTopLeft(stateStrip.rectTransform, 0f, 0f, 5f, 52f);
+
+                Text stateLabel = CreateText(buttonRect, "State", string.Empty, 8, FontStyle.Bold, Color.white, TextAnchor.LowerRight);
+                Stretch(stateLabel.rectTransform, new Vector2(4f, 2f), new Vector2(-4f, -3f));
+
                 petSlotButtons.Add(button);
                 petSlotNumbers.Add(number);
                 petSlotIcons.Add(icon);
+                petSlotStateStrips.Add(stateStrip);
+                petSlotStateLabels.Add(stateLabel);
             }
         }
 
@@ -385,13 +449,124 @@ namespace Capstone.Game.HudSystem {
                 Image icon = CreateImage(rect, "Icon", SkillColor(i));
                 Stretch(icon.rectTransform, new Vector2(8f, 8f), new Vector2(-8f, -8f));
 
+                Text skillName = CreateText(rect, "SkillName", string.Empty, 11, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
+                Stretch(skillName.rectTransform, new Vector2(8f, 16f), new Vector2(-8f, -16f));
+
+                Image cooldownFill = CreateImage(rect, "CooldownFill", new Color(0f, 0f, 0f, 0.68f));
+                Stretch(cooldownFill.rectTransform, new Vector2(8f, 8f), new Vector2(-8f, -8f));
+                SetTopFill(cooldownFill, 0f);
+
+                Image cooldownSweep = CreateImage(rect, "CooldownSweep", new Color(0.78f, 0.96f, 1f, 0.72f));
+                RectTransform sweepRect = cooldownSweep.rectTransform;
+                sweepRect.anchorMin = new Vector2(0f, 1f);
+                sweepRect.anchorMax = new Vector2(1f, 1f);
+                sweepRect.pivot = new Vector2(0.5f, 0.5f);
+                sweepRect.offsetMin = new Vector2(10f, -12f);
+                sweepRect.offsetMax = new Vector2(-10f, -8f);
+                cooldownSweep.gameObject.SetActive(false);
+
+                Text cooldownText = CreateText(rect, "CooldownText", string.Empty, 18, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
+                Stretch(cooldownText.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f));
+
                 Text label = CreateText(rect, "Label", SkillKeyLabel(i), 13, FontStyle.Bold, Color.white, TextAnchor.LowerCenter);
                 Stretch(label.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 2f));
 
+                AddSkillHoverEvents(button, index);
+
                 skillButtons.Add(button);
                 skillIcons.Add(icon);
+                skillNameLabels.Add(skillName);
                 skillLabels.Add(label);
+                skillCooldownFills.Add(cooldownFill);
+                skillCooldownSweeps.Add(cooldownSweep);
+                skillCooldownTexts.Add(cooldownText);
             }
+        }
+
+        void BuildSkillTooltip(RectTransform parent) {
+            skillTooltip = CreatePanel(parent, "SkillTooltip", new Color(0f, 0f, 0f, 0.86f));
+            SetBottomCenter(skillTooltip, 0f, 128f, 282f, 104f);
+            skillTooltip.gameObject.SetActive(false);
+
+            skillTooltipTitle = CreateText(skillTooltip, "Title", string.Empty, 15, FontStyle.Bold, Color.white, TextAnchor.UpperLeft);
+            SetTopLeft(skillTooltipTitle.rectTransform, 14f, 10f, 254f, 24f);
+
+            skillTooltipDescription = CreateText(skillTooltip, "Description", string.Empty, 12, FontStyle.Normal, new Color(0.92f, 0.92f, 0.92f, 1f), TextAnchor.UpperLeft);
+            SetTopLeft(skillTooltipDescription.rectTransform, 14f, 36f, 254f, 42f);
+
+            skillTooltipCooldown = CreateText(skillTooltip, "Cooldown", string.Empty, 11, FontStyle.Bold, new Color(0.78f, 0.96f, 1f, 1f), TextAnchor.LowerLeft);
+            SetTopLeft(skillTooltipCooldown.rectTransform, 14f, 78f, 254f, 18f);
+        }
+
+        void AddSkillHoverEvents(Button button, int index) {
+            if (button == null) return;
+
+            EventTrigger trigger = button.gameObject.GetComponent<EventTrigger>();
+            if (trigger == null) trigger = button.gameObject.AddComponent<EventTrigger>();
+            if (trigger.triggers == null) trigger.triggers = new List<EventTrigger.Entry>();
+
+            EventTrigger.Entry enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            enter.callback.AddListener(_ => ShowSkillTooltip(index));
+            trigger.triggers.Add(enter);
+
+            EventTrigger.Entry exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            exit.callback.AddListener(_ => HideSkillTooltip(index));
+            trigger.triggers.Add(exit);
+        }
+
+        void ShowSkillTooltip(int index) {
+            hoveredSkillIndex = index;
+            RefreshSkillTooltip();
+        }
+
+        void HideSkillTooltip(int index) {
+            if (hoveredSkillIndex != index && index >= 0) return;
+            hoveredSkillIndex = -1;
+            if (skillTooltip != null) skillTooltip.gameObject.SetActive(false);
+        }
+
+        void RefreshSkillTooltip() {
+            if (skillTooltip == null || Provider == null || hoveredSkillIndex < 0) return;
+
+            IReadOnlyList<SkillHudData> skills = Provider.GetSkills();
+            if (hoveredSkillIndex >= skills.Count || !skills[hoveredSkillIndex].unlocked) {
+                skillTooltip.gameObject.SetActive(false);
+                return;
+            }
+
+            SkillHudData skill = skills[hoveredSkillIndex];
+            string title = string.IsNullOrWhiteSpace(skill.displayName)
+                ? "Skill " + SkillKeyLabel(hoveredSkillIndex)
+                : skill.displayName;
+            if (skill.skillLevel > 0) {
+                title += "  Lv. " + skill.skillLevel;
+            }
+
+            string description = string.IsNullOrWhiteSpace(skill.description)
+                ? "No description."
+                : skill.description;
+
+            skillTooltipTitle.text = title;
+            skillTooltipDescription.text = description;
+            if (skill.IsCoolingDown && skill.cooldownRemainingSeconds > 0.001f) {
+                skillTooltipCooldown.text = "Cooldown: " + skill.cooldownRemainingSeconds.ToString("0.0") + "s";
+            }
+            else if (skill.cooldownSeconds > 0.001f) {
+                skillTooltipCooldown.text = "Cooldown: " + skill.cooldownSeconds.ToString("0.#") + "s";
+            }
+            else {
+                skillTooltipCooldown.text = "Ready";
+            }
+
+            PositionSkillTooltip(hoveredSkillIndex);
+            skillTooltip.gameObject.SetActive(true);
+        }
+
+        void PositionSkillTooltip(int index) {
+            if (skillTooltip == null) return;
+
+            float x = -126f + Mathf.Clamp(index, 0, 3) * 84f;
+            SetBottomCenter(skillTooltip, x, 128f, 282f, 104f);
         }
 
         void BuildTabHint(RectTransform parent) {
@@ -408,6 +583,8 @@ namespace Capstone.Game.HudSystem {
         void RefreshHud(bool rebuildQuestList) {
             if (root == null) return;
 
+            DisableMinimapHud();
+            SyncGameplayHudVisibility();
             if (positionExistingMinimap) PositionMinimap();
             if (minimapPlaceholder != null) minimapPlaceholder.gameObject.SetActive(minimapPanel == null);
 
@@ -435,36 +612,127 @@ namespace Capstone.Game.HudSystem {
         }
 
         void RefreshPetSlots() {
+            for (int i = 0; i < petSlotButtons.Count; i++) {
+                petSlotNumbers[i].text = (i + 1).ToString();
+            }
+
             if (Provider == null) return;
 
             IReadOnlyList<PetSlotHudData> slots = Provider.GetPetSlots();
             for (int i = 0; i < petSlotButtons.Count; i++) {
                 PetSlotHudData slot = i < slots.Count ? slots[i] : default;
                 petSlotButtons[i].interactable = slot.occupied;
-                SetButtonColor(petSlotButtons[i], slot.selected
-                    ? new Color(0.10f, 0.47f, 0.34f, 0.95f)
-                    : new Color(0.08f, 0.18f, 0.17f, slot.occupied ? 0.9f : 0.42f));
-                petSlotNumbers[i].text = (i + 1).ToString();
+
+                Color buttonColor;
+                Color stripColor;
+                string stateText;
+                Color numberColor;
+
+                if (!slot.occupied) {
+                    buttonColor = new Color(0.05f, 0.07f, 0.07f, 0.30f);
+                    stripColor = Color.clear;
+                    stateText = string.Empty;
+                    numberColor = new Color(1f, 1f, 1f, 0.55f);
+                }
+                else if (slot.summoned && slot.selected) {
+                    buttonColor = new Color(0.03f, 0.35f, 0.23f, 0.98f);
+                    stripColor = new Color(0.14f, 0.94f, 0.58f, 1f);
+                    stateText = "ON";
+                    numberColor = new Color(0.98f, 0.96f, 0.78f, 1f);
+                }
+                else if (slot.summoned) {
+                    buttonColor = new Color(0.05f, 0.28f, 0.22f, 0.9f);
+                    stripColor = new Color(0.20f, 0.78f, 0.74f, 1f);
+                    stateText = "ON";
+                    numberColor = Color.white;
+                }
+                else {
+                    buttonColor = slot.selected
+                        ? new Color(0.34f, 0.28f, 0.12f, 0.92f)
+                        : new Color(0.08f, 0.13f, 0.13f, 0.66f);
+                    stripColor = new Color(0.60f, 0.63f, 0.57f, 0.75f);
+                    stateText = "WAIT";
+                    numberColor = new Color(0.88f, 0.88f, 0.78f, 0.9f);
+                }
+
+                SetButtonColor(petSlotButtons[i], buttonColor);
+                petSlotNumbers[i].color = numberColor;
                 SetOptionalSprite(petSlotIcons[i], slot.icon, slot.occupied
                     ? new Color(0.82f, 0.68f, 0.42f, 0.7f)
                     : new Color(0.45f, 0.48f, 0.45f, 0.26f));
+
+                if (i < petSlotStateStrips.Count) petSlotStateStrips[i].color = stripColor;
+                if (i < petSlotStateLabels.Count) {
+                    petSlotStateLabels[i].text = stateText;
+                    petSlotStateLabels[i].color = slot.summoned
+                        ? new Color(0.86f, 1f, 0.90f, 1f)
+                        : new Color(0.86f, 0.84f, 0.70f, 0.85f);
+                }
             }
         }
 
         void RefreshSkills() {
-            if (Provider == null) return;
+            for (int i = 0; i < skillButtons.Count; i++) {
+                skillLabels[i].text = SkillKeyLabel(i);
+            }
+
+            if (Provider == null) {
+                HideSkillTooltip(hoveredSkillIndex);
+                return;
+            }
 
             IReadOnlyList<SkillHudData> skills = Provider.GetSkills();
+            int slotCount = Provider is PetCommandHudProvider commandProvider
+                ? commandProvider.GetEquippedSkillSlotCount()
+                : skills.Count > 0 ? Mathf.Clamp(skills.Count, 2, 4) : 0;
             for (int i = 0; i < skillButtons.Count; i++) {
-                SkillHudData skill = i < skills.Count ? skills[i] : default;
-                bool active = skill.unlocked && skill.usable;
+                bool visible = i < slotCount;
+                skillButtons[i].gameObject.SetActive(visible);
+                if (!visible) continue;
+
+                bool hasSkill = i < skills.Count && skills[i].unlocked;
+                SkillHudData skill = hasSkill ? skills[i] : default;
+                bool coolingDown = hasSkill && skill.IsCoolingDown;
+                bool active = hasSkill && skill.usable && !coolingDown;
                 skillButtons[i].interactable = active;
-                skillLabels[i].text = SkillKeyLabel(i);
-                SetButtonColor(skillButtons[i], active
-                    ? new Color(0.08f, 0.16f, 0.18f, 0.95f)
-                    : new Color(0.05f, 0.06f, 0.06f, 0.46f));
-                SetOptionalSprite(skillIcons[i], skill.icon, active ? SkillColor(i) : new Color(0.36f, 0.36f, 0.36f, 0.55f));
+                SetButtonColor(skillButtons[i], hasSkill
+                    ? active
+                        ? new Color(0.08f, 0.16f, 0.18f, 0.95f)
+                        : new Color(0.06f, 0.08f, 0.08f, 0.72f)
+                    : new Color(0.05f, 0.06f, 0.06f, 0.30f));
+                SetOptionalSprite(skillIcons[i], skill.icon, hasSkill
+                    ? active ? SkillColor(i) : new Color(0.42f, 0.42f, 0.42f, 0.72f)
+                    : new Color(0.26f, 0.26f, 0.26f, 0.25f));
+
+                if (i < skillNameLabels.Count) {
+                    skillNameLabels[i].text = hasSkill ? ShortSkillName(skill.displayName, i) : string.Empty;
+                    skillNameLabels[i].color = active
+                        ? new Color(1f, 1f, 1f, 0.94f)
+                        : new Color(1f, 1f, 1f, 0.58f);
+                }
+
+                if (i < skillLabels.Count) {
+                    skillLabels[i].color = hasSkill ? Color.white : new Color(1f, 1f, 1f, 0.45f);
+                }
+
+                float cooldownPercent = coolingDown ? skill.CooldownPercent : 0f;
+                if (i < skillCooldownFills.Count) SetTopFill(skillCooldownFills[i], cooldownPercent);
+                if (i < skillCooldownSweeps.Count) SetCooldownSweep(skillCooldownSweeps[i], cooldownPercent);
+                if (i < skillCooldownTexts.Count) {
+                    string cooldownText = string.Empty;
+                    if (coolingDown && skill.cooldownRemainingSeconds > 0.001f) {
+                        cooldownText = Mathf.CeilToInt(skill.cooldownRemainingSeconds).ToString();
+                    }
+                    else if (coolingDown) {
+                        cooldownText = "CD";
+                    }
+
+                    skillCooldownTexts[i].text = cooldownText;
+                    skillCooldownTexts[i].gameObject.SetActive(coolingDown);
+                }
             }
+
+            RefreshSkillTooltip();
         }
 
         void RefreshQuestTracker() {
@@ -480,6 +748,42 @@ namespace Capstone.Game.HudSystem {
 
             foreach (QuestRuntimeState quest in quests.Take(1)) {
                 CreateQuestEntry(questList, quest);
+            }
+        }
+
+        void SyncGameplayHudVisibility() {
+            if (root == null) return;
+
+            bool shouldShow = !hideWhileUiOpen || !InventoryInputController.GameplayInputBlocked;
+            if (root.gameObject.activeSelf != shouldShow) root.gameObject.SetActive(shouldShow);
+            if (!disableMinimapHud && minimapPanel != null && minimapPanel.gameObject.activeSelf != shouldShow) {
+                minimapPanel.gameObject.SetActive(shouldShow);
+            }
+        }
+
+        void DisableMinimapHud() {
+            if (!disableMinimapHud) return;
+
+            bool needsLookup = minimapPanel == null || minimapCameraObject == null;
+            if (needsLookup && Time.unscaledTime >= nextMinimapLookupTime) {
+                nextMinimapLookupTime = Time.unscaledTime + MinimapLookupRetryInterval;
+
+                if (minimapPanel == null) {
+                    GameObject minimap = GameObject.Find("MinimapPanel");
+                    if (minimap != null) minimapPanel = minimap.GetComponent<RectTransform>();
+                }
+
+                if (minimapCameraObject == null) {
+                    minimapCameraObject = GameObject.Find("Minimap Camera");
+                }
+            }
+
+            if (minimapPanel != null && minimapPanel.gameObject.activeSelf) {
+                minimapPanel.gameObject.SetActive(false);
+            }
+
+            if (minimapCameraObject != null && minimapCameraObject.activeSelf) {
+                minimapCameraObject.SetActive(false);
             }
         }
 
@@ -653,6 +957,37 @@ namespace Capstone.Game.HudSystem {
             rect.anchorMax = new Vector2(Mathf.Clamp01(percent), 1f);
         }
 
+        static void SetTopFill(Image fill, float percent) {
+            if (fill == null) return;
+
+            percent = Mathf.Clamp01(percent);
+            fill.gameObject.SetActive(percent > 0.001f);
+
+            RectTransform rect = fill.rectTransform;
+            rect.anchorMin = new Vector2(0f, 1f - percent);
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 1f);
+            rect.offsetMin = new Vector2(8f, 0f);
+            rect.offsetMax = new Vector2(-8f, 0f);
+        }
+
+        static void SetCooldownSweep(Image sweep, float percent) {
+            if (sweep == null) return;
+
+            percent = Mathf.Clamp01(percent);
+            bool show = percent > 0.001f && percent < 0.999f;
+            sweep.gameObject.SetActive(show);
+            if (!show) return;
+
+            RectTransform rect = sweep.rectTransform;
+            float y = Mathf.Lerp(8f, 60f, percent);
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = new Vector2(10f, y);
+            rect.offsetMax = new Vector2(-10f, y + 4f);
+        }
+
         static Color SkillColor(int index) {
             switch (index) {
                 case 0: return new Color(0.14f, 0.52f, 0.95f, 0.92f);
@@ -664,6 +999,25 @@ namespace Capstone.Game.HudSystem {
 
         static string SkillKeyLabel(int index) {
             return index >= 0 && index < SkillKeyLabels.Length ? SkillKeyLabels[index] : string.Empty;
+        }
+
+        static string ShortSkillName(string skillName, int index) {
+            if (string.IsNullOrWhiteSpace(skillName)) return "S" + (index + 1);
+
+            string trimmed = skillName.Trim();
+            if (trimmed.Length <= 5) return trimmed;
+
+            string[] words = trimmed.Split(' ');
+            if (words.Length > 1) {
+                string result = string.Empty;
+                for (int i = 0; i < words.Length && result.Length < 4; i++) {
+                    if (!string.IsNullOrWhiteSpace(words[i])) result += char.ToUpperInvariant(words[i][0]);
+                }
+
+                if (!string.IsNullOrWhiteSpace(result)) return result;
+            }
+
+            return trimmed.Substring(0, Mathf.Min(5, trimmed.Length));
         }
 
         static void ClearChildren(Transform parent) {

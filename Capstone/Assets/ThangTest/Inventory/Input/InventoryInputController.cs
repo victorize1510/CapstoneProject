@@ -37,13 +37,18 @@ namespace Capstone.Game.Inventory {
         Vector3 lastMousePosition;
         VisualElement registeredRoot;
         VisualElement questPanelElement;
+        VisualElement inventoryPanelElement;
         QuestPanelController questPanelController;
         int handledFrame = -1;
 
         static readonly HashSet<object> ExternalGameplayInputBlockers = new HashSet<object>();
-        static bool inventoryGameplayInputBlocked;
 
-        public static bool GameplayInputBlocked => inventoryGameplayInputBlocked || ExternalGameplayInputBlockers.Count > 0;
+        public static bool GameplayInputBlocked => ExternalGameplayInputBlockers.Count > 0;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStaticInputState() {
+            ExternalGameplayInputBlockers.Clear();
+        }
 
         public static void SetExternalGameplayInputBlocked(object owner, bool blocked) {
             if (owner == null) return;
@@ -70,7 +75,6 @@ namespace Capstone.Game.Inventory {
             if (inventory != null) inventory.VisibilityChanged -= HandleInventoryVisibilityChanged;
             UnregisterUiKeys();
             RestoreGameplayState();
-            inventoryGameplayInputBlocked = false;
         }
 
         void Update() {
@@ -79,6 +83,7 @@ namespace Capstone.Game.Inventory {
             }
 
             if (handledFrame == Time.frameCount) return;
+            if ((inventory == null || !inventory.IsOpen) && !enableOpenCloseHotkeys) return;
 
             if (Pressed(primaryToggleKey)) TryHandleKey(primaryToggleKey);
             else if (Pressed(secondaryToggleKey)) TryHandleKey(secondaryToggleKey);
@@ -169,6 +174,7 @@ namespace Capstone.Game.Inventory {
 
             registeredRoot = document.rootVisualElement;
             questPanelElement = registeredRoot.Q<VisualElement>("quest-panel");
+            inventoryPanelElement = registeredRoot.Q<VisualElement>("inventory-panel");
             registeredRoot.RegisterCallback<KeyDownEvent>(HandleUiKeyDown, TrickleDown.TrickleDown);
         }
 
@@ -178,6 +184,7 @@ namespace Capstone.Game.Inventory {
             registeredRoot.UnregisterCallback<KeyDownEvent>(HandleUiKeyDown, TrickleDown.TrickleDown);
             registeredRoot = null;
             questPanelElement = null;
+            inventoryPanelElement = null;
         }
 
         void HandleUiKeyDown(KeyDownEvent evt) {
@@ -190,8 +197,8 @@ namespace Capstone.Game.Inventory {
         void HandleInventoryVisibilityChanged(bool isOpen) {
             if (isOpen) {
                 SaveCursorState();
-                playerControlLock?.LockControls();
-                inventoryGameplayInputBlocked = true;
+                playerControlLock?.LockControls(this);
+                SetExternalGameplayInputBlocked(this, true);
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 keyboardNavigationMode = false;
@@ -215,6 +222,11 @@ namespace Capstone.Game.Inventory {
             if (inventory == null || !inventory.IsOpen) return false;
 
             if (key == closeKey) {
+                if (!enableOpenCloseHotkeys) return false;
+                if (inventory.TryCloseTopmostPanel()) {
+                    MarkHandled();
+                    return true;
+                }
                 CloseInventory();
                 MarkHandled();
                 return true;
@@ -265,7 +277,7 @@ namespace Capstone.Game.Inventory {
         }
 
         bool TryHandleQuestPanelKey(KeyCode key) {
-            if (!IsQuestPanelNavigationKey(key) || !IsPointerOverQuestPanel()) return false;
+            if (!IsQuestPanelNavigationKey(key) || !IsQuestPanelActive()) return false;
 
             ResolveQuestPanelController();
             if (questPanelController == null) return false;
@@ -308,6 +320,19 @@ namespace Capstone.Game.Inventory {
             var screenPosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
             var panelPosition = RuntimePanelUtils.ScreenToPanel(questPanelElement.panel, screenPosition);
             return questPanelElement.worldBound.Contains(panelPosition);
+        }
+
+        bool IsQuestPanelActive() {
+            if (document == null || document.rootVisualElement == null) return false;
+            if (questPanelElement == null) questPanelElement = document.rootVisualElement.Q<VisualElement>("quest-panel");
+            if (inventoryPanelElement == null) inventoryPanelElement = document.rootVisualElement.Q<VisualElement>("inventory-panel");
+            if (questPanelElement == null) return false;
+
+            bool questVisible = questPanelElement.resolvedStyle.display != DisplayStyle.None;
+            if (!questVisible) return false;
+
+            bool inventoryHidden = inventoryPanelElement == null || inventoryPanelElement.resolvedStyle.display == DisplayStyle.None;
+            return inventoryHidden || IsPointerOverQuestPanel();
         }
 
         bool IsQuestPanelNavigationKey(KeyCode key) {
@@ -374,8 +399,8 @@ namespace Capstone.Game.Inventory {
         }
 
         void RestoreGameplayState() {
-            playerControlLock?.UnlockControls();
-            inventoryGameplayInputBlocked = false;
+            playerControlLock?.UnlockControls(this);
+            SetExternalGameplayInputBlocked(this, false);
             keyboardNavigationMode = false;
             SetKeyboardNavigationMode(false);
 

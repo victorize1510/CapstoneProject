@@ -57,8 +57,9 @@ namespace Capstone.Game.Inventory {
         void SeedDefaultItems() {
             AddRuntimeItem("Verdant Capture Ball", GameItemCategory.CaptureBall, 12, "A standard capture tool wrapped in moss-green lacquer.", "Can be thrown at weakened wild monsters.");
             AddRuntimeItem("Oak Great Ball", GameItemCategory.CaptureBall, 4, "A better capture ball reinforced with bronze rings.", "Higher capture chance than a basic ball.");
-            AddRuntimeItem("Moss Salve", GameItemCategory.Medicine, 7, "A soft herbal paste used by traveling beast tamers.", "Restores a small amount of health.");
+            AddRuntimeItem("Potion", GameItemCategory.Medicine, 12, "A basic restorative carried by traveling beast tamers.", "Restores 400 pet HP.", healingAmount: 400);
             AddRuntimeItem("Honeyed Berry", GameItemCategory.Food, 9, "Sweet field food that many young monsters like.", "Improves friendship slightly.");
+            AddRuntimeItem("Leaf Berry", GameItemCategory.Food, 25, "A temporary growth berry used by the pet level-up prototype.", "Grants pet EXP through PetLevelUpService.");
             AddRuntimeItem("Ironwood Bark", GameItemCategory.Material, 18, "Hard bark collected from ancient forest roots.", "Used for crafting pet gear.", true, 99, false, false);
             AddRuntimeItem("Tamer Gloves", GameItemCategory.Equipment, 1, "Leather gloves made for handling capture gear.", "Equipment prototype; stats are not connected yet.", false, 1, false, false);
             AddRuntimeItem("Guild Token", GameItemCategory.KeyItem, 1, "A token proving the owner belongs to the local tamer guild.", "Key item. Cannot be consumed.", false, 1, false, false);
@@ -73,8 +74,9 @@ namespace Capstone.Game.Inventory {
             bool stackable = true,
             int maxStackSize = 99,
             bool usableFromInventory = true,
-            bool consumable = true) {
-            var definition = MonsterItemDefinition.CreateRuntime(itemName, category, description, effect, null, stackable, maxStackSize, usableFromInventory, consumable);
+            bool consumable = true,
+            int healingAmount = 0) {
+            var definition = MonsterItemDefinition.CreateRuntime(itemName, category, description, effect, null, stackable, maxStackSize, usableFromInventory, consumable, healingAmount);
             var result = adapter.AddItem(definition, quantity);
             if (result is Fail) Debug.LogWarning($"Failed to seed inventory item: {itemName}");
         }

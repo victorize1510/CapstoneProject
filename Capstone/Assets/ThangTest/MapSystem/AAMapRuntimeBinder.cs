@@ -14,7 +14,7 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] Transform playerTarget = null;
         [SerializeField] bool autoFindPlayer = true;
         [SerializeField] bool rotateMinimapWithPlayer = false;
-        [SerializeField] bool minimapDisabled = true;
+        [SerializeField] bool minimapDisabled;
 
         [Header("World Map")]
         [SerializeField] bool startMapClosed = true;

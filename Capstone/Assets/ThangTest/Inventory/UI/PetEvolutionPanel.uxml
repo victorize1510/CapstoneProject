@@ -1,0 +1,32 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="PetEvolutionPanel.uss" />
+    <ui:VisualElement name="evolution-modal-overlay" class="evolution-modal-overlay">
+        <ui:VisualElement class="evolution-scene-wash"/>
+        <ui:VisualElement name="evolution-modal-content" class="evolution-modal-content">
+            <ui:Label text="TIẾN HÓA" class="evolution-title"/>
+            <ui:Label name="evolution-form-path" text="FORM 1  →  FORM 2" class="evolution-form-path"/>
+            <ui:VisualElement class="evolution-preview-stage">
+                <ui:VisualElement class="evolution-current-chip">
+                    <ui:VisualElement name="evolution-current-portrait" class="evolution-current-portrait"><ui:Label name="evolution-current-fallback" text="?" class="evolution-current-fallback"/></ui:VisualElement>
+                    <ui:Label name="evolution-current-name" text="Pet hiện tại" class="evolution-current-name"/>
+                </ui:VisualElement>
+                <ui:Label text="✦" class="evolution-light-mark"/>
+                <ui:VisualElement class="evolution-target-wrap">
+                    <ui:VisualElement class="evolution-glow-ring"/>
+                    <ui:VisualElement name="evolution-target-portrait" class="evolution-target-portrait"><ui:Label name="evolution-target-fallback" text="?" class="evolution-target-fallback"/></ui:VisualElement>
+                    <ui:Label name="evolution-target-name" text="Dạng tiếp theo" class="evolution-target-name"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="evolution-requirement" text="Điều kiện tiến hóa" class="evolution-requirement"/>
+            <ui:VisualElement name="evolution-item-row" class="evolution-item-row"><ui:Label text="VẬT PHẨM" class="evolution-item-key"/><ui:Label name="evolution-item-count" text="-" class="evolution-item-count"/></ui:VisualElement>
+            <ui:VisualElement class="evolution-dialogue-box">
+                <ui:Label name="evolution-dialogue" text="Bạn có muốn tiến hóa pet không?" class="evolution-dialogue"/>
+                <ui:Label name="evolution-feedback" text="" class="evolution-feedback"/>
+                <ui:VisualElement class="evolution-actions">
+                    <ui:Button name="evolution-later-button" text="ĐỂ SAU" class="evolution-button secondary"/>
+                    <ui:Button name="evolution-confirm-button" text="TIẾN HÓA" class="evolution-button primary"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

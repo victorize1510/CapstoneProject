@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Capstone.Game.Inventory;
 using Capstone.Game.MapSystem;
 using UnityEngine;
 using UnityEngine.UI;
@@ -23,6 +24,7 @@ namespace Capstone.Game.UISystem {
 
         [Header("Layout")]
         [SerializeField] bool buildOnAwake = true;
+        [SerializeField] bool hideWhileUiOpen = true;
         [SerializeField] Vector2 anchoredPosition = new Vector2(0f, -24f);
         [SerializeField] Vector2 size = new Vector2(680f, 64f);
         [SerializeField, Range(30f, 180f)] float visibleAngle = 105f;
@@ -37,7 +39,6 @@ namespace Capstone.Game.UISystem {
         [SerializeField] bool showQuestMarkers = true;
         [SerializeField] bool showWaypointMarkers = true;
         [SerializeField, Min(0f)] float markerMaxDistance = 220f;
-        [SerializeField, Min(0.05f)] float markerRefreshInterval = 0.35f;
         [SerializeField] Color enemyMarkerColor = new Color(1f, 0.27f, 0.18f, 1f);
         [SerializeField] Color bossMarkerColor = new Color(1f, 0.12f, 0.55f, 1f);
         [SerializeField] Color questMarkerColor = new Color(0.35f, 0.95f, 1f, 1f);
@@ -54,7 +55,7 @@ namespace Capstone.Game.UISystem {
         readonly List<MarkerBinding> markerBindings = new List<MarkerBinding>();
         readonly List<MapMarker> markerCache = new List<MapMarker>();
 
-        float nextMarkerRefreshTime;
+        bool markersDirty = true;
 
         void Awake() {
             ResolveReferences();
@@ -62,20 +63,35 @@ namespace Capstone.Game.UISystem {
         }
 
         void OnEnable() {
+            MapMarker.MarkerEnabled += HandleMarkerChanged;
+            MapMarker.MarkerDisabled += HandleMarkerChanged;
+            MapMarker.MarkerChanged += HandleMarkerChanged;
             ResolveReferences();
             if (root == null && buildOnAwake) RebuildCompass();
+            SyncCompassVisibility();
             RefreshMarkers(true);
+        }
+
+        void OnDisable() {
+            MapMarker.MarkerEnabled -= HandleMarkerChanged;
+            MapMarker.MarkerDisabled -= HandleMarkerChanged;
+            MapMarker.MarkerChanged -= HandleMarkerChanged;
         }
 
         void LateUpdate() {
             ResolveRuntimeReferences();
+            SyncCompassVisibility();
+            if (root != null && !root.gameObject.activeSelf) return;
 
-            if (Time.unscaledTime >= nextMarkerRefreshTime) {
-                nextMarkerRefreshTime = Time.unscaledTime + markerRefreshInterval;
-                RefreshMarkers(false);
+            if (markersDirty) {
+                RefreshMarkers(true);
             }
 
             UpdateCompass();
+        }
+
+        void HandleMarkerChanged(MapMarker marker) {
+            markersDirty = true;
         }
 
         [ContextMenu("Rebuild Compass")]
@@ -99,6 +115,7 @@ namespace Capstone.Game.UISystem {
             BuildDirections();
             BuildTicks();
             RefreshMarkers(true);
+            SyncCompassVisibility();
             UpdateCompass();
         }
 
@@ -225,6 +242,8 @@ namespace Capstone.Game.UISystem {
 
                 markerBindings.Add(new MarkerBinding(markerCache[i], markerRootTransform, diamond, distance));
             }
+
+            markersDirty = false;
         }
 
         void UpdateCompass() {
@@ -272,6 +291,13 @@ namespace Capstone.Game.UISystem {
                 binding.Icon.color = ResolveMarkerColor(binding.Marker);
                 binding.Distance.text = FormatDistance(distance);
             }
+        }
+
+        void SyncCompassVisibility() {
+            if (root == null) return;
+
+            bool shouldShow = !hideWhileUiOpen || !InventoryInputController.GameplayInputBlocked;
+            if (root.gameObject.activeSelf != shouldShow) root.gameObject.SetActive(shouldShow);
         }
 
         static void PositionCompassItem(RectTransform rect, float delta, float halfVisibleAngle, float halfWidth, float y, bool fadeAtEdge) {

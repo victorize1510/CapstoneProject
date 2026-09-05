@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Capstone.Game.MapSystem;
+using AaMapIcon = AAMAP.MapIcon;
 
 [DisallowMultipleComponent]
 public class PlayerVisualSwitcher : MonoBehaviour
@@ -155,7 +156,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
         for (int i = 0; i < renderers.Length; i++)
         {
             Renderer renderer = renderers[i];
-            if (renderer == null || IsRendererOwnedByAnotherVisual(renderer.transform, index))
+            if (renderer == null || IsRendererOwnedByAnotherVisual(renderer.transform, index) || IsMapIconRenderer(renderer))
             {
                 continue;
             }
@@ -170,6 +171,11 @@ public class PlayerVisualSwitcher : MonoBehaviour
         }
     }
 
+
+    private static bool IsMapIconRenderer(Renderer renderer)
+    {
+        return renderer != null && renderer.GetComponentInParent<AaMapIcon>(true) != null;
+    }
     private bool IsRendererOwnedByAnotherVisual(Transform rendererTransform, int ownerIndex)
     {
         for (int i = 0; i < visuals.Length; i++)
@@ -235,5 +241,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
         return Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
     }
 }
+
+
 
 

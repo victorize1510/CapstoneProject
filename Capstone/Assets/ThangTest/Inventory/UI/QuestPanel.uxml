@@ -1,0 +1,80 @@
+<ui:UXML editor-extension-mode="False" xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="MonsterInventory.uss" />
+    <ui:Style src="QuestPanel.uss" />
+    <ui:VisualElement name="quest-panel" class="quest-panel quest-journal-panel menu-panel">
+        <ui:VisualElement class="quest-journal-header">
+            <ui:VisualElement class="quest-header-title-group">
+                <ui:VisualElement class="quest-header-mark" />
+                <ui:Label name="quest-title-label" text="NHIỆM VỤ" class="quest-journal-title" />
+            </ui:VisualElement>
+            <ui:VisualElement name="quest-tabs" class="quest-journal-tabs">
+                <ui:Label text="Q" class="keycap side-keycap" />
+                <ui:Button name="quest-tab-progress" text="ĐANG TIẾN HÀNH" class="quest-tab is-selected" />
+                <ui:Button name="quest-tab-main" text="NHIỆM VỤ CHÍNH" class="quest-tab" />
+                <ui:Button name="quest-tab-side" text="NHIỆM VỤ PHỤ" class="quest-tab" />
+                <ui:Button name="quest-tab-event" text="SỰ KIỆN" class="quest-tab" />
+                <ui:Button name="quest-tab-other" text="KHÁC" class="quest-tab" />
+                <ui:Label text="E" class="keycap side-keycap" />
+            </ui:VisualElement>
+            <ui:Button name="quest-back-button" text="←  QUAY LẠI" class="quest-back-button" />
+        </ui:VisualElement>
+        <ui:VisualElement name="quest-tracked-strip" class="quest-tracked-strip">
+            <ui:Label name="tracked-quest-label" text="Đang theo dõi: -" class="tracked-quest-label" />
+        </ui:VisualElement>
+        <ui:VisualElement class="quest-journal-body">
+            <ui:Label name="quest-page-empty" text="NONE" class="quest-page-empty" />
+            <ui:VisualElement name="quest-list-column" class="quest-list-column">
+                <ui:Label text="DANH SÁCH NHIỆM VỤ" class="quest-column-title" />
+                <ui:ScrollView name="quest-list-scroll" class="quest-list-scroll" />
+            </ui:VisualElement>
+            <ui:VisualElement name="quest-detail-column" class="quest-detail-column">
+                <ui:ScrollView name="quest-detail-scroll" class="quest-detail-scroll">
+                    <ui:VisualElement name="quest-detail-content" class="quest-detail-content">
+                        <ui:VisualElement class="quest-detail-heading-row">
+                            <ui:VisualElement name="quest-detail-icon" class="quest-detail-icon quest-main-icon" />
+                            <ui:VisualElement class="quest-detail-heading-text">
+                                <ui:Label name="quest-detail-title" text="Select a quest" class="quest-detail-title" />
+                                <ui:VisualElement name="quest-location-row" class="quest-inline-row">
+                                    <ui:Label text="Khu vực:" class="quest-inline-label" />
+                                    <ui:Label name="quest-location-value" text="-" class="quest-location-title" />
+                                </ui:VisualElement>
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="quest-detail-meta-row">
+                            <ui:Label name="quest-type-pill" text="-" class="quest-pill" />
+                            <ui:Label name="quest-level-pill" text="Lv. -" class="quest-pill" />
+                        </ui:VisualElement>
+                        <ui:Label name="quest-description-label" text="No quest selected." class="quest-description" />
+                        <ui:VisualElement name="quest-objective-heading" class="quest-section-heading-row">
+                            <ui:Label text="MỤC TIÊU" class="quest-section-title" />
+                            <ui:Label name="quest-progress-value" text="0 / 0" class="quest-progress-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="quest-objective-list" class="objective-list" />
+                        <ui:ProgressBar name="quest-progress-bar" class="quest-progress-bar" value="0" low-value="0" high-value="100" title="" />
+                        <ui:VisualElement class="quest-state-grid">
+                            <ui:VisualElement name="quest-status-row" class="quest-state-row">
+                                <ui:Label text="Trạng thái" class="quest-state-label" />
+                                <ui:Label name="quest-status-value" text="-" class="quest-state-value" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="quest-distance-row" class="quest-state-row">
+                                <ui:Label text="Khoảng cách" class="quest-state-label" />
+                                <ui:Label name="quest-distance-value" text="-" class="quest-state-value" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="quest-time-row" class="quest-state-row">
+                                <ui:Label text="Thời gian" class="quest-state-label" />
+                                <ui:Label name="quest-time-value" text="-" class="quest-state-value" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:Label name="quest-rewards-title" text="PHẦN THƯỞNG" class="quest-section-title" />
+                        <ui:VisualElement name="quest-reward-list" class="reward-list" />
+                        <ui:VisualElement name="quest-actions" class="quest-actions">
+                            <ui:Button name="track-quest-button" text="Theo dõi nhiệm vụ" class="quest-action-button primary-quest-action" />
+                            <ui:Button name="show-map-button" text="Xem nhiệm vụ hiện tại" class="quest-action-button" />
+                            <ui:Button name="abandon-quest-button" text="Hủy nhiệm vụ" class="quest-action-button danger-quest-action" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

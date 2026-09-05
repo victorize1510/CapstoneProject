@@ -1,16 +1,23 @@
 using System;
 using System.Reflection;
+using Capstone.Game.ProfileSystem;
 using UnityEngine;
 
 namespace Capstone.Game.QuestSystem {
     [DisallowMultipleComponent]
     public sealed class QuestKillProgressReporter : MonoBehaviour, IQuestProgressSource {
         [SerializeField] QuestManager questManager = null;
+        [SerializeField] QuestEventBus questEventBus = null;
+        [SerializeField] PlayerProfileRuntimeProvider profileProvider = null;
         [SerializeField] MonoBehaviour enemyBehaviour = null;
         [SerializeField] bool autoFindQuestManager = true;
+        [SerializeField] bool autoFindProfileProvider = true;
         [SerializeField] bool autoFindEnemyBehaviour = true;
+        [SerializeField] bool recordBattleResult = true;
+        [SerializeField] bool countsAsBoss = false;
         [SerializeField] string questId = string.Empty;
         [SerializeField] string objectiveId = "kill_cube";
+        [SerializeField] string enemyId = string.Empty;
         [SerializeField] int progressAmount = 1;
         [SerializeField] string alivePropertyName = "IsAlive";
         [SerializeField] bool logWhenQuestManagerMissing = true;
@@ -18,6 +25,7 @@ namespace Capstone.Game.QuestSystem {
         bool previousAlive;
         bool hasPreviousAlive;
         PropertyInfo aliveProperty;
+        DummyEnemy eventEnemy;
 
         public event Action<QuestProgressReport> ProgressReported;
 
@@ -29,16 +37,32 @@ namespace Capstone.Game.QuestSystem {
                 questManager.RegisterProgressSource(this);
             }
 
-            hasPreviousAlive = TryReadAlive(out previousAlive);
+            if (questEventBus == null && questManager != null) {
+                questEventBus = questManager.GetComponent<QuestEventBus>();
+            }
+
+            eventEnemy = enemyBehaviour as DummyEnemy;
+            if (eventEnemy != null) {
+                eventEnemy.Defeated += HandleEnemyDefeated;
+                hasPreviousAlive = false;
+            } else {
+                hasPreviousAlive = TryReadAlive(out previousAlive);
+            }
         }
 
         void OnDisable() {
+            if (eventEnemy != null) {
+                eventEnemy.Defeated -= HandleEnemyDefeated;
+                eventEnemy = null;
+            }
+
             if (questManager != null) {
                 questManager.UnregisterProgressSource(this);
             }
         }
 
         void Update() {
+            if (eventEnemy != null) return;
             if (!TryReadAlive(out bool alive)) return;
 
             if (!hasPreviousAlive) {
@@ -54,6 +78,10 @@ namespace Capstone.Game.QuestSystem {
             previousAlive = alive;
         }
 
+        void HandleEnemyDefeated(GameObject _) {
+            ReportProgress();
+        }
+
         public void ReportProgress() {
             if (string.IsNullOrWhiteSpace(objectiveId)) {
                 Debug.LogWarning($"{nameof(QuestKillProgressReporter)} on {name} has no objective id.");
@@ -61,6 +89,7 @@ namespace Capstone.Game.QuestSystem {
             }
 
             ResolveQuestManager();
+            RecordProfileProgress();
             var report = new QuestProgressReport(
                 questId,
                 objectiveId,
@@ -72,6 +101,19 @@ namespace Capstone.Game.QuestSystem {
                 return;
             }
 
+            var typedReport = new QuestProgressEvent(
+                QuestObjectiveType.DefeatEnemy,
+                string.IsNullOrWhiteSpace(enemyId) ? objectiveId : enemyId,
+                report.Amount,
+                report.Mode,
+                report.QuestId,
+                report.ObjectiveId);
+
+            if (questEventBus != null) {
+                questEventBus.Report(typedReport);
+                return;
+            }
+
             if (questManager == null) {
                 if (logWhenQuestManagerMissing) {
                     Debug.LogWarning($"{nameof(QuestKillProgressReporter)} could not find a QuestManager for {name}.");
@@ -80,15 +122,12 @@ namespace Capstone.Game.QuestSystem {
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(questId)) {
-                questManager.UpdateObjectiveProgress(objectiveId, report.Amount, report.Mode);
-            } else {
-                questManager.UpdateObjectiveProgress(questId, objectiveId, report.Amount, report.Mode);
-            }
+            questManager.ReportProgress(typedReport);
         }
 
         void ResolveReferences() {
             ResolveQuestManager();
+            ResolveProfileProvider();
             ResolveEnemyBehaviour();
         }
 
@@ -96,6 +135,24 @@ namespace Capstone.Game.QuestSystem {
             if (questManager != null || !autoFindQuestManager) return;
 
             questManager = FindFirstObjectByType<QuestManager>();
+        }
+
+        void ResolveProfileProvider() {
+            if (profileProvider != null || !autoFindProfileProvider) return;
+
+            profileProvider = FindFirstObjectByType<PlayerProfileRuntimeProvider>(FindObjectsInactive.Include);
+        }
+
+        void RecordProfileProgress() {
+            if (!recordBattleResult) return;
+
+            ResolveProfileProvider();
+            if (profileProvider == null) return;
+
+            profileProvider.RecordBattle();
+            if (countsAsBoss) {
+                profileProvider.RecordBossDefeated();
+            }
         }
 
         void ResolveEnemyBehaviour() {

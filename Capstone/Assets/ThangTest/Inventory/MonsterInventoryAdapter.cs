@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Capstone.Game.SaveSystem;
 using GDS.Core;
 using GDS.Core.Events;
 using UnityEngine;
@@ -81,11 +82,36 @@ namespace Capstone.Game.Inventory {
                 .Sum(item => Mathf.Max(0, item.StackSize));
         }
 
+        public ItemBase FindItemBase(string itemId) {
+            if (string.IsNullOrWhiteSpace(itemId)) return null;
+            string expected = itemId.Trim();
+
+            foreach (InventoryItemSnapshot item in GetItems()) {
+                if (item?.ItemBase == null) continue;
+                if (string.Equals(item.ItemId, expected, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(item.Name, expected, StringComparison.OrdinalIgnoreCase)) {
+                    return item.ItemBase;
+                }
+            }
+
+            foreach (ItemBase itemBase in Resources.FindObjectsOfTypeAll<ItemBase>()) {
+                if (itemBase == null) continue;
+                if ((itemBase is MonsterItemDefinition gameDefinition && gameDefinition.MatchesId(expected))
+                    || string.Equals(itemBase.name, expected, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(itemBase.Name, expected, StringComparison.OrdinalIgnoreCase)) {
+                    return itemBase;
+                }
+            }
+
+            return null;
+        }
+
         public Result AddItem(ItemBase itemBase, int quantity = 1) {
             if (itemBase == null) return Fail.NullRef;
             if (quantity <= 0) return Result.Success;
 
             EnsureInventory();
+            if (!CanFit(itemBase, quantity)) return Fail.ItemCannotFit;
             BeginChangeBatch();
 
             try {
@@ -162,6 +188,82 @@ namespace Capstone.Game.Inventory {
             }
         }
 
+        public InventorySaveData CreateSaveData() {
+            EnsureInventory();
+
+            var saveData = new InventorySaveData {
+                captured = true,
+                capacity = Capacity
+            };
+
+            foreach (var item in GetItems()) {
+                saveData.items.Add(new InventoryItemSaveData {
+                    itemId = item.ItemId,
+                    displayName = item.Name,
+                    category = item.Category,
+                    rarity = item.Rarity,
+                    description = item.Description,
+                    effect = item.Effect,
+                    source = item.Source,
+                    flavorText = item.FlavorText,
+                    healAmount = item.HealAmount,
+                    quantity = item.Quantity,
+                    stackable = item.Stackable,
+                    maxStackSize = Mathf.Max(1, item.MaxStackSize),
+                    usableFromInventory = item.UsableFromInventory,
+                    consumable = item.Consumable
+                });
+            }
+
+            return saveData;
+        }
+
+        public bool RestoreFromSaveData(InventorySaveData saveData, out string error) {
+            error = string.Empty;
+            if (saveData == null || !saveData.captured) return false;
+
+            if (saveData.capacity < 1 || saveData.items == null) { error = "Invalid inventory save."; return false; }
+            var knownDefinitions = new Dictionary<string, ItemBase>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in GetItems()) {
+                if (knownDefinitions.TryGetValue(item.ItemId, out var other) && other != item.ItemBase) {
+                    error = "Duplicate item definition ID: " + item.ItemId; return false;
+                }
+                knownDefinitions[item.ItemId] = item.ItemBase;
+            }
+            foreach (MonsterItemDefinition definition in Resources.FindObjectsOfTypeAll<MonsterItemDefinition>()) {
+                if (definition == null || string.IsNullOrWhiteSpace(definition.name)) continue;
+                if (!knownDefinitions.ContainsKey(definition.StableId)) knownDefinitions.Add(definition.StableId, definition);
+            }
+
+            var restoredBag = new ListBag {
+                Name = "Monster Inventory",
+                Size = saveData.capacity
+            };
+            var savedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            try {
+                foreach (var savedItem in saveData.items) {
+                    if (savedItem == null || string.IsNullOrWhiteSpace(savedItem.itemId) || savedItem.quantity < 0 || !savedIds.Add(savedItem.itemId)) {
+                        error = "Invalid or duplicate inventory item ID."; return false;
+                    }
+                    var definition = ResolveSavedDefinition(savedItem, knownDefinitions);
+                    int remaining = savedItem.quantity;
+                    while (remaining > 0) {
+                        int stackSize = definition.Stackable ? Math.Min(GetSafeMaxStack(definition), remaining) : 1;
+                        if (restoredBag.Add(CreateStack(definition, stackSize)) is Fail) {
+                            error = $"Could not restore inventory item '{savedItem.itemId}' ({savedItem.quantity}); current inventory was kept.";
+                            return false;
+                        }
+                        remaining -= stackSize;
+                    }
+                }
+                SetInventory(restoredBag);
+                return true;
+            } catch (Exception exception) {
+                error = exception.Message;
+                return false;
+            }
+        }
+
         public bool HasItem(ItemBase itemBase, int quantity = 1) {
             return GetQuantity(itemBase) >= Mathf.Max(1, quantity);
         }
@@ -207,8 +309,63 @@ namespace Capstone.Game.Inventory {
             return item;
         }
 
+        static ItemBase ResolveSavedDefinition(
+            InventoryItemSaveData savedItem,
+            IReadOnlyDictionary<string, ItemBase> knownDefinitions) {
+            if (!string.IsNullOrWhiteSpace(savedItem.itemId)
+                && knownDefinitions.TryGetValue(savedItem.itemId, out var existingDefinition)) {
+                return existingDefinition;
+            }
+
+            ItemBase match = null;
+            foreach (var candidate in knownDefinitions.Values) {
+                if (!(candidate is MonsterItemDefinition definition) || !definition.MatchesId(savedItem.itemId)) continue;
+                if (match != null && match != candidate) throw new InvalidOperationException("Ambiguous item alias: " + savedItem.itemId);
+                match = candidate;
+            }
+            if (match != null) return match;
+
+            var displayName = string.IsNullOrWhiteSpace(savedItem.displayName)
+                ? savedItem.itemId
+                : savedItem.displayName;
+            var runtimeDefinition = MonsterItemDefinition.CreateRuntime(
+                displayName,
+                savedItem.category,
+                savedItem.description,
+                savedItem.effect,
+                null,
+                savedItem.stackable,
+                Mathf.Max(1, savedItem.maxStackSize),
+                savedItem.usableFromInventory,
+                savedItem.consumable,
+                savedItem.healAmount,
+                savedItem.rarity,
+                savedItem.source,
+                savedItem.flavorText);
+
+            if (!string.IsNullOrWhiteSpace(savedItem.itemId)) {
+                runtimeDefinition.name = savedItem.itemId;
+                runtimeDefinition.AssignStableId(savedItem.itemId);
+            }
+
+            return runtimeDefinition;
+        }
+
         static int GetSafeMaxStack(ItemBase itemBase) {
             return Mathf.Max(1, itemBase.MaxStackSize);
+        }
+
+        bool CanFit(ItemBase itemBase, int quantity) {
+            int emptySlots = inventory.Slots.Count(slot => slot != null && slot.Item == null);
+            if (!itemBase.Stackable) return emptySlots >= quantity;
+
+            int maxStack = GetSafeMaxStack(itemBase);
+            int availableInStacks = inventory.Slots
+                .Where(slot => slot != null && slot.Item != null && slot.Item.Base == itemBase)
+                .Sum(slot => Mathf.Max(0, maxStack - slot.Item.StackSize));
+
+            long totalCapacity = (long)availableInStacks + (long)emptySlots * maxStack;
+            return totalCapacity >= quantity;
         }
 
         void Subscribe(ListBag bag) {

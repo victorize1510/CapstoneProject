@@ -11,11 +11,17 @@ namespace Capstone.Game.Inventory {
 
         readonly List<ComponentState> savedStates = new List<ComponentState>();
         readonly List<MonoBehaviour> softLockedComponents = new List<MonoBehaviour>();
+        readonly HashSet<object> lockOwners = new HashSet<object>();
 
-        public bool IsLocked { get; private set; }
+        public bool IsLocked => lockOwners.Count > 0;
 
         public void LockControls() {
-            if (IsLocked) return;
+            LockControls(this);
+        }
+
+        public void LockControls(object owner) {
+            owner = owner ?? this;
+            if (!lockOwners.Add(owner) || lockOwners.Count > 1) return;
 
             ResolveComponents();
             savedStates.Clear();
@@ -34,11 +40,20 @@ namespace Capstone.Game.Inventory {
                 component.enabled = false;
             }
 
-            IsLocked = true;
         }
 
         public void UnlockControls() {
-            if (!IsLocked) return;
+            UnlockControls(this);
+        }
+
+        public void UnlockControls(object owner) {
+            owner = owner ?? this;
+            if (!lockOwners.Remove(owner) || lockOwners.Count > 0) return;
+
+            RestoreComponents();
+        }
+
+        void RestoreComponents() {
 
             foreach (var component in softLockedComponents) {
                 if (component != null) TrySetSoftInputLock(component, false);
@@ -50,11 +65,11 @@ namespace Capstone.Game.Inventory {
 
             softLockedComponents.Clear();
             savedStates.Clear();
-            IsLocked = false;
         }
 
         void OnDisable() {
-            UnlockControls();
+            lockOwners.Clear();
+            RestoreComponents();
         }
 
         void ResolveComponents() {

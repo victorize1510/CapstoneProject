@@ -1,0 +1,686 @@
+/* Panel-specific overrides for PetsPanel.
+   Keep shared legacy rules in MonsterInventory.uss until they are migrated safely. */
+
+/* UI Builder has no runtime controller to reveal this screen. */
+.pets-panel {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    flex-grow: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
+/* Reference layout: header 8%, party 24%, details fill the remaining space. */
+.pets-header {
+    height: 86px;
+    min-height: 86px;
+}
+
+.pets-title {
+    font-size: 38px;
+}
+
+.pets-header-mark {
+    width: 34px;
+    height: 34px;
+}
+
+.pets-party-section {
+    height: 258px;
+    min-height: 258px;
+    padding-top: 12px;
+}
+
+.pets-section-title {
+    font-size: 17px;
+    margin-bottom: 9px;
+}
+
+.pets-party-row {
+    height: 198px;
+}
+
+.pet-party-card {
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    margin-right: 8px;
+    overflow: hidden;
+}
+
+.pet-card-top {
+    height: 24px;
+}
+
+.pet-card-content {
+    margin-top: 6px;
+    min-height: 0;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.pet-card-portrait {
+    width: 92px;
+    min-width: 72px;
+    height: auto;
+    min-height: 0;
+    align-self: stretch;
+    overflow: hidden;
+}
+
+.pet-card-info {
+    padding-left: 10px;
+}
+
+.pet-card-name {
+    font-size: 15px;
+}
+
+.pet-card-level,
+.pet-card-meta {
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.pet-card-bar-row {
+    height: 24px;
+    margin-top: 2px;
+}
+
+.pet-card-bar-label {
+    width: 29px;
+    font-size: 9px;
+}
+
+.pet-card-bar-track {
+    height: 7px;
+}
+
+.pet-card-hp-value,
+.pet-card-exp-value {
+    width: 54px;
+    font-size: 8px;
+}
+
+.pets-party-hint-row {
+    height: 30px;
+}
+
+.pets-party-hint,
+.pets-lead-hint {
+    font-size: 11px;
+}
+
+.pets-main-panel {
+    min-height: 0;
+}
+
+.pets-preview-panel {
+    flex-basis: 40%;
+    min-width: 390px;
+}
+
+.pets-selected-portrait {
+    width: 84%;
+    height: 84%;
+}
+
+.pets-information-panel {
+    padding-left: 30px;
+    padding-right: 26px;
+    padding-top: 18px;
+    padding-bottom: 10px;
+}
+
+.pets-name-row {
+    height: 62px;
+    min-height: 62px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-bottom: 4px;
+}
+
+.pets-selected-name {
+    min-width: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    height: 54px;
+    margin-right: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 38px;
+    -unity-text-align: middle-left;
+}
+
+.pets-name-actions {
+    width: 106px;
+    min-width: 106px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    justify-content: flex-end;
+}
+
+.pets-small-icon-button {
+    width: 46px;
+    height: 42px;
+    font-size: 21px;
+}
+
+.pets-small-icon-button.is-favorite {
+    color: rgb(255, 255, 255);
+    background-color: rgb(69, 145, 58);
+    border-left-color: rgb(50, 119, 43);
+    border-right-color: rgb(50, 119, 43);
+    border-top-color: rgb(50, 119, 43);
+    border-bottom-color: rgb(50, 119, 43);
+}
+
+.pets-meta-row {
+    height: 50px;
+    min-height: 50px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.pets-meta-label {
+    min-width: 124px;
+    margin-right: 16px;
+    font-size: 13px;
+}
+
+/* Keep HP/EXP together and reserve a readable fixed block for stats. */
+.pets-status-and-stats {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    height: 150px;
+    min-height: 150px;
+}
+
+.pets-status-bars {
+    padding-right: 28px;
+}
+
+.pets-large-bar-row {
+    height: 42px;
+    min-height: 42px;
+}
+
+.pets-large-bar-label {
+    width: 48px;
+    font-size: 14px;
+}
+
+.pets-large-bar-track {
+    height: 13px;
+}
+
+.pets-large-bar-value {
+    width: 105px;
+    margin-left: 12px;
+    font-size: 13px;
+}
+
+.pets-stats-card {
+    width: 315px;
+    height: 142px;
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.pets-stats-title {
+    height: 26px;
+    font-size: 13px;
+}
+
+.pets-stat-row {
+    min-height: 24px;
+}
+
+.pets-stat-name,
+.pets-stat-value {
+    font-size: 13px;
+}
+
+.pets-stat-value {
+    width: 62px;
+}
+
+.pets-skills-title {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.pets-skills-row {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    height: 100px;
+    min-height: 100px;
+    justify-content: center;
+}
+
+.pet-skill-card {
+    max-width: 280px;
+    height: 92px;
+    margin-right: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.pets-rename-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(14, 31, 25, 0.58);
+}
+
+.pets-rename-dialog {
+    width: 690px;
+    min-height: 570px;
+    max-width: 92%;
+    max-height: 94%;
+    padding-left: 38px;
+    padding-right: 38px;
+    padding-top: 20px;
+    padding-bottom: 28px;
+    background-color: rgb(253, 252, 247);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(118, 153, 111);
+    border-right-color: rgb(118, 153, 111);
+    border-top-color: rgb(118, 153, 111);
+    border-bottom-color: rgb(118, 153, 111);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.pets-rename-header {
+    height: 62px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(213, 224, 207);
+}
+
+.pets-rename-title {
+    color: rgb(43, 101, 45);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pets-rename-ornament {
+    width: 42px;
+    margin-right: 12px;
+    color: rgb(92, 145, 78);
+    font-size: 23px;
+    -unity-text-align: middle-center;
+}
+
+.pets-rename-ornament.mirrored {
+    margin-left: 12px;
+    margin-right: 0;
+    rotate: 180deg;
+}
+
+.pets-rename-close {
+    position: absolute;
+    right: 0;
+    top: 7px;
+    width: 46px;
+    height: 46px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 4px;
+    color: rgb(45, 86, 41);
+    background-color: rgba(255, 255, 255, 0);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(158, 182, 149);
+    border-right-color: rgb(158, 182, 149);
+    border-top-color: rgb(158, 182, 149);
+    border-bottom-color: rgb(158, 182, 149);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    font-size: 34px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pets-rename-close:hover {
+    background-color: rgb(238, 245, 233);
+}
+
+.pets-rename-summary {
+    height: 150px;
+    margin-top: 22px;
+    padding-left: 14px;
+    padding-right: 18px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pets-rename-portrait {
+    width: 146px;
+    height: 132px;
+    min-width: 146px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(237, 246, 232);
+    -unity-background-scale-mode: scale-to-fit;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(174, 196, 164);
+    border-right-color: rgb(174, 196, 164);
+    border-top-color: rgb(174, 196, 164);
+    border-bottom-color: rgb(174, 196, 164);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.pets-rename-portrait-fallback {
+    color: rgb(102, 142, 91);
+    font-size: 44px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pets-rename-current-block {
+    flex-grow: 1;
+    margin-left: 34px;
+}
+
+.pets-rename-current-caption {
+    color: rgb(78, 92, 75);
+    font-size: 15px;
+}
+
+.pets-rename-current-row {
+    min-height: 52px;
+    margin-top: 8px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pets-rename-current-name {
+    max-width: 360px;
+    color: rgb(54, 111, 47);
+    font-size: 28px;
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
+.pets-rename-pencil {
+    margin-left: 14px;
+    color: rgb(63, 116, 55);
+    font-size: 22px;
+}
+
+.pets-rename-divider {
+    height: 26px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pets-rename-divider-line {
+    flex-grow: 1;
+    height: 1px;
+    background-color: rgb(213, 224, 207);
+}
+
+.pets-rename-divider-mark {
+    width: 40px;
+    color: rgb(104, 149, 91);
+    font-size: 18px;
+    -unity-text-align: middle-center;
+}
+
+.pets-rename-field-label {
+    margin-top: 5px;
+    color: rgb(52, 96, 46);
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.pets-rename-input-shell {
+    height: 56px;
+    margin-top: 8px;
+}
+
+.pets-rename-input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    color: rgb(35, 57, 40);
+    background-color: rgb(255, 255, 252);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(91, 137, 78);
+    border-right-color: rgb(91, 137, 78);
+    border-top-color: rgb(91, 137, 78);
+    border-bottom-color: rgb(91, 137, 78);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    font-size: 17px;
+}
+
+.pets-rename-input .unity-base-text-field__input {
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: rgba(255, 255, 255, 0);
+}
+
+.pets-rename-input.is-invalid {
+    border-left-color: rgb(181, 86, 72);
+    border-right-color: rgb(181, 86, 72);
+    border-top-color: rgb(181, 86, 72);
+    border-bottom-color: rgb(181, 86, 72);
+}
+
+.pets-rename-placeholder {
+    position: absolute;
+    left: 18px;
+    top: 17px;
+    color: rgb(143, 151, 139);
+    font-size: 16px;
+}
+
+.pets-rename-validation-row {
+    height: 25px;
+    margin-top: 4px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pets-rename-error {
+    flex-grow: 1;
+    color: rgb(177, 63, 54);
+    font-size: 12px;
+    -unity-text-align: middle-left;
+}
+
+.pets-rename-counter {
+    width: 120px;
+    color: rgb(88, 103, 84);
+    font-size: 12px;
+    -unity-text-align: middle-right;
+}
+
+.pets-rename-note {
+    min-height: 68px;
+    margin-top: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgb(244, 247, 237);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(196, 210, 187);
+    border-right-color: rgb(196, 210, 187);
+    border-top-color: rgb(196, 210, 187);
+    border-bottom-color: rgb(196, 210, 187);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.pets-rename-note-icon {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    color: white;
+    background-color: rgb(76, 126, 58);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+    font-size: 18px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pets-rename-help {
+    flex-grow: 1;
+    color: rgb(77, 94, 72);
+    font-size: 12px;
+    white-space: normal;
+}
+
+.pets-rename-actions {
+    height: 54px;
+    margin-top: 20px;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+.pets-rename-button {
+    width: 292px;
+    height: 50px;
+    margin-left: 0;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.pets-rename-button.primary {
+    color: white;
+    background-color: rgb(59, 126, 55);
+    border-left-color: rgb(50, 110, 47);
+    border-right-color: rgb(50, 110, 47);
+    border-top-color: rgb(50, 110, 47);
+    border-bottom-color: rgb(50, 110, 47);
+}
+
+.pets-rename-button.secondary {
+    color: rgb(57, 80, 58);
+    background-color: rgb(244, 246, 239);
+    border-left-color: rgb(167, 183, 160);
+    border-right-color: rgb(167, 183, 160);
+    border-top-color: rgb(167, 183, 160);
+    border-bottom-color: rgb(167, 183, 160);
+}
+
+.pets-rename-button.primary:hover {
+    background-color: rgb(70, 145, 63);
+}
+
+.pets-rename-button.primary:active {
+    background-color: rgb(47, 107, 44);
+}
+
+.pets-rename-button.primary:disabled {
+    color: rgb(226, 232, 223);
+    background-color: rgb(157, 178, 151);
+    border-left-color: rgb(150, 169, 144);
+    border-right-color: rgb(150, 169, 144);
+    border-top-color: rgb(150, 169, 144);
+    border-bottom-color: rgb(150, 169, 144);
+}
+
+.pet-skill-icon {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    border-top-left-radius: 29px;
+    border-top-right-radius: 29px;
+    border-bottom-left-radius: 29px;
+    border-bottom-right-radius: 29px;
+}
+
+.pet-skill-text {
+    margin-left: 12px;
+}
+
+.pet-skill-name {
+    font-size: 14px;
+}
+
+.pet-skill-meta {
+    font-size: 11px;
+    margin-top: 6px;
+}
+
+.pets-actions-row {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    height: 58px;
+    min-height: 58px;
+    margin-top: 4px;
+}
+
+.pets-action-button {
+    max-width: 118px;
+    height: 50px;
+    font-size: 22px;
+}

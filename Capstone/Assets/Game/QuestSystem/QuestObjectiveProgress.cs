@@ -40,5 +40,10 @@ namespace Capstone.Game.QuestSystem {
             currentAmount = RequiredAmount;
             completed = true;
         }
+
+        public void Restore(int currentAmount, bool completed) {
+            this.currentAmount = Mathf.Clamp(currentAmount, 0, RequiredAmount);
+            this.completed = completed || this.currentAmount >= RequiredAmount;
+        }
     }
 }

@@ -6,6 +6,7 @@ namespace Capstone.Game.Inventory {
         Food = 3,
         Material = 4,
         Equipment = 5,
-        KeyItem = 6
+        KeyItem = 6,
+        QuestItem = 7
     }
 }

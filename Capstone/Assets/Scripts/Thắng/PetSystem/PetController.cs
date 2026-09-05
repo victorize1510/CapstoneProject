@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Capstone.Game.MapSystem;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -39,6 +40,8 @@ public class PetController : MonoBehaviour
     public bool useDirectMoveFallback = true;
     public bool snapFallbackToGround = true;
     public LayerMask groundMask = ~0;
+    [Min(0.02f)] public float navPathRefreshInterval = 0.12f;
+    [Min(0.01f)] public float navDestinationThreshold = 0.15f;
 
     [Header("Combat")]
     public float attackRange = 1.45f;
@@ -59,6 +62,7 @@ public class PetController : MonoBehaviour
     public float spawnDuration = 1.1f;
     public bool keepUndergroundNearOwner = true;
     public bool summonOnCommand = false;
+    [Min(0.05f)] public float undergroundFollowThreshold = 0.25f;
 
     [Header("Roam")]
     public bool roamAroundOwner = true;
@@ -93,6 +97,7 @@ public class PetController : MonoBehaviour
 
     private PetState state = PetState.FollowOwner;
     private DummyEnemy target;
+    private MapMarker mapMarker;
     private Vector3 commandedPoint;
     private Vector3 attackDestination;
     private Vector3 roamDestination;
@@ -105,8 +110,20 @@ public class PetController : MonoBehaviour
     private float nextAttackRepathAt;
     private float pendingHitAt;
     private float directMoveSpeed;
+    private float skillAnimationUntil;
+    private float pendingSkillStartAt;
+    private float pendingSkillFade;
+    private string[] pendingSkillCandidates;
+    private bool skillStopsMovement;
+    private bool skillFacesTarget;
     private bool hasRoamDestination;
     private bool hasPendingHit;
+    private bool hasPendingSkillAnimation;
+    private bool navDestinationInitialized;
+    private bool undergroundSpotInitialized;
+    private Vector3 lastNavDestination;
+    private Vector3 lastUndergroundSpot;
+    private float nextNavPathRefreshAt;
 
     public bool IsSummoned { get; private set; }
 
@@ -142,6 +159,11 @@ public class PetController : MonoBehaviour
         ConfigureAgent();
     }
 
+    private void OnEnable()
+    {
+        EnsureMapMarker();
+    }
+
     private void Start()
     {
         if (owner == null)
@@ -167,7 +189,10 @@ public class PetController : MonoBehaviour
 
     private void Update()
     {
-        if (useSelfInput && summonKey != KeyCode.None && Input.GetKeyDown(summonKey))
+        if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
+            && useSelfInput
+            && summonKey != KeyCode.None
+            && Input.GetKeyDown(summonKey))
         {
             ToggleSummonOrRecall();
             return;
@@ -189,6 +214,23 @@ public class PetController : MonoBehaviour
         {
             StopMovement();
             UpdateAnimator(0f);
+            return;
+        }
+
+        if (IsSkillAnimationActive())
+        {
+            TryStartPendingSkillAnimation();
+
+            if (skillStopsMovement)
+            {
+                StopMovement(false);
+            }
+
+            if (skillFacesTarget && target != null && target.IsAlive)
+            {
+                FacePoint(GetTargetPosition());
+            }
+
             return;
         }
 
@@ -215,6 +257,7 @@ public class PetController : MonoBehaviour
     public void AssignOwner(Transform newOwner)
     {
         owner = newOwner;
+        undergroundSpotInitialized = false;
         if (state == PetState.FollowOwner)
         {
             MoveToFollowSpot();
@@ -316,6 +359,61 @@ public class PetController : MonoBehaviour
         EnterUnderground();
     }
 
+    public bool PlaySkillAnimation(string[] candidates, float duration, float fade, bool stopMovement, bool faceTarget)
+    {
+        return PlaySkillAnimation(candidates, duration, fade, stopMovement, faceTarget, 0f, 0f);
+    }
+
+    public bool PlaySkillAnimation(string[] candidates, float duration, float fade, bool stopMovement, bool faceTarget, float windupSeconds, float recoverySeconds)
+    {
+        if (candidates == null || candidates.Length == 0)
+        {
+            return false;
+        }
+
+        if (!HasAnimatorState(candidates))
+        {
+            return false;
+        }
+
+        duration = Mathf.Max(0.05f, duration);
+        fade = Mathf.Max(0f, fade);
+        windupSeconds = Mathf.Max(0f, windupSeconds);
+        recoverySeconds = Mathf.Max(0f, recoverySeconds);
+
+        skillStopsMovement = stopMovement;
+        skillFacesTarget = faceTarget;
+        if (skillStopsMovement)
+        {
+            StopMovement(false);
+        }
+
+        if (skillFacesTarget && target != null && target.IsAlive)
+        {
+            FacePoint(GetTargetPosition());
+        }
+
+        if (windupSeconds > 0f)
+        {
+            pendingSkillCandidates = candidates;
+            pendingSkillFade = fade;
+            pendingSkillStartAt = Time.time + windupSeconds;
+            hasPendingSkillAnimation = true;
+            skillAnimationUntil = pendingSkillStartAt + duration + recoverySeconds;
+            return true;
+        }
+
+        hasPendingSkillAnimation = false;
+        pendingSkillCandidates = null;
+        if (!PlayAnimatorState(candidates, fade, true))
+        {
+            return false;
+        }
+
+        skillAnimationUntil = Time.time + duration + recoverySeconds;
+        return true;
+    }
+
     private void ToggleSummonOrRecall()
     {
         if (!IsSummoned)
@@ -337,6 +435,7 @@ public class PetController : MonoBehaviour
         IsSummoned = false;
         target = null;
         state = PetState.Underground;
+        undergroundSpotInitialized = false;
         StopMovement(false);
         MoveUndergroundNearOwner();
         PlayAnimatorState(undergroundStates, locomotionFade, true);
@@ -355,6 +454,17 @@ public class PetController : MonoBehaviour
         {
             return;
         }
+
+        Vector3 desiredSpot = owner.TransformPoint(summonOffset);
+        float threshold = Mathf.Max(0.05f, undergroundFollowThreshold);
+        if (undergroundSpotInitialized
+            && (desiredSpot - lastUndergroundSpot).sqrMagnitude <= threshold * threshold)
+        {
+            return;
+        }
+
+        lastUndergroundSpot = desiredSpot;
+        undergroundSpotInitialized = true;
 
         MoveToSummonSpot();
     }
@@ -697,8 +807,22 @@ public class PetController : MonoBehaviour
         agent.acceleration = acceleration;
         agent.angularSpeed = angularSpeed;
         agent.stoppingDistance = stopDistance;
+        float destinationThreshold = Mathf.Max(0.01f, navDestinationThreshold);
+        bool destinationChanged = !navDestinationInitialized
+            || (navDestination - lastNavDestination).sqrMagnitude
+                > destinationThreshold * destinationThreshold;
+        bool needsPath = agent.isStopped || (!agent.hasPath && !agent.pathPending);
+        bool canRefreshDestination = Time.time >= nextNavPathRefreshAt;
+
         agent.isStopped = false;
-        agent.SetDestination(navDestination);
+        if (needsPath || (destinationChanged && canRefreshDestination))
+        {
+            agent.SetDestination(navDestination);
+            lastNavDestination = navDestination;
+            navDestinationInitialized = true;
+            nextNavPathRefreshAt = Time.time + Mathf.Max(0.02f, navPathRefreshInterval);
+        }
+
         FaceVelocity(agent.desiredVelocity.sqrMagnitude > 0.01f ? agent.desiredVelocity : agent.velocity);
         return true;
     }
@@ -712,6 +836,7 @@ public class PetController : MonoBehaviour
         }
 
         agent.Warp(hit.position);
+        navDestinationInitialized = false;
         return agent.isOnNavMesh;
     }
 
@@ -743,10 +868,18 @@ public class PetController : MonoBehaviour
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            agent.isStopped = true;
-            agent.ResetPath();
+            if (!agent.isStopped)
+            {
+                agent.isStopped = true;
+            }
+
+            if (agent.hasPath)
+            {
+                agent.ResetPath();
+            }
         }
 
+        navDestinationInitialized = false;
         directMoveSpeed = 0f;
         if (state != PetState.AttackTarget)
         {
@@ -970,7 +1103,7 @@ public class PetController : MonoBehaviour
 
     private void UpdateAnimator(float speed)
     {
-        if (animator == null || state == PetState.AttackTarget || state == PetState.Underground || state == PetState.Summoning)
+        if (animator == null || IsSkillAnimationActive() || state == PetState.AttackTarget || state == PetState.Underground || state == PetState.Summoning)
         {
             return;
         }
@@ -995,15 +1128,15 @@ public class PetController : MonoBehaviour
                 continue;
             }
 
+            if (!restart && currentAnimatorState == candidate)
+            {
+                return true;
+            }
+
             int hash;
             if (!TryGetStateHash(candidate, out hash))
             {
                 continue;
-            }
-
-            if (!restart && currentAnimatorState == candidate)
-            {
-                return true;
             }
 
             currentAnimatorState = candidate;
@@ -1012,6 +1145,42 @@ public class PetController : MonoBehaviour
         }
 
         return false;
+    }
+
+    private bool HasAnimatorState(string[] candidates)
+    {
+        if (animator == null || candidates == null)
+        {
+            return false;
+        }
+
+        foreach (string candidate in candidates)
+        {
+            if (string.IsNullOrWhiteSpace(candidate))
+            {
+                continue;
+            }
+
+            int hash;
+            if (TryGetStateHash(candidate, out hash))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void TryStartPendingSkillAnimation()
+    {
+        if (!hasPendingSkillAnimation || Time.time < pendingSkillStartAt)
+        {
+            return;
+        }
+
+        PlayAnimatorState(pendingSkillCandidates, pendingSkillFade, true);
+        hasPendingSkillAnimation = false;
+        pendingSkillCandidates = null;
     }
 
     private bool TryGetStateHash(string stateName, out int hash)
@@ -1025,6 +1194,11 @@ public class PetController : MonoBehaviour
 
         hash = Animator.StringToHash(stateName);
         return animator.HasState(0, hash);
+    }
+
+    private bool IsSkillAnimationActive()
+    {
+        return Time.time < skillAnimationUntil;
     }
 
     private void SetAnimatorFloat(string parameterName, float value)
@@ -1063,6 +1237,21 @@ public class PetController : MonoBehaviour
         a.y = 0f;
         b.y = 0f;
         return Vector3.Distance(a, b);
+    }
+
+    private void EnsureMapMarker()
+    {
+        if (mapMarker == null)
+        {
+            mapMarker = GetComponent<MapMarker>();
+        }
+
+        if (mapMarker == null)
+        {
+            mapMarker = gameObject.AddComponent<MapIcon>();
+        }
+
+        mapMarker.ConfigureRuntime(MapMarkerType.Pet, gameObject.name, gameObject.name, null, default, true, true);
     }
 }
 

@@ -17,6 +17,7 @@ namespace Capstone.Game.QuestSystem {
         [SerializeField] string questId;
         [SerializeField] QuestStatus status;
         [SerializeField] bool tracked;
+        [SerializeField] bool rewardsClaimed;
         [SerializeField] float acceptedTime;
         [SerializeField] float completedTime = -1f;
         [SerializeField] List<QuestObjectiveProgress> objectives = new List<QuestObjectiveProgress>();
@@ -25,6 +26,7 @@ namespace Capstone.Game.QuestSystem {
         public string QuestId => questId;
         public QuestStatus Status => status;
         public bool IsTracked => tracked;
+        public bool RewardsClaimed => rewardsClaimed;
         public float AcceptedTime => acceptedTime;
         public float CompletedTime => completedTime;
         public IReadOnlyList<QuestObjectiveProgress> Objectives => objectives;
@@ -38,9 +40,25 @@ namespace Capstone.Game.QuestSystem {
             questId = definition != null ? definition.QuestId : string.Empty;
             status = QuestStatus.Active;
             tracked = false;
+            rewardsClaimed = false;
             this.acceptedTime = acceptedTime;
             completedTime = -1f;
             objectives = CreateObjectiveProgress(definition);
+        }
+
+        public QuestRuntimeState(QuestDefinition definition, QuestRuntimeSaveData saveData) {
+            this.definition = definition;
+            questId = definition != null ? definition.QuestId : saveData?.questId ?? string.Empty;
+            status = saveData != null ? saveData.status : QuestStatus.Active;
+            tracked = saveData != null && saveData.tracked && status == QuestStatus.Active;
+            rewardsClaimed = saveData != null && saveData.rewardsClaimed;
+            acceptedTime = saveData != null ? saveData.acceptedTime : 0f;
+            completedTime = saveData != null ? saveData.completedTime : -1f;
+            objectives = CreateObjectiveProgress(definition);
+            RestoreObjectiveProgress(saveData);
+            if (status == QuestStatus.Completed) {
+                MarkAllObjectivesComplete();
+            }
         }
 
         public QuestObjectiveProgress GetObjective(string objectiveId) {
@@ -57,7 +75,12 @@ namespace Capstone.Game.QuestSystem {
             tracked = value;
         }
 
+        public void SetRewardsClaimed(bool value) {
+            rewardsClaimed = value;
+        }
+
         public void Complete(float time) {
+            MarkAllObjectivesComplete();
             status = QuestStatus.Completed;
             completedTime = time;
             tracked = false;
@@ -85,6 +108,23 @@ namespace Capstone.Game.QuestSystem {
                     objective.RequiredAmount,
                     objective.Optional))
                 .ToList();
+        }
+
+        void RestoreObjectiveProgress(QuestRuntimeSaveData saveData) {
+            if (saveData == null || saveData.objectives == null) return;
+
+            foreach (var objectiveData in saveData.objectives) {
+                if (objectiveData == null || string.IsNullOrWhiteSpace(objectiveData.objectiveId)) continue;
+
+                var objective = GetObjective(objectiveData.objectiveId);
+                objective?.Restore(objectiveData.currentAmount, objectiveData.completed);
+            }
+        }
+
+        void MarkAllObjectivesComplete() {
+            foreach (var objective in objectives) {
+                objective?.MarkComplete();
+            }
         }
     }
 }

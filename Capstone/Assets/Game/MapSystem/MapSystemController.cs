@@ -15,7 +15,9 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] LocalPlayerControlLock controlLock = null;
         [SerializeField] Transform playerTarget = null;
         [SerializeField] bool autoFindPlayer = true;
-        [SerializeField] bool disableMinimap = true;
+        [SerializeField] bool disableMinimap;
+
+        bool minimapVisibleRequested = true;
 
         public AAMapRuntimeBinder Binder => aaBinder;
         public MinimapController Minimap => minimap;
@@ -56,8 +58,8 @@ namespace Capstone.Game.MapSystem {
                 aaBinder.ApplyBindings();
             }
 
-            if (disableMinimap) DisableMinimapSceneObjects();
-            else if (minimap != null) minimap.SetTarget(playerTarget);
+            if (disableMinimap || !minimapVisibleRequested) DisableMinimapSceneObjects();
+            else EnableMinimapSceneObjects();
             if (worldMap != null) worldMap.SetTarget(playerTarget);
             if (input != null) input.SetReferences(this, worldMap, worldMap != null ? worldMap.MapManager : null, controlLock);
             if (iconRegistry != null) iconRegistry.SetMarkerManager(markerManager);
@@ -85,6 +87,13 @@ namespace Capstone.Game.MapSystem {
             else OpenWorldMap(true);
         }
 
+        public void SetMinimapVisible(bool visible) {
+            if (minimapVisibleRequested == visible) return;
+            minimapVisibleRequested = visible;
+            if (disableMinimap || !visible) DisableMinimapSceneObjects();
+            else EnableMinimapSceneObjects();
+        }
+
         public void FocusWorldPosition(Vector3 worldPosition, bool openMap) {
             ResolveReferences();
             if (worldMap != null) worldMap.Focus(worldPosition, openMap);
@@ -94,12 +103,37 @@ namespace Capstone.Game.MapSystem {
         void DisableMinimapSceneObjects() {
             if (minimap != null) minimap.enabled = false;
 
-            MinimapManager manager = FindFirst<MinimapManager>();
+            MinimapManager manager = ResolveMinimapManager();
             if (manager != null) manager.gameObject.SetActive(false);
 
-            GameObject cameraObject = GameObject.Find("Minimap Camera");
+            GameObject cameraObject = ResolveMinimapCameraObject();
             if (cameraObject != null) cameraObject.SetActive(false);
         }
+
+        void EnableMinimapSceneObjects() {
+            MinimapManager manager = ResolveMinimapManager();
+            if (manager != null) manager.gameObject.SetActive(true);
+
+            GameObject cameraObject = ResolveMinimapCameraObject();
+            if (cameraObject != null) cameraObject.SetActive(true);
+            if (minimap != null) {
+                minimap.enabled = true;
+                minimap.SetTarget(playerTarget);
+            }
+        }
+
+        MinimapManager ResolveMinimapManager() {
+            if (minimap != null && minimap.Manager != null) return minimap.Manager;
+            if (aaBinder != null && aaBinder.MinimapManager != null) return aaBinder.MinimapManager;
+            return FindFirst<MinimapManager>();
+        }
+
+        GameObject ResolveMinimapCameraObject() {
+            if (minimap != null && minimap.Camera != null) return minimap.Camera.gameObject;
+            if (aaBinder != null && aaBinder.MinimapCamera != null) return aaBinder.MinimapCamera;
+            return GameObject.Find("Minimap Camera");
+        }
+
         static T FindFirst<T>() where T : Object {
             T[] items = FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             return items.Length > 0 ? items[0] : null;

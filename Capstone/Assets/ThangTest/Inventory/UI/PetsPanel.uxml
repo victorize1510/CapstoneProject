@@ -1,0 +1,143 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="MonsterInventory.uss" />
+    <ui:Style src="PetsPanel.uss" />
+    <ui:VisualElement name="pets-panel" class="pets-panel">
+        <ui:VisualElement class="pets-header">
+            <ui:VisualElement class="pets-header-title-group">
+                <ui:VisualElement class="pets-header-mark"/>
+                <ui:Label text="PETS" class="pets-title"/>
+            </ui:VisualElement>
+            <ui:Button name="pets-back-button" text="←  QUAY LẠI" class="pets-back-button"/>
+        </ui:VisualElement>
+        <ui:VisualElement class="pets-party-section">
+            <ui:Label text="ĐỘI HÌNH (PARTY)" class="pets-section-title"/>
+            <ui:VisualElement name="pets-party-row" class="pets-party-row"/>
+            <ui:VisualElement class="pets-party-hint-row">
+                <ui:Label text="ⓘ  Double-click pet nguồn, sau đó click ô đích để đổi vị trí. Slot 1–6 tương ứng phím 1–6." class="pets-party-hint"/>
+                <ui:Label text="Slot 1 là LEAD" class="pets-lead-hint"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="pets-main-panel">
+            <ui:VisualElement class="pets-preview-panel">
+                <ui:VisualElement class="pets-preview-backdrop"/>
+                <ui:VisualElement name="pets-selected-portrait" class="pets-selected-portrait">
+                    <ui:Label name="pets-selected-portrait-fallback" text="?" class="pets-selected-portrait-fallback"/>
+                </ui:VisualElement>
+                <ui:Label text="PET PREVIEW" class="pets-preview-caption"/>
+            </ui:VisualElement>
+            <ui:VisualElement class="pets-information-panel">
+                <ui:VisualElement class="pets-name-row">
+                    <ui:Label name="pets-selected-name" text="Chọn một pet" class="pets-selected-name"/>
+                    <ui:VisualElement class="pets-name-actions">
+                        <ui:Button name="pets-rename-button" text="✎" tooltip="Đổi tên" class="pets-small-icon-button"/>
+                        <ui:Button name="pets-favorite-button" text="★" tooltip="Yêu thích" class="pets-small-icon-button"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="pets-meta-row">
+                    <ui:Label name="pets-selected-species" text="Loài: -" class="pets-meta-label"/>
+                    <ui:Label name="pets-selected-level" text="Lv. -" class="pets-meta-label"/>
+                    <ui:Label name="pets-selected-gender" text="Giới tính: -" class="pets-meta-label"/>
+                    <ui:Label name="pets-selected-rarity" text="Độ hiếm: -" class="pets-meta-label"/>
+                    <ui:Label name="pets-selected-element" text="Hệ: -" class="pets-meta-label"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="pets-status-and-stats">
+                    <ui:VisualElement class="pets-status-bars">
+                        <ui:VisualElement class="pets-large-bar-row">
+                            <ui:Label text="HP" class="pets-large-bar-label"/>
+                            <ui:VisualElement class="pets-large-bar-track">
+                                <ui:VisualElement name="pets-health-fill" class="pets-large-bar-fill health-fill"/>
+                            </ui:VisualElement>
+                            <ui:Label name="pets-health-value" text="- / -" class="pets-large-bar-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="pets-large-bar-row">
+                            <ui:Label text="EXP" class="pets-large-bar-label"/>
+                            <ui:VisualElement class="pets-large-bar-track">
+                                <ui:VisualElement name="pets-exp-fill" class="pets-large-bar-fill experience-fill"/>
+                            </ui:VisualElement>
+                            <ui:Label name="pets-exp-value" text="- / -" class="pets-large-bar-value"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pets-stats-card">
+                        <ui:Label text="CHỈ SỐ (STATS)" class="pets-stats-title"/>
+                        <ui:VisualElement class="pets-stat-row">
+                            <ui:Label text="♥  HP" class="pets-stat-name"/>
+                            <ui:Label name="pets-stat-health" text="-" class="pets-stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="pets-stat-row">
+                            <ui:Label text="⚔  ATK" class="pets-stat-name"/>
+                            <ui:Label name="pets-stat-attack" text="-" class="pets-stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="pets-stat-row">
+                            <ui:Label text="◆  DEF" class="pets-stat-name"/>
+                            <ui:Label name="pets-stat-defense" text="-" class="pets-stat-value"/>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="pets-stat-row">
+                            <ui:Label text="➤  SPD" class="pets-stat-name"/>
+                            <ui:Label name="pets-stat-speed" text="-" class="pets-stat-value"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label text="KỸ NĂNG (SKILLS)" class="pets-section-title pets-skills-title"/>
+                <ui:VisualElement name="pets-skills-row" class="pets-skills-row"/>
+                <ui:VisualElement class="pets-actions-row">
+                    <ui:Button name="pets-level-up-button" text="↑" class="pets-action-button" style="-unity-text-align: middle-center;"/>
+                    <ui:Button name="pets-heal-button" text="♥" class="pets-action-button"/>
+                    <ui:Button name="pets-skills-button" text="▤" class="pets-action-button"/>
+                    <ui:Button name="pets-details-button" text="☼" class="pets-action-button"/>
+                    <ui:Button name="pets-box-button" text="▣" class="pets-action-button"/>
+                    <ui:Button name="pets-evolution-button" text="❧" class="pets-action-button"/>
+                    <ui:Button name="pets-release-button" text="♢" class="pets-action-button danger-pet-action"/>
+                </ui:VisualElement>
+                <ui:Label name="pets-feedback-label" text="" class="pets-feedback-label"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pets-tooltip" class="pets-tooltip">
+            <ui:Label name="pets-tooltip-title" text="Tooltip" class="pets-tooltip-title"/>
+            <ui:Label name="pets-tooltip-body" text="-" class="pets-tooltip-body"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="pets-rename-overlay" class="pets-rename-overlay">
+            <ui:VisualElement class="pets-rename-dialog">
+                <ui:VisualElement class="pets-rename-header">
+                    <ui:Label text="❧" class="pets-rename-ornament"/>
+                    <ui:Label text="ĐỔI TÊN PET" class="pets-rename-title"/>
+                    <ui:Label text="❧" class="pets-rename-ornament mirrored"/>
+                    <ui:Button name="pets-rename-close" text="×" tooltip="Đóng" class="pets-rename-close"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="pets-rename-summary">
+                    <ui:VisualElement name="pets-rename-portrait" class="pets-rename-portrait">
+                        <ui:Label name="pets-rename-portrait-fallback" text="?" class="pets-rename-portrait-fallback"/>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="pets-rename-current-block">
+                        <ui:Label text="Tên hiện tại" class="pets-rename-current-caption"/>
+                        <ui:VisualElement class="pets-rename-current-row">
+                            <ui:Label name="pets-rename-current-name" text="Pet" class="pets-rename-current-name"/>
+                            <ui:Label text="✎" class="pets-rename-pencil"/>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="pets-rename-divider">
+                    <ui:VisualElement class="pets-rename-divider-line"/>
+                    <ui:Label text="❧" class="pets-rename-divider-mark"/>
+                    <ui:VisualElement class="pets-rename-divider-line"/>
+                </ui:VisualElement>
+                <ui:Label text="Tên mới" class="pets-rename-field-label"/>
+                <ui:VisualElement name="pets-rename-input-shell" class="pets-rename-input-shell">
+                    <ui:TextField name="pets-rename-input" value="" class="pets-rename-input"/>
+                    <ui:Label name="pets-rename-placeholder" text="Nhập tên mới cho pet..." class="pets-rename-placeholder" picking-mode="Ignore"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="pets-rename-validation-row">
+                    <ui:Label name="pets-rename-error" text="" class="pets-rename-error"/>
+                    <ui:Label name="pets-rename-counter" text="0 / 16 ký tự" class="pets-rename-counter"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="pets-rename-note">
+                    <ui:Label text="i" class="pets-rename-note-icon"/>
+                    <ui:Label text="Tên phải từ 1 đến 16 ký tự.\nKhông được để trống hoặc chỉ chứa khoảng trắng." class="pets-rename-help"/>
+                </ui:VisualElement>
+                <ui:VisualElement class="pets-rename-actions">
+                    <ui:Button name="pets-rename-cancel" text="HỦY" class="pets-rename-button secondary"/>
+                    <ui:Button name="pets-rename-save" text="ĐỔI TÊN" class="pets-rename-button primary"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

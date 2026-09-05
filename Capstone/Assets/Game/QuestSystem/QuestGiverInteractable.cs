@@ -22,6 +22,8 @@ namespace Capstone.Game.QuestSystem {
         TextMesh titleLabel;
         TextMesh promptLabel;
         Camera mainCamera;
+        QuestManager registeredManager;
+        QuestDefinition registeredDefinition;
         bool accepted;
 
         void Awake() {
@@ -38,7 +40,10 @@ namespace Capstone.Game.QuestSystem {
             UpdatePrompt(near && (!accepted || !hidePromptAfterAccepted));
             FaceLabelsToCamera();
 
-            if (near && !accepted && Input.GetKeyDown(interactKey)) {
+            if (near
+                && !accepted
+                && !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
+                && Input.GetKeyDown(interactKey)) {
                 AcceptQuest();
             }
         }
@@ -61,6 +66,8 @@ namespace Capstone.Game.QuestSystem {
             if (questManager == null) {
                 questManager = FindFirstObjectByType<QuestManager>();
             }
+
+            RegisterDefinitionIfNeeded();
 
             if (player != null) return;
 
@@ -85,6 +92,15 @@ namespace Capstone.Game.QuestSystem {
             if (controller != null) {
                 player = controller.transform;
             }
+        }
+
+        void RegisterDefinitionIfNeeded() {
+            if (questManager == null || questDefinition == null) return;
+            if (registeredManager == questManager && registeredDefinition == questDefinition) return;
+
+            questManager.RegisterQuestDefinition(questDefinition);
+            registeredManager = questManager;
+            registeredDefinition = questDefinition;
         }
 
         bool IsPlayerNear() {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Capstone.Game.Inventory;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,17 +16,23 @@ namespace Capstone.Game.QuestSystem.UI {
         [SerializeField] float liveValueRefreshInterval = 0.25f;
 
         readonly List<QuestRuntimeState> filteredQuests = new List<QuestRuntimeState>();
-        readonly List<Button> tabButtons = new List<Button>();
+        readonly Dictionary<Button, Action> buttonCallbacks = new Dictionary<Button, Action>();
 
         VisualElement rootElement;
         ScrollView questListScroll;
-        Label questEmptyLabel;
+        VisualElement questListColumn;
+        VisualElement questDetailColumn;
+        Label questPageEmpty;
+        VisualElement trackedQuestStrip;
         Label trackedQuestLabel;
+        VisualElement detailContent;
+        VisualElement questIcon;
         Label detailTitle;
         Label typePill;
         Label levelPill;
         Label descriptionLabel;
         VisualElement objectiveList;
+        VisualElement objectiveHeading;
         Label progressValue;
         ProgressBar progressBar;
         VisualElement statusRow;
@@ -38,12 +45,14 @@ namespace Capstone.Game.QuestSystem.UI {
         Label timeValue;
         Label rewardsTitle;
         VisualElement rewardList;
+        VisualElement questActions;
         Button trackToggleButton;
         Button showMapButton;
         Button abandonButton;
+        Button backButton;
         Action<Vector3> showOnMapRequested;
 
-        QuestPanelTab currentTab = QuestPanelTab.Main;
+        QuestPanelTab currentTab = QuestPanelTab.InProgress;
         QuestRuntimeState selectedQuest;
         string selectedQuestId;
         float nextLiveValueRefreshTime;
@@ -146,7 +155,6 @@ namespace Capstone.Game.QuestSystem.UI {
             var behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
             foreach (var behaviour in behaviours) {
                 if (behaviour == null || behaviour.GetType().Name != "BasicPlayerMovement") continue;
-
                 localPlayer = behaviour.transform;
                 return;
             }
@@ -157,13 +165,19 @@ namespace Capstone.Game.QuestSystem.UI {
 
             rootElement = document.rootVisualElement;
             questListScroll = rootElement.Q<ScrollView>("quest-list-scroll");
-            questEmptyLabel = rootElement.Q<Label>("quest-empty-label");
+            questListColumn = rootElement.Q<VisualElement>("quest-list-column");
+            questDetailColumn = rootElement.Q<VisualElement>("quest-detail-column");
+            questPageEmpty = rootElement.Q<Label>("quest-page-empty");
+            trackedQuestStrip = rootElement.Q<VisualElement>("quest-tracked-strip");
             trackedQuestLabel = rootElement.Q<Label>("tracked-quest-label");
+            detailContent = rootElement.Q<VisualElement>("quest-detail-content");
+            questIcon = rootElement.Q<VisualElement>("quest-detail-icon");
             detailTitle = rootElement.Q<Label>("quest-detail-title");
             typePill = rootElement.Q<Label>("quest-type-pill");
             levelPill = rootElement.Q<Label>("quest-level-pill");
             descriptionLabel = rootElement.Q<Label>("quest-description-label");
             objectiveList = rootElement.Q<VisualElement>("quest-objective-list");
+            objectiveHeading = rootElement.Q<VisualElement>("quest-objective-heading");
             progressValue = rootElement.Q<Label>("quest-progress-value");
             progressBar = rootElement.Q<ProgressBar>("quest-progress-bar");
             statusRow = rootElement.Q<VisualElement>("quest-status-row");
@@ -176,64 +190,48 @@ namespace Capstone.Game.QuestSystem.UI {
             timeValue = rootElement.Q<Label>("quest-time-value");
             rewardsTitle = rootElement.Q<Label>("quest-rewards-title");
             rewardList = rootElement.Q<VisualElement>("quest-reward-list");
+            questActions = rootElement.Q<VisualElement>("quest-actions");
             trackToggleButton = rootElement.Q<Button>("track-quest-button");
             showMapButton = rootElement.Q<Button>("show-map-button");
             abandonButton = rootElement.Q<Button>("abandon-quest-button");
+            backButton = rootElement.Q<Button>("quest-back-button");
         }
 
         void RegisterControls() {
             if (rootElement == null || controlsRegistered) return;
 
-            tabButtons.Clear();
+            RegisterTabButton("quest-tab-progress", QuestPanelTab.InProgress);
             RegisterTabButton("quest-tab-main", QuestPanelTab.Main);
             RegisterTabButton("quest-tab-side", QuestPanelTab.Side);
-            RegisterTabButton("quest-tab-daily", QuestPanelTab.Daily);
-            RegisterTabButton("quest-tab-completed", QuestPanelTab.Completed);
-
-            if (trackToggleButton != null) trackToggleButton.clicked += ToggleTrackSelectedQuest;
-            if (showMapButton != null) showMapButton.clicked += ShowSelectedQuestOnMap;
-            if (abandonButton != null) abandonButton.clicked += AbandonSelectedQuest;
+            RegisterTabButton("quest-tab-event", QuestPanelTab.Event);
+            RegisterTabButton("quest-tab-other", QuestPanelTab.Other);
+            RegisterButton(trackToggleButton, ToggleTrackSelectedQuest);
+            RegisterButton(showMapButton, ShowSelectedQuestOnMap);
+            RegisterButton(abandonButton, AbandonSelectedQuest);
+            RegisterButton(backButton, CloseQuestMenu);
 
             controlsRegistered = true;
         }
 
         void UnregisterControls() {
-            if (!controlsRegistered) return;
-
-            foreach (var button in tabButtons) {
-                button.clicked -= SelectMainTab;
-                button.clicked -= SelectSideTab;
-                button.clicked -= SelectDailyTab;
-                button.clicked -= SelectCompletedTab;
+            foreach (var pair in buttonCallbacks) {
+                pair.Key.clicked -= pair.Value;
             }
 
-            if (trackToggleButton != null) trackToggleButton.clicked -= ToggleTrackSelectedQuest;
-            if (showMapButton != null) showMapButton.clicked -= ShowSelectedQuestOnMap;
-            if (abandonButton != null) abandonButton.clicked -= AbandonSelectedQuest;
-
-            tabButtons.Clear();
+            buttonCallbacks.Clear();
             controlsRegistered = false;
         }
 
         void RegisterTabButton(string buttonName, QuestPanelTab tab) {
             var button = rootElement.Q<Button>(buttonName);
-            if (button == null) return;
+            RegisterButton(button, () => SelectTab(tab));
+        }
 
-            tabButtons.Add(button);
-            switch (tab) {
-                case QuestPanelTab.Side:
-                    button.clicked += SelectSideTab;
-                    break;
-                case QuestPanelTab.Daily:
-                    button.clicked += SelectDailyTab;
-                    break;
-                case QuestPanelTab.Completed:
-                    button.clicked += SelectCompletedTab;
-                    break;
-                default:
-                    button.clicked += SelectMainTab;
-                    break;
-            }
+        void RegisterButton(Button button, Action callback) {
+            if (button == null || callback == null || buttonCallbacks.ContainsKey(button)) return;
+
+            button.clicked += callback;
+            buttonCallbacks.Add(button, callback);
         }
 
         void SubscribeToQuestManager() {
@@ -245,28 +243,11 @@ namespace Capstone.Game.QuestSystem.UI {
 
         void UnsubscribeFromQuestManager() {
             if (questManager == null) return;
-
             questManager.QuestsChanged -= HandleQuestsChanged;
         }
 
         void HandleQuestsChanged() {
             RefreshAll();
-        }
-
-        void SelectMainTab() {
-            SelectTab(QuestPanelTab.Main);
-        }
-
-        void SelectSideTab() {
-            SelectTab(QuestPanelTab.Side);
-        }
-
-        void SelectDailyTab() {
-            SelectTab(QuestPanelTab.Daily);
-        }
-
-        void SelectCompletedTab() {
-            SelectTab(QuestPanelTab.Completed);
         }
 
         void SelectTab(QuestPanelTab tab) {
@@ -277,10 +258,11 @@ namespace Capstone.Game.QuestSystem.UI {
 
         void ShiftTab(int direction) {
             var order = new[] {
+                QuestPanelTab.InProgress,
                 QuestPanelTab.Main,
                 QuestPanelTab.Side,
-                QuestPanelTab.Daily,
-                QuestPanelTab.Completed
+                QuestPanelTab.Event,
+                QuestPanelTab.Other
             };
 
             int currentIndex = Array.IndexOf(order, currentTab);
@@ -323,10 +305,12 @@ namespace Capstone.Game.QuestSystem.UI {
                 }
             }
 
-            var hasQuests = filteredQuests.Count > 0;
-            SetVisible(questListScroll, hasQuests);
-            SetVisible(questEmptyLabel, !hasQuests);
-            if (questEmptyLabel != null) questEmptyLabel.text = questManager == null ? "QuestManager not found" : "No quests";
+            bool hasQuests = filteredQuests.Count > 0;
+            SetVisible(questListColumn, hasQuests);
+            SetVisible(questDetailColumn, hasQuests);
+            SetVisible(questPageEmpty, !hasQuests);
+            SetVisible(trackedQuestStrip, hasQuests && questManager != null && questManager.GetTrackedQuest() != null);
+            if (questPageEmpty != null) questPageEmpty.text = "NONE";
 
             SelectQuestAfterRefresh();
         }
@@ -334,15 +318,24 @@ namespace Capstone.Game.QuestSystem.UI {
         IEnumerable<QuestRuntimeState> GetFilteredQuests() {
             var quests = questManager.GetAllQuests();
             switch (currentTab) {
+                case QuestPanelTab.Main:
+                    return SortQuests(quests.Where(quest => IsType(quest, QuestType.Main)));
                 case QuestPanelTab.Side:
-                    return quests.Where(quest => IsQuestType(quest, QuestType.Side) && quest.Status == QuestStatus.Active);
-                case QuestPanelTab.Daily:
-                    return quests.Where(quest => IsQuestType(quest, QuestType.Daily) && quest.Status == QuestStatus.Active);
-                case QuestPanelTab.Completed:
-                    return quests.Where(quest => quest.Status == QuestStatus.Completed);
+                    return SortQuests(quests.Where(quest => IsType(quest, QuestType.Side)));
+                case QuestPanelTab.Event:
+                    return SortQuests(quests.Where(quest => IsType(quest, QuestType.Event)));
+                case QuestPanelTab.Other:
+                    return SortQuests(quests.Where(IsOtherType));
                 default:
-                    return quests.Where(quest => IsQuestType(quest, QuestType.Main) && quest.Status == QuestStatus.Active);
+                    return SortQuests(quests.Where(quest => quest != null && quest.Status == QuestStatus.Active));
             }
+        }
+
+        static IEnumerable<QuestRuntimeState> SortQuests(IEnumerable<QuestRuntimeState> quests) {
+            return quests
+                .OrderByDescending(quest => quest != null && quest.IsTracked)
+                .ThenBy(quest => quest != null && quest.Status == QuestStatus.Active ? 0 : 1)
+                .ThenBy(quest => GetQuestTitle(quest), StringComparer.CurrentCultureIgnoreCase);
         }
 
         VisualElement CreateQuestCard(QuestRuntimeState quest) {
@@ -350,18 +343,37 @@ namespace Capstone.Game.QuestSystem.UI {
             card.AddToClassList("quest-card");
             if (quest == selectedQuest) card.AddToClassList("is-selected");
             if (quest != null && quest.IsTracked) card.AddToClassList("is-tracked");
+            if (quest != null && quest.Status == QuestStatus.Completed) card.AddToClassList("is-completed");
+
+            var icon = new VisualElement();
+            icon.AddToClassList("quest-card-icon");
+            if (quest != null && quest.Definition != null && quest.Definition.Icon != null) {
+                icon.style.backgroundImage = new StyleBackground(quest.Definition.Icon);
+            }
+            card.Add(icon);
+
+            var textGroup = new VisualElement();
+            textGroup.AddToClassList("quest-card-text");
+            card.Add(textGroup);
 
             var title = new Label(GetQuestTitle(quest));
             title.AddToClassList("quest-card-title");
-            card.Add(title);
+            textGroup.Add(title);
 
-            var meta = new Label(FormatQuestMeta(quest));
+            var meta = new Label(FormatQuestCardMeta(quest));
             meta.AddToClassList("quest-card-meta");
-            card.Add(meta);
+            textGroup.Add(meta);
 
-            var status = new Label(FormatStatus(quest != null ? quest.Status : QuestStatus.Active));
-            status.AddToClassList("quest-card-status");
-            card.Add(status);
+            var right = new VisualElement();
+            right.AddToClassList("quest-card-right");
+            card.Add(right);
+
+            string progressText = GetQuestProgressText(quest);
+            if (!string.IsNullOrWhiteSpace(progressText)) {
+                var progress = new Label(progressText);
+                progress.AddToClassList("quest-card-progress");
+                right.Add(progress);
+            }
 
             var capturedQuest = quest;
             card.RegisterCallback<ClickEvent>(_ => SelectQuest(capturedQuest));
@@ -406,11 +418,23 @@ namespace Capstone.Game.QuestSystem.UI {
                 return;
             }
 
+            SetVisible(detailContent, true);
+
             var definition = selectedQuest.Definition;
+            if (questIcon != null) {
+                questIcon.ClearClassList();
+                questIcon.AddToClassList("quest-detail-icon");
+                questIcon.AddToClassList(GetQuestIconClass(definition.QuestType));
+                if (definition.Icon != null) {
+                    questIcon.style.backgroundImage = new StyleBackground(definition.Icon);
+                } else {
+                    questIcon.style.backgroundImage = StyleKeyword.None;
+                }
+            }
             if (detailTitle != null) detailTitle.text = definition.Title;
             if (typePill != null) typePill.text = FormatType(definition.QuestType);
-            if (levelPill != null) levelPill.text = "Recommended Lv. " + definition.RecommendedLevel;
-            if (descriptionLabel != null) descriptionLabel.text = string.IsNullOrWhiteSpace(definition.Description) ? "No description." : definition.Description;
+            if (levelPill != null) levelPill.text = "Lv. " + definition.RecommendedLevel;
+            if (descriptionLabel != null) descriptionLabel.text = definition.Description ?? string.Empty;
             if (statusValue != null) statusValue.text = FormatStatus(selectedQuest.Status);
 
             RefreshObjectives();
@@ -422,24 +446,24 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void SetEmptyDetail() {
-            if (detailTitle != null) detailTitle.text = "Select a quest";
-            if (typePill != null) typePill.text = "-";
-            if (levelPill != null) levelPill.text = "Lv. -";
-            if (descriptionLabel != null) descriptionLabel.text = "No quest selected.";
+            SetVisible(detailContent, false);
+            if (detailTitle != null) detailTitle.text = string.Empty;
+            if (typePill != null) typePill.text = string.Empty;
+            if (levelPill != null) levelPill.text = string.Empty;
+            if (descriptionLabel != null) descriptionLabel.text = string.Empty;
             if (objectiveList != null) objectiveList.Clear();
-            if (progressValue != null) progressValue.text = "0 / 0";
+            if (progressValue != null) progressValue.text = string.Empty;
             if (progressBar != null) {
                 progressBar.value = 0f;
-                progressBar.title = "0%";
+                progressBar.title = string.Empty;
             }
-            if (statusValue != null) statusValue.text = "-";
-            if (locationValue != null) locationValue.text = "-";
-            if (distanceValue != null) distanceValue.text = "-";
-            if (timeValue != null) timeValue.text = "-";
+            if (statusValue != null) statusValue.text = string.Empty;
+            if (locationValue != null) locationValue.text = string.Empty;
+            if (distanceValue != null) distanceValue.text = string.Empty;
+            if (timeValue != null) timeValue.text = string.Empty;
             if (rewardList != null) rewardList.Clear();
 
-            SetVisible(statusRow, true);
-            SetVisible(locationValue, false);
+            SetVisible(statusRow, false);
             SetVisible(locationRow, false);
             SetVisible(distanceRow, false);
             SetVisible(timeRow, false);
@@ -452,79 +476,55 @@ namespace Capstone.Game.QuestSystem.UI {
             if (objectiveList == null) return;
 
             objectiveList.Clear();
-            if (selectedQuest.Objectives.Count == 0) {
-                objectiveList.Add(CreateSimpleObjectiveRow("No objectives."));
-                return;
-            }
+            bool hasObjectives = selectedQuest.Objectives.Count > 0;
+            SetVisible(objectiveHeading, hasObjectives);
+            SetVisible(objectiveList, hasObjectives);
+            SetVisible(progressBar, hasObjectives);
+            if (!hasObjectives) return;
 
             for (int i = 0; i < selectedQuest.Objectives.Count; i++) {
                 var progress = selectedQuest.Objectives[i];
-                objectiveList.Add(CreateObjectiveRow(i + 1, progress));
+                objectiveList.Add(CreateObjectiveRow(progress));
             }
         }
 
-        VisualElement CreateSimpleObjectiveRow(string text) {
+        VisualElement CreateObjectiveRow(QuestObjectiveProgress progress) {
             var row = new VisualElement();
             row.AddToClassList("objective-row");
-
-            var label = new Label(text);
-            label.AddToClassList("objective-text");
-            row.Add(label);
-            return row;
-        }
-
-        VisualElement CreateObjectiveRow(int index, QuestObjectiveProgress progress) {
-            var row = new VisualElement();
-            row.AddToClassList("objective-row");
-
-            var bullet = new Label(index.ToString());
-            bullet.AddToClassList("objective-bullet");
-            row.Add(bullet);
+            if (progress != null && progress.IsComplete) row.AddToClassList("is-complete");
 
             var objectiveDefinition = FindObjectiveDefinition(progress.ObjectiveId);
             var label = new Label(FormatObjectiveText(objectiveDefinition, progress));
             label.AddToClassList("objective-text");
             row.Add(label);
 
+            var count = new Label(progress != null ? progress.CurrentAmount + " / " + progress.RequiredAmount : string.Empty);
+            count.AddToClassList("objective-count");
+            row.Add(count);
             return row;
         }
 
         void RefreshProgress() {
-            var objectives = GetProgressObjectives();
-            int current = 0;
-            int required = 0;
+            CalculateProgress(selectedQuest, out int current, out int required, out float percent);
 
-            foreach (var objective in objectives) {
-                current += Mathf.Clamp(objective.CurrentAmount, 0, objective.RequiredAmount);
-                required += objective.RequiredAmount;
-            }
-
-            float percent = 0f;
-            if (selectedQuest.Status == QuestStatus.Completed) {
-                percent = 1f;
-                current = Mathf.Max(current, required);
-            } else if (required > 0) {
-                percent = Mathf.Clamp01((float)current / required);
-            }
-
-            if (progressValue != null) progressValue.text = required > 0 ? current + " / " + required : "0 / 0";
+            if (progressValue != null) progressValue.text = required > 0 ? current + " / " + required : string.Empty;
             if (progressBar != null) {
                 progressBar.value = percent * 100f;
-                progressBar.title = Mathf.RoundToInt(percent * 100f) + "%";
+                progressBar.title = string.Empty;
             }
         }
 
         void RefreshLocationVisibility() {
-            bool hasLocation = HasLocation(selectedQuest);
+            bool hasLocationName = selectedQuest != null
+                && selectedQuest.Definition != null
+                && !string.IsNullOrWhiteSpace(selectedQuest.Definition.LocationName);
+            bool hasDistance = TryGetTarget(selectedQuest, out _) && localPlayer != null;
 
-            SetVisible(locationRow, hasLocation);
-            SetVisible(locationValue, hasLocation);
-            SetVisible(distanceRow, hasLocation);
+            SetVisible(locationRow, hasLocationName);
+            SetVisible(distanceRow, hasDistance);
 
             if (locationValue != null) {
-                locationValue.text = hasLocation
-                    ? GetLocationName(selectedQuest.Definition)
-                    : "-";
+                locationValue.text = hasLocationName ? selectedQuest.Definition.LocationName : string.Empty;
             }
         }
 
@@ -532,17 +532,17 @@ namespace Capstone.Game.QuestSystem.UI {
             if (selectedQuest == null || selectedQuest.Definition == null) return;
 
             var definition = selectedQuest.Definition;
-            var hasLocation = HasLocation(selectedQuest);
+            bool hasLocationName = !string.IsNullOrWhiteSpace(definition.LocationName);
+            bool hasTarget = TryGetTarget(selectedQuest, out QuestTargetInfo target);
+            bool hasDistance = hasTarget && localPlayer != null;
             var hasTimeLimit = definition.HasTimeLimit;
 
-            SetVisible(locationRow, hasLocation);
-            SetVisible(distanceRow, hasLocation);
+            SetVisible(locationRow, hasLocationName);
+            SetVisible(distanceRow, hasDistance);
             SetVisible(timeRow, hasTimeLimit);
 
-            if (hasLocation && distanceValue != null) {
-                distanceValue.text = localPlayer != null
-                    ? FormatDistance(Vector3.Distance(localPlayer.position, definition.WorldPosition))
-                    : "-";
+            if (hasDistance && distanceValue != null) {
+                distanceValue.text = FormatDistance(Vector3.Distance(localPlayer.position, target.Position));
             }
 
             if (hasTimeLimit && timeValue != null) {
@@ -587,35 +587,37 @@ namespace Capstone.Game.QuestSystem.UI {
         void RefreshActionButtons() {
             var hasQuest = selectedQuest != null && selectedQuest.Definition != null;
             var isActive = hasQuest && selectedQuest.Status == QuestStatus.Active;
-            var hasLocation = hasQuest && HasLocation(selectedQuest);
+            var hasTarget = hasQuest && TryGetTarget(selectedQuest, out _);
             var hasMapReceiver = showOnMapRequested != null;
 
             if (trackToggleButton != null) {
-                trackToggleButton.text = hasQuest && selectedQuest.IsTracked ? "Untrack" : "Track";
+                trackToggleButton.text = hasQuest && selectedQuest.IsTracked ? "Hủy theo dõi" : "Theo dõi nhiệm vụ";
                 trackToggleButton.tooltip = hasQuest && selectedQuest.IsTracked
-                    ? "Stop marking this quest for future map guidance."
-                    : "Mark this quest for future map and minimap guidance.";
-                trackToggleButton.EnableInClassList("primary-quest-action", isActive && !selectedQuest.IsTracked);
+                    ? "Ngừng đánh dấu nhiệm vụ này cho bản đồ/minimap."
+                    : "Đánh dấu nhiệm vụ này cho bản đồ/minimap.";
+                trackToggleButton.EnableInClassList("is-tracked-action", hasQuest && selectedQuest.IsTracked);
             }
 
             if (showMapButton != null) {
                 showMapButton.tooltip = hasMapReceiver
-                    ? "Send this quest location to the map system."
+                    ? "Gửi vị trí nhiệm vụ sang hệ thống bản đồ."
                     : "Map system is not connected yet.";
             }
 
             SetButtonEnabled(trackToggleButton, isActive);
-            SetButtonEnabled(showMapButton, hasLocation && hasMapReceiver);
+            SetButtonEnabled(showMapButton, hasTarget && hasMapReceiver);
             SetButtonEnabled(abandonButton, isActive && selectedQuest.Definition.CanAbandon);
 
-            SetVisible(showMapButton, hasLocation && hasMapReceiver);
+            SetVisible(showMapButton, hasTarget);
+            SetVisible(questActions, isActive);
         }
 
         void RefreshTrackedLabel() {
             if (trackedQuestLabel == null) return;
 
             var trackedQuest = questManager != null ? questManager.GetTrackedQuest() : null;
-            trackedQuestLabel.text = trackedQuest != null ? "Tracked: " + GetQuestTitle(trackedQuest) : "Tracked: -";
+            trackedQuestLabel.text = trackedQuest != null ? "Đang theo dõi: " + GetQuestTitle(trackedQuest) : string.Empty;
+            SetVisible(trackedQuestStrip, filteredQuests.Count > 0 && trackedQuest != null);
         }
 
         void ToggleTrackSelectedQuest() {
@@ -629,9 +631,10 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void ShowSelectedQuestOnMap() {
-            if (selectedQuest == null || selectedQuest.Definition == null || !HasLocation(selectedQuest) || showOnMapRequested == null) return;
+            if (selectedQuest == null || selectedQuest.Definition == null || showOnMapRequested == null) return;
+            if (!TryGetTarget(selectedQuest, out QuestTargetInfo target)) return;
 
-            showOnMapRequested.Invoke(selectedQuest.Definition.WorldPosition);
+            showOnMapRequested.Invoke(target.Position);
         }
 
         void AbandonSelectedQuest() {
@@ -639,11 +642,17 @@ namespace Capstone.Game.QuestSystem.UI {
             questManager.AbandonQuest(selectedQuest.QuestId);
         }
 
+        void CloseQuestMenu() {
+            var inventoryController = GetComponent<MonsterInventoryController>();
+            if (inventoryController != null) inventoryController.Close();
+        }
+
         void UpdateTabButtons() {
+            SetTabSelected("quest-tab-progress", currentTab == QuestPanelTab.InProgress);
             SetTabSelected("quest-tab-main", currentTab == QuestPanelTab.Main);
             SetTabSelected("quest-tab-side", currentTab == QuestPanelTab.Side);
-            SetTabSelected("quest-tab-daily", currentTab == QuestPanelTab.Daily);
-            SetTabSelected("quest-tab-completed", currentTab == QuestPanelTab.Completed);
+            SetTabSelected("quest-tab-event", currentTab == QuestPanelTab.Event);
+            SetTabSelected("quest-tab-other", currentTab == QuestPanelTab.Other);
         }
 
         void SetTabSelected(string buttonName, bool selected) {
@@ -656,18 +665,6 @@ namespace Capstone.Game.QuestSystem.UI {
             else button.RemoveFromClassList("is-selected");
         }
 
-        List<QuestObjectiveProgress> GetProgressObjectives() {
-            if (selectedQuest == null) return new List<QuestObjectiveProgress>();
-
-            var requiredObjectives = selectedQuest.Objectives
-                .Where(objective => objective != null && !objective.Optional)
-                .ToList();
-
-            return requiredObjectives.Count > 0
-                ? requiredObjectives
-                : selectedQuest.Objectives.Where(objective => objective != null).ToList();
-        }
-
         QuestObjectiveDefinition FindObjectiveDefinition(string objectiveId) {
             if (selectedQuest == null || selectedQuest.Definition == null) return null;
 
@@ -675,20 +672,52 @@ namespace Capstone.Game.QuestSystem.UI {
                 .FirstOrDefault(objective => objective != null && objective.ObjectiveId == objectiveId);
         }
 
-        static bool IsQuestType(QuestRuntimeState quest, QuestType type) {
-            return quest != null && quest.Definition != null && quest.Definition.QuestType == type;
+        static void CalculateProgress(QuestRuntimeState quest, out int current, out int required, out float percent) {
+            current = 0;
+            required = 0;
+            percent = 0f;
+
+            if (quest == null) return;
+
+            var objectives = quest.Objectives
+                .Where(objective => objective != null && !objective.Optional)
+                .ToList();
+
+            if (objectives.Count == 0) {
+                objectives = quest.Objectives.Where(objective => objective != null).ToList();
+            }
+
+            foreach (var objective in objectives) {
+                current += Mathf.Clamp(objective.CurrentAmount, 0, objective.RequiredAmount);
+                required += objective.RequiredAmount;
+            }
+
+            if (quest.Status == QuestStatus.Completed) {
+                current = Mathf.Max(current, required);
+                percent = 1f;
+            } else if (required > 0) {
+                percent = Mathf.Clamp01((float)current / required);
+            }
         }
 
-        static bool HasLocation(QuestRuntimeState quest) {
+        static bool IsType(QuestRuntimeState quest, QuestType type) {
+            return quest != null
+                && quest.Definition != null
+                && quest.Definition.QuestType == type;
+        }
+
+        static bool IsOtherType(QuestRuntimeState quest) {
             if (quest == null || quest.Definition == null) return false;
 
-            return !string.IsNullOrWhiteSpace(quest.Definition.LocationName)
-                || quest.Definition.WorldPosition != Vector3.zero;
+            var type = quest.Definition.QuestType;
+            return type == QuestType.Other
+                || type == QuestType.Daily
+                || type == QuestType.Companion;
         }
 
-        static string GetLocationName(QuestDefinition definition) {
-            if (definition == null) return "-";
-            return string.IsNullOrWhiteSpace(definition.LocationName) ? "Marked Location" : definition.LocationName;
+        bool TryGetTarget(QuestRuntimeState quest, out QuestTargetInfo target) {
+            target = default;
+            return questManager != null && questManager.TryGetQuestTarget(quest, out target);
         }
 
         static string GetQuestTitle(QuestRuntimeState quest) {
@@ -697,40 +726,56 @@ namespace Capstone.Game.QuestSystem.UI {
             return string.IsNullOrWhiteSpace(quest.QuestId) ? "Untitled Quest" : quest.QuestId;
         }
 
-        static string FormatQuestMeta(QuestRuntimeState quest) {
-            if (quest == null || quest.Definition == null) return "-";
-            return FormatType(quest.Definition.QuestType) + " Quest  |  Lv. " + quest.Definition.RecommendedLevel;
+        string FormatQuestCardMeta(QuestRuntimeState quest) {
+            if (quest == null || quest.Definition == null) return string.Empty;
+            var type = FormatType(quest.Definition.QuestType);
+            if (string.IsNullOrWhiteSpace(quest.Definition.LocationName)) return type;
+
+            var location = quest.Definition.LocationName;
+            return string.IsNullOrWhiteSpace(location) ? type : type + "  |  " + location;
+        }
+
+        static string GetQuestProgressText(QuestRuntimeState quest) {
+            CalculateProgress(quest, out int current, out int required, out _);
+            return required > 0 ? current + " / " + required : string.Empty;
         }
 
         static string FormatObjectiveText(QuestObjectiveDefinition definition, QuestObjectiveProgress progress) {
+            if (progress == null) return "-";
             var title = definition != null && !string.IsNullOrWhiteSpace(definition.Title)
                 ? definition.Title
                 : progress.ObjectiveId;
 
             var optional = progress.Optional ? " (Optional)" : string.Empty;
-            return title + optional + "  " + progress.CurrentAmount + " / " + progress.RequiredAmount;
+            return title + optional;
         }
 
         static string FormatReward(QuestRewardDefinition reward) {
             if (reward == null) return "-";
-            return reward.DisplayName + " x" + reward.Amount;
+            var name = string.IsNullOrWhiteSpace(reward.DisplayName)
+                ? reward.RewardType.ToString()
+                : reward.DisplayName;
+            return name + " x" + reward.Amount;
         }
 
         static string FormatType(QuestType type) {
             switch (type) {
-                case QuestType.Side: return "Side";
-                case QuestType.Daily: return "Daily";
-                case QuestType.Other: return "Other";
-                default: return "Main";
+                case QuestType.Side: return "Nhiệm vụ phụ";
+                case QuestType.Event: return "Sự kiện";
+                case QuestType.Other: return "Khác";
+                case QuestType.Daily:
+                case QuestType.Companion:
+                    return "Khác";
+                default: return "Nhiệm vụ chính";
             }
         }
 
         static string FormatStatus(QuestStatus status) {
             switch (status) {
-                case QuestStatus.Completed: return "Completed";
-                case QuestStatus.Failed: return "Failed";
-                case QuestStatus.Abandoned: return "Abandoned";
-                default: return "In Progress";
+                case QuestStatus.Completed: return "Hoàn thành";
+                case QuestStatus.Failed: return "Thất bại";
+                case QuestStatus.Abandoned: return "Đã hủy";
+                default: return "Đang tiến hành";
             }
         }
 
@@ -747,6 +792,18 @@ namespace Capstone.Game.QuestSystem.UI {
                 : string.Format("{0:0}:{1:00}", timeSpan.Minutes, timeSpan.Seconds);
         }
 
+        static string GetQuestIconClass(QuestType type) {
+            switch (type) {
+                case QuestType.Main: return "quest-main-icon";
+                case QuestType.Side: return "quest-side-icon";
+                case QuestType.Event: return "quest-event-icon";
+                case QuestType.Daily:
+                case QuestType.Companion:
+                    return "quest-other-icon";
+                default: return "quest-other-icon";
+            }
+        }
+
         static void SetVisible(VisualElement element, bool visible) {
             if (element == null) return;
             element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
@@ -758,10 +815,11 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         enum QuestPanelTab {
+            InProgress,
             Main,
             Side,
-            Daily,
-            Completed
+            Event,
+            Other
         }
     }
 }

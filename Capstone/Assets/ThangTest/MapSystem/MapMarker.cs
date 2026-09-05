@@ -14,7 +14,7 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] Texture iconTexture = null;
         [SerializeField] Color iconColor = Color.white;
         [SerializeField] Vector3 iconOffset = new Vector3(0f, 100f, 0f);
-        [SerializeField] Vector3 iconScale = new Vector3(3f, 1f, 3f);
+        [SerializeField] Vector3 iconScale = new Vector3(5f, 1f, 5f);
         [SerializeField] float iconRotation = 0f;
 
         [Header("Visibility")]
@@ -31,6 +31,8 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] float mapCameraRotation = 0f;
 
         MonoBehaviour cachedAliveSource;
+        PropertyInfo cachedAliveProperty;
+        FieldInfo cachedAliveField;
         bool aliveSourceResolved;
 
         public static event Action<MapMarker> MarkerEnabled;
@@ -126,26 +128,65 @@ namespace Capstone.Game.MapSystem {
             }
 
             if (cachedAliveSource == null) return false;
-            return TryReadBoolMember(cachedAliveSource, aliveMemberName, out bool alive) && !alive;
+            return TryReadCachedAlive(out bool alive) && !alive;
         }
 
         void ResolveAliveSource() {
             aliveSourceResolved = true;
             cachedAliveSource = null;
+            cachedAliveProperty = null;
+            cachedAliveField = null;
 
             foreach (var behaviour in GetComponentsInParent<MonoBehaviour>(true)) {
                 if (behaviour != null && TryReadBoolMember(behaviour, aliveMemberName, out _)) {
-                    cachedAliveSource = behaviour;
+                    CacheAliveSource(behaviour);
                     return;
                 }
             }
 
             foreach (var behaviour in GetComponentsInChildren<MonoBehaviour>(true)) {
                 if (behaviour != null && TryReadBoolMember(behaviour, aliveMemberName, out _)) {
-                    cachedAliveSource = behaviour;
+                    CacheAliveSource(behaviour);
                     return;
                 }
             }
+        }
+
+        void CacheAliveSource(MonoBehaviour source) {
+            cachedAliveSource = source;
+
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            Type type = source.GetType();
+            PropertyInfo property = type.GetProperty(aliveMemberName, flags);
+            if (property != null && property.PropertyType == typeof(bool) && property.GetIndexParameters().Length == 0) {
+                cachedAliveProperty = property;
+                return;
+            }
+
+            FieldInfo field = type.GetField(aliveMemberName, flags);
+            if (field != null && field.FieldType == typeof(bool)) cachedAliveField = field;
+        }
+
+        bool TryReadCachedAlive(out bool value) {
+            value = false;
+
+            try {
+                if (cachedAliveProperty != null) {
+                    value = (bool)cachedAliveProperty.GetValue(cachedAliveSource);
+                    return true;
+                }
+
+                if (cachedAliveField != null) {
+                    value = (bool)cachedAliveField.GetValue(cachedAliveSource);
+                    return true;
+                }
+            } catch (Exception) {
+                // A broken gameplay getter must not break map rendering every frame.
+                cachedAliveProperty = null;
+                cachedAliveField = null;
+            }
+
+            return false;
         }
 
         static bool TryReadBoolMember(object source, string memberName, out bool value) {

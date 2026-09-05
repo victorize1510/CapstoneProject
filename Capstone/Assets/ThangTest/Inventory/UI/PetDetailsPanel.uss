@@ -1,0 +1,640 @@
+.pet-details-overlay {
+    display: flex;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.pet-details-backdrop {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(15, 24, 18, 0.62);
+}
+
+.pet-details-dialog {
+    width: 72%;
+    height: 92%;
+    min-width: 920px;
+    min-height: 650px;
+    max-width: 1340px;
+    max-height: 980px;
+    background-color: #fbfaf4;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: #78916f;
+    border-right-color: #78916f;
+    border-top-color: #78916f;
+    border-bottom-color: #78916f;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+    overflow: hidden;
+}
+
+.pet-details-header {
+    height: 74px;
+    min-height: 74px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-bottom-width: 1px;
+    border-bottom-color: #c7d0c0;
+}
+
+.pet-details-title {
+    margin-left: 24px;
+    margin-right: 24px;
+    color: #244f2a;
+    font-size: 34px;
+    -unity-font-style: bold;
+    letter-spacing: 0;
+}
+
+.pet-details-ornament {
+    color: #8fb584;
+    font-size: 26px;
+}
+
+.pet-details-ornament.mirror {
+    rotate: 180deg;
+}
+
+.pet-details-close-button {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    width: 48px;
+    height: 48px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 3px;
+    background-color: #fffef9;
+    color: #294b2d;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: #91a88a;
+    border-right-color: #91a88a;
+    border-top-color: #91a88a;
+    border-bottom-color: #91a88a;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 36px;
+    -unity-text-align: middle-center;
+}
+
+.pet-details-close-button:hover {
+    background-color: #edf5e9;
+    border-left-color: #4f7f49;
+    border-right-color: #4f7f49;
+    border-top-color: #4f7f49;
+    border-bottom-color: #4f7f49;
+}
+
+.pet-details-scroll {
+    flex-grow: 1;
+    min-height: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-top: 16px;
+    padding-bottom: 10px;
+}
+
+.pet-details-scroll > .unity-scroll-view__content-viewport > .unity-scroll-view__content-container {
+    padding-right: 4px;
+}
+
+.detail-section-frame {
+    background-color: rgba(255, 255, 252, 0.86);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: #b8c6b2;
+    border-right-color: #b8c6b2;
+    border-top-color: #b8c6b2;
+    border-bottom-color: #b8c6b2;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.pet-details-top-section {
+    height: 224px;
+    min-height: 224px;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.pet-details-main-portrait {
+    width: 36%;
+    min-width: 310px;
+    padding: 10px;
+    background-color: #eef4e9;
+    border-right-width: 1px;
+    border-right-color: #c8d1c2;
+}
+
+.pet-details-portrait {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    -unity-background-scale-mode: scale-to-fit;
+    overflow: hidden;
+}
+
+.pet-details-portrait-fallback {
+    color: #6d9067;
+    font-size: 72px;
+    -unity-font-style: bold;
+}
+
+.pet-details-primary-grid {
+    flex-grow: 1;
+    min-width: 0;
+    flex-direction: row;
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.pet-details-primary-column {
+    width: 50%;
+    min-width: 0;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.pet-detail-info-row {
+    height: 43px;
+    flex-direction: row;
+    align-items: center;
+    border-bottom-width: 1px;
+    border-bottom-color: #d8ddd3;
+}
+
+.pet-detail-info-key {
+    width: 46%;
+    color: #465444;
+    font-size: 15px;
+}
+
+.pet-detail-info-value {
+    flex-grow: 1;
+    min-width: 0;
+    color: #1f3421;
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pet-detail-info-value.element,
+.pet-detail-info-value.rarity {
+    color: #3e8b35;
+}
+
+.pet-detail-status-row {
+    height: 43px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pet-detail-status-key {
+    width: 62px;
+    color: #465444;
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.pet-detail-status-track {
+    flex-grow: 1;
+    min-width: 80px;
+    height: 10px;
+    background-color: #dfe3da;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    overflow: hidden;
+}
+
+.pet-detail-status-fill {
+    height: 100%;
+    width: 0;
+}
+
+.pet-detail-status-fill.exp {
+    background-color: #4f9cce;
+}
+
+.pet-detail-status-fill.hp {
+    background-color: #62a842;
+}
+
+.pet-detail-status-value {
+    width: 94px;
+    margin-left: 10px;
+    color: #263525;
+    font-size: 13px;
+    -unity-text-align: middle-right;
+}
+
+.pet-details-middle-row {
+    height: 226px;
+    min-height: 226px;
+    margin-top: 14px;
+    flex-direction: row;
+}
+
+.pet-details-basic-panel,
+.pet-details-stats-panel {
+    width: 50%;
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-top: 8px;
+    padding-bottom: 10px;
+}
+
+.pet-details-basic-panel {
+    margin-right: 8px;
+}
+
+.pet-details-stats-panel {
+    margin-left: 8px;
+}
+
+.pet-detail-section-title {
+    height: 30px;
+    color: #315c32;
+    font-size: 17px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pet-detail-basic-row {
+    flex-grow: 1;
+    min-height: 27px;
+    flex-direction: row;
+    align-items: center;
+    border-bottom-width: 1px;
+    border-bottom-color: #d9ddd5;
+}
+
+.pet-detail-basic-key {
+    width: 47%;
+    color: #394738;
+    font-size: 13px;
+}
+
+.pet-detail-basic-value {
+    flex-grow: 1;
+    min-width: 0;
+    color: #263525;
+    font-size: 13px;
+    -unity-text-align: middle-right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pet-detail-basic-value.codex-state,
+.pet-details-codex-value {
+    color: #397d34;
+    -unity-font-style: bold;
+}
+
+.pet-detail-stat-row {
+    flex-grow: 1;
+    min-height: 27px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pet-detail-stat-key {
+    width: 92px;
+    color: #394738;
+    font-size: 13px;
+}
+
+.pet-detail-stat-track {
+    flex-grow: 1;
+    min-width: 80px;
+    height: 7px;
+    background-color: #dde1d8;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    overflow: hidden;
+}
+
+.pet-detail-stat-fill {
+    width: 0;
+    height: 100%;
+    background-color: #63a74d;
+}
+
+.pet-detail-stat-value {
+    width: 62px;
+    color: #263525;
+    font-size: 13px;
+    -unity-text-align: middle-right;
+}
+
+.pet-details-skills-panel {
+    height: 140px;
+    min-height: 140px;
+    margin-top: 14px;
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-top: 7px;
+    padding-bottom: 12px;
+}
+
+.pet-details-skills-row {
+    flex-grow: 1;
+    min-height: 0;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.pet-details-skill-card {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    max-width: 280px;
+    min-width: 0;
+    margin-left: 6px;
+    margin-right: 6px;
+    padding: 9px;
+    flex-direction: row;
+    align-items: center;
+    background-color: #fffef9;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: #bdcab8;
+    border-right-color: #bdcab8;
+    border-top-color: #bdcab8;
+    border-bottom-color: #bdcab8;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.pet-details-skill-icon {
+    width: 64px;
+    min-width: 64px;
+    height: 64px;
+    align-items: center;
+    justify-content: center;
+    background-color: #e6f1df;
+    -unity-background-scale-mode: scale-to-fit;
+    border-top-left-radius: 32px;
+    border-top-right-radius: 32px;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
+    overflow: hidden;
+}
+
+.pet-details-skill-fallback {
+    color: #3c7c36;
+    font-size: 22px;
+    -unity-font-style: bold;
+}
+
+.pet-details-skill-text {
+    flex-grow: 1;
+    min-width: 0;
+    margin-left: 12px;
+}
+
+.pet-details-skill-name {
+    color: #243623;
+    font-size: 15px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pet-details-skill-element {
+    margin-top: 4px;
+    color: #4e833f;
+    font-size: 11px;
+}
+
+.pet-details-skill-pp {
+    margin-top: 3px;
+    color: #465444;
+    font-size: 12px;
+}
+
+.pet-details-codex-panel {
+    height: 166px;
+    min-height: 166px;
+    margin-top: 14px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 7px;
+    padding-bottom: 10px;
+}
+
+.pet-details-codex-content {
+    flex-grow: 1;
+    min-height: 0;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.pet-details-codex-status {
+    width: 20%;
+    min-width: 180px;
+    padding-left: 12px;
+    padding-right: 16px;
+    justify-content: center;
+    border-right-width: 1px;
+    border-right-color: #d2d8ce;
+}
+
+.pet-details-codex-icon {
+    position: absolute;
+    left: 10px;
+    top: 21px;
+    color: #648e56;
+    font-size: 28px;
+}
+
+.pet-details-codex-label {
+    margin-left: 42px;
+    color: #52604f;
+    font-size: 11px;
+}
+
+.pet-details-codex-value {
+    margin-left: 42px;
+    margin-bottom: 5px;
+    font-size: 12px;
+}
+
+.pet-details-codex-description {
+    width: 27%;
+    min-width: 210px;
+    padding-left: 18px;
+    padding-right: 18px;
+    color: #344332;
+    font-size: 12px;
+    white-space: normal;
+    -unity-text-align: middle-left;
+    border-right-width: 1px;
+    border-right-color: #d2d8ce;
+}
+
+.pet-details-evolution-column {
+    width: 31%;
+    min-width: 250px;
+    padding-left: 12px;
+    padding-right: 12px;
+    align-items: center;
+}
+
+.pet-details-evolution-title {
+    height: 22px;
+    color: #3c6339;
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+.pet-details-evolution-flow {
+    flex-grow: 1;
+    min-height: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.pet-details-evolution-pet {
+    width: 86px;
+    align-items: center;
+}
+
+.pet-details-evolution-icon {
+    width: 62px;
+    height: 62px;
+    align-items: center;
+    justify-content: center;
+    background-color: #eef3e9;
+    -unity-background-scale-mode: scale-to-fit;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: #b7c5b1;
+    border-right-color: #b7c5b1;
+    border-top-color: #b7c5b1;
+    border-bottom-color: #b7c5b1;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    overflow: hidden;
+}
+
+.pet-details-evolution-icon.is-silhouette {
+    -unity-background-image-tint-color: #172119;
+    background-color: #e4e9e0;
+}
+
+.pet-details-evolution-fallback {
+    color: #688263;
+    font-size: 24px;
+    -unity-font-style: bold;
+}
+
+.pet-details-evolution-name {
+    margin-top: 3px;
+    color: #344332;
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pet-details-evolution-arrow {
+    width: 36px;
+    color: #6d875f;
+    font-size: 28px;
+    -unity-text-align: middle-center;
+}
+
+.pet-details-evolution-max {
+    display: none;
+    flex-grow: 1;
+    color: #50724b;
+    font-size: 18px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pet-details-evolution-requirements {
+    flex-grow: 1;
+    min-width: 205px;
+    padding-left: 16px;
+    justify-content: center;
+}
+
+.pet-details-evolution-button {
+    height: 32px;
+    margin-top: 8px;
+    color: white;
+    background-color: rgb(55, 130, 48);
+    border-color: rgb(43, 105, 38);
+    border-radius: 4px;
+    -unity-font-style: bold;
+}
+
+.pet-details-requirement-title {
+    color: #425a40;
+    font-size: 12px;
+    -unity-font-style: bold;
+    margin-bottom: 6px;
+}
+
+.pet-details-requirement {
+    min-height: 20px;
+    color: #4b5d48;
+    font-size: 11px;
+    white-space: normal;
+}
+
+.pet-details-footer {
+    height: 28px;
+    min-height: 28px;
+    color: #758071;
+    font-size: 11px;
+    -unity-text-align: middle-center;
+}

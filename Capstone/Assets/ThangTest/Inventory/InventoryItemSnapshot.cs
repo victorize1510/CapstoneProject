@@ -8,8 +8,12 @@ namespace Capstone.Game.Inventory {
         public string Name { get; }
         public string Description { get; }
         public string Effect { get; }
+        public string Source { get; }
+        public string FlavorText { get; }
+        public int HealAmount { get; }
         public string ItemId { get; }
         public GameItemCategory Category { get; }
+        public InventoryItemRarity Rarity { get; }
         public Sprite Icon { get; }
         public int Quantity { get; }
         public bool Stackable { get; }
@@ -33,7 +37,11 @@ namespace Capstone.Game.Inventory {
             ItemId = ResolveItemId(itemBase, representativeItem, Name);
             Description = gameItem != null ? gameItem.Description : string.Empty;
             Effect = gameItem != null ? gameItem.Effect : string.Empty;
+            Source = gameItem != null ? gameItem.Source : string.Empty;
+            FlavorText = gameItem != null ? gameItem.FlavorText : string.Empty;
+            HealAmount = gameItem != null ? gameItem.HealAmount : 0;
             Category = gameItem != null ? gameItem.Category : GameItemCategory.Material;
+            Rarity = gameItem != null ? gameItem.Rarity : InventoryItemRarity.Common;
             Icon = itemBase != null ? itemBase.Icon : null;
             Stackable = itemBase != null && itemBase.Stackable;
             MaxStackSize = itemBase != null ? itemBase.MaxStackSize : 1;
@@ -42,6 +50,7 @@ namespace Capstone.Game.Inventory {
         }
 
         static string ResolveItemId(ItemBase itemBase, Item representativeItem, string fallbackName) {
+            if (itemBase is MonsterItemDefinition definition) return definition.StableId;
             if (itemBase != null && !string.IsNullOrWhiteSpace(itemBase.name)) return itemBase.name;
             if (representativeItem != null && !string.IsNullOrWhiteSpace(representativeItem.Id)) return representativeItem.Id;
             return fallbackName ?? string.Empty;

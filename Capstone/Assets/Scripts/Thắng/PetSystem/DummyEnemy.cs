@@ -1,8 +1,13 @@
+using System;
+using System.Collections.Generic;
+using Capstone.Game.MapSystem;
 using UnityEngine;
 
 [DisallowMultipleComponent]
 public class DummyEnemy : MonoBehaviour
 {
+    private static readonly HashSet<DummyEnemy> activeEnemies = new HashSet<DummyEnemy>();
+
     [Header("Health")]
     public float maxHealth = 100f;
     public bool autoRevive = true;
@@ -22,6 +27,20 @@ public class DummyEnemy : MonoBehaviour
     private float reviveAt;
     private float flashUntil;
     private bool alive = true;
+    private MapMarker mapMarker;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetRuntimeRegistry()
+    {
+        activeEnemies.Clear();
+    }
+
+    public static IReadOnlyCollection<DummyEnemy> ActiveEnemies
+    {
+        get { return activeEnemies; }
+    }
+
+    public event Action<GameObject> Defeated;
 
     public bool IsAlive
     {
@@ -79,6 +98,22 @@ public class DummyEnemy : MonoBehaviour
         RefreshName();
     }
 
+    private void OnEnable()
+    {
+        activeEnemies.Add(this);
+        EnsureMapMarker();
+    }
+
+    private void OnDisable()
+    {
+        activeEnemies.Remove(this);
+    }
+
+    private void OnDestroy()
+    {
+        activeEnemies.Remove(this);
+    }
+
     private void Update()
     {
         if (!alive)
@@ -115,7 +150,7 @@ public class DummyEnemy : MonoBehaviour
 
         if (health <= 0f)
         {
-            Die();
+            Die(source);
             return;
         }
 
@@ -134,13 +169,14 @@ public class DummyEnemy : MonoBehaviour
         RefreshName();
     }
 
-    private void Die()
+    private void Die(GameObject source)
     {
         alive = false;
         reviveAt = Time.time + reviveDelay;
         SetCollidersEnabled(autoRevive);
         ApplyColor(deadColor);
         RefreshName();
+        Defeated?.Invoke(source);
     }
 
     private Bounds GetTargetBounds()
@@ -194,5 +230,21 @@ public class DummyEnemy : MonoBehaviour
         gameObject.name = alive
             ? baseName + " (" + Mathf.CeilToInt(health) + " HP)"
             : baseName + " (KO)";
+    }
+
+    private void EnsureMapMarker()
+    {
+        if (mapMarker == null)
+        {
+            mapMarker = GetComponent<MapMarker>();
+        }
+
+        if (mapMarker == null)
+        {
+            mapMarker = gameObject.AddComponent<MapIcon>();
+        }
+
+        string id = string.IsNullOrWhiteSpace(baseName) ? gameObject.name : baseName;
+        mapMarker.ConfigureRuntime(MapMarkerType.Enemy, id, id, null, default, true, true);
     }
 }

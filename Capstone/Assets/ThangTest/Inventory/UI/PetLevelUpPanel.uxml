@@ -1,0 +1,95 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="PetLevelUpPanel.uss" />
+    <ui:VisualElement name="level-up-modal-overlay" class="level-up-modal-overlay">
+        <ui:VisualElement class="level-up-modal-dim" />
+        <ui:VisualElement name="level-up-modal-dialog" class="level-up-modal-dialog">
+            <ui:VisualElement class="level-up-header">
+                <ui:Label text="❧" class="level-up-ornament" />
+                <ui:Label text="LEVEL UP" class="level-up-title" />
+                <ui:Label text="❧" class="level-up-ornament mirrored" />
+                <ui:Button name="level-up-close-button" text="×" tooltip="Đóng" class="level-up-close-button" />
+            </ui:VisualElement>
+
+            <ui:ScrollView class="level-up-scroll" mode="Vertical">
+                <ui:VisualElement class="level-up-summary-card">
+                    <ui:VisualElement name="level-up-pet-portrait" class="level-up-pet-portrait">
+                        <ui:Label name="level-up-pet-portrait-fallback" text="?" class="level-up-portrait-fallback" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="level-up-identity-column">
+                        <ui:Label name="level-up-pet-name" text="Chọn một pet" class="level-up-pet-name" />
+                        <ui:VisualElement class="level-up-info-row"><ui:Label text="Species" class="level-up-info-key" /><ui:Label name="level-up-species" text="-" class="level-up-info-value" /></ui:VisualElement>
+                        <ui:VisualElement class="level-up-info-row"><ui:Label text="Element" class="level-up-info-key" /><ui:Label name="level-up-element" text="-" class="level-up-info-value accent" /></ui:VisualElement>
+                        <ui:VisualElement class="level-up-info-row"><ui:Label text="Rarity" class="level-up-info-key" /><ui:Label name="level-up-rarity" text="-" class="level-up-info-value rarity" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="level-up-progress-column">
+                        <ui:VisualElement class="level-up-level-row">
+                            <ui:Label name="level-up-current-level" text="Lv. -" class="level-up-current-level" />
+                            <ui:Label text="»" class="level-up-level-arrow" />
+                            <ui:Label name="level-up-next-level" text="Lv. -" class="level-up-next-level" />
+                            <ui:Label name="level-up-max-label" text="MAX LEVEL" class="level-up-max-label" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="level-up-bar-row">
+                            <ui:Label text="EXP" class="level-up-bar-label" />
+                            <ui:VisualElement class="level-up-bar-track"><ui:VisualElement name="level-up-exp-fill" class="level-up-bar-fill exp" /></ui:VisualElement>
+                            <ui:Label name="level-up-exp-value" text="- / -" class="level-up-bar-value" />
+                        </ui:VisualElement>
+                        <ui:Label name="level-up-exp-needed" text="Cần thêm - EXP" class="level-up-exp-needed" />
+                        <ui:VisualElement class="level-up-bar-row health-row">
+                            <ui:Label text="HP" class="level-up-bar-label" />
+                            <ui:VisualElement class="level-up-bar-track"><ui:VisualElement name="level-up-health-fill" class="level-up-bar-fill health" /></ui:VisualElement>
+                            <ui:Label name="level-up-health-value" text="- / -" class="level-up-bar-value" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="level-up-stats-card">
+                    <ui:Label text="CHỈ SỐ TĂNG" class="level-up-section-title" />
+                    <ui:VisualElement class="level-up-stat-header">
+                        <ui:Label text="" class="level-up-stat-name" />
+                        <ui:Label text="Hiện tại" class="level-up-stat-number" />
+                        <ui:Label text="" class="level-up-stat-arrow" />
+                        <ui:Label text="Sau khi tăng" class="level-up-stat-number" />
+                        <ui:Label text="Tăng" class="level-up-stat-delta" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="level-up-stat-row alt"><ui:Label text="♥  HP" class="level-up-stat-name" /><ui:Label name="level-up-stat-hp-current" text="-" class="level-up-stat-number" /><ui:Label text="»" class="level-up-stat-arrow" /><ui:Label name="level-up-stat-hp-next" text="-" class="level-up-stat-number next" /><ui:Label name="level-up-stat-hp-delta" text="-" class="level-up-stat-delta" /></ui:VisualElement>
+                    <ui:VisualElement class="level-up-stat-row"><ui:Label text="⚔  ATK" class="level-up-stat-name" /><ui:Label name="level-up-stat-atk-current" text="-" class="level-up-stat-number" /><ui:Label text="»" class="level-up-stat-arrow" /><ui:Label name="level-up-stat-atk-next" text="-" class="level-up-stat-number next" /><ui:Label name="level-up-stat-atk-delta" text="-" class="level-up-stat-delta" /></ui:VisualElement>
+                    <ui:VisualElement class="level-up-stat-row alt"><ui:Label text="◆  DEF" class="level-up-stat-name" /><ui:Label name="level-up-stat-def-current" text="-" class="level-up-stat-number" /><ui:Label text="»" class="level-up-stat-arrow" /><ui:Label name="level-up-stat-def-next" text="-" class="level-up-stat-number next" /><ui:Label name="level-up-stat-def-delta" text="-" class="level-up-stat-delta" /></ui:VisualElement>
+                    <ui:VisualElement class="level-up-stat-row"><ui:Label text="➤  SPD" class="level-up-stat-name" /><ui:Label name="level-up-stat-spd-current" text="-" class="level-up-stat-number" /><ui:Label text="»" class="level-up-stat-arrow" /><ui:Label name="level-up-stat-spd-next" text="-" class="level-up-stat-number next" /><ui:Label name="level-up-stat-spd-delta" text="-" class="level-up-stat-delta" /></ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="level-up-secondary-row">
+                    <ui:VisualElement name="level-up-new-skill-section" class="level-up-secondary-card level-up-new-skill-section">
+                        <ui:Label text="KỸ NĂNG MỚI" class="level-up-section-title" />
+                        <ui:VisualElement class="level-up-skill-content">
+                            <ui:VisualElement name="level-up-skill-icon" class="level-up-skill-icon"><ui:Label name="level-up-skill-icon-fallback" text="S" class="level-up-icon-fallback" /></ui:VisualElement>
+                            <ui:VisualElement class="level-up-skill-copy"><ui:Label name="level-up-skill-name" text="-" class="level-up-skill-name" /><ui:Label name="level-up-skill-description" text="-" class="level-up-skill-description" /><ui:Label name="level-up-skill-unlock" text="-" class="level-up-skill-unlock" /></ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="level-up-evolution-section" class="level-up-secondary-card level-up-evolution-section">
+                        <ui:Label text="TIẾN HÓA" class="level-up-section-title" />
+                        <ui:VisualElement class="level-up-evolution-content">
+                            <ui:VisualElement name="level-up-evolution-current-icon" class="level-up-evolution-icon"><ui:Label name="level-up-evolution-current-fallback" text="?" class="level-up-icon-fallback" /></ui:VisualElement>
+                            <ui:Label text="→" class="level-up-evolution-arrow" />
+                            <ui:VisualElement name="level-up-evolution-next-icon" class="level-up-evolution-icon"><ui:Label name="level-up-evolution-next-fallback" text="?" class="level-up-icon-fallback" /></ui:VisualElement>
+                            <ui:VisualElement class="level-up-evolution-copy"><ui:Label name="level-up-evolution-state" text="Chưa có dữ liệu tiến hóa" class="level-up-evolution-state" /><ui:Label name="level-up-evolution-level" text="-" class="level-up-evolution-requirement" /><ui:Label name="level-up-evolution-friendship" text="-" class="level-up-evolution-requirement" /><ui:Button name="level-up-evolution-button" text="TIẾN HÓA" class="level-up-evolution-button" /></ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:ScrollView>
+
+            <ui:VisualElement class="level-up-footer">
+                <ui:VisualElement class="level-up-item-area">
+                    <ui:Label text="VẬT PHẨM SỬ DỤNG" class="level-up-footer-title" />
+                    <ui:VisualElement class="level-up-item-card">
+                        <ui:VisualElement name="level-up-item-icon" class="level-up-item-icon"><ui:Label name="level-up-item-icon-fallback" text="✦" class="level-up-icon-fallback" /></ui:VisualElement>
+                        <ui:VisualElement><ui:Label name="level-up-item-name" text="Leaf Berry" class="level-up-item-name" /><ui:Label name="level-up-item-count" text="0 / 0" class="level-up-item-count" /></ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="level-up-action-area">
+                    <ui:Label name="level-up-feedback" text="" class="level-up-feedback" />
+                    <ui:Button name="level-up-confirm-button" text="LEVEL UP" class="level-up-confirm-button" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

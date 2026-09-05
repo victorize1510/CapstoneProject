@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 using AaMapIcon = AAMAP.MapIcon;
 
 namespace Capstone.Game.MapSystem {
@@ -18,6 +21,9 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] Texture bossIcon = null;
         [SerializeField] Texture npcIcon = null;
         [SerializeField] Texture questIcon = null;
+        [SerializeField] Texture mainQuestIcon = null;
+        [SerializeField] Texture sideQuestIcon = null;
+        [SerializeField] Texture waypointIcon = null;
         [SerializeField] Texture itemIcon = null;
         [SerializeField] Texture shopIcon = null;
         [SerializeField] Texture fastTravelIcon = null;
@@ -40,13 +46,16 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] bool autoCreatePlayerMarker = true;
         [SerializeField] bool autoCreatePetMarkers = true;
         [SerializeField] bool autoCreateEnemyMarkers = true;
+        [SerializeField] bool scanPeriodically = false;
         [SerializeField, Min(0.1f)] float markerScanInterval = 0.75f;
 
         [Header("Icon Presentation")]
         [SerializeField] bool useMarkerTextureOverrides = false;
-        [SerializeField] Vector3 defaultIconScale = new Vector3(0.28f, 1f, 0.28f);
-        [SerializeField] Vector3 playerIconScale = new Vector3(0.32f, 1f, 0.32f);
-        [SerializeField] Vector3 bossIconScale = new Vector3(0.42f, 1f, 0.42f);
+        [SerializeField] Vector3 defaultIconScale = new Vector3(5f, 1f, 5f);
+        [SerializeField] Vector3 playerIconScale = new Vector3(5f, 1f, 5f);
+        [SerializeField] Vector3 bossIconScale = new Vector3(6f, 1f, 6f);
+        [SerializeField] bool rotatePlayerIconWithPlayer = true;
+        [SerializeField] float playerIconRotationOffset = 0f;
 
         [Header("Filters")]
         [SerializeField] List<MapMarkerType> hiddenMarkerTypes = new List<MapMarkerType>();
@@ -54,9 +63,48 @@ namespace Capstone.Game.MapSystem {
         readonly Dictionary<MapMarker, AaMapIcon> iconsByMarker = new Dictionary<MapMarker, AaMapIcon>();
         float nextScanTime;
 
+
+#if UNITY_EDITOR
+        void Reset() {
+            AssignEditorDefaultIcons();
+            EnsureMinimumIconScales();
+        }
+
+        void OnValidate() {
+            AssignEditorDefaultIcons();
+            EnsureMinimumIconScales();
+        }
+
+        void AssignEditorDefaultIcons() {
+            playerIcon = playerIcon != null ? playerIcon : FindEditorIconTexture("Thang_Icon_Player");
+            petIcon = petIcon != null ? petIcon : FindEditorIconTexture("Thang_Icon_Pet");
+            enemyIcon = enemyIcon != null ? enemyIcon : FindEditorIconTexture("Thang_Icon_Enemy");
+            bossIcon = bossIcon != null ? bossIcon : FindEditorIconTexture("Thang_Icon_Boss");
+            npcIcon = npcIcon != null ? npcIcon : FindEditorIconTexture("Thang_Icon_NPC");
+            questIcon = questIcon != null ? questIcon : FindEditorIconTexture("Thang_Icon_Quest");
+            mainQuestIcon = mainQuestIcon != null ? mainQuestIcon : FindEditorIconTexture("Thang_Icon_MainQuest");
+            sideQuestIcon = sideQuestIcon != null ? sideQuestIcon : FindEditorIconTexture("Thang_Icon_SideQuest");
+            waypointIcon = waypointIcon != null ? waypointIcon : FindEditorIconTexture("Thang_Icon_Waypoint");
+            itemIcon = itemIcon != null ? itemIcon : FindEditorIconTexture("Thang_Icon_Item");
+            shopIcon = shopIcon != null ? shopIcon : FindEditorIconTexture("Thang_Icon_Shop");
+            fastTravelIcon = fastTravelIcon != null ? fastTravelIcon : FindEditorIconTexture("Thang_Icon_FastTravel");
+            coopPlayerIcon = coopPlayerIcon != null ? coopPlayerIcon : FindEditorIconTexture("Thang_Icon_Coop");
+        }
+
+        static Texture FindEditorIconTexture(string iconName) {
+            string[] guids = AssetDatabase.FindAssets(iconName + " t:Texture2D", new[] { "Assets/Game/MapSystem/Sprites/MapMinimap" });
+            for (int i = 0; i < guids.Length; i++) {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                if (System.IO.Path.GetFileNameWithoutExtension(path) != iconName) continue;
+                return AssetDatabase.LoadAssetAtPath<Texture>(path);
+            }
+            return null;
+        }
+#endif
+
         void Awake() {
+            EnsureMinimumIconScales();
             ResolveReferences();
-            ScanMarkers();
         }
 
         void OnEnable() {
@@ -73,17 +121,33 @@ namespace Capstone.Game.MapSystem {
         }
 
         void Start() {
+            EnsureMinimumIconScales();
             ResolveReferences();
             ScanMarkers();
+            nextScanTime = Time.unscaledTime + markerScanInterval;
+        }
+
+        void EnsureMinimumIconScales() {
+            defaultIconScale = EnsureMinimumPlanarScale(defaultIconScale, 5f);
+            playerIconScale = EnsureMinimumPlanarScale(playerIconScale, 5f);
+            bossIconScale = EnsureMinimumPlanarScale(bossIconScale, 6f);
+        }
+
+        static Vector3 EnsureMinimumPlanarScale(Vector3 scale, float minimumXZ) {
+            scale.x = Mathf.Max(minimumXZ, scale.x);
+            scale.y = Mathf.Max(0.01f, scale.y);
+            scale.z = Mathf.Max(minimumXZ, scale.z);
+            return scale;
         }
 
         void LateUpdate() {
-            if (Time.unscaledTime >= nextScanTime) {
+            if (scanPeriodically && Time.unscaledTime >= nextScanTime) {
                 nextScanTime = Time.unscaledTime + markerScanInterval;
                 ScanMarkers();
             }
 
             RefreshVisibility();
+            RefreshDynamicIconRotations();
         }
 
         public void ScanMarkers() {
@@ -129,7 +193,8 @@ namespace Capstone.Game.MapSystem {
                 true,
                 true);
 
-            marker.ConfigureRotation(markerType != MapMarkerType.Player, true, 0f);
+            bool isPlayerMarker = IsPlayerMarkerType(markerType);
+            marker.ConfigureRotation(!isPlayerMarker, true, 0f);
             RegisterMarker(marker);
             RefreshMarkerIcon(marker);
             return marker;
@@ -178,6 +243,30 @@ namespace Capstone.Game.MapSystem {
             }
         }
 
+        void RefreshDynamicIconRotations() {
+            if (!rotatePlayerIconWithPlayer || iconsByMarker.Count == 0) return;
+
+            foreach (var pair in iconsByMarker) {
+                ApplyIconRotation(pair.Key, pair.Value);
+            }
+        }
+
+        void ApplyIconRotation(MapMarker marker, AaMapIcon icon) {
+            if (marker == null || icon == null || !IsPlayerMarkerType(marker.MarkerType)) return;
+
+            float worldYaw = marker.transform.eulerAngles.y + playerIconRotationOffset;
+            float mapYaw = icon.mapCamera != null ? icon.mapCamera.transform.eulerAngles.y : 0f;
+
+            icon.iconRotation = 0f;
+            icon.rotateWithCamera = false;
+            icon.haveCustomRotation = true;
+            icon.customRotation = Mathf.Repeat(worldYaw - mapYaw, 360f);
+            icon.transform.eulerAngles = new Vector3(0f, worldYaw, 0f);
+        }
+
+        static bool IsPlayerMarkerType(MapMarkerType markerType) {
+            return markerType == MapMarkerType.Player || markerType == MapMarkerType.CoopPlayer;
+        }
         void ResolveReferences() {
             if (mapBinder == null) mapBinder = FindFirst<AAMapRuntimeBinder>();
             if (mapBinder != null) {
@@ -225,13 +314,8 @@ namespace Capstone.Game.MapSystem {
         }
 
         AaMapIcon CreateIcon(MapMarker marker) {
-            GameObject iconObject = null;
-
-            if (mapIconPrefab != null) {
-                iconObject = Instantiate(mapIconPrefab, marker.transform);
-            } else {
-                iconObject = CreateFallbackIconObject(marker.transform);
-            }
+            int iconLayer = mapIconPrefab != null ? mapIconPrefab.layer : gameObject.layer;
+            GameObject iconObject = CreateFallbackIconObject(marker.transform, iconLayer);
 
             if (iconObject == null) return null;
 
@@ -243,17 +327,21 @@ namespace Capstone.Game.MapSystem {
             return icon;
         }
 
-        GameObject CreateFallbackIconObject(Transform parent) {
+        GameObject CreateFallbackIconObject(Transform parent, int iconLayer) {
             GameObject root = new GameObject("Map Icon");
             root.transform.SetParent(parent, false);
+            root.layer = iconLayer;
 
             GameObject visuals = GameObject.CreatePrimitive(PrimitiveType.Quad);
             visuals.name = "Visuals";
             visuals.transform.SetParent(root.transform, false);
-            visuals.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+            visuals.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            visuals.layer = iconLayer;
 
             Collider collider = visuals.GetComponent<Collider>();
             if (collider != null) Destroy(collider);
+
+            visuals.gameObject.SetActive(true);
 
             MeshRenderer renderer = visuals.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = CreateIconMaterial(null, Color.white);
@@ -285,6 +373,7 @@ namespace Capstone.Game.MapSystem {
                 icon.mapCamera = mapBinder.MapCamera;
             }
 
+            ApplyIconRotation(marker, icon);
             EnsureIconVisuals(icon, texture, color);
 
             icon.transform.localPosition = marker.IconOffset;
@@ -299,12 +388,21 @@ namespace Capstone.Game.MapSystem {
         Vector3 ResolveIconScale(MapMarker marker) {
             if (marker == null) return defaultIconScale;
 
+            Vector3 typeScale = GetTypeIconScale(marker.MarkerType);
             Vector3 markerScale = marker.IconScale;
             bool legacyLargeScale = markerScale.x >= 2.5f || markerScale.z >= 2.5f;
-            if (!legacyLargeScale) return markerScale;
+            if (legacyLargeScale) return typeScale;
 
-            switch (marker.MarkerType) {
+            return new Vector3(
+                Mathf.Max(markerScale.x, typeScale.x),
+                Mathf.Max(markerScale.y, typeScale.y),
+                Mathf.Max(markerScale.z, typeScale.z));
+        }
+
+        Vector3 GetTypeIconScale(MapMarkerType markerType) {
+            switch (markerType) {
                 case MapMarkerType.Player:
+                case MapMarkerType.CoopPlayer:
                     return playerIconScale;
                 case MapMarkerType.Boss:
                     return bossIconScale;
@@ -321,12 +419,14 @@ namespace Capstone.Game.MapSystem {
                 GameObject visualsObject = GameObject.CreatePrimitive(PrimitiveType.Quad);
                 visualsObject.name = "Visuals";
                 visualsObject.transform.SetParent(icon.transform, false);
-                visualsObject.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
+                visualsObject.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
 
                 Collider collider = visualsObject.GetComponent<Collider>();
                 if (collider != null) Destroy(collider);
                 visuals = visualsObject.transform;
             }
+
+            visuals.gameObject.SetActive(true);
 
             MeshRenderer renderer = visuals.GetComponent<MeshRenderer>();
             if (renderer == null) renderer = visuals.gameObject.AddComponent<MeshRenderer>();
@@ -335,7 +435,16 @@ namespace Capstone.Game.MapSystem {
             if (source == null && icon.iconMaterial != null) source = icon.iconMaterial;
 
             Material material = CreateIconMaterial(texture, color, source);
-            renderer.sharedMaterial = material;
+            if (material == null) return;
+
+            foreach (MeshRenderer childRenderer in icon.GetComponentsInChildren<MeshRenderer>(true)) {
+                if (childRenderer == null) continue;
+                childRenderer.sharedMaterial = material;
+                childRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                childRenderer.receiveShadows = false;
+                childRenderer.enabled = true;
+            }
+
             icon.iconMaterial = material;
         }
 
@@ -346,11 +455,15 @@ namespace Capstone.Game.MapSystem {
                 case MapMarkerType.Enemy: return enemyIcon;
                 case MapMarkerType.Boss: return bossIcon != null ? bossIcon : enemyIcon;
                 case MapMarkerType.NPC: return npcIcon;
-                case MapMarkerType.QuestAvailable:
-                case MapMarkerType.QuestTarget: return questIcon;
+                case MapMarkerType.MainQuest: return mainQuestIcon != null ? mainQuestIcon : questIcon;
+                case MapMarkerType.SideQuest: return sideQuestIcon != null ? sideQuestIcon : questIcon;
+                case MapMarkerType.QuestAvailable: return mainQuestIcon != null ? mainQuestIcon : questIcon;
+                case MapMarkerType.QuestTarget: return questIcon != null ? questIcon : waypointIcon;
                 case MapMarkerType.Item: return itemIcon;
                 case MapMarkerType.Shop: return shopIcon != null ? shopIcon : npcIcon;
+                case MapMarkerType.Travel:
                 case MapMarkerType.FastTravel: return fastTravelIcon != null ? fastTravelIcon : questIcon;
+                case MapMarkerType.Waypoint: return waypointIcon != null ? waypointIcon : questIcon;
                 case MapMarkerType.CoopPlayer: return coopPlayerIcon != null ? coopPlayerIcon : playerIcon;
                 default: return null;
             }
@@ -363,18 +476,26 @@ namespace Capstone.Game.MapSystem {
                 case MapMarkerType.Enemy: return enemyColor;
                 case MapMarkerType.Boss: return bossColor;
                 case MapMarkerType.NPC: return npcColor;
+                case MapMarkerType.MainQuest:
+                case MapMarkerType.SideQuest:
                 case MapMarkerType.QuestAvailable:
                 case MapMarkerType.QuestTarget: return questColor;
                 case MapMarkerType.Item: return itemColor;
                 case MapMarkerType.Shop: return shopColor;
+                case MapMarkerType.Travel:
                 case MapMarkerType.FastTravel: return fastTravelColor;
+                case MapMarkerType.Waypoint: return questColor;
                 case MapMarkerType.CoopPlayer: return coopPlayerColor;
                 default: return Color.white;
             }
         }
 
         static Material CreateIconMaterial(Texture texture, Color color, Material source = null) {
-            Material material = source != null ? new Material(source) : new Material(FindIconShader());
+            Shader shader = FindIconShader();
+            if (shader == null && source != null) shader = source.shader;
+            if (shader == null) return null;
+
+            Material material = new Material(shader) { name = "Thang_MapIcon_Transparent_Runtime" };
             ConfigureTransparentIconMaterial(material);
             SetMaterialTexture(material, texture);
             SetMaterialColor(material, color);
@@ -382,7 +503,10 @@ namespace Capstone.Game.MapSystem {
         }
 
         static Shader FindIconShader() {
-            Shader shader = Shader.Find("Universal Render Pipeline/Unlit");
+            Shader shader = Shader.Find("Capstone/Map/Icon Transparent");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
             if (shader == null) shader = Shader.Find("Unlit/Transparent");
             if (shader == null) shader = Shader.Find("Unlit/Texture");
             return shader != null ? shader : Shader.Find("Standard");
@@ -400,13 +524,21 @@ namespace Capstone.Game.MapSystem {
             if (material.HasProperty("_DstBlend")) material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
             if (material.HasProperty("_ZWrite")) material.SetFloat("_ZWrite", 0f);
             if (material.HasProperty("_AlphaClip")) material.SetFloat("_AlphaClip", 0f);
+            if (material.HasProperty("_Mode")) material.SetFloat("_Mode", 3f);
+            if (material.HasProperty("_ZWriteControl")) material.SetFloat("_ZWriteControl", 0f);
+            if (material.HasProperty("_Cull")) material.SetFloat("_Cull", (float)CullMode.Off);
+            if (material.HasProperty("_AlphaToMask")) material.SetFloat("_AlphaToMask", 0f);
 
+            material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
             material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.EnableKeyword("_ALPHABLEND_ON");
             material.DisableKeyword("_ALPHATEST_ON");
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
         }
 
         static void SetMaterialTexture(Material material, Texture texture) {
             if (material == null || texture == null) return;
+            material.mainTexture = texture;
             if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", texture);
             if (material.HasProperty("_MainTex")) material.SetTexture("_MainTex", texture);
             if (material.HasProperty("_BaseColorMap")) material.SetTexture("_BaseColorMap", texture);
@@ -425,5 +557,12 @@ namespace Capstone.Game.MapSystem {
         }
     }
 }
+
+
+
+
+
+
+
 
 

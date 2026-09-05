@@ -1,0 +1,81 @@
+<ui:UXML editor-extension-mode="False" xmlns:ui="UnityEngine.UIElements">
+    <ui:Style src="MonsterInventory.uss" />
+    <ui:Style src="InventoryPanel.uss" />
+    <ui:VisualElement name="inventory-panel" class="inventory-panel menu-panel">
+        <ui:VisualElement name="inventory-shell" class="inventory-shell">
+            <ui:VisualElement class="inventory-header">
+                <ui:VisualElement class="inventory-heading">
+                    <ui:Label text="◆" class="inventory-heading-mark" />
+                    <ui:Label text="INVENTORY" class="inventory-heading-title" />
+                </ui:VisualElement>
+                <ui:Button name="cancel-button" text="←  QUAY LẠI" class="inventory-back-button" />
+            </ui:VisualElement>
+            <ui:VisualElement class="inventory-toolbar-row">
+                <ui:VisualElement class="inventory-sidebar-spacer" />
+                <ui:VisualElement class="inventory-tools">
+                    <ui:TextField name="inventory-search-field" class="inventory-search" tooltip="Tìm theo tên hoặc mã item" />
+                    <ui:DropdownField name="inventory-sort-field" class="inventory-sort" />
+                    <ui:Button name="inventory-filter-button" text="F" class="inventory-filter-button" tooltip="Ẩn hoặc hiện danh mục" />
+                </ui:VisualElement>
+                <ui:VisualElement class="inventory-currency">
+                    <ui:Label text="G" class="inventory-currency-icon" />
+                    <ui:Label name="inventory-gold-label" text="0" class="inventory-gold-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="inventory-body" class="inventory-body">
+                <ui:VisualElement name="category-panel" class="category-panel">
+                    <ui:Button name="category-all" class="category-button is-selected"><ui:Label text="ALL" class="category-icon" picking-mode="Ignore" /><ui:Label text="All" class="category-label" picking-mode="Ignore" /></ui:Button>
+                    <ui:Button name="category-capture-ball" class="category-button"><ui:Label text="CAP" class="category-icon" picking-mode="Ignore" /><ui:Label text="Capture Tools" class="category-label" picking-mode="Ignore" /></ui:Button>
+                    <ui:Button name="category-medicine" class="category-button"><ui:Label text="HP" class="category-icon" picking-mode="Ignore" /><ui:Label text="Recovery" class="category-label" picking-mode="Ignore" /></ui:Button>
+                    <ui:Button name="category-food" class="category-button"><ui:Label text="FD" class="category-icon" picking-mode="Ignore" /><ui:Label text="Food" class="category-label" picking-mode="Ignore" /></ui:Button>
+                    <ui:Button name="category-material" class="category-button"><ui:Label text="MAT" class="category-icon" picking-mode="Ignore" /><ui:Label text="Materials" class="category-label" picking-mode="Ignore" /></ui:Button>
+                    <ui:Button name="category-key-item" class="category-button"><ui:Label text="KEY" class="category-icon" picking-mode="Ignore" /><ui:Label text="Key Items" class="category-label" picking-mode="Ignore" /></ui:Button>
+                    <ui:Button name="category-quest-item" class="category-button"><ui:Label text="Q" class="category-icon" picking-mode="Ignore" /><ui:Label text="Quest Items" class="category-label" picking-mode="Ignore" /></ui:Button>
+                    <ui:Button name="category-equipment" class="category-button"><ui:Label text="EQ" class="category-icon" picking-mode="Ignore" /><ui:Label text="Gear" class="category-label" picking-mode="Ignore" /></ui:Button>
+                </ui:VisualElement>
+                <ui:VisualElement class="inventory-grid-column">
+                    <ui:VisualElement class="inventory-grid-frame">
+                        <ui:ScrollView name="item-scroll" class="inventory-grid-scroll">
+                            <ui:VisualElement name="item-grid" class="item-grid" />
+                        </ui:ScrollView>
+                        <ui:Label name="no-items-label" text="Không có item" class="no-items-label" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="inventory-capacity-row">
+                        <ui:Label text="BAG" class="inventory-capacity-icon" />
+                        <ui:Label text="Inventory Capacity" class="inventory-capacity-caption" />
+                        <ui:Label name="capacity-label" text="0 / 0" class="inventory-capacity-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="inventory-detail-column">
+                    <ui:VisualElement name="detail-panel" class="detail-panel">
+                        <ui:VisualElement class="detail-copy">
+                            <ui:Label name="detail-name" text="Chọn một item" class="detail-name" />
+                            <ui:Label name="detail-rarity" text="COMMON" class="detail-rarity" />
+                            <ui:Label name="detail-category" text="Category: -" class="detail-category" />
+                            <ui:VisualElement class="detail-divider" />
+                            <ui:Label name="detail-quantity" text="Owned: - / -" class="detail-owned" />
+                            <ui:Label name="detail-description" text="Chọn một item để xem thông tin." class="detail-description" />
+                            <ui:Label name="detail-effect" text="" class="detail-effect" />
+                            <ui:VisualElement class="detail-source-block">
+                                <ui:Label text="SOURCE" class="detail-section-title" />
+                                <ui:Label name="detail-source" text="-" class="detail-source" />
+                            </ui:VisualElement>
+                            <ui:Label name="detail-flavor" text="" class="detail-flavor" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="detail-art-column">
+                            <ui:VisualElement name="detail-icon" class="detail-icon">
+                                <ui:Label name="detail-icon-placeholder" text="ITEM" class="detail-icon-placeholder" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="inventory-actions">
+                        <ui:Button name="use-button" text="USE" class="inventory-action-button" />
+                        <ui:Button name="give-button" text="GIVE" class="inventory-action-button" />
+                        <ui:Button name="drop-button" text="DROP" class="inventory-action-button inventory-drop-action" />
+                        <ui:Button name="equip-button" text="ASSIGN" class="inventory-action-button" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

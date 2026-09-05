@@ -265,6 +265,9 @@ public class BasicPlayerMovement : MonoBehaviour
     private bool standingControllerShapeCaptured;
     private bool controllerSizedForRoll;
     private bool controllerSizedForJump;
+    private Animator configuredAnimator;
+    private bool configuredRootMotion;
+    private bool animatorConfigurationInitialized;
 
     private bool EnemyThreatActive
     {
@@ -2114,7 +2117,25 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         if (animator == null)
         {
+            configuredAnimator = null;
+            animatorConfigurationInitialized = false;
             return;
+        }
+
+        if (animatorConfigurationInitialized
+            && configuredAnimator == animator
+            && configuredRootMotion == useRootMotion)
+        {
+            return;
+        }
+
+        if (configuredAnimator != null && configuredAnimator != animator)
+        {
+            AnimatorRootMotionRelay previousRelay = configuredAnimator.GetComponent<AnimatorRootMotionRelay>();
+            if (previousRelay != null && previousRelay.movement == this)
+            {
+                previousRelay.movement = null;
+            }
         }
 
         animator.applyRootMotion = useRootMotion;
@@ -2127,6 +2148,9 @@ public class BasicPlayerMovement : MonoBehaviour
                 relay.movement = null;
             }
 
+            configuredAnimator = animator;
+            configuredRootMotion = false;
+            animatorConfigurationInitialized = true;
             return;
         }
 
@@ -2136,6 +2160,9 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         relay.movement = this;
+        configuredAnimator = animator;
+        configuredRootMotion = true;
+        animatorConfigurationInitialized = true;
     }
 
     private void SanitizeRigidbody()

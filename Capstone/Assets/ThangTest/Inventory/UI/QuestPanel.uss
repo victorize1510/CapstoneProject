@@ -1,0 +1,14 @@
+/* Panel-specific overrides for QuestPanel.
+   Keep shared legacy rules in MonsterInventory.uss until they are migrated safely. */
+
+/* Quest used to share one horizontal shell with Bag at 31% width. The standalone
+   document and its runtime template now own the complete screen. */
+.quest-panel {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: auto;
+    min-width: 0;
+    margin-right: 0;
+}

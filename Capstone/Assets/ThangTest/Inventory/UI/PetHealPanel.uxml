@@ -1,0 +1,62 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="PetHealPanel.uss" />
+    <ui:VisualElement name="heal-modal-overlay" class="heal-modal-overlay">
+        <ui:VisualElement class="heal-modal-dim" />
+        <ui:VisualElement name="heal-modal-dialog" class="heal-modal-dialog" focusable="true">
+            <ui:VisualElement class="heal-header">
+                <ui:Label text="❧" class="heal-ornament" />
+                <ui:Label text="HEAL" class="heal-title" />
+                <ui:Label text="❧" class="heal-ornament mirrored" />
+                <ui:Button name="heal-close-button" text="×" tooltip="Đóng" class="heal-close-button" />
+            </ui:VisualElement>
+
+            <ui:ScrollView class="heal-scroll" mode="Vertical">
+                <ui:VisualElement class="heal-pet-card">
+                    <ui:VisualElement name="heal-pet-portrait" class="heal-pet-portrait">
+                        <ui:Label name="heal-pet-portrait-fallback" text="?" class="heal-portrait-fallback" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="heal-pet-copy">
+                        <ui:Label name="heal-pet-name" text="Chọn một pet" class="heal-pet-name" />
+                        <ui:VisualElement class="heal-info-row"><ui:Label text="Loài" class="heal-info-key" /><ui:Label name="heal-pet-species" text="-" class="heal-info-value" /></ui:VisualElement>
+                        <ui:VisualElement class="heal-info-row"><ui:Label text="Hệ" class="heal-info-key" /><ui:Label name="heal-pet-element" text="-" class="heal-info-value accent" /></ui:VisualElement>
+                        <ui:VisualElement class="heal-info-row"><ui:Label text="Độ hiếm" class="heal-info-key" /><ui:Label name="heal-pet-rarity" text="-" class="heal-info-value rarity" /></ui:VisualElement>
+                        <ui:VisualElement class="heal-info-row"><ui:Label text="Trạng thái" class="heal-info-key" /><ui:Label name="heal-pet-status" text="-" class="heal-info-value status" /></ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:VisualElement class="heal-preview-section">
+                    <ui:Label text="HP (PREVIEW)" class="heal-section-title" />
+                    <ui:VisualElement class="heal-health-values">
+                        <ui:Label name="heal-current-health" text="- / -" class="heal-health-value" />
+                        <ui:Label name="heal-health-arrow" text="→" class="heal-health-arrow" />
+                        <ui:Label name="heal-result-health" text="- / -" class="heal-health-value result" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="heal-health-track">
+                        <ui:VisualElement name="heal-current-fill" class="heal-health-fill current" />
+                        <ui:VisualElement name="heal-recovery-fill" class="heal-health-fill recovery" />
+                    </ui:VisualElement>
+                    <ui:Label name="heal-restored-amount" text="+0 HP" class="heal-restored-amount" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="heal-item-section">
+                    <ui:Label text="VẬT PHẨM HỒI PHỤC" class="heal-section-title" />
+                    <ui:VisualElement class="heal-item-card">
+                        <ui:VisualElement name="heal-item-icon" class="heal-item-icon">
+                            <ui:Label name="heal-item-icon-fallback" text="+" class="heal-item-icon-fallback" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="heal-item-copy">
+                            <ui:Label name="heal-item-name" text="Potion" class="heal-item-name" />
+                            <ui:Label name="heal-item-effect" text="Hồi 400 HP" class="heal-item-effect" />
+                        </ui:VisualElement>
+                        <ui:Label name="heal-item-count" text="0 / 1" class="heal-item-count" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:ScrollView>
+
+            <ui:VisualElement class="heal-footer">
+                <ui:Label name="heal-feedback" text="" class="heal-feedback" />
+                <ui:Button name="heal-confirm-button" text="HEAL" class="heal-confirm-button" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

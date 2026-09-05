@@ -1,0 +1,559 @@
+.skills-modal-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.skills-modal-dim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(10, 28, 24, 0.58);
+}
+
+.skills-modal-dialog {
+    width: 72%;
+    height: 82%;
+    min-width: 920px;
+    min-height: 680px;
+    max-width: 1380px;
+    max-height: 920px;
+    padding-left: 24px;
+    padding-right: 24px;
+    padding-bottom: 18px;
+    background-color: rgb(252, 251, 246);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(118, 153, 111);
+    border-right-color: rgb(118, 153, 111);
+    border-top-color: rgb(118, 153, 111);
+    border-bottom-color: rgb(118, 153, 111);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.skills-modal-header {
+    height: 78px;
+    min-height: 78px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(205, 215, 199);
+}
+
+.skills-modal-title {
+    margin-left: 18px;
+    margin-right: 18px;
+    color: rgb(42, 92, 48);
+    font-size: 34px;
+    -unity-font-style: bold;
+}
+
+.skills-header-ornament {
+    color: rgb(111, 165, 93);
+    font-size: 28px;
+}
+
+.skills-header-ornament.mirrored {
+    rotate: 180deg;
+}
+
+.skills-close-button {
+    position: absolute;
+    right: 8px;
+    top: 10px;
+    width: 50px;
+    height: 50px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 4px;
+    color: rgb(36, 76, 50);
+    background-color: rgb(252, 251, 246);
+    border-left-color: rgb(165, 181, 157);
+    border-right-color: rgb(165, 181, 157);
+    border-top-color: rgb(165, 181, 157);
+    border-bottom-color: rgb(165, 181, 157);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    font-size: 38px;
+}
+
+.skills-close-button:hover {
+    background-color: rgb(235, 244, 230);
+    border-left-color: rgb(73, 135, 67);
+    border-right-color: rgb(73, 135, 67);
+    border-top-color: rgb(73, 135, 67);
+    border-bottom-color: rgb(73, 135, 67);
+}
+
+.skills-pet-summary {
+    height: 98px;
+    min-height: 98px;
+    flex-direction: row;
+    align-items: center;
+    padding-left: 18px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(205, 215, 199);
+}
+
+.skills-pet-portrait {
+    width: 76px;
+    height: 76px;
+    min-width: 76px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(226, 239, 221);
+    -unity-background-scale-mode: scale-to-fit;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(141, 171, 131);
+    border-right-color: rgb(141, 171, 131);
+    border-top-color: rgb(141, 171, 131);
+    border-bottom-color: rgb(141, 171, 131);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.skills-pet-portrait-fallback {
+    color: rgb(74, 127, 69);
+    font-size: 28px;
+    -unity-font-style: bold;
+}
+
+.skills-pet-summary-text {
+    margin-left: 18px;
+}
+
+.skills-pet-name {
+    color: rgb(28, 48, 39);
+    font-size: 25px;
+    -unity-font-style: bold;
+}
+
+.skills-pet-meta-row {
+    margin-top: 8px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.skills-pet-level,
+.skills-pet-element {
+    color: rgb(62, 115, 58);
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.skills-pet-meta-divider {
+    width: 1px;
+    height: 18px;
+    margin-left: 16px;
+    margin-right: 16px;
+    background-color: rgb(175, 193, 167);
+}
+
+.skills-section-header {
+    height: 44px;
+    min-height: 44px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.skills-section-title,
+.skills-learned-title {
+    color: rgb(48, 100, 51);
+    font-size: 17px;
+    -unity-font-style: bold;
+}
+
+.skills-section-line {
+    width: 160px;
+    height: 1px;
+    margin-left: 16px;
+    margin-right: 16px;
+    background-color: rgb(169, 193, 159);
+}
+
+.skills-equipped-row {
+    height: 172px;
+    min-height: 172px;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.skills-equipped-slot {
+    position: relative;
+    width: 202px;
+    height: 160px;
+    margin-left: 8px;
+    margin-right: 8px;
+    padding-top: 12px;
+    align-items: center;
+    background-color: rgb(250, 250, 246);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(164, 185, 155);
+    border-right-color: rgb(164, 185, 155);
+    border-top-color: rgb(164, 185, 155);
+    border-bottom-color: rgb(164, 185, 155);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.skills-equipped-slot:hover {
+    background-color: rgb(232, 245, 225);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(68, 142, 58);
+    border-right-color: rgb(68, 142, 58);
+    border-top-color: rgb(68, 142, 58);
+    border-bottom-color: rgb(68, 142, 58);
+}
+
+.skills-equipped-slot.is-empty {
+    border-left-color: rgb(178, 194, 170);
+    border-right-color: rgb(178, 194, 170);
+    border-top-color: rgb(178, 194, 170);
+    border-bottom-color: rgb(178, 194, 170);
+}
+
+.skills-slot-number {
+    position: absolute;
+    left: -9px;
+    top: -9px;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background-color: rgb(62, 126, 55);
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    border-bottom-left-radius: 14px;
+    border-bottom-right-radius: 14px;
+    font-size: 15px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+}
+
+.skills-equipped-icon {
+    width: 78px;
+    height: 78px;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(218, 237, 211);
+    -unity-background-scale-mode: scale-to-fit;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.skills-icon-fallback {
+    color: rgb(80, 136, 72);
+    font-size: 25px;
+    -unity-font-style: bold;
+}
+
+.skills-equipped-name {
+    width: 100%;
+    margin-top: 7px;
+    color: rgb(32, 48, 39);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.skills-equipped-meta {
+    width: 100%;
+    margin-top: 3px;
+    color: rgb(64, 116, 60);
+    font-size: 11px;
+    -unity-text-align: middle-center;
+}
+
+.skills-helper-label {
+    height: 34px;
+    min-height: 34px;
+    margin-left: 70px;
+    margin-right: 70px;
+    align-items: center;
+    justify-content: center;
+    color: rgb(76, 108, 71);
+    background-color: rgb(247, 249, 241);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(184, 202, 176);
+    border-right-color: rgb(184, 202, 176);
+    border-top-color: rgb(184, 202, 176);
+    border-bottom-color: rgb(184, 202, 176);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    font-size: 12px;
+    -unity-text-align: middle-center;
+}
+
+.skills-learned-header-row {
+    height: 45px;
+    min-height: 45px;
+    margin-top: 8px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-top-width: 1px;
+    border-top-color: rgb(205, 215, 199);
+}
+
+.skills-hover-hint {
+    color: rgb(112, 128, 105);
+    font-size: 11px;
+}
+
+.skills-filter-row {
+    min-height: 36px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.skills-filter-button {
+    height: 30px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: rgb(56, 78, 61);
+    background-color: rgb(251, 250, 245);
+    border-left-color: rgb(185, 198, 178);
+    border-right-color: rgb(185, 198, 178);
+    border-top-color: rgb(185, 198, 178);
+    border-bottom-color: rgb(185, 198, 178);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    font-size: 10px;
+}
+
+.skills-filter-button:hover,
+.skills-filter-button.is-selected {
+    color: white;
+    background-color: rgb(60, 126, 58);
+    border-left-color: rgb(60, 126, 58);
+    border-right-color: rgb(60, 126, 58);
+    border-top-color: rgb(60, 126, 58);
+    border-bottom-color: rgb(60, 126, 58);
+}
+
+.skills-learned-scroll {
+    flex-grow: 1;
+    min-height: 130px;
+    margin-top: 4px;
+    background-color: rgb(248, 248, 243);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(203, 214, 197);
+    border-right-color: rgb(203, 214, 197);
+    border-top-color: rgb(203, 214, 197);
+    border-bottom-color: rgb(203, 214, 197);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.skills-learned-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.skills-learned-card,
+.skills-builder-card {
+    width: 24%;
+    min-width: 190px;
+    height: 92px;
+    margin-right: 1%;
+    margin-bottom: 8px;
+    padding-left: 10px;
+    padding-right: 8px;
+    flex-direction: row;
+    align-items: center;
+    background-color: rgb(253, 252, 248);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(196, 207, 190);
+    border-right-color: rgb(196, 207, 190);
+    border-top-color: rgb(196, 207, 190);
+    border-bottom-color: rgb(196, 207, 190);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.skills-learned-card:hover,
+.skills-learned-card.is-selected {
+    background-color: rgb(232, 245, 225);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(64, 139, 57);
+    border-right-color: rgb(64, 139, 57);
+    border-top-color: rgb(64, 139, 57);
+    border-bottom-color: rgb(64, 139, 57);
+}
+
+.skills-learned-icon,
+.skills-builder-icon {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+    align-items: center;
+    justify-content: center;
+    color: rgb(62, 113, 60);
+    background-color: rgb(218, 237, 211);
+    -unity-background-scale-mode: scale-to-fit;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    font-size: 9px;
+    -unity-text-align: middle-center;
+}
+
+.skills-learned-copy {
+    flex-grow: 1;
+    margin-left: 10px;
+}
+
+.skills-learned-name,
+.skills-builder-name {
+    color: rgb(36, 52, 42);
+    font-size: 13px;
+    -unity-font-style: bold;
+}
+
+.skills-learned-element {
+    margin-top: 4px;
+    color: rgb(67, 123, 62);
+    font-size: 10px;
+}
+
+.skills-learned-meta,
+.skills-builder-meta {
+    margin-top: 4px;
+    color: rgb(86, 105, 81);
+    font-size: 10px;
+}
+
+.skills-empty-label {
+    display: none;
+    height: 100px;
+    align-items: center;
+    justify-content: center;
+    color: rgb(110, 123, 106);
+    -unity-text-align: middle-center;
+}
+
+.skills-hover-tooltip {
+    position: absolute;
+    display: none;
+    width: 310px;
+    min-height: 220px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    background-color: rgb(255, 254, 249);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgb(118, 153, 111);
+    border-right-color: rgb(118, 153, 111);
+    border-top-color: rgb(118, 153, 111);
+    border-bottom-color: rgb(118, 153, 111);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.skills-tooltip-name {
+    color: rgb(32, 70, 40);
+    font-size: 20px;
+    -unity-font-style: bold;
+}
+
+.skills-tooltip-divider {
+    height: 1px;
+    margin-top: 9px;
+    margin-bottom: 8px;
+    background-color: rgb(207, 216, 200);
+}
+
+.skills-tooltip-row {
+    min-height: 26px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.skills-tooltip-key {
+    color: rgb(85, 102, 81);
+    font-size: 12px;
+}
+
+.skills-tooltip-value {
+    color: rgb(49, 99, 48);
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+.skills-tooltip-description {
+    margin-top: 9px;
+    padding-top: 9px;
+    color: rgb(48, 58, 50);
+    border-top-width: 1px;
+    border-top-color: rgb(221, 226, 216);
+    font-size: 12px;
+    white-space: normal;
+}

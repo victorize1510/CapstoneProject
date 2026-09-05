@@ -33,13 +33,15 @@ namespace Capstone.Game.HudSystem.Editor {
 
             SerializedObject serialized = new SerializedObject(controller);
             SetObject(serialized, "targetCanvas", canvas);
-            SetObject(serialized, "minimapPanel", FindMinimapPanel());
+            SetObject(serialized, "minimapPanel", null);
             SetObject(serialized, "petHudProvider", provider);
             SetObject(serialized, "questManager", Object.FindFirstObjectByType<QuestManager>());
             SetObject(serialized, "localPlayer", FindPlayer());
             SetBool(serialized, "buildOnAwake", true);
             SetBool(serialized, "autoFindReferences", true);
-            SetBool(serialized, "positionExistingMinimap", true);
+            SetBool(serialized, "positionExistingMinimap", false);
+            SetBool(serialized, "disableMinimapHud", false);
+            SetBool(serialized, "hideWhileUiOpen", true);
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             controller.RebuildHud();
@@ -50,7 +52,7 @@ namespace Capstone.Game.HudSystem.Editor {
             EditorSceneManager.MarkSceneDirty(hudObject.scene);
             Undo.CollapseUndoOperations(group);
 
-            Debug.Log("Gameplay HUD setup: created/updated GameplayHUD. Press Play to test minimap, quest tracker, pet status, pet slots and Z/X/C/V skill bar.");
+            Debug.Log("Gameplay HUD setup: created/updated GameplayHUD. Press Play to test quest tracker, pet status, pet slots and Z/X/C/V skill bar.");
         }
 
         static GameObject EnsureHudObject() {
@@ -110,11 +112,6 @@ namespace Capstone.Game.HudSystem.Editor {
 #else
             if (eventSystem.GetComponent<StandaloneInputModule>() == null) Undo.AddComponent<StandaloneInputModule>(eventSystem.gameObject);
 #endif
-        }
-
-        static RectTransform FindMinimapPanel() {
-            GameObject minimap = GameObject.Find("MinimapPanel");
-            return minimap != null ? minimap.GetComponent<RectTransform>() : null;
         }
 
         static Transform FindPlayer() {

@@ -72,9 +72,9 @@ namespace Capstone.Game.MapSystem {
 
         [Header("Viewport")]
         [SerializeField] bool enforceRuntimeViewport = true;
-        [SerializeField] Vector2 viewportSize = new Vector2(1280f, 720f);
+        [SerializeField] Vector2 viewportSize = new Vector2(1920f, 1080f);
         [SerializeField] Vector2 viewportOffset = Vector2.zero;
-        [SerializeField, Min(0f)] float frameOverscan = 128f;
+        [SerializeField, Min(0f)] float frameOverscan = 0f;
 
         [Header("HUD Layering")]
         [SerializeField] bool hideGameplayHudWhileOpen = true;
@@ -85,7 +85,9 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] string mapSetObjectName = "MapSet";
 
         [Header("Map Camera Cleanup")]
-        [SerializeField] bool hideTreesWaterAndEffectsOnMap = true;
+        [SerializeField, HideInInspector] bool hideTreesWaterAndEffectsOnMap = false;
+        [SerializeField] bool hideTerrainTreesOnMap = false;
+        [SerializeField] bool hideWaterAndEffectsOnMap = false;
         [SerializeField] string[] mapExcludedLayerNames = { "Water", "Suimono_Water", "Suimono_Depth", "Suimono_Screen", "TransparentFX", "SmallVFX", "MedVFX", "LargeVFX" };
         [SerializeField] string[] mapHiddenNameKeywords = { "Water", "Lake", "Tree", "Trees", "Foliage", "Grass", "VFX", "FX", "Effect", "Particle", "Splash", "Foam", "Mist", "Fog" };
 
@@ -93,7 +95,8 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] bool clampToWorldBounds = true;
         [SerializeField] Vector2 worldCenter = Vector2.zero;
         [SerializeField] Vector2 worldSize = new Vector2(120f, 120f);
-        [SerializeField] Vector4 worldBoundsInsetPercent = new Vector4(0.07f, 0f, 0.03f, 0.16f);
+        [SerializeField] Vector4 worldBoundsInsetPercent = new Vector4(0.24f, 0.04f, 0.10f, 0.32f);
+        [SerializeField] Vector4 minimumWorldBoundsInsetPercent = new Vector4(0.24f, 0.04f, 0.10f, 0.32f);
 
         [Header("Waypoint")]
         [SerializeField] string waypointMarkerId = "custom-waypoint";
@@ -131,7 +134,9 @@ namespace Capstone.Game.MapSystem {
             ResolveReferences();
             WireButtons();
             NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
             EnsureOpaqueMapVisuals();
+            SetMinimapVisible(false);
             ApplyMapSetBoundsIfAvailable();
         }
 
@@ -139,14 +144,18 @@ namespace Capstone.Game.MapSystem {
             ResolveReferences();
             WireButtons();
             NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
             EnsureOpaqueMapVisuals();
+            SetMinimapVisible(false);
         }
 
         void Start() {
             ResolveReferences();
             WireButtons();
             NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
             EnsureOpaqueMapVisuals();
+            SetMinimapVisible(false);
             ApplyMapSetBoundsIfAvailable();
             ApplyCameraDefaults();
             if (startClosed) CloseMap();
@@ -161,6 +170,7 @@ namespace Capstone.Game.MapSystem {
 
         void OnDestroy() {
             RestoreHiddenHudRoots();
+            RestoreMapHiddenSceneVisuals();
 
             if (runtimeWorldMapTexture == null) return;
             runtimeWorldMapTexture.Release();
@@ -193,7 +203,10 @@ namespace Capstone.Game.MapSystem {
             worldMapOpen = true;
             SetWorldMapRootVisible(true);
             NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
             ApplyMapSetBoundsIfAvailable();
+            EnsureOpaqueMapVisuals();
+            ApplyCameraDefaults();
             if (focusPlayer) {
                 if (openMapCenteredOnPlayer && playerTarget != null) Focus(playerTarget.position, false);
                 else Focus(new Vector3(worldCenter.x, 0f, worldCenter.y), false);
@@ -205,6 +218,7 @@ namespace Capstone.Game.MapSystem {
             SetOverlayVisible(true);
             SetCustomFrameVisible(false);
             SetHudRootsVisibleForMap(true);
+            SetMapOnlySceneVisualsHidden(false);
             EnableMapSafely();
             BringWorldMapToFront();
             EnsureOpaqueMapVisuals();
@@ -219,6 +233,7 @@ namespace Capstone.Game.MapSystem {
             SetCustomFrameVisible(false);
             SetWorldMapRootVisible(false);
             SetMinimapVisible(false);
+            SetMapOnlySceneVisualsHidden(false);
             SetHudRootsVisibleForMap(false);
         }
 
@@ -232,6 +247,7 @@ namespace Capstone.Game.MapSystem {
             if (mapManager == null) return;
 
             NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
             float size = ClampOrthographicSize(CalculateOrthographicSizeForVisiblePercent(initialVisiblePercent));
             Vector3 cameraPosition = ClampCameraPosition(new Vector3(worldPosition.x, cameraHeight, worldPosition.z), size);
             mapManager.SetCameraPosition(cameraPosition);
@@ -310,7 +326,14 @@ namespace Capstone.Game.MapSystem {
         }
 
         void SetMapOnlySceneVisualsHidden(bool hidden) {
-            if (!hideTreesWaterAndEffectsOnMap) return;
+            bool legacyHideAll = hideTreesWaterAndEffectsOnMap;
+            bool shouldHideTrees = hideTerrainTreesOnMap || legacyHideAll;
+            bool shouldHideRenderers = hideWaterAndEffectsOnMap || legacyHideAll;
+
+            if (!shouldHideTrees && !shouldHideRenderers) {
+                if (mapSceneVisualsHidden) RestoreMapHiddenSceneVisuals();
+                return;
+            }
             if (hidden == mapSceneVisualsHidden) return;
 
             if (!hidden) {
@@ -319,11 +342,11 @@ namespace Capstone.Game.MapSystem {
             }
 
             mapSceneVisualsHidden = true;
-            ApplyMapCameraCullingMask();
-            HideTerrainTreesForMap();
-            HideNamedRenderersForMap();
+            if (shouldHideRenderers) ApplyMapCameraCullingMask();
+            else if (mapCamera != null) mapCamera.cullingMask = ~0;
+            if (shouldHideTrees) HideTerrainTreesForMap();
+            if (shouldHideRenderers) HideNamedRenderersForMap();
         }
-
         void HideTerrainTreesForMap() {
             Terrain[] terrains = FindObjectsByType<Terrain>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             for (int i = 0; i < terrains.Length; i++) {
@@ -433,6 +456,7 @@ namespace Capstone.Game.MapSystem {
 
         void ApplyCameraDefaults() {
             NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
             if (mapManager != null) {
                 mapManager.enablingShortcut = KeyCode.None;
                 mapManager.disablingShortcut = KeyCode.None;
@@ -449,6 +473,7 @@ namespace Capstone.Game.MapSystem {
 
             if (mapCamera != null) {
                 mapCamera.orthographic = true;
+                if (!hideWaterAndEffectsOnMap && !hideTreesWaterAndEffectsOnMap) mapCamera.cullingMask = ~0;
                 mapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
                 mapCamera.nearClipPlane = 0.1f;
                 mapCamera.farClipPlane = Mathf.Max(cameraHeight + 500f, 1000f);
@@ -527,6 +552,24 @@ namespace Capstone.Game.MapSystem {
             minimumVisiblePercent = Mathf.Clamp(minimumVisiblePercent, 0.01f, 1f);
             maximumVisiblePercent = Mathf.Clamp(maximumVisiblePercent, minimumVisiblePercent, 1f);
             initialVisiblePercent = Mathf.Clamp(initialVisiblePercent, minimumVisiblePercent, maximumVisiblePercent);
+        }
+
+        void NormalizeWorldBoundsInsets() {
+            minimumWorldBoundsInsetPercent = Clamp01(minimumWorldBoundsInsetPercent);
+            worldBoundsInsetPercent = Clamp01(worldBoundsInsetPercent);
+
+            worldBoundsInsetPercent.x = Mathf.Max(worldBoundsInsetPercent.x, minimumWorldBoundsInsetPercent.x);
+            worldBoundsInsetPercent.y = Mathf.Max(worldBoundsInsetPercent.y, minimumWorldBoundsInsetPercent.y);
+            worldBoundsInsetPercent.z = Mathf.Max(worldBoundsInsetPercent.z, minimumWorldBoundsInsetPercent.z);
+            worldBoundsInsetPercent.w = Mathf.Max(worldBoundsInsetPercent.w, minimumWorldBoundsInsetPercent.w);
+        }
+
+        static Vector4 Clamp01(Vector4 value) {
+            value.x = Mathf.Clamp01(value.x);
+            value.y = Mathf.Clamp01(value.y);
+            value.z = Mathf.Clamp01(value.z);
+            value.w = Mathf.Clamp01(value.w);
+            return value;
         }
 
         void EnsureOpaqueMapVisuals() {
@@ -756,41 +799,52 @@ namespace Capstone.Game.MapSystem {
         }
 
         void StyleAndArrangeOverlay() {
-            StyleButton(closeButton, new Color(0.02f, 0.02f, 0.018f, 0.92f), Color.black);
-            StyleButton(zoomInButton, new Color(0.02f, 0.02f, 0.018f, 0.92f), Color.black);
-            StyleButton(zoomOutButton, new Color(0.02f, 0.02f, 0.018f, 0.92f), Color.black);
-            StyleButton(centerOnPlayerButton, new Color(0.02f, 0.02f, 0.018f, 0.92f), Color.black);
-            StyleButton(clearWaypointButton, new Color(0.86f, 0.78f, 0.58f, 0.94f), Color.black);
+            Color panelBackground = new Color(0.98f, 0.985f, 0.965f, 0.96f);
+            Color panelBorder = new Color(0.38f, 0.55f, 0.31f, 0.95f);
+            Color textColor = new Color(0.12f, 0.28f, 0.14f, 1f);
+            Color accentBackground = new Color(0.84f, 0.91f, 0.80f, 0.98f);
+            Color checkColor = new Color(0.35f, 0.60f, 0.29f, 1f);
 
-            PositionButton(closeButton, new Vector2(1f, 1f), new Vector2(-34f, -34f), new Vector2(42f, 42f), new Vector2(1f, 1f));
-            PositionButton(zoomInButton, new Vector2(1f, 1f), new Vector2(-150f, -42f), new Vector2(38f, 38f), new Vector2(1f, 1f));
-            PositionButton(zoomOutButton, new Vector2(1f, 1f), new Vector2(-106f, -42f), new Vector2(38f, 38f), new Vector2(1f, 1f));
-            PositionButton(centerOnPlayerButton, new Vector2(1f, 1f), new Vector2(-62f, -42f), new Vector2(38f, 38f), new Vector2(1f, 1f));
-            PositionButton(clearWaypointButton, new Vector2(1f, 0f), new Vector2(-36f, 34f), new Vector2(150f, 36f), new Vector2(1f, 0f));
+            StyleOverlaySurface(panelBorder);
+            StyleButton(closeButton, panelBackground, textColor, true);
+            StyleButton(zoomInButton, panelBackground, textColor);
+            StyleButton(zoomOutButton, panelBackground, textColor);
+            StyleButton(centerOnPlayerButton, accentBackground, textColor);
+            StyleButton(clearWaypointButton, panelBackground, textColor, true);
+            EnsureButtonLabel(closeButton, "<  BACK", 16);
+            EnsureButtonLabel(clearWaypointButton, "CLEAR WAYPOINT", 14);
+
+            PositionButton(closeButton, new Vector2(1f, 1f), new Vector2(-24f, -22f), new Vector2(150f, 48f), new Vector2(1f, 1f));
+            PositionButton(clearWaypointButton, new Vector2(1f, 0f), new Vector2(-24f, 22f), new Vector2(180f, 44f), new Vector2(1f, 0f));
 
             RectTransform zoomRoot = zoomInButton != null ? zoomInButton.transform.parent as RectTransform : null;
             if (zoomRoot != null) {
-                PositionRect(zoomRoot, new Vector2(1f, 1f), new Vector2(-46f, -34f), new Vector2(158f, 46f), new Vector2(1f, 1f));
+                PositionRect(zoomRoot, new Vector2(1f, 0.5f), new Vector2(-22f, 0f), new Vector2(60f, 178f), new Vector2(1f, 0.5f));
                 Image image = zoomRoot.GetComponent<Image>();
-                if (image != null) image.color = new Color(0.02f, 0.10f, 0.09f, 0.45f);
+                StylePanel(image, new Color(0.98f, 0.985f, 0.965f, 0.88f), panelBorder);
+
+                PositionButton(zoomInButton, new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(44f, 44f), new Vector2(0.5f, 1f));
+                PositionButton(zoomOutButton, new Vector2(0.5f, 1f), new Vector2(0f, -67f), new Vector2(44f, 44f), new Vector2(0.5f, 1f));
+                PositionButton(centerOnPlayerButton, new Vector2(0.5f, 1f), new Vector2(0f, -126f), new Vector2(44f, 44f), new Vector2(0.5f, 1f));
             }
 
             if (regionNameText != null) {
-                regionNameText.color = Color.black;
+                regionNameText.color = textColor;
                 regionNameText.fontStyle = FontStyle.Bold;
+                regionNameText.fontSize = 20;
                 RectTransform region = regionNameText.transform.parent as RectTransform;
-                if (region != null) PositionRect(region, new Vector2(0.5f, 1f), new Vector2(0f, -26f), new Vector2(360f, 34f), new Vector2(0.5f, 1f));
+                if (region != null) PositionRect(region, new Vector2(0.5f, 1f), new Vector2(0f, -22f), new Vector2(420f, 48f), new Vector2(0.5f, 1f));
                 Image regionBg = region != null ? region.GetComponent<Image>() : null;
-                if (regionBg != null) regionBg.color = new Color(0.90f, 0.82f, 0.62f, 0.58f);
+                StylePanel(regionBg, panelBackground, panelBorder);
             }
 
             RectTransform filterBar = filterBindings.Count > 0 && filterBindings[0].toggle != null
                 ? filterBindings[0].toggle.transform.parent as RectTransform
                 : null;
             if (filterBar != null) {
-                PositionRect(filterBar, new Vector2(0.5f, 0f), new Vector2(0f, 24f), new Vector2(760f, 36f), new Vector2(0.5f, 0f));
+                PositionRect(filterBar, new Vector2(0.5f, 0f), new Vector2(0f, 22f), new Vector2(908f, 48f), new Vector2(0.5f, 0f));
                 Image barImage = filterBar.GetComponent<Image>();
-                if (barImage != null) barImage.color = new Color(0.82f, 0.74f, 0.55f, 0.62f);
+                StylePanel(barImage, new Color(0.98f, 0.985f, 0.965f, 0.90f), panelBorder);
             }
 
             for (int i = 0; i < filterBindings.Count; i++) {
@@ -802,31 +856,110 @@ namespace Capstone.Game.MapSystem {
                     rect.anchorMin = new Vector2(0f, 0.5f);
                     rect.anchorMax = new Vector2(0f, 0.5f);
                     rect.pivot = new Vector2(0f, 0.5f);
-                    rect.sizeDelta = new Vector2(84f, 28f);
-                    rect.anchoredPosition = new Vector2(12f + i * 92f, 0f);
+                    rect.sizeDelta = new Vector2(100f, 34f);
+                    rect.anchoredPosition = new Vector2(12f + i * 110f, 0f);
                 }
 
                 Image bg = toggle.GetComponent<Image>();
-                if (bg != null) bg.color = toggle.isOn
-                    ? new Color(0.17f, 0.34f, 0.19f, 0.92f)
-                    : new Color(0.08f, 0.13f, 0.11f, 0.68f);
+                StylePanel(bg, toggle.isOn ? accentBackground : panelBackground, panelBorder, true);
+
+                if (toggle.graphic != null) toggle.graphic.color = checkColor;
 
                 Text label = toggle.GetComponentInChildren<Text>(true);
-                if (label != null) label.color = Color.black;
+                if (label != null) {
+                    label.color = textColor;
+                    label.fontSize = 13;
+                }
             }
         }
 
-        static void StyleButton(Button button, Color background, Color textColor) {
+        void StyleOverlaySurface(Color borderColor) {
+            if (overlayRoot == null) return;
+
+            Image surface = overlayRoot.GetComponent<Image>();
+            if (surface == null) surface = overlayRoot.gameObject.AddComponent<Image>();
+            surface.sprite = null;
+            surface.type = Image.Type.Simple;
+            surface.color = new Color(0.98f, 0.985f, 0.965f, 0.025f);
+            surface.raycastTarget = false;
+            EnsureOutline(surface.gameObject, borderColor, new Vector2(2f, -2f));
+
+            if (customFrame != null) customFrame.gameObject.SetActive(false);
+        }
+
+        static void StyleButton(Button button, Color background, Color textColor, bool removeSprite = false) {
             if (button == null) return;
 
             Image image = button.GetComponent<Image>();
-            if (image != null) image.color = background;
+            if (image != null) {
+                if (removeSprite) {
+                    image.sprite = null;
+                    image.preserveAspect = false;
+                    image.type = Image.Type.Simple;
+                }
+
+                image.color = background;
+                EnsureOutline(image.gameObject, new Color(0.38f, 0.55f, 0.31f, 0.95f), new Vector2(1f, -1f));
+            }
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(0.93f, 0.98f, 0.91f, 1f);
+            colors.pressedColor = new Color(0.79f, 0.89f, 0.75f, 1f);
+            colors.selectedColor = colors.highlightedColor;
+            colors.disabledColor = new Color(0.78f, 0.80f, 0.75f, 0.65f);
+            colors.colorMultiplier = 1f;
+            colors.fadeDuration = 0.08f;
+            button.colors = colors;
 
             Text text = button.GetComponentInChildren<Text>(true);
             if (text != null) {
                 text.color = textColor;
                 text.fontStyle = FontStyle.Bold;
             }
+        }
+
+        static void StylePanel(Image image, Color background, Color border, bool raycastTarget = false) {
+            if (image == null) return;
+            image.sprite = null;
+            image.type = Image.Type.Simple;
+            image.color = background;
+            image.raycastTarget = raycastTarget;
+            EnsureOutline(image.gameObject, border, new Vector2(1f, -1f));
+        }
+
+        static void EnsureButtonLabel(Button button, string value, int fontSize) {
+            if (button == null) return;
+
+            Text label = button.GetComponentInChildren<Text>(true);
+            if (label == null) {
+                GameObject labelObject = new GameObject("Text", typeof(RectTransform), typeof(Text));
+                labelObject.transform.SetParent(button.transform, false);
+                label = labelObject.GetComponent<Text>();
+                label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                RectTransform rect = label.rectTransform;
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+            }
+
+            label.gameObject.SetActive(true);
+            label.text = value;
+            label.fontSize = fontSize;
+            label.fontStyle = FontStyle.Bold;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = new Color(0.12f, 0.28f, 0.14f, 1f);
+            label.raycastTarget = false;
+        }
+
+        static void EnsureOutline(GameObject target, Color color, Vector2 distance) {
+            if (target == null) return;
+            Outline outline = target.GetComponent<Outline>();
+            if (outline == null) outline = target.AddComponent<Outline>();
+            outline.effectColor = color;
+            outline.effectDistance = distance;
+            outline.useGraphicAlpha = false;
         }
 
         static void PositionButton(Button button, Vector2 anchor, Vector2 anchoredPosition, Vector2 size, Vector2 pivot) {
@@ -1076,13 +1209,10 @@ namespace Capstone.Game.MapSystem {
 
         void OnValidate() {
             NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
             viewportSize = new Vector2(Mathf.Max(320f, viewportSize.x), Mathf.Max(240f, viewportSize.y));
             worldSize = new Vector2(Mathf.Max(1f, worldSize.x), Mathf.Max(1f, worldSize.y));
             frameOverscan = Mathf.Max(0f, frameOverscan);
-            worldBoundsInsetPercent.x = Mathf.Clamp01(worldBoundsInsetPercent.x);
-            worldBoundsInsetPercent.y = Mathf.Clamp01(worldBoundsInsetPercent.y);
-            worldBoundsInsetPercent.z = Mathf.Clamp01(worldBoundsInsetPercent.z);
-            worldBoundsInsetPercent.w = Mathf.Clamp01(worldBoundsInsetPercent.w);
         }
 
         static bool IntersectGround(Ray ray, out Vector3 worldPosition) {
@@ -1113,5 +1243,10 @@ namespace Capstone.Game.MapSystem {
         }
     }
 }
+
+
+
+
+
 
 
