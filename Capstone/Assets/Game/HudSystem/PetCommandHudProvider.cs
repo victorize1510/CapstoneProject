@@ -18,6 +18,8 @@ namespace Capstone.Game.HudSystem {
         readonly List<SkillHudData> fallbackSkills = new List<SkillHudData>(4);
         readonly List<float> fallbackCooldownRemaining = new List<float>(4);
         readonly PetController[] lastSlots = new PetController[6];
+        readonly List<IPetHudDataSource> subscribedSources = new List<IPetHudDataSource>(6);
+        readonly List<PetCollectionMetadata> subscribedMetadata = new List<PetCollectionMetadata>(6);
 
         PetController lastActivePet;
         float nextChangeCheckAt;
@@ -33,6 +35,10 @@ namespace Capstone.Game.HudSystem {
         void OnEnable() {
             ResolveReferences();
             RememberCurrentParty();
+        }
+
+        void OnDisable() {
+            UnsubscribePetData();
         }
 
         void Update() {
@@ -74,6 +80,10 @@ namespace Capstone.Game.HudSystem {
             IPetHudDataSource source = FindDataSource(pet);
             PetCollectionMetadata metadata = FindMetadata(pet, true);
             string baseName = CleanDisplayName(source?.DisplayName, pet.name);
+            int maxLevel = metadata != null ? metadata.MaxLevel : int.MaxValue;
+            int experienceRequirement = source != null && source.Level < maxLevel
+                ? PetLevelUpService.CalculateDefaultExperienceRequirement(source.Level)
+                : 0;
             return new PetStatusHudData {
                 hasPet = true,
                 displayName = metadata != null ? metadata.ResolveDisplayName(baseName) : baseName,
@@ -82,6 +92,8 @@ namespace Capstone.Game.HudSystem {
                 maxHealth = source != null ? source.MaxHealth : 0f,
                 energy = source != null ? source.Energy : 0f,
                 maxEnergy = source != null ? source.MaxEnergy : 0f,
+                experience = metadata != null ? metadata.Experience : 0,
+                experienceToNextLevel = experienceRequirement,
                 icon = source?.Icon
             };
         }
@@ -102,6 +114,8 @@ namespace Capstone.Game.HudSystem {
                     favorite = metadata != null && metadata.IsFavorite,
                     displayName = metadata != null ? metadata.ResolveDisplayName(baseName) : baseName,
                     level = source != null ? source.Level : 0,
+                    health = source != null ? source.Health : 0f,
+                    maxHealth = source != null ? source.MaxHealth : 0f,
                     icon = source?.Icon
                 });
             }
@@ -413,6 +427,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void RememberCurrentParty() {
+            UnsubscribePetData();
             if (petCommandInput == null) {
                 lastActivePet = null;
                 Array.Clear(lastSlots, 0, lastSlots.Length);
@@ -420,9 +435,34 @@ namespace Capstone.Game.HudSystem {
             }
 
             lastActivePet = petCommandInput.activePet;
+            SubscribePetData(lastActivePet);
             for (int i = 0; i < lastSlots.Length; i++) {
                 lastSlots[i] = GetPetAt(i);
+                SubscribePetData(lastSlots[i]);
             }
+        }
+
+        void SubscribePetData(PetController pet) {
+            if (pet == null || !isActiveAndEnabled) return;
+            IPetHudDataSource source = FindDataSource(pet);
+            if (source != null && !subscribedSources.Contains(source)) {
+                subscribedSources.Add(source);
+                source.HudDataChanged += NotifyHudDataChanged;
+            }
+            PetCollectionMetadata metadata = FindMetadata(pet, true);
+            if (metadata != null && !subscribedMetadata.Contains(metadata)) {
+                subscribedMetadata.Add(metadata);
+                metadata.Changed += NotifyHudDataChanged;
+            }
+        }
+
+        void UnsubscribePetData() {
+            foreach (IPetHudDataSource source in subscribedSources) source.HudDataChanged -= NotifyHudDataChanged;
+            foreach (PetCollectionMetadata metadata in subscribedMetadata) {
+                if (metadata != null) metadata.Changed -= NotifyHudDataChanged;
+            }
+            subscribedSources.Clear();
+            subscribedMetadata.Clear();
         }
 
         static string CleanDisplayName(string preferred, string fallback) {

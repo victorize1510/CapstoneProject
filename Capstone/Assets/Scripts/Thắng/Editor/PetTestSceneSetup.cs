@@ -316,6 +316,10 @@ public static class PetTestSceneSetup
         agent.baseOffset = 0f;
         agent.autoBraking = true;
         agent.updateRotation = false;
+        agent.autoRepath = true;
+        agent.autoTraverseOffMeshLink = false;
+        agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
+        agent.enabled = false;
     }
 
     private static DummyEnemy SetupDummyEnemy(Transform player)
@@ -362,8 +366,6 @@ public static class PetTestSceneSetup
         input.ignoreWhileRightMouseHeld = false;
         input.allowCommandsWhileRightMouseHeld = true;
         input.aimMouseButton = 1;
-        input.moveToGroundWhenNoEnemy = true;
-        input.enemySearchRadius = 1.25f;
         input.useScreenCenterWhenCursorLocked = true;
         input.useScreenCenterWhileAiming = false;
     }

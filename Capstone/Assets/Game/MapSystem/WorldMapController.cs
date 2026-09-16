@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AAMAP;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace Capstone.Game.MapSystem {
@@ -40,6 +41,16 @@ namespace Capstone.Game.MapSystem {
             public HudRootState(GameObject root, bool wasActive) {
                 this.root = root;
                 this.wasActive = wasActive;
+            }
+        }
+
+        readonly struct FilterListener {
+            public readonly Toggle Toggle;
+            public readonly UnityAction<bool> Callback;
+
+            public FilterListener(Toggle toggle, UnityAction<bool> callback) {
+                Toggle = toggle;
+                Callback = callback;
             }
         }
 
@@ -117,9 +128,12 @@ namespace Capstone.Game.MapSystem {
         readonly List<RendererState> hiddenMapRenderers = new List<RendererState>();
         readonly List<TerrainTreeState> hiddenMapTerrains = new List<TerrainTreeState>();
         bool mapSceneVisualsHidden;
+        RawImage mapDisplay;
+        readonly List<FilterListener> filterListeners = new List<FilterListener>();
 
         public event Action<Vector3> WaypointChanged;
         public event Action WaypointCleared;
+        public event Action BackRequested;
 
         public MapManager MapManager => mapManager;
         public Camera MapCamera => mapCamera;
@@ -164,11 +178,16 @@ namespace Capstone.Game.MapSystem {
         void LateUpdate() {
             if (!IsOpen) return;
 
-            EnsureOpaqueMapVisuals();
+            if (!HasValidMapVisualState()) {
+                EnableMapSafely();
+                EnsureOpaqueMapVisuals();
+            }
+
             UpdateRegionName();
         }
 
         void OnDestroy() {
+            UnwireButtons();
             RestoreHiddenHudRoots();
             RestoreMapHiddenSceneVisuals();
 
@@ -205,18 +224,15 @@ namespace Capstone.Game.MapSystem {
             NormalizeVisiblePercents();
             NormalizeWorldBoundsInsets();
             ApplyMapSetBoundsIfAvailable();
-            EnsureOpaqueMapVisuals();
             ApplyCameraDefaults();
             if (focusPlayer) {
                 if (openMapCenteredOnPlayer && playerTarget != null) Focus(playerTarget.position, false);
                 else Focus(new Vector3(worldCenter.x, 0f, worldCenter.y), false);
-            } else {
-                ApplyCameraDefaults();
             }
-            EnsureOpaqueMapVisuals();
+
             SetMinimapVisible(false);
             SetOverlayVisible(true);
-            SetCustomFrameVisible(false);
+            HideCustomFrame();
             SetHudRootsVisibleForMap(true);
             SetMapOnlySceneVisualsHidden(false);
             EnableMapSafely();
@@ -230,7 +246,7 @@ namespace Capstone.Game.MapSystem {
             worldMapOpen = false;
             DisableMapSafely();
             SetOverlayVisible(false);
-            SetCustomFrameVisible(false);
+            HideCustomFrame();
             SetWorldMapRootVisible(false);
             SetMinimapVisible(false);
             SetMapOnlySceneVisualsHidden(false);
@@ -622,6 +638,7 @@ namespace Capstone.Game.MapSystem {
 
             Transform displayTransform = mask.Find("Map Display");
             RawImage display = displayTransform != null ? displayTransform.GetComponent<RawImage>() : null;
+            mapDisplay = display;
             if (display != null) {
                 display.color = Color.white;
                 display.material = null;
@@ -638,6 +655,23 @@ namespace Capstone.Game.MapSystem {
             if (exitButton != null) exitButton.gameObject.SetActive(false);
 
             StyleAndArrangeOverlay();
+        }
+
+        bool HasValidMapVisualState() {
+            if (mapManager == null || !mapManager.IsMapEnabled()) return false;
+            if (mapCamera == null || !mapCamera.isActiveAndEnabled) return false;
+
+            RenderTexture texture = mapManager.renderTexture;
+            if (texture == null || !texture.IsCreated() || mapCamera.targetTexture != texture) return false;
+
+            if (mapDisplay == null && mapInteractionRect != null) {
+                Transform displayTransform = mapInteractionRect.Find("Map Display");
+                if (displayTransform != null) mapDisplay = displayTransform.GetComponent<RawImage>();
+            }
+
+            return mapDisplay != null
+                   && mapDisplay.gameObject.activeInHierarchy
+                   && mapDisplay.texture == texture;
         }
 
         RenderTexture EnsureWorldMapRenderTexture() {
@@ -980,9 +1014,9 @@ namespace Capstone.Game.MapSystem {
             if (buttonsWired) return;
             buttonsWired = true;
 
-            if (closeButton != null) closeButton.onClick.AddListener(CloseMap);
-            if (zoomInButton != null) zoomInButton.onClick.AddListener(() => Zoom(1f));
-            if (zoomOutButton != null) zoomOutButton.onClick.AddListener(() => Zoom(-1f));
+            if (closeButton != null) closeButton.onClick.AddListener(RequestBack);
+            if (zoomInButton != null) zoomInButton.onClick.AddListener(HandleZoomIn);
+            if (zoomOutButton != null) zoomOutButton.onClick.AddListener(HandleZoomOut);
             if (centerOnPlayerButton != null) centerOnPlayerButton.onClick.AddListener(CenterOnPlayer);
             if (clearWaypointButton != null) clearWaypointButton.onClick.AddListener(ClearWaypoint);
 
@@ -990,15 +1024,48 @@ namespace Capstone.Game.MapSystem {
                 Toggle toggle = filterBindings[i].toggle;
                 MapMarkerType type = filterBindings[i].markerType;
                 if (toggle == null) continue;
-                toggle.onValueChanged.AddListener(value => SetFilter(type, value));
+                UnityAction<bool> callback = value => SetFilter(type, value);
+                toggle.onValueChanged.AddListener(callback);
+                filterListeners.Add(new FilterListener(toggle, callback));
             }
+        }
+
+        void UnwireButtons() {
+            if (!buttonsWired) return;
+
+            if (closeButton != null) closeButton.onClick.RemoveListener(RequestBack);
+            if (zoomInButton != null) zoomInButton.onClick.RemoveListener(HandleZoomIn);
+            if (zoomOutButton != null) zoomOutButton.onClick.RemoveListener(HandleZoomOut);
+            if (centerOnPlayerButton != null) centerOnPlayerButton.onClick.RemoveListener(CenterOnPlayer);
+            if (clearWaypointButton != null) clearWaypointButton.onClick.RemoveListener(ClearWaypoint);
+
+            for (int i = 0; i < filterListeners.Count; i++) {
+                FilterListener listener = filterListeners[i];
+                if (listener.Toggle != null) listener.Toggle.onValueChanged.RemoveListener(listener.Callback);
+            }
+
+            filterListeners.Clear();
+            buttonsWired = false;
+        }
+
+        void HandleZoomIn() {
+            Zoom(1f);
+        }
+
+        void HandleZoomOut() {
+            Zoom(-1f);
+        }
+
+        void RequestBack() {
+            if (BackRequested != null) BackRequested.Invoke();
+            else CloseMap();
         }
 
         void SetOverlayVisible(bool visible) {
             if (overlayRoot != null) overlayRoot.gameObject.SetActive(visible);
         }
 
-        void SetCustomFrameVisible(bool visible) {
+        void HideCustomFrame() {
             if (customFrame != null) customFrame.gameObject.SetActive(false);
         }
         void BringWorldMapToFront() {
@@ -1066,7 +1133,7 @@ namespace Capstone.Game.MapSystem {
         }
 
         void ApplyCustomFrameLayout() {
-            if (customFrame != null) customFrame.gameObject.SetActive(false);
+            HideCustomFrame();
         }
         void SetWorldMapRootVisible(bool visible) {
             if (mapManager == null) return;
@@ -1091,13 +1158,19 @@ namespace Capstone.Game.MapSystem {
             mapManager.displayDirections = false;
             mapManager.displayGrid = false;
             EnsureWorldMapRenderTexture();
-            mapManager.mapEnabled = true;
+            mapManager.EnableMap();
             SetMapChildActive("Map Mask", true);
             SetMapChildActive("Map Border", false);
             SetMapChildActive("Map Directions", false);
             SetMapChildActive("Map Zoom Buttons", false);
             SetMapChildActive("Map Exit Button", false);
-            if (mapCamera != null) mapCamera.gameObject.SetActive(true);
+            if (mapCamera != null) {
+                mapCamera.gameObject.SetActive(true);
+                mapCamera.enabled = true;
+                if (mapManager.renderTexture != null) mapCamera.targetTexture = mapManager.renderTexture;
+            }
+
+            Canvas.ForceUpdateCanvases();
         }
 
         void DisableMapSafely() {

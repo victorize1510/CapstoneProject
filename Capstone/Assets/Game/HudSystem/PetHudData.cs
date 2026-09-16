@@ -12,10 +12,15 @@ namespace Capstone.Game.HudSystem {
         public float maxHealth;
         public float energy;
         public float maxEnergy;
+        public int experience;
+        public int experienceToNextLevel;
         public Sprite icon;
 
         public float HealthPercent => maxHealth > 0f ? Mathf.Clamp01(health / maxHealth) : 0f;
         public float EnergyPercent => maxEnergy > 0f ? Mathf.Clamp01(energy / maxEnergy) : 0f;
+        public float ExperiencePercent => experienceToNextLevel > 0
+            ? Mathf.Clamp01(experience / (float)experienceToNextLevel)
+            : 0f;
     }
 
     [Serializable]
@@ -26,7 +31,11 @@ namespace Capstone.Game.HudSystem {
         public bool favorite;
         public string displayName;
         public int level;
+        public float health;
+        public float maxHealth;
         public Sprite icon;
+
+        public float HealthPercent => maxHealth > 0f ? Mathf.Clamp01(health / maxHealth) : 0f;
     }
 
     [Serializable]

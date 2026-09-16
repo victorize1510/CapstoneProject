@@ -33,27 +33,27 @@
             <ui:VisualElement name="skills-equipped-row" class="skills-equipped-row">
                 <ui:Button name="skills-equipped-slot-1" text="" class="skills-equipped-slot">
                     <ui:Label text="1" class="skills-slot-number" />
-                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
-                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
-                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                    <ui:VisualElement class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
                 </ui:Button>
                 <ui:Button name="skills-equipped-slot-2" text="" class="skills-equipped-slot">
                     <ui:Label text="2" class="skills-slot-number" />
-                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
-                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
-                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                    <ui:VisualElement class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
                 </ui:Button>
                 <ui:Button name="skills-equipped-slot-3" text="" class="skills-equipped-slot">
                     <ui:Label text="3" class="skills-slot-number" />
-                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
-                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
-                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                    <ui:VisualElement class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
                 </ui:Button>
                 <ui:Button name="skills-equipped-slot-4" text="" class="skills-equipped-slot">
                     <ui:Label text="4" class="skills-slot-number" />
-                    <ui:VisualElement name="equipped-icon" class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
-                    <ui:Label name="equipped-name" text="EMPTY" class="skills-equipped-name" />
-                    <ui:Label name="equipped-meta" text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
+                    <ui:VisualElement class="skills-equipped-icon"><ui:Label text="+" class="skills-icon-fallback" /></ui:VisualElement>
+                    <ui:Label text="EMPTY" class="skills-equipped-name" />
+                    <ui:Label text="Chọn skill rồi chọn ô" class="skills-equipped-meta" />
                 </ui:Button>
             </ui:VisualElement>
 

@@ -13,6 +13,9 @@ public class DummyEnemy : MonoBehaviour
     public bool autoRevive = true;
     public float reviveDelay = 2.5f;
 
+    [Header("Progression")]
+    [SerializeField, Min(0)] private int experienceReward = 50;
+
     [Header("Feedback")]
     public Color idleColor = Color.white;
     public Color hitColor = new Color(1f, 0.35f, 0.2f, 1f);
@@ -45,6 +48,11 @@ public class DummyEnemy : MonoBehaviour
     public bool IsAlive
     {
         get { return alive; }
+    }
+
+    public int ExperienceReward
+    {
+        get { return Mathf.Max(0, experienceReward); }
     }
 
     public Vector3 TargetPosition
@@ -96,6 +104,13 @@ public class DummyEnemy : MonoBehaviour
         health = Mathf.Max(1f, maxHealth);
         ApplyColor(idleColor);
         RefreshName();
+    }
+
+    private void OnValidate()
+    {
+        maxHealth = Mathf.Max(1f, maxHealth);
+        reviveDelay = Mathf.Max(0f, reviveDelay);
+        experienceReward = Mathf.Max(0, experienceReward);
     }
 
     private void OnEnable()

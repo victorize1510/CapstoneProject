@@ -57,14 +57,20 @@ public class EvolutionController : MonoBehaviour
 
     public int CurrentStageIndex { get; private set; } = -1;
     public GameObject CurrentInstance { get; private set; }
+    public bool IsEvolving { get; private set; }
 
     private WhiteoutOverlay currentOverlay;
     private GameObject activeRingVfx;
 
     void Start()
     {
-        if (stages.Length > 0)
-            SpawnStage(0, animateGrow: false);
+        if (stages == null || stages.Length == 0)
+        {
+            Debug.LogWarning($"{name}: no evolution stages have been configured.", this);
+            return;
+        }
+
+        SpawnStage(0, animateGrow: false);
     }
 
     void Update()
@@ -80,69 +86,94 @@ public class EvolutionController : MonoBehaviour
     [ContextMenu("Evolve To Next Stage")]
     public void Evolve()
     {
-        if (CurrentStageIndex + 1 >= stages.Length)
+        if (IsEvolving)
+            return;
+
+        if (stages == null || stages.Length == 0 || CurrentInstance == null)
         {
-            Debug.LogWarning($"{name}: already at final evolution stage.");
+            Debug.LogWarning($"{name}: cannot evolve because the current evolution stage is unavailable.", this);
             return;
         }
-        StartCoroutine(EvolveRoutine(CurrentStageIndex + 1));
+
+        int nextIndex = CurrentStageIndex + 1;
+        if (nextIndex >= stages.Length)
+        {
+            Debug.LogWarning($"{name}: already at final evolution stage.", this);
+            return;
+        }
+
+        if (stages[nextIndex] == null)
+        {
+            Debug.LogWarning($"{name}: evolution stage {nextIndex} has no prefab assigned.", this);
+            return;
+        }
+
+        IsEvolving = true;
+        StartCoroutine(EvolveRoutine(nextIndex));
     }
 
     IEnumerator EvolveRoutine(int nextIndex)
     {
-        // 0) Tạm tắt các script điều khiển AI/di chuyển, để animation không bị giành quyền
-        SetControllingScriptsEnabled(false);
+        try
+        {
+            // 0) Tạm tắt các script điều khiển AI/di chuyển, để animation không bị giành quyền
+            SetControllingScriptsEnabled(false);
 
-        // 1) Bật vòng tròn VFX dưới chân ngay khi bắt đầu tiến hóa
-        SpawnGroundRing();
+            // 1) Bật vòng tròn VFX dưới chân ngay khi bắt đầu tiến hóa
+            SpawnGroundRing();
 
-        // 2) Ép animation về Idle và giữ nguyên tại đó
-        ForceIdle(CurrentInstance);
+            // 2) Ép animation về Idle và giữ nguyên tại đó
+            ForceIdle(CurrentInstance);
 
-        // 3) Tạo overlay trắng cho model HIỆN TẠI
-        currentOverlay = new WhiteoutOverlay(CurrentInstance.transform, whiteOverlayMaterial, whiteoutEmissionIntensity);
+            // 3) Tạo overlay trắng cho model HIỆN TẠI
+            currentOverlay = new WhiteoutOverlay(CurrentInstance.transform, whiteOverlayMaterial, whiteoutEmissionIntensity);
 
-        // 3a) XOAY BẮT ĐẦU NGAY (t=0). Ánh sáng trắng chờ "glowStartDelay" giây rồi
-        // mới từ từ tăng lên trong "whiteoutFadeInDuration" giây tiếp theo.
-        yield return SpinAndFade(
-            spinDuration: spinUpDuration,
-            spinCurve: spinUpCurve,
-            fadeDelay: glowStartDelay,
-            fadeDuration: whiteoutFadeInDuration,
-            fadeFrom: 0f,
-            fadeTo: 1f);
+            // 3a) XOAY BẮT ĐẦU NGAY (t=0). Ánh sáng trắng chờ "glowStartDelay" giây rồi
+            // mới từ từ tăng lên trong "whiteoutFadeInDuration" giây tiếp theo.
+            yield return SpinAndFade(
+                spinDuration: spinUpDuration,
+                spinCurve: spinUpCurve,
+                fadeDelay: glowStartDelay,
+                fadeDuration: whiteoutFadeInDuration,
+                fadeFrom: 0f,
+                fadeTo: 1f);
 
-        // Lúc này model đã bị che trắng hoàn toàn -> giữ thêm 1 chút nếu muốn, rồi đổi model
-        // mà không ai nhìn thấy "giật hình"
-        if (holdBeforeSwap > 0f)
-            yield return new WaitForSeconds(holdBeforeSwap);
+            // Lúc này model đã bị che trắng hoàn toàn -> giữ thêm 1 chút nếu muốn, rồi đổi model
+            // mà không ai nhìn thấy "giật hình"
+            if (holdBeforeSwap > 0f)
+                yield return new WaitForSeconds(holdBeforeSwap);
 
-        SpawnStage(nextIndex, animateGrow: true);
+            // Overlay cũ thuộc model sắp bị hủy. Dọn trước khi tạo overlay cho model mới.
+            currentOverlay?.Cleanup();
+            currentOverlay = null;
 
-        // 4) Ép animation của model MỚI về Idle ngay khi vừa spawn
-        ForceIdle(CurrentInstance);
+            if (!SpawnStage(nextIndex, animateGrow: true))
+                yield break;
 
-        // 5) Tạo overlay trắng cho model MỚI (đang ở trạng thái trắng hoàn toàn, alpha = 1)
-        currentOverlay = new WhiteoutOverlay(CurrentInstance.transform, whiteOverlayMaterial, whiteoutEmissionIntensity);
-        currentOverlay.SetIntensity(1f);
+            // 4) Ép animation của model MỚI về Idle ngay khi vừa spawn
+            ForceIdle(CurrentInstance);
 
-        // 6) XOAY VÀ ÁNH SÁNG GIẢM CÙNG LÚC (fadeDelay = 0) để lộ model mới ra dần
-        yield return SpinAndFade(
-            spinDuration: spinDownDuration,
-            spinCurve: spinDownCurve,
-            fadeDelay: 0f,
-            fadeDuration: whiteoutFadeOutDuration,
-            fadeFrom: 1f,
-            fadeTo: 0f);
+            // 5) Tạo overlay trắng cho model MỚI (đang ở trạng thái trắng hoàn toàn, alpha = 1)
+            currentOverlay = new WhiteoutOverlay(CurrentInstance.transform, whiteOverlayMaterial, whiteoutEmissionIntensity);
+            currentOverlay.SetIntensity(1f);
 
-        currentOverlay.Cleanup();
-        currentOverlay = null;
-
-        // 7) Tắt vòng tròn VFX dưới chân khi tiến hóa xong
-        DespawnGroundRing();
-
-        // 8) Bật lại các script điều khiển AI/di chuyển
-        SetControllingScriptsEnabled(true);
+            // 6) XOAY VÀ ÁNH SÁNG GIẢM CÙNG LÚC (fadeDelay = 0) để lộ model mới ra dần
+            yield return SpinAndFade(
+                spinDuration: spinDownDuration,
+                spinCurve: spinDownCurve,
+                fadeDelay: 0f,
+                fadeDuration: whiteoutFadeOutDuration,
+                fadeFrom: 1f,
+                fadeTo: 0f);
+        }
+        finally
+        {
+            currentOverlay?.Cleanup();
+            currentOverlay = null;
+            DespawnGroundRing();
+            SetControllingScriptsEnabled(true);
+            IsEvolving = false;
+        }
     }
 
     /// <summary>
@@ -185,8 +216,14 @@ public class EvolutionController : MonoBehaviour
         currentOverlay?.SetIntensity(fadeTo);
     }
 
-    void SpawnStage(int index, bool animateGrow)
+    bool SpawnStage(int index, bool animateGrow)
     {
+        if (stages == null || index < 0 || index >= stages.Length || stages[index] == null)
+        {
+            Debug.LogWarning($"{name}: cannot spawn evolution stage {index}; its prefab is unavailable.", this);
+            return false;
+        }
+
         if (CurrentInstance != null)
             Destroy(CurrentInstance);
 
@@ -196,6 +233,17 @@ public class EvolutionController : MonoBehaviour
 
         if (animateGrow)
             StartCoroutine(GrowRoutine(CurrentInstance.transform));
+
+        return true;
+    }
+
+    void OnDisable()
+    {
+        currentOverlay?.Cleanup();
+        currentOverlay = null;
+        DespawnGroundRing();
+        SetControllingScriptsEnabled(true);
+        IsEvolving = false;
     }
 
     IEnumerator GrowRoutine(Transform target)

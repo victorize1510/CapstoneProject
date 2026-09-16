@@ -5,7 +5,7 @@
         <ui:VisualElement class="box-header">
             <ui:VisualElement class="box-title-group">
                 <ui:VisualElement class="box-title-mark" />
-                <ui:VisualElement>
+                <ui:VisualElement class="box-title-copy">
                     <ui:Label text="BOX / PARTY MANAGEMENT" class="box-title" />
                     <ui:Label text="Quản lý đội hình và kho pet" class="box-subtitle" />
                 </ui:VisualElement>
@@ -13,95 +13,138 @@
             <ui:Label name="box-source-label" text="Nguồn mở: TỪ MENU" class="box-source-label" />
             <ui:Button name="box-back-button" text="←  QUAY LẠI" class="box-back-button" />
         </ui:VisualElement>
-        <ui:VisualElement class="box-party-section">
-            <ui:VisualElement class="box-section-heading">
-                <ui:Label name="box-party-count" text="TEAM (0 / 6)" class="box-section-title" />
-                <ui:Label text="Double-click pet nguồn, sau đó click ô đích để đổi. Slot 1 là LEAD." class="box-section-hint" />
-            </ui:VisualElement>
-            <ui:VisualElement name="box-party-row" class="box-party-row" />
-        </ui:VisualElement>
+
         <ui:VisualElement class="box-main-content">
-            <ui:VisualElement class="box-selected-panel">
-                <ui:VisualElement class="box-selected-top">
-                    <ui:VisualElement name="box-selected-portrait" class="box-selected-portrait">
-                        <ui:Label name="box-selected-portrait-fallback" text="?" class="box-selected-portrait-fallback" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="box-selected-summary">
-                        <ui:Label name="box-selected-name" text="Chọn một pet" class="box-selected-name" />
-                        <ui:Label name="box-selected-meta" text="Chọn pet trong Party hoặc Box để xem thông tin." class="box-selected-meta" />
-                        <ui:VisualElement class="box-large-bar-row">
-                            <ui:Label text="HP" class="box-large-bar-label" />
-                            <ui:VisualElement class="box-large-bar-track">
-                                <ui:VisualElement name="box-health-fill" class="box-large-bar-fill box-hp-fill" />
-                            </ui:VisualElement>
-                            <ui:Label name="box-selected-health" text="- / -" class="box-large-bar-value" />
+            <ui:VisualElement class="box-workspace">
+                <ui:VisualElement class="box-party-section box-surface">
+                    <ui:VisualElement class="box-section-heading">
+                        <ui:VisualElement>
+                            <ui:Label name="box-party-count" text="ĐỘI HÌNH (0 / 6)" class="box-section-title" />
+                            <ui:Label text="Pet đang đồng hành cùng bạn" class="box-section-subtitle" />
                         </ui:VisualElement>
-                        <ui:VisualElement class="box-large-bar-row">
-                            <ui:Label text="EXP" class="box-large-bar-label" />
-                            <ui:VisualElement class="box-large-bar-track">
-                                <ui:VisualElement name="box-experience-fill" class="box-large-bar-fill box-exp-fill" />
+                        <ui:Label text="Double-click pet nguồn, sau đó click ô đích để đổi. Slot 1 là LEAD." class="box-section-hint" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="box-party-row" class="box-party-row" />
+                </ui:VisualElement>
+
+                <ui:VisualElement class="box-storage-panel box-surface">
+                    <ui:VisualElement class="box-storage-toolbar">
+                        <ui:VisualElement class="box-storage-identity">
+                            <ui:Label text="□" class="box-storage-mark" />
+                            <ui:VisualElement>
+                                <ui:Label name="box-page-title" text="BOX 01" class="box-page-title" />
+                                <ui:Label name="box-page-count" text="0 PET • TRANG 1 / 2" class="box-page-count" />
                             </ui:VisualElement>
-                            <ui:Label name="box-selected-experience" text="- / -" class="box-large-bar-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="box-page-navigation">
+                            <ui:Button name="box-page-previous" text="‹" tooltip="Box trước" class="box-page-button" />
+                            <ui:Button name="box-page-next" text="›" tooltip="Box sau" class="box-page-button" />
+                        </ui:VisualElement>
+                        <ui:TextField name="box-search-field" label="" value="" tooltip="Tìm pet theo tên" class="box-search-field" />
+                        <ui:VisualElement class="box-sort-group">
+                            <ui:Button name="box-filter-toggle" text="Tất cả hệ  ▾" class="box-filter-toggle" />
+                            <ui:Button name="box-sort-button" text="Vị trí Box  ▾" class="box-sort-field" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="box-capacity-group">
+                            <ui:Label name="box-capacity-label" text="0 / 60" class="box-capacity-label" />
+                            <ui:Button name="box-expand-button" text="+" tooltip="Mua thêm slot" class="box-expand-button" />
                         </ui:VisualElement>
                     </ui:VisualElement>
+                    <ui:ScrollView name="box-storage-scroll" mode="Vertical" class="box-storage-scroll">
+                        <ui:VisualElement name="box-storage-grid" class="box-storage-grid" />
+                    </ui:ScrollView>
+                    <ui:Label name="box-empty-label" text="BOX CHƯA CÓ PET" class="box-empty-label" />
+                    <ui:VisualElement name="box-filter-panel" class="box-filter-panel">
+                        <ui:Button name="box-filter-all" text="Tất cả" class="box-filter-chip is-selected" />
+                        <ui:Button name="box-filter-nature" text="Thảo" class="box-filter-chip" />
+                        <ui:Button name="box-filter-fire" text="Lửa" class="box-filter-chip" />
+                        <ui:Button name="box-filter-water" text="Nước" class="box-filter-chip" />
+                        <ui:Button name="box-filter-wind" text="Gió" class="box-filter-chip" />
+                        <ui:Button name="box-filter-earth" text="Đất" class="box-filter-chip" />
+                        <ui:Button name="box-filter-electric" text="Điện" class="box-filter-chip" />
+                        <ui:Button name="box-filter-ice" text="Băng" class="box-filter-chip" />
+                        <ui:Button name="box-filter-light" text="Ánh sáng" class="box-filter-chip" />
+                        <ui:Button name="box-filter-dark" text="Bóng tối" class="box-filter-chip" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="box-sort-popup" class="box-sort-popup">
+                        <ui:ScrollView name="box-sort-scroll" mode="Vertical" class="box-sort-scroll" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label text="CHỈ SỐ" class="box-subsection-title" />
-                <ui:VisualElement class="box-stats-row">
-                    <ui:VisualElement class="box-stat-cell">
-                        <ui:Label text="HP" class="box-stat-name" />
-                        <ui:Label name="box-stat-health" text="-" class="box-stat-value" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="box-stat-cell">
-                        <ui:Label text="ATK" class="box-stat-name" />
-                        <ui:Label name="box-stat-attack" text="-" class="box-stat-value" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="box-stat-cell">
-                        <ui:Label text="DEF" class="box-stat-name" />
-                        <ui:Label name="box-stat-defense" text="-" class="box-stat-value" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="box-stat-cell">
-                        <ui:Label text="SPD" class="box-stat-name" />
-                        <ui:Label name="box-stat-speed" text="-" class="box-stat-value" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-                <ui:Label text="KỸ NĂNG" class="box-subsection-title" />
-                <ui:VisualElement name="box-selected-skills" class="box-selected-skills" />
-                <ui:VisualElement class="box-actions-row">
-                    <ui:Button name="box-replace-button" text="THAY THẾ" class="box-action-button box-primary-action" />
-                    <ui:Button name="box-add-button" text="ĐƯA VÀO ĐỘI" class="box-action-button box-primary-action" />
-                    <ui:Button name="box-move-button" text="DI CHUYỂN VÀO BOX" class="box-action-button" />
-                    <ui:Button name="box-details-button" text="CHI TIẾT" class="box-action-button" />
-                </ui:VisualElement>
-                <ui:Label name="box-feedback" text="Chọn pet để bắt đầu quản lý đội hình." class="box-feedback" />
             </ui:VisualElement>
-            <ui:VisualElement class="box-storage-panel">
-                <ui:VisualElement class="box-storage-toolbar">
-                    <ui:VisualElement class="box-capacity-group">
-                        <ui:Label name="box-capacity-label" text="SLOT BOX: 0 / 60" class="box-capacity-label" />
-                        <ui:Button name="box-expand-button" text="+" tooltip="Mua thêm slot" class="box-expand-button" />
+
+            <ui:VisualElement class="box-selected-panel box-surface">
+                <ui:VisualElement class="box-selected-title-row">
+                    <ui:Label text="◉" class="box-selected-element-icon" />
+                    <ui:Label name="box-selected-name" text="Chọn một pet" class="box-selected-name" />
+                    <ui:Label name="box-selected-level" text="—" class="box-selected-level" />
+                    <ui:Label name="box-selected-favorite" text="★" class="box-selected-favorite" />
+                </ui:VisualElement>
+                <ui:Label name="box-selected-location" text="Chọn pet trong Party hoặc Box" class="box-selected-location" />
+                <ui:VisualElement class="box-selected-meta-row">
+                    <ui:VisualElement class="box-meta-item">
+                        <ui:Label text="Hệ" class="box-meta-caption" />
+                        <ui:Label name="box-selected-element" text="—" class="box-meta-value" />
                     </ui:VisualElement>
-                    <ui:TextField name="box-search-field" label="" value="" class="box-search-field" />
-                    <ui:DropdownField name="box-sort-field" label="Sắp xếp" class="box-sort-field" />
-                    <ui:Button name="box-filter-toggle" text="Lọc hệ" class="box-filter-toggle" />
+                    <ui:VisualElement class="box-meta-item">
+                        <ui:Label text="Giới tính" class="box-meta-caption" />
+                        <ui:Label name="box-selected-gender" text="—" class="box-meta-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="box-meta-item">
+                        <ui:Label text="Độ hiếm" class="box-meta-caption" />
+                        <ui:Label name="box-selected-rarity" text="—" class="box-meta-value box-rarity-value" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="box-filter-panel" class="box-filter-panel">
-                    <ui:Button name="box-filter-all" text="ALL" class="box-filter-chip is-selected" />
-                    <ui:Button name="box-filter-nature" text="Nature" class="box-filter-chip" />
-                    <ui:Button name="box-filter-fire" text="Fire" class="box-filter-chip" />
-                    <ui:Button name="box-filter-water" text="Water" class="box-filter-chip" />
-                    <ui:Button name="box-filter-wind" text="Wind" class="box-filter-chip" />
-                    <ui:Button name="box-filter-earth" text="Earth" class="box-filter-chip" />
-                    <ui:Button name="box-filter-electric" text="Electric" class="box-filter-chip" />
-                    <ui:Button name="box-filter-ice" text="Ice" class="box-filter-chip" />
-                    <ui:Button name="box-filter-light" text="Light" class="box-filter-chip" />
-                    <ui:Button name="box-filter-dark" text="Dark" class="box-filter-chip" />
+
+                <ui:VisualElement class="box-selected-body">
+                    <ui:VisualElement class="box-selected-left">
+                        <ui:VisualElement name="box-selected-portrait" class="box-selected-portrait">
+                            <ui:Label name="box-selected-portrait-fallback" text="?" class="box-selected-portrait-fallback" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="box-nature-card">
+                            <ui:Label text="TÍNH CÁCH" class="box-nature-title" />
+                            <ui:Label name="box-selected-personality" text="—" class="box-nature-name" />
+                            <ui:Label name="box-selected-nature-up" text="Chỉ số tăng: —" class="box-nature-effect is-up" />
+                            <ui:Label name="box-selected-nature-down" text="Chỉ số giảm: —" class="box-nature-effect is-down" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="box-selected-right">
+                        <ui:VisualElement class="box-health-card">
+                            <ui:VisualElement class="box-health-row">
+                                <ui:Label text="HP" class="box-health-label" />
+                                <ui:Label name="box-selected-health-value" text="— / —" class="box-health-value" />
+                            </ui:VisualElement>
+                            <ui:VisualElement class="box-health-track">
+                                <ui:VisualElement name="box-selected-health-fill" class="box-health-fill" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                        <ui:VisualElement class="box-radar-area">
+                            <ui:VisualElement name="box-radar-host" class="box-radar-host" />
+                            <ui:Label text="HP" class="box-radar-label box-radar-hp" />
+                            <ui:Label text="Attack" class="box-radar-label box-radar-atk" />
+                            <ui:Label text="Defense" class="box-radar-label box-radar-def" />
+                            <ui:Label text="Speed" class="box-radar-label box-radar-spd" />
+                            <ui:Label text="Sp. Def" class="box-radar-label box-radar-spdef" />
+                            <ui:Label text="Sp. Atk" class="box-radar-label box-radar-spatk" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:ScrollView name="box-storage-scroll" mode="Vertical" class="box-storage-scroll">
-                    <ui:VisualElement name="box-storage-grid" class="box-storage-grid" />
-                </ui:ScrollView>
-                <ui:Label name="box-empty-label" text="BOX CHƯA CÓ PET" class="box-empty-label" />
+
+                <ui:VisualElement class="box-context-actions">
+                    <ui:Button name="box-add-button" text="ĐƯA VÀO ĐỘI" class="box-action-button box-primary-action" />
+                    <ui:Button name="box-move-button" text="BỎ VÀO BOX" class="box-action-button box-primary-action" />
+                    <ui:VisualElement class="box-secondary-actions">
+                        <ui:Button name="box-replace-button" text="THAY THẾ" class="box-action-button box-half-action box-replace-action" />
+                        <ui:Button name="box-details-button" text="CHI TIẾT" class="box-action-button box-half-action" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
+
+        <ui:VisualElement class="box-footer">
+            <ui:Label name="box-feedback" text="Chọn một pet để xem thông tin chi tiết." class="box-feedback" />
+            <ui:Label name="box-footer-summary" text="Box 01 — 0 / 60 pet • Trang 1 / 2" class="box-footer-summary" />
+        </ui:VisualElement>
+
         <ui:VisualElement name="box-purchase-popup" class="box-purchase-overlay">
             <ui:VisualElement class="box-purchase-card">
                 <ui:Label name="box-purchase-title" text="MUA THÊM SLOT" class="box-purchase-title" />

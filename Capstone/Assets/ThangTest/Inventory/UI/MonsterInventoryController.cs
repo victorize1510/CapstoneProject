@@ -5,6 +5,7 @@ using GDS.Core;
 using GDS.Core.Events;
 using Capstone.Game.HudSystem;
 using Capstone.Game.SaveSystem;
+using Capstone.Game.QuestSystem.UI;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -39,8 +40,6 @@ namespace Capstone.Game.Inventory {
         VisualElement placeholderPanel;
         Label placeholderTitle;
         Label placeholderBody;
-        VisualElement categoryPanel;
-        VisualElement toolbarSidebarSpacer;
         ScrollView itemScroll;
         VisualElement itemGrid;
         Label noItemsLabel;
@@ -61,7 +60,6 @@ namespace Capstone.Game.Inventory {
         Button equipButton;
         Button dropButton;
         Button cancelButton;
-        Button filterButton;
         TextField searchField;
         DropdownField sortField;
         ItemQuantityPopup quantityPopup;
@@ -73,7 +71,7 @@ namespace Capstone.Game.Inventory {
         PetEvolutionPanelController petEvolutionPanelController;
         PetReleasePanelController petReleasePanelController;
 
-        GameItemCategory currentCategory = GameItemCategory.All;
+        GameItemCategory currentCategory = GameItemCategory.CaptureBall;
         MenuSection activeSection = MenuSection.Bag;
         InventoryItemSnapshot selectedItem;
         InventoryActionType equipSlotActionType = InventoryActionType.EquipItem;
@@ -82,7 +80,6 @@ namespace Capstone.Game.Inventory {
         string selectedTargetMonsterId = string.Empty;
         string searchQuery = string.Empty;
         int selectedItemIndex = -1;
-        bool categoriesVisible = true;
         InventorySortMode sortMode;
         PlayerCurrencyWallet subscribedCurrencyWallet;
 
@@ -119,7 +116,7 @@ namespace Capstone.Game.Inventory {
             SetupItemGrid();
             SubscribeToAdapter();
             SubscribeToCurrencyWallet();
-            SelectCategory(GameItemCategory.All);
+            SelectCategory(GameItemCategory.CaptureBall);
         }
 
         void OnDisable() {
@@ -231,8 +228,6 @@ namespace Capstone.Game.Inventory {
             placeholderPanel = rootElement.Q<VisualElement>("menu-placeholder-panel");
             placeholderTitle = rootElement.Q<Label>("menu-placeholder-title");
             placeholderBody = rootElement.Q<Label>("menu-placeholder-body");
-            categoryPanel = rootElement.Q<VisualElement>("category-panel");
-            toolbarSidebarSpacer = rootElement.Q<VisualElement>(className: "inventory-sidebar-spacer");
             itemScroll = rootElement.Q<ScrollView>("item-scroll");
             itemGrid = rootElement.Q<VisualElement>("item-grid");
             noItemsLabel = rootElement.Q<Label>("no-items-label");
@@ -253,8 +248,6 @@ namespace Capstone.Game.Inventory {
             equipButton = rootElement.Q<Button>("equip-button");
             dropButton = rootElement.Q<Button>("drop-button");
             cancelButton = rootElement.Q<Button>("cancel-button");
-            filterButton = rootElement.Q<Button>("inventory-filter-button");
-            filterButton?.EnableInClassList("is-selected", categoriesVisible);
             searchField = rootElement.Q<TextField>("inventory-search-field");
             sortField = rootElement.Q<DropdownField>("inventory-sort-field");
             if (root != null) quantityPopup = new ItemQuantityPopup(root);
@@ -266,7 +259,6 @@ namespace Capstone.Game.Inventory {
             if (controlsRoot != document.rootVisualElement) controlsRegistered = false;
 
             categoryButtons.Clear();
-            RegisterCategoryButton("category-all", GameItemCategory.All);
             RegisterCategoryButton("category-capture-ball", GameItemCategory.CaptureBall);
             RegisterCategoryButton("category-medicine", GameItemCategory.Medicine);
             RegisterCategoryButton("category-food", GameItemCategory.Food);
@@ -293,7 +285,6 @@ namespace Capstone.Game.Inventory {
             if (equipButton != null) equipButton.clicked += () => RequestAction(equipSlotActionType);
             if (dropButton != null) dropButton.clicked += () => RequestAction(InventoryActionType.DropItem);
             if (cancelButton != null) cancelButton.clicked += Close;
-            if (filterButton != null) filterButton.clicked += ToggleCategoryPanel;
             if (searchField != null) {
                 searchField.textEdition.placeholder = "Search items...";
                 searchField.RegisterValueChangedCallback(evt => {
@@ -304,6 +295,7 @@ namespace Capstone.Game.Inventory {
             if (sortField != null) {
                 sortField.choices = SortChoices.ToList();
                 sortField.index = 0;
+                VerticalDropdownPopup.Bind(sortField);
                 sortField.RegisterValueChangedCallback(evt => {
                     int index = SortChoices.IndexOf(evt.newValue);
                     sortMode = index >= 0 ? (InventorySortMode)index : InventorySortMode.Type;
@@ -423,8 +415,12 @@ namespace Capstone.Game.Inventory {
         }
 
         public void OpenPetBoxPanel(bool returnToPets = false) {
+            OpenPetBoxPanel(returnToPets ? PetBoxReturnTarget.Pets : PetBoxReturnTarget.Menu);
+        }
+
+        public void OpenPetBoxPanel(PetBoxReturnTarget returnTarget) {
             if (petBoxPanelController == null) EnsurePetBoxPanelController();
-            petBoxPanelController?.OpenFrom(returnToPets ? PetBoxReturnTarget.Pets : PetBoxReturnTarget.Menu);
+            petBoxPanelController?.OpenFrom(returnTarget);
             OpenContentSection(MenuSection.Box);
         }
 
@@ -476,7 +472,34 @@ namespace Capstone.Game.Inventory {
         }
 
         public void OpenPetEvolutionPanel(PetController pet = null) {
-            if (activeSection != MenuSection.Party) OpenContentSection(MenuSection.Party);
+            OpenPetEvolutionPanel(pet, false);
+        }
+
+        public void OpenAutomaticPetEvolutionPrompt(PetController pet) {
+            if (root == null) CacheElements();
+            if (root == null) return;
+
+            root.style.display = DisplayStyle.Flex;
+            petPartyPanelController?.CloseRenamePopup();
+            petPartyPanelController?.CloseDetails();
+            petBoxPanelController?.CloseTransientUi();
+            petSkillsPanelController?.Close();
+            petLevelUpPanelController?.Close();
+            petHealPanelController?.Close();
+            petReleasePanelController?.Close();
+
+            SetVisible(questInventoryShell, false);
+            SetVisible(petsPanel, false);
+            SetVisible(boxPanel, false);
+            SetVisible(placeholderPanel, false);
+
+            if (petEvolutionPanelController == null) EnsurePetEvolutionPanelController();
+            petEvolutionPanelController?.Open(pet, true);
+            VisibilityChanged?.Invoke(true);
+        }
+
+        void OpenPetEvolutionPanel(PetController pet, bool automaticPrompt) {
+            OpenContentSection(MenuSection.Party);
             petPartyPanelController?.CloseRenamePopup();
             petSkillsPanelController?.Close();
             petLevelUpPanelController?.Close();
@@ -484,7 +507,7 @@ namespace Capstone.Game.Inventory {
             petReleasePanelController?.Close();
             petPartyPanelController?.CloseDetails();
             if (petEvolutionPanelController == null) EnsurePetEvolutionPanelController();
-            petEvolutionPanelController?.Open(pet);
+            petEvolutionPanelController?.Open(pet, automaticPrompt);
         }
 
         public void OpenPetReleasePanel(PetController pet = null) {
@@ -527,6 +550,11 @@ namespace Capstone.Game.Inventory {
         }
 
         public bool TryCloseTopmostPanel() {
+            if (activeSection == MenuSection.Box
+                && petBoxPanelController != null
+                && petBoxPanelController.TryCancelInteraction()) {
+                return true;
+            }
             if (petPartyPanelController != null && petPartyPanelController.IsRenameOpen) {
                 petPartyPanelController.CloseRenamePopup();
                 return true;
@@ -536,7 +564,7 @@ namespace Capstone.Game.Inventory {
                 return true;
             }
             if (petEvolutionPanelController != null && petEvolutionPanelController.IsOpen) {
-                petEvolutionPanelController.Close();
+                petEvolutionPanelController.DismissPanel();
                 return true;
             }
             if (petHealPanelController != null && petHealPanelController.IsOpen) {
@@ -599,6 +627,7 @@ namespace Capstone.Game.Inventory {
             }
 
             SetVisible(questPanel, section == MenuSection.Journal);
+            if (section == MenuSection.Journal) GetComponent<QuestPanelController>()?.RefreshOnOpen();
             SetVisible(inventoryPanel, section == MenuSection.Bag);
 
             if (showPetParty) {
@@ -733,13 +762,6 @@ namespace Capstone.Game.Inventory {
             }
         }
 
-        void ToggleCategoryPanel() {
-            categoriesVisible = !categoriesVisible;
-            SetVisible(categoryPanel, categoriesVisible);
-            SetVisible(toolbarSidebarSpacer, categoriesVisible);
-            filterButton?.EnableInClassList("is-selected", categoriesVisible);
-        }
-
         void SubscribeToCurrencyWallet() {
             ResolveReferences();
             if (ReferenceEquals(subscribedCurrencyWallet, currencyWallet)) return;
@@ -774,8 +796,8 @@ namespace Capstone.Game.Inventory {
                 }
                 if (detailName != null) detailName.text = "Chọn một item";
                 if (detailRarity != null) detailRarity.text = "COMMON";
-                if (detailCategory != null) detailCategory.text = "Category: -";
-                if (detailQuantity != null) detailQuantity.text = "Owned: - / -";
+                if (detailCategory != null) detailCategory.text = "Danh mục: -";
+                if (detailQuantity != null) detailQuantity.text = "Sở hữu: - / -";
                 if (detailDescription != null) detailDescription.text = "Chọn một item để xem thông tin.";
                 if (detailEffect != null) detailEffect.text = string.Empty;
                 if (detailSource != null) detailSource.text = "-";
@@ -790,10 +812,10 @@ namespace Capstone.Game.Inventory {
             }
             if (detailName != null) detailName.text = selectedItem.Name;
             if (detailRarity != null) detailRarity.text = FormatRarity(selectedItem.Rarity).ToUpperInvariant();
-            if (detailCategory != null) detailCategory.text = $"Category: {FormatCategory(selectedItem.Category)}";
+            if (detailCategory != null) detailCategory.text = $"Danh mục: {FormatCategory(selectedItem.Category)}";
             if (detailQuantity != null) {
                 int limit = selectedItem.Stackable ? Mathf.Max(1, selectedItem.MaxStackSize) : selectedItem.Quantity;
-                detailQuantity.text = $"Owned: {selectedItem.Quantity} / {limit}";
+                detailQuantity.text = $"Sở hữu: {selectedItem.Quantity} / {limit}";
             }
             if (detailDescription != null) detailDescription.text = string.IsNullOrWhiteSpace(selectedItem.Description) ? "Chưa có mô tả." : selectedItem.Description;
             if (detailEffect != null) detailEffect.text = string.IsNullOrWhiteSpace(selectedItem.Effect) ? string.Empty : selectedItem.Effect;
@@ -839,20 +861,15 @@ namespace Capstone.Game.Inventory {
                 case GameItemCategory.Medicine:
                 case GameItemCategory.Food:
                     ConfigureActionButton(useButton, InventoryActionType.UseItem, "USE");
-                    ConfigureActionButton(giveButton, InventoryActionType.GiveItem, "GIVE");
                     ConfigureActionButton(dropButton, InventoryActionType.DropItem, "DROP");
                     break;
                 case GameItemCategory.CaptureBall:
-                    equipSlotActionType = InventoryActionType.AssignQuickSlot;
-                    ConfigureActionButton(equipButton, InventoryActionType.AssignQuickSlot, "ASSIGN");
                     ConfigureActionButton(dropButton, InventoryActionType.DropItem, "DROP");
                     break;
                 case GameItemCategory.Material:
                     ConfigureActionButton(dropButton, InventoryActionType.DropItem, "DROP");
                     break;
                 case GameItemCategory.Equipment:
-                    equipSlotActionType = InventoryActionType.EquipItem;
-                    ConfigureActionButton(equipButton, InventoryActionType.EquipItem, "EQUIP");
                     ConfigureActionButton(dropButton, InventoryActionType.DropItem, "DROP");
                     break;
                 case GameItemCategory.KeyItem:
@@ -865,7 +882,7 @@ namespace Capstone.Game.Inventory {
 
         static void ResetActionButton(Button button, string label) {
             if (button == null) return;
-            SetButtonVisible(button, true);
+            SetButtonVisible(button, false);
             button.text = label;
             button.SetEnabled(false);
         }
@@ -873,9 +890,10 @@ namespace Capstone.Game.Inventory {
         void ConfigureActionButton(Button button, InventoryActionType actionType, string label) {
             if (button == null) return;
 
-            SetButtonVisible(button, true);
+            bool available = IsActionAvailable(actionType, selectedItem);
+            SetButtonVisible(button, available);
             button.text = label;
-            button.SetEnabled(IsActionAvailable(actionType, selectedItem));
+            button.SetEnabled(available);
         }
 
         static void SetButtonVisible(Button button, bool visible) {
@@ -1169,7 +1187,7 @@ namespace Capstone.Game.Inventory {
                 case GameItemCategory.Equipment: return document.rootVisualElement.Q<Button>("category-equipment");
                 case GameItemCategory.KeyItem: return document.rootVisualElement.Q<Button>("category-key-item");
                 case GameItemCategory.QuestItem: return document.rootVisualElement.Q<Button>("category-quest-item");
-                default: return document.rootVisualElement.Q<Button>("category-all");
+                default: return null;
             }
         }
 
@@ -1186,14 +1204,14 @@ namespace Capstone.Game.Inventory {
 
         static string FormatCategory(GameItemCategory category) {
             switch (category) {
-                case GameItemCategory.CaptureBall: return "Capture Tools";
-                case GameItemCategory.Medicine: return "Recovery";
-                case GameItemCategory.Food: return "Food";
-                case GameItemCategory.Material: return "Materials";
-                case GameItemCategory.Equipment: return "Gear";
-                case GameItemCategory.KeyItem: return "Key Items";
-                case GameItemCategory.QuestItem: return "Quest Items";
-                default: return "All";
+                case GameItemCategory.CaptureBall: return "Dụng cụ bắt";
+                case GameItemCategory.Medicine: return "Hồi phục";
+                case GameItemCategory.Food: return "Thức ăn";
+                case GameItemCategory.Material: return "Nguyên liệu";
+                case GameItemCategory.Equipment: return "Trang bị";
+                case GameItemCategory.KeyItem: return "Vật phẩm chính";
+                case GameItemCategory.QuestItem: return "Vật phẩm Quest";
+                default: return "Không xác định";
             }
         }
 
@@ -1210,14 +1228,13 @@ namespace Capstone.Game.Inventory {
         static readonly Color SmallIconColor = new Color(0.62f, 0.55f, 0.39f);
         static readonly Color DetailPlaceholderColor = new Color(0.43f, 0.49f, 0.31f);
         static readonly List<string> SortChoices = new List<string> {
-            "Sort: Type",
-            "Sort: Name A-Z",
-            "Sort: Name Z-A",
-            "Sort: Quantity",
-            "Sort: Rarity"
+            "Sắp xếp: Loại",
+            "Sắp xếp: Tên A-Z",
+            "Sắp xếp: Tên Z-A",
+            "Sắp xếp: Số lượng",
+            "Sắp xếp: Độ hiếm"
         };
         static readonly List<GameItemCategory> CategoryOrder = new List<GameItemCategory> {
-            GameItemCategory.All,
             GameItemCategory.CaptureBall,
             GameItemCategory.Medicine,
             GameItemCategory.Food,
@@ -1242,6 +1259,52 @@ namespace Capstone.Game.Inventory {
             Box,
             Map,
             Settings
+        }
+    }
+
+    /// <summary>
+    /// Forces UI Toolkit dropdown popups to scroll vertically. GenericDropdownMenu
+    /// otherwise enables both axes and shows a horizontal bar for long labels.
+    /// </summary>
+    public static class VerticalDropdownPopup {
+        const float PopupMinWidth = 220f;
+        const float PopupMaxHeight = 250f;
+
+        public static void Bind(DropdownField field) {
+            field?.RegisterCallback<PointerDownEvent>(ScheduleConfiguration, TrickleDown.TrickleDown);
+        }
+
+        public static void Unbind(DropdownField field) {
+            field?.UnregisterCallback<PointerDownEvent>(ScheduleConfiguration, TrickleDown.TrickleDown);
+        }
+
+        static void ScheduleConfiguration(PointerDownEvent evt) {
+            if (!(evt.currentTarget is DropdownField field)) return;
+            field.schedule.Execute(() => Configure(field)).ExecuteLater(1);
+        }
+
+        static void Configure(DropdownField field) {
+            VisualElement panelRoot = field?.panel?.visualTree;
+            VisualElement outer = panelRoot?.Q<VisualElement>(className: "unity-base-dropdown__container-outer");
+            if (outer == null) return;
+
+            float popupWidth = Mathf.Max(PopupMinWidth, field.resolvedStyle.width);
+            outer.style.minWidth = popupWidth;
+            outer.style.maxHeight = PopupMaxHeight;
+
+            VisualElement inner = outer.Q<VisualElement>(className: "unity-base-dropdown__container-inner");
+            if (inner != null) {
+                inner.style.minWidth = popupWidth - 2f;
+                inner.style.maxHeight = PopupMaxHeight - 8f;
+            }
+
+            ScrollView scrollView = inner as ScrollView ?? inner?.Q<ScrollView>() ?? outer.Q<ScrollView>();
+            if (scrollView == null) return;
+
+            scrollView.mode = ScrollViewMode.Vertical;
+            scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            scrollView.verticalScrollerVisibility = ScrollerVisibility.Auto;
+            scrollView.contentContainer.style.minWidth = popupWidth - 6f;
         }
     }
 }

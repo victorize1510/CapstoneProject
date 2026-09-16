@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Capstone.Game.PetSummon;
 
 [DisallowMultipleComponent]
 public class PetCommandInput : MonoBehaviour
@@ -29,26 +30,23 @@ public class PetCommandInput : MonoBehaviour
     public PetController[] petSlots = new PetController[6];
     public Camera commandCamera;
     public BasicCameraFollow cameraLock;
+    [SerializeField] private PetSummonDirector summonDirector;
 
     [Header("Input")]
     public int commandMouseButton = 0;
     public KeyCode withdrawKey = KeyCode.Backspace;
     public bool ignoreWhileRightMouseHeld = false;
     public bool allowCommandsWhileRightMouseHeld = true;
-    public bool commandLockedEnemyFirst = true;
     public int aimMouseButton = 1;
     public bool ignoreWhenPointerOverUI = true;
 
     [Header("Raycast")]
     public float rayDistance = 250f;
     public LayerMask commandMask = ~0;
-    public bool moveToGroundWhenNoEnemy = true;
-    public float enemySearchRadius = 1.25f;
     public bool useScreenCenterWhenCursorLocked = true;
     public bool useScreenCenterWhileAiming = false;
 
     private readonly RaycastHit[] hits = new RaycastHit[16];
-    private readonly Collider[] nearbyColliders = new Collider[24];
     private void Awake()
     {
         if (commandCamera == null)
@@ -57,6 +55,11 @@ public class PetCommandInput : MonoBehaviour
         }
 
         ResolveCameraLock(commandCamera);
+
+        if (summonDirector == null)
+        {
+            summonDirector = GetComponent<PetSummonDirector>();
+        }
 
         EnsureSlots();
 
@@ -72,11 +75,6 @@ public class PetCommandInput : MonoBehaviour
                 }
             }
 
-            if (activePet == null && candidates.Length > 0)
-            {
-                activePet = candidates[0];
-            }
-
             EnsureSlots();
         }
     }
@@ -89,6 +87,11 @@ public class PetCommandInput : MonoBehaviour
         }
 
         HandlePetSlotInput();
+
+        if (summonDirector != null && summonDirector.IsSequenceRunning)
+        {
+            return;
+        }
 
         if (!Input.GetMouseButtonDown(commandMouseButton) || activePet == null)
         {
@@ -111,13 +114,6 @@ public class PetCommandInput : MonoBehaviour
             return;
         }
 
-        ResolveCameraLock(cameraToUse);
-        if (commandLockedEnemyFirst && cameraLock != null && cameraLock.TryGetLockedEnemy(out DummyEnemy lockedEnemy))
-        {
-            activePet.CommandAttack(lockedEnemy);
-            return;
-        }
-
         Ray ray = cameraToUse.ScreenPointToRay(GetCommandScreenPoint());
         int hitCount = Physics.RaycastNonAlloc(ray, hits, rayDistance, commandMask, QueryTriggerInteraction.Collide);
         if (hitCount <= 0)
@@ -125,26 +121,9 @@ public class PetCommandInput : MonoBehaviour
             return;
         }
 
-        DummyEnemy enemy = FindNearestEnemy(hitCount);
-        if (enemy != null)
+        if (TryFindClickedEnemy(hitCount, out DummyEnemy clickedEnemy))
         {
-            activePet.CommandAttack(enemy);
-            return;
-        }
-
-        if (TryFindNearestHit(hitCount, out RaycastHit nearestHit))
-        {
-            DummyEnemy nearbyEnemy = FindEnemyNearPoint(nearestHit.point);
-            if (nearbyEnemy != null)
-            {
-                activePet.CommandAttack(nearbyEnemy);
-                return;
-            }
-
-            if (moveToGroundWhenNoEnemy)
-            {
-                activePet.CommandMove(nearestHit.point);
-            }
+            activePet.CommandAttack(clickedEnemy);
         }
     }
 
@@ -159,6 +138,8 @@ public class PetCommandInput : MonoBehaviour
 
     private void HandlePetSlotInput()
     {
+        EnsureSlots();
+
         for (int i = 0; i < petSlots.Length && i < NumberKeys.Length; i++)
         {
             if (Input.GetKeyDown(NumberKeys[i]) || Input.GetKeyDown(KeypadKeys[i]))
@@ -181,8 +162,13 @@ public class PetCommandInput : MonoBehaviour
             return;
         }
 
-        PetController selectedPet = petSlots[slotIndex];
-        if (selectedPet == null)
+        if (summonDirector != null)
+        {
+            summonDirector.RequestSummonSlot(slotIndex);
+            return;
+        }
+
+        if (!TryGetPetInSlot(slotIndex, out PetController selectedPet))
         {
             return;
         }
@@ -197,8 +183,27 @@ public class PetCommandInput : MonoBehaviour
         activePet.Summon();
     }
 
+    public bool TryGetPetInSlot(int slotIndex, out PetController pet)
+    {
+        EnsureSlots();
+        pet = null;
+        if (slotIndex < 0 || slotIndex >= petSlots.Length)
+        {
+            return false;
+        }
+
+        pet = petSlots[slotIndex];
+        return pet != null;
+    }
+
     private void WithdrawActivePet()
     {
+        if (summonDirector != null)
+        {
+            summonDirector.RequestRecall();
+            return;
+        }
+
         if (activePet == null)
         {
             return;
@@ -223,7 +228,7 @@ public class PetCommandInput : MonoBehaviour
             }
         }
 
-        if (activePet != null && petSlots[0] == null)
+        if (activePet != null && petSlots[0] == null && System.Array.IndexOf(petSlots, activePet) < 0)
         {
             petSlots[0] = activePet;
         }
@@ -278,81 +283,32 @@ public class PetCommandInput : MonoBehaviour
         cameraLock = FindFirstObjectByType<BasicCameraFollow>();
     }
 
-    private DummyEnemy FindNearestEnemy(int hitCount)
+    private bool TryFindClickedEnemy(int hitCount, out DummyEnemy clickedEnemy)
     {
-        DummyEnemy bestEnemy = null;
+        clickedEnemy = null;
         float bestDistance = float.PositiveInfinity;
 
         for (int i = 0; i < hitCount; i++)
         {
-            DummyEnemy enemy = hits[i].collider.GetComponentInParent<DummyEnemy>();
-            if (enemy == null || !enemy.IsAlive)
+            Collider candidate = hits[i].collider;
+            if (candidate == null || hits[i].distance >= bestDistance)
             {
                 continue;
             }
 
-            if (hits[i].distance < bestDistance)
-            {
-                bestDistance = hits[i].distance;
-                bestEnemy = enemy;
-            }
-        }
-
-        return bestEnemy;
-    }
-
-    private bool TryFindNearestHit(int hitCount, out RaycastHit nearestHit)
-    {
-        int bestIndex = -1;
-        float bestDistance = float.PositiveInfinity;
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            if (hits[i].distance < bestDistance)
-            {
-                bestIndex = i;
-                bestDistance = hits[i].distance;
-            }
-        }
-
-        nearestHit = bestIndex >= 0 ? hits[bestIndex] : default;
-        return bestIndex >= 0;
-    }
-
-    private DummyEnemy FindEnemyNearPoint(Vector3 point)
-    {
-        if (enemySearchRadius <= 0f)
-        {
-            return null;
-        }
-
-        int count = Physics.OverlapSphereNonAlloc(point, enemySearchRadius, nearbyColliders, commandMask, QueryTriggerInteraction.Collide);
-        DummyEnemy bestEnemy = null;
-        float bestDistance = float.PositiveInfinity;
-
-        for (int i = 0; i < count; i++)
-        {
-            Collider targetCollider = nearbyColliders[i];
-            nearbyColliders[i] = null;
-            if (targetCollider == null)
+            DummyEnemy enemy = candidate.GetComponentInParent<DummyEnemy>();
+            if (candidate.transform.IsChildOf(transform)
+                || candidate.GetComponentInParent<PetController>() != null
+                || (candidate.isTrigger && enemy == null))
             {
                 continue;
             }
 
-            DummyEnemy enemy = targetCollider.GetComponentInParent<DummyEnemy>();
-            if (enemy == null || !enemy.IsAlive)
-            {
-                continue;
-            }
-
-            float distance = Vector3.SqrMagnitude(enemy.TargetPosition - point);
-            if (distance < bestDistance)
-            {
-                bestDistance = distance;
-                bestEnemy = enemy;
-            }
+            bestDistance = hits[i].distance;
+            clickedEnemy = enemy != null && enemy.IsAlive ? enemy : null;
         }
 
-        return bestEnemy;
+        return clickedEnemy != null;
     }
+
 }

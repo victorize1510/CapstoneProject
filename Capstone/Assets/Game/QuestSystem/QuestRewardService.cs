@@ -20,6 +20,11 @@ namespace Capstone.Game.QuestSystem {
 
         bool subscribed;
 
+        public string LastFailedQuestId { get; private set; } = string.Empty;
+        public string LastFailureMessage { get; private set; } = string.Empty;
+        public event Action<string, string> RewardGrantFailed;
+        public event Action<string> RewardsGranted;
+
         public void Bind(
             QuestManager manager,
             MonsterInventoryAdapter inventoryAdapter,
@@ -43,7 +48,7 @@ namespace Capstone.Game.QuestSystem {
         void Start() {
             ResolveReferences();
             Subscribe();
-            GrantPendingRewards();
+            RetryPendingRewards();
         }
 
         void OnDisable() {
@@ -65,12 +70,12 @@ namespace Capstone.Game.QuestSystem {
         }
 
         void HandleLoadCompleted(PlayerSaveData _) {
-            GrantPendingRewards();
+            RetryPendingRewards();
         }
 
-        void GrantPendingRewards() {
+        public void RetryPendingRewards() {
             if (questManager == null) return;
-            foreach (QuestRuntimeState state in questManager.GetAllQuests()) {
+            foreach (QuestRuntimeState state in new List<QuestRuntimeState>(questManager.GetAllQuests())) {
                 if (state == null || state.Status != QuestStatus.Completed || state.RewardsClaimed) continue;
                 HandleRewardsReady(state, state.Definition != null ? state.Definition.Rewards : Array.Empty<QuestRewardDefinition>());
             }
@@ -82,7 +87,17 @@ namespace Capstone.Game.QuestSystem {
 
             try {
                 if (!TryGrantTransaction(state, rewards, out string error)) {
+                    LastFailedQuestId = state.QuestId;
+                    LastFailureMessage = error;
+                    RewardGrantFailed?.Invoke(state.QuestId, error);
                     Debug.LogWarning($"Could not grant rewards for quest '{state.QuestId}': {error}", this);
+                }
+                else {
+                    if (string.Equals(LastFailedQuestId, state.QuestId, StringComparison.OrdinalIgnoreCase)) {
+                        LastFailedQuestId = string.Empty;
+                        LastFailureMessage = string.Empty;
+                    }
+                    RewardsGranted?.Invoke(state.QuestId);
                 }
             } finally {
                 processingQuestIds.Remove(state.QuestId);
@@ -95,7 +110,7 @@ namespace Capstone.Game.QuestSystem {
             out string error) {
             error = string.Empty;
             if (saveController == null) {
-                error = "Player save controller is unavailable.";
+                error = "Không thể nhận thưởng vì hệ thống lưu chưa sẵn sàng.";
                 return false;
             }
             if (!ValidateRewards(rewards, out error)) return false;
@@ -119,7 +134,7 @@ namespace Capstone.Game.QuestSystem {
                                 ItemBase itemBase = ResolveItem(reward);
                                 Result addResult = inventory.AddItem(itemBase, reward.Amount);
                                 if (addResult is not Success) {
-                                    error = $"Inventory has no room for {reward.DisplayName}.";
+                                    error = $"Túi đồ không còn chỗ cho {reward.DisplayName}. Hãy dọn túi rồi mở lại Quest để thử nhận thưởng.";
                                     Rollback(grantedGold, grantedItems, profileSnapshot, state);
                                     return false;
                                 }
@@ -135,13 +150,13 @@ namespace Capstone.Game.QuestSystem {
                 }
 
                 if (!questManager.SetRewardsClaimed(state, true)) {
-                    error = "Quest state could not be marked as rewarded.";
+                    error = "Không thể cập nhật trạng thái đã nhận thưởng của nhiệm vụ.";
                     Rollback(grantedGold, grantedItems, profileSnapshot, state);
                     return false;
                 }
 
                 if (!saveController.SaveNow()) {
-                    error = "The reward transaction could not be saved.";
+                    error = "Không thể lưu giao dịch nhận thưởng. Phần thưởng đã được hoàn tác.";
                     Rollback(grantedGold, grantedItems, profileSnapshot, state);
                     return false;
                 }
@@ -163,30 +178,30 @@ namespace Capstone.Game.QuestSystem {
                 switch (reward.RewardType) {
                     case QuestRewardType.Gold:
                         if (currencyWallet != null) continue;
-                        error = "Gold wallet is unavailable.";
+                        error = "Ví Gold chưa sẵn sàng.";
                         return false;
 
                     case QuestRewardType.Currency:
                         if (currencyWallet != null && IsGoldCurrency(reward.CurrencyId)) continue;
-                        error = $"Currency '{reward.CurrencyId}' is not connected.";
+                        error = $"Loại tiền '{reward.CurrencyId}' chưa được kết nối.";
                         return false;
 
                     case QuestRewardType.Item:
                         if (inventory != null && ResolveItem(reward) != null) continue;
-                        error = $"Item reward '{reward.TargetId}' is not present in the inventory catalog.";
+                        error = $"Item thưởng '{reward.TargetId}' chưa có trong danh mục Inventory.";
                         return false;
 
                     case QuestRewardType.Experience:
                         if (profileProvider != null) continue;
-                        error = "Player profile is unavailable for the experience reward.";
+                        error = "Hồ sơ người chơi chưa sẵn sàng để nhận EXP.";
                         return false;
 
                     case QuestRewardType.Unlock:
-                        error = $"Unlock reward '{reward.TargetId}' has no gameplay handler yet.";
+                        error = $"Phần thưởng mở khóa '{reward.TargetId}' chưa có xử lý gameplay.";
                         return false;
 
                     default:
-                        error = $"Reward type '{reward.RewardType}' has no gameplay handler yet.";
+                        error = $"Loại phần thưởng '{reward.RewardType}' chưa có xử lý gameplay.";
                         return false;
                 }
             }

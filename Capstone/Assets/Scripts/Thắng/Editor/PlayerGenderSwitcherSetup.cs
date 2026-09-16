@@ -670,7 +670,8 @@ public static class PlayerGenderSwitcherSetup
     {
         ConfigureBoyModelImporter(BoyModelPath);
         ConfigureAnimationImporter(BoyAnimationsPath, "Alert", "RunFast", "Run_03", "Running", "Walking", "Character_output");
-        // Standalone Mixamo FBX files stay untouched; runtime .anim copies are retargeted to BOY's Armature root.
+        ConfigureSingleClipAnimationImporter(BoyPickUpPath, "PickupBOY", false);
+        ConfigureSingleClipAnimationImporter(BoyThrowPath, "Throw_boy", false);
     }
 
     private static void ConfigureBoyModelImporter(string assetPath)

@@ -383,7 +383,7 @@ public static class CapstonePlayerSetup
             new Keyframe(1f, 0f));
         movement.floatFallDelay = 0.18f;
         movement.floatFallVerticalSpeed = -3f;
-        movement.rollKey = KeyCode.Q;
+        movement.rollKey = KeyCode.None;
         movement.idleRollDuration = 0.78f;
         movement.sprintRollDuration = 0.55f;
         movement.idleRollDistance = 5.2f;

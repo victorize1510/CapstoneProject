@@ -12,13 +12,24 @@ namespace Capstone.Game.HudSystem {
     public sealed class GameplayHudController : MonoBehaviour {
         const string RootName = "GameplayHUDRoot";
         const string LegacyQuestTrackerObjectName = "QuestTrackerHUD";
-        const float MinimapSize = 236f;
-        const float LeftMargin = 28f;
+        const float MinimapSize = 304f;
+        const float LeftMargin = 32f;
         const float TopMargin = 28f;
 
         static readonly string[] SkillKeyLabels = { "Z", "X", "C", "V" };
         static readonly KeyCode[] SkillHotkeys = { KeyCode.Z, KeyCode.X, KeyCode.C, KeyCode.V };
+        static readonly Color Paper = new Color(0.985f, 0.99f, 0.965f, 0.94f);
+        static readonly Color Forest = new Color(0.12f, 0.31f, 0.16f, 1f);
+        static readonly Color Green = new Color(0.28f, 0.57f, 0.29f, 1f);
+        static readonly Color PaleGreen = new Color(0.86f, 0.93f, 0.83f, 0.94f);
+        static readonly Color BorderGreen = new Color(0.27f, 0.55f, 0.29f, 0.95f);
+        static readonly Color MutedGreen = new Color(0.35f, 0.46f, 0.36f, 1f);
+        static readonly Color ActiveGold = new Color(0.88f, 0.67f, 0.10f, 1f);
+        static readonly Color ManaBlue = new Color(0.33f, 0.64f, 0.91f, 1f);
         static Sprite solidSprite;
+        static Sprite roundedSprite;
+        static Sprite circleSprite;
+        static Sprite circleRingSprite;
         static Font cachedFont;
 
         [Header("References")]
@@ -46,10 +57,9 @@ namespace Capstone.Game.HudSystem {
         Text petLevelText;
         Text petNameText;
         Text hpText;
-        Text energyText;
+        Text expText;
         Image hpFill;
-        Image energyFill;
-        Image petIcon;
+        Image expFill;
         QuestManager subscribedQuestManager;
 
         readonly List<Button> petSlotButtons = new List<Button>();
@@ -57,6 +67,9 @@ namespace Capstone.Game.HudSystem {
         readonly List<Image> petSlotIcons = new List<Image>();
         readonly List<Image> petSlotStateStrips = new List<Image>();
         readonly List<Text> petSlotStateLabels = new List<Text>();
+        readonly List<Text> petSlotLevelLabels = new List<Text>();
+        readonly List<RectTransform> petSlotStateBadges = new List<RectTransform>();
+        readonly List<Outline> petSlotOutlines = new List<Outline>();
         readonly List<Button> skillButtons = new List<Button>();
         readonly List<Text> skillLabels = new List<Text>();
         readonly List<Text> skillNameLabels = new List<Text>();
@@ -126,12 +139,11 @@ namespace Capstone.Game.HudSystem {
             if (positionExistingMinimap) PositionMinimap();
 
             BuildMinimapFallback(root);
-            BuildQuestTracker(root);
-            BuildPetSlots(root);
             BuildPetStatus(root);
+            BuildPetSlots(root);
             BuildSkillBar(root);
             BuildSkillTooltip(root);
-            BuildTabHint(root);
+            BuildQuickItems(root);
 
             RefreshHud(true);
         }
@@ -144,16 +156,18 @@ namespace Capstone.Game.HudSystem {
             petLevelText = null;
             petNameText = null;
             hpText = null;
-            energyText = null;
+            expText = null;
             hpFill = null;
-            energyFill = null;
-            petIcon = null;
+            expFill = null;
 
             petSlotButtons.Clear();
             petSlotNumbers.Clear();
             petSlotIcons.Clear();
             petSlotStateStrips.Clear();
             petSlotStateLabels.Clear();
+            petSlotLevelLabels.Clear();
+            petSlotStateBadges.Clear();
+            petSlotOutlines.Clear();
             skillButtons.Clear();
             skillLabels.Clear();
             skillNameLabels.Clear();
@@ -331,15 +345,20 @@ namespace Capstone.Game.HudSystem {
                 return;
             }
 
-            minimapPlaceholder = CreatePanel(parent, "MinimapPlaceholder", new Color(0.02f, 0.10f, 0.11f, 0.82f));
+            minimapPlaceholder = CreatePanel(parent, "MinimapPlaceholder", new Color(0.92f, 0.96f, 0.90f, 0.90f));
             SetTopLeft(minimapPlaceholder, LeftMargin, TopMargin, MinimapSize, MinimapSize);
+            Image placeholderImage = minimapPlaceholder.GetComponent<Image>();
+            placeholderImage.sprite = CircleSprite;
+            placeholderImage.type = Image.Type.Simple;
             minimapPlaceholder.gameObject.SetActive(minimapPanel == null);
 
-            Image ring = CreateImage(minimapPlaceholder, "MinimapRing", new Color(0.82f, 0.66f, 0.34f, 1f));
-            Stretch(ring.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f));
+            Text arrow = CreateText(minimapPlaceholder, "PlayerArrow", "▲", 24, FontStyle.Bold, BorderGreen, TextAnchor.MiddleCenter);
+            SetCenter(arrow.rectTransform, 0f, 0f, 44f, 44f);
 
-            Text label = CreateText(minimapPlaceholder, "MinimapLabel", "Minimap", 18, FontStyle.Bold, new Color(0.92f, 0.86f, 0.70f, 1f), TextAnchor.MiddleCenter);
-            Stretch(label.rectTransform, Vector2.zero, Vector2.zero);
+            Image ring = CreateImage(parent, "MinimapFrame", BorderGreen);
+            ring.sprite = CircleRingSprite;
+            ring.type = Image.Type.Simple;
+            SetTopLeft(ring.rectTransform, LeftMargin - 3f, TopMargin - 3f, MinimapSize + 6f, MinimapSize + 6f);
         }
 
         void BuildQuestTracker(RectTransform parent) {
@@ -361,79 +380,89 @@ namespace Capstone.Game.HudSystem {
         }
 
         void BuildPetSlots(RectTransform parent) {
-            petSlotsRoot = CreatePanel(parent, "PetSlots", new Color(0.02f, 0.05f, 0.05f, 0.22f));
-            SetBottomLeft(petSlotsRoot, LeftMargin, 172f, 60f, 376f);
+            petSlotsRoot = CreatePanel(parent, "PetSlots", Color.clear);
+            SetBottomLeft(petSlotsRoot, LeftMargin, 30f, 520f, 104f);
 
-            VerticalLayoutGroup layout = petSlotsRoot.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(6, 6, 8, 8);
+            HorizontalLayoutGroup layout = petSlotsRoot.gameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.padding = new RectOffset(0, 0, 0, 0);
             layout.spacing = 8f;
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childForceExpandWidth = true;
+            layout.childAlignment = TextAnchor.LowerLeft;
+            layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
-            layout.childControlWidth = true;
+            layout.childControlWidth = false;
             layout.childControlHeight = false;
 
             for (int i = 0; i < 6; i++) {
                 int index = i;
                 Button button = CreateButton(petSlotsRoot, "PetSlot" + (i + 1), string.Empty);
                 RectTransform buttonRect = button.GetComponent<RectTransform>();
-                buttonRect.sizeDelta = new Vector2(48f, 52f);
+                buttonRect.sizeDelta = new Vector2(80f, 104f);
+                Outline outline = AddOutline(button.gameObject, BorderGreen, 1f);
                 button.onClick.AddListener(() => Provider?.SelectPetSlot(index));
 
-                Text number = CreateText(buttonRect, "Number", (i + 1).ToString(), 14, FontStyle.Bold, Color.white, TextAnchor.UpperLeft);
-                SetTopLeft(number.rectTransform, 4f, 2f, 20f, 20f);
+                Text number = CreateText(buttonRect, "Number", (i + 1).ToString(), 13, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
+                SetTopLeft(number.rectTransform, 5f, 5f, 20f, 18f);
 
-                Image icon = CreateImage(buttonRect, "Icon", new Color(0.80f, 0.68f, 0.45f, 0.55f));
-                SetCenter(icon.rectTransform, 0f, 4f, 28f, 28f);
+                Text level = CreateText(buttonRect, "Level", string.Empty, 10, FontStyle.Bold, MutedGreen, TextAnchor.MiddleRight);
+                SetTopLeft(level.rectTransform, 38f, 5f, 35f, 18f);
 
-                Image stateStrip = CreateImage(buttonRect, "StateStrip", Color.clear);
-                SetTopLeft(stateStrip.rectTransform, 0f, 0f, 5f, 52f);
+                Image icon = CreateImage(buttonRect, "Icon", PaleGreen);
+                SetTopLeft(icon.rectTransform, 10f, 21f, 60f, 54f);
 
-                Text stateLabel = CreateText(buttonRect, "State", string.Empty, 8, FontStyle.Bold, Color.white, TextAnchor.LowerRight);
-                Stretch(stateLabel.rectTransform, new Vector2(4f, 2f), new Vector2(-4f, -3f));
+                RectTransform hpBar = CreateBar(buttonRect, "HPBar", Green, out Image stateStrip);
+                SetTopLeft(hpBar, 9f, 77f, 62f, 6f);
+
+                RectTransform activeBadge = CreatePanel(buttonRect, "ActiveBadge", ActiveGold);
+                SetBottomLeft(activeBadge, 8f, 2f, 64f, 17f);
+                Text stateLabel = CreateText(activeBadge, "State", "ACTIVE", 9, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
+                Stretch(stateLabel.rectTransform);
+                activeBadge.gameObject.SetActive(false);
 
                 petSlotButtons.Add(button);
                 petSlotNumbers.Add(number);
                 petSlotIcons.Add(icon);
                 petSlotStateStrips.Add(stateStrip);
                 petSlotStateLabels.Add(stateLabel);
+                petSlotLevelLabels.Add(level);
+                petSlotStateBadges.Add(activeBadge);
+                petSlotOutlines.Add(outline);
             }
         }
 
         void BuildPetStatus(RectTransform parent) {
-            RectTransform panel = CreatePanel(parent, "PetStatus", new Color(0.015f, 0.08f, 0.10f, 0.74f));
-            SetBottomLeft(panel, LeftMargin, 56f, 346f, 98f);
+            RectTransform panel = CreatePanel(parent, "PetStatus", Paper);
+            SetBottomLeft(panel, LeftMargin, 150f, 520f, 112f);
+            AddOutline(panel.gameObject, BorderGreen, 1f);
 
-            RectTransform badge = CreatePanel(panel, "LevelBadge", new Color(0.70f, 0.52f, 0.21f, 0.95f));
-            SetTopLeft(badge, 12f, 12f, 52f, 52f);
-            petLevelText = CreateText(badge, "Level", "Lv. -", 15, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
-            Stretch(petLevelText.rectTransform, Vector2.zero, Vector2.zero);
+            petNameText = CreateText(panel, "PetName", "No Pet", 21, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
+            SetTopLeft(petNameText.rectTransform, 16f, 9f, 350f, 28f);
 
-            petIcon = CreateImage(panel, "PetIcon", new Color(0.85f, 0.74f, 0.52f, 0.5f));
-            SetTopLeft(petIcon.rectTransform, 72f, 12f, 52f, 52f);
+            petLevelText = CreateText(panel, "Level", "Lv. -", 16, FontStyle.Normal, MutedGreen, TextAnchor.MiddleRight);
+            SetTopLeft(petLevelText.rectTransform, 382f, 10f, 120f, 26f);
 
-            petNameText = CreateText(panel, "PetName", "No Pet", 16, FontStyle.Bold, new Color(0.94f, 0.88f, 0.72f, 1f), TextAnchor.MiddleLeft);
-            SetTopLeft(petNameText.rectTransform, 134f, 8f, 186f, 24f);
+            Text hpLabel = CreateText(panel, "HPLabel", "HP", 13, FontStyle.Bold, MutedGreen, TextAnchor.MiddleLeft);
+            SetTopLeft(hpLabel.rectTransform, 16f, 43f, 34f, 20f);
+            RectTransform hpBar = CreateBar(panel, "HPBar", Green, out hpFill);
+            SetTopLeft(hpBar, 52f, 48f, 342f, 11f);
+            hpText = CreateText(panel, "HPText", "0 / 0", 13, FontStyle.Normal, MutedGreen, TextAnchor.MiddleRight);
+            SetTopLeft(hpText.rectTransform, 404f, 42f, 98f, 22f);
 
-            RectTransform hpBar = CreateBar(panel, "HPBar", new Color(0.06f, 0.50f, 0.22f, 1f), out hpFill);
-            SetTopLeft(hpBar, 134f, 38f, 188f, 14f);
-            hpText = CreateText(hpBar, "HPText", "0 / 0", 11, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
-            Stretch(hpText.rectTransform, Vector2.zero, Vector2.zero);
-
-            RectTransform energyBar = CreateBar(panel, "EnergyBar", new Color(0.10f, 0.44f, 0.86f, 1f), out energyFill);
-            SetTopLeft(energyBar, 134f, 62f, 188f, 14f);
-            energyText = CreateText(energyBar, "EnergyText", "0 / 0", 11, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
-            Stretch(energyText.rectTransform, Vector2.zero, Vector2.zero);
+            Text manaLabel = CreateText(panel, "MPLabel", "MP", 13, FontStyle.Bold, MutedGreen, TextAnchor.MiddleLeft);
+            SetTopLeft(manaLabel.rectTransform, 16f, 76f, 34f, 20f);
+            RectTransform manaBar = CreateBar(panel, "MPBar", ManaBlue, out expFill);
+            SetTopLeft(manaBar, 52f, 81f, 342f, 11f);
+            expText = CreateText(panel, "MPText", "0 / 0", 13, FontStyle.Normal, MutedGreen, TextAnchor.MiddleRight);
+            SetTopLeft(expText.rectTransform, 404f, 75f, 98f, 22f);
         }
 
         void BuildSkillBar(RectTransform parent) {
-            skillBarRoot = CreatePanel(parent, "SkillBar", new Color(0.02f, 0.06f, 0.07f, 0.32f));
-            SetBottomCenter(skillBarRoot, 0f, 38f, 360f, 82f);
+            skillBarRoot = CreatePanel(parent, "SkillBar", Color.clear);
+            SetBottomCenter(skillBarRoot, 0f, 30f, 368f, 104f);
 
             HorizontalLayoutGroup layout = skillBarRoot.gameObject.AddComponent<HorizontalLayoutGroup>();
-            layout.padding = new RectOffset(12, 12, 8, 8);
-            layout.spacing = 14f;
-            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.padding = new RectOffset(0, 0, 0, 0);
+            layout.spacing = 16f;
+            layout.childAlignment = TextAnchor.LowerCenter;
             layout.childForceExpandWidth = false;
             layout.childForceExpandHeight = false;
             layout.childControlWidth = false;
@@ -441,22 +470,28 @@ namespace Capstone.Game.HudSystem {
 
             for (int i = 0; i < 4; i++) {
                 int index = i;
-                Button button = CreateButton(skillBarRoot, "Skill" + (i + 1), string.Empty);
+                RectTransform slot = CreateRect(skillBarRoot, "SkillSlot" + (i + 1));
+                slot.sizeDelta = new Vector2(80f, 104f);
+
+                Button button = CreateButton(slot, "Skill" + (i + 1), string.Empty);
                 RectTransform rect = button.GetComponent<RectTransform>();
-                rect.sizeDelta = new Vector2(68f, 68f);
+                SetTopLeft(rect, 3f, 0f, 74f, 74f);
+                AddOutline(button.gameObject, BorderGreen, 1f);
                 button.onClick.AddListener(() => Provider?.RequestSkill(index));
 
-                Image icon = CreateImage(rect, "Icon", SkillColor(i));
-                Stretch(icon.rectTransform, new Vector2(8f, 8f), new Vector2(-8f, -8f));
+                Image icon = CreateImage(rect, "Icon", PaleGreen);
+                Stretch(icon.rectTransform, new Vector2(9f, 9f), new Vector2(-9f, -9f));
 
-                Text skillName = CreateText(rect, "SkillName", string.Empty, 11, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
-                Stretch(skillName.rectTransform, new Vector2(8f, 16f), new Vector2(-8f, -16f));
+                Text skillName = CreateText(rect, "SkillName", string.Empty, 11, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
+                Stretch(skillName.rectTransform, new Vector2(8f, 8f), new Vector2(-8f, -8f));
 
-                Image cooldownFill = CreateImage(rect, "CooldownFill", new Color(0f, 0f, 0f, 0.68f));
-                Stretch(cooldownFill.rectTransform, new Vector2(8f, 8f), new Vector2(-8f, -8f));
+                Image cooldownFill = CreateImage(rect, "CooldownFill", new Color(0.06f, 0.10f, 0.07f, 0.62f));
+                cooldownFill.sprite = RoundedSprite;
+                cooldownFill.type = Image.Type.Sliced;
+                Stretch(cooldownFill.rectTransform, new Vector2(9f, 9f), new Vector2(-9f, -9f));
                 SetTopFill(cooldownFill, 0f);
 
-                Image cooldownSweep = CreateImage(rect, "CooldownSweep", new Color(0.78f, 0.96f, 1f, 0.72f));
+                Image cooldownSweep = CreateImage(rect, "CooldownSweep", new Color(0.72f, 0.91f, 0.74f, 0.82f));
                 RectTransform sweepRect = cooldownSweep.rectTransform;
                 sweepRect.anchorMin = new Vector2(0f, 1f);
                 sweepRect.anchorMax = new Vector2(1f, 1f);
@@ -468,8 +503,11 @@ namespace Capstone.Game.HudSystem {
                 Text cooldownText = CreateText(rect, "CooldownText", string.Empty, 18, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
                 Stretch(cooldownText.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f));
 
-                Text label = CreateText(rect, "Label", SkillKeyLabel(i), 13, FontStyle.Bold, Color.white, TextAnchor.LowerCenter);
-                Stretch(label.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 2f));
+                RectTransform keyCap = CreatePanel(slot, "KeyCap", Paper);
+                SetBottomLeft(keyCap, 22f, 0f, 36f, 24f);
+                AddOutline(keyCap.gameObject, BorderGreen, 1f);
+                Text label = CreateText(keyCap, "Label", SkillKeyLabel(i), 13, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
+                Stretch(label.rectTransform);
 
                 AddSkillHoverEvents(button, index);
 
@@ -483,9 +521,52 @@ namespace Capstone.Game.HudSystem {
             }
         }
 
+        void BuildQuickItems(RectTransform parent) {
+            RectTransform quickItems = CreatePanel(parent, "QuickItems", Color.clear);
+            SetBottomRight(quickItems, 32f, 30f, 108f, 80f);
+
+            HorizontalLayoutGroup layout = quickItems.gameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.padding = new RectOffset(0, 0, 0, 0);
+            layout.spacing = 16f;
+            layout.childAlignment = TextAnchor.LowerRight;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+
+            string[] keys = { "R", "T" };
+            Color[] accents = {
+                new Color(0.78f, 0.30f, 0.29f, 0.80f),
+                new Color(0.31f, 0.58f, 0.86f, 0.80f)
+            };
+
+            for (int i = 0; i < keys.Length; i++) {
+                RectTransform slot = CreateRect(quickItems, "QuickItem" + keys[i]);
+                slot.sizeDelta = new Vector2(46f, 80f);
+
+                Image item = CreateImage(slot, "Icon", Paper);
+                item.sprite = CircleSprite;
+                item.type = Image.Type.Simple;
+                SetTopLeft(item.rectTransform, 4f, 2f, 38f, 38f);
+                AddOutline(item.gameObject, BorderGreen, 1f);
+
+                Image placeholder = CreateImage(item.rectTransform, "Placeholder", accents[i]);
+                placeholder.sprite = CircleSprite;
+                placeholder.type = Image.Type.Simple;
+                SetCenter(placeholder.rectTransform, 0f, 0f, 15f, 15f);
+
+                RectTransform keyCap = CreatePanel(slot, "KeyCap", Paper);
+                SetBottomLeft(keyCap, 7f, 0f, 32f, 22f);
+                AddOutline(keyCap.gameObject, BorderGreen, 1f);
+                Text key = CreateText(keyCap, "Label", keys[i], 12, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
+                Stretch(key.rectTransform);
+            }
+        }
+
         void BuildSkillTooltip(RectTransform parent) {
-            skillTooltip = CreatePanel(parent, "SkillTooltip", new Color(0f, 0f, 0f, 0.86f));
-            SetBottomCenter(skillTooltip, 0f, 128f, 282f, 104f);
+            skillTooltip = CreatePanel(parent, "SkillTooltip", new Color(0.07f, 0.16f, 0.09f, 0.94f));
+            SetBottomCenter(skillTooltip, 0f, 146f, 282f, 104f);
+            AddOutline(skillTooltip.gameObject, new Color(0.68f, 0.82f, 0.64f, 0.9f), 1f);
             skillTooltip.gameObject.SetActive(false);
 
             skillTooltipTitle = CreateText(skillTooltip, "Title", string.Empty, 15, FontStyle.Bold, Color.white, TextAnchor.UpperLeft);
@@ -565,8 +646,8 @@ namespace Capstone.Game.HudSystem {
         void PositionSkillTooltip(int index) {
             if (skillTooltip == null) return;
 
-            float x = -126f + Mathf.Clamp(index, 0, 3) * 84f;
-            SetBottomCenter(skillTooltip, x, 128f, 282f, 104f);
+            float x = -144f + Mathf.Clamp(index, 0, 3) * 96f;
+            SetBottomCenter(skillTooltip, x, 146f, 282f, 104f);
         }
 
         void BuildTabHint(RectTransform parent) {
@@ -598,17 +679,16 @@ namespace Capstone.Game.HudSystem {
             if (Provider == null || petLevelText == null) return;
 
             PetStatusHudData status = Provider.GetSelectedPetStatus();
-            petLevelText.text = status.hasPet && status.level > 0 ? status.level.ToString() : "-";
+            petLevelText.text = status.hasPet && status.level > 0 ? "Lv. " + status.level : "Lv. -";
             petNameText.text = status.hasPet ? status.displayName : "No Pet";
             hpText.text = status.hasPet && status.maxHealth > 0f
                 ? $"{Mathf.RoundToInt(status.health)} / {Mathf.RoundToInt(status.maxHealth)}"
                 : "- / -";
-            energyText.text = status.hasPet && status.maxEnergy > 0f
+            expText.text = status.hasPet && status.maxEnergy > 0f
                 ? $"{Mathf.RoundToInt(status.energy)} / {Mathf.RoundToInt(status.maxEnergy)}"
                 : "- / -";
             SetFill(hpFill, status.HealthPercent);
-            SetFill(energyFill, status.EnergyPercent);
-            SetOptionalSprite(petIcon, status.icon, new Color(0.85f, 0.74f, 0.52f, 0.5f));
+            SetFill(expFill, status.EnergyPercent);
         }
 
         void RefreshPetSlots() {
@@ -624,49 +704,42 @@ namespace Capstone.Game.HudSystem {
                 petSlotButtons[i].interactable = slot.occupied;
 
                 Color buttonColor;
-                Color stripColor;
-                string stateText;
                 Color numberColor;
+                bool active = slot.occupied && slot.selected;
+                bool defeated = slot.occupied && slot.maxHealth > 0f && slot.health <= 0f;
 
                 if (!slot.occupied) {
-                    buttonColor = new Color(0.05f, 0.07f, 0.07f, 0.30f);
-                    stripColor = Color.clear;
-                    stateText = string.Empty;
-                    numberColor = new Color(1f, 1f, 1f, 0.55f);
-                }
-                else if (slot.summoned && slot.selected) {
-                    buttonColor = new Color(0.03f, 0.35f, 0.23f, 0.98f);
-                    stripColor = new Color(0.14f, 0.94f, 0.58f, 1f);
-                    stateText = "ON";
-                    numberColor = new Color(0.98f, 0.96f, 0.78f, 1f);
-                }
-                else if (slot.summoned) {
-                    buttonColor = new Color(0.05f, 0.28f, 0.22f, 0.9f);
-                    stripColor = new Color(0.20f, 0.78f, 0.74f, 1f);
-                    stateText = "ON";
-                    numberColor = Color.white;
+                    buttonColor = new Color(Paper.r, Paper.g, Paper.b, 0.52f);
+                    numberColor = new Color(Forest.r, Forest.g, Forest.b, 0.48f);
                 }
                 else {
-                    buttonColor = slot.selected
-                        ? new Color(0.34f, 0.28f, 0.12f, 0.92f)
-                        : new Color(0.08f, 0.13f, 0.13f, 0.66f);
-                    stripColor = new Color(0.60f, 0.63f, 0.57f, 0.75f);
-                    stateText = "WAIT";
-                    numberColor = new Color(0.88f, 0.88f, 0.78f, 0.9f);
+                    buttonColor = defeated
+                        ? new Color(0.86f, 0.87f, 0.83f, 0.76f)
+                        : Paper;
+                    numberColor = Forest;
                 }
 
                 SetButtonColor(petSlotButtons[i], buttonColor);
                 petSlotNumbers[i].color = numberColor;
                 SetOptionalSprite(petSlotIcons[i], slot.icon, slot.occupied
-                    ? new Color(0.82f, 0.68f, 0.42f, 0.7f)
-                    : new Color(0.45f, 0.48f, 0.45f, 0.26f));
+                    ? PaleGreen
+                    : new Color(PaleGreen.r, PaleGreen.g, PaleGreen.b, 0.35f));
 
-                if (i < petSlotStateStrips.Count) petSlotStateStrips[i].color = stripColor;
+                if (i < petSlotStateStrips.Count) {
+                    petSlotStateStrips[i].color = defeated
+                        ? new Color(0.55f, 0.58f, 0.55f, 0.75f)
+                        : Green;
+                    SetFill(petSlotStateStrips[i], slot.occupied ? slot.HealthPercent : 0f);
+                }
+                if (i < petSlotLevelLabels.Count) {
+                    petSlotLevelLabels[i].text = slot.occupied && slot.level > 0 ? "Lv." + slot.level : string.Empty;
+                }
+                if (i < petSlotStateBadges.Count) petSlotStateBadges[i].gameObject.SetActive(active);
+                if (i < petSlotOutlines.Count) {
+                    SetOutline(petSlotOutlines[i], active ? ActiveGold : BorderGreen, active ? 2f : 1f);
+                }
                 if (i < petSlotStateLabels.Count) {
-                    petSlotStateLabels[i].text = stateText;
-                    petSlotStateLabels[i].color = slot.summoned
-                        ? new Color(0.86f, 1f, 0.90f, 1f)
-                        : new Color(0.86f, 0.84f, 0.70f, 0.85f);
+                    petSlotStateLabels[i].text = active ? "ACTIVE" : string.Empty;
                 }
             }
         }
@@ -697,22 +770,23 @@ namespace Capstone.Game.HudSystem {
                 skillButtons[i].interactable = active;
                 SetButtonColor(skillButtons[i], hasSkill
                     ? active
-                        ? new Color(0.08f, 0.16f, 0.18f, 0.95f)
-                        : new Color(0.06f, 0.08f, 0.08f, 0.72f)
-                    : new Color(0.05f, 0.06f, 0.06f, 0.30f));
+                        ? Paper
+                        : new Color(0.86f, 0.88f, 0.84f, 0.88f)
+                    : new Color(0.90f, 0.92f, 0.88f, 0.52f));
                 SetOptionalSprite(skillIcons[i], skill.icon, hasSkill
                     ? active ? SkillColor(i) : new Color(0.42f, 0.42f, 0.42f, 0.72f)
-                    : new Color(0.26f, 0.26f, 0.26f, 0.25f));
+                    : new Color(PaleGreen.r, PaleGreen.g, PaleGreen.b, 0.38f));
 
                 if (i < skillNameLabels.Count) {
-                    skillNameLabels[i].text = hasSkill ? ShortSkillName(skill.displayName, i) : string.Empty;
+                    bool needsFallbackLabel = hasSkill && skill.icon == null;
+                    skillNameLabels[i].text = needsFallbackLabel ? ShortSkillName(skill.displayName, i) : string.Empty;
                     skillNameLabels[i].color = active
-                        ? new Color(1f, 1f, 1f, 0.94f)
-                        : new Color(1f, 1f, 1f, 0.58f);
+                        ? Forest
+                        : new Color(MutedGreen.r, MutedGreen.g, MutedGreen.b, 0.62f);
                 }
 
                 if (i < skillLabels.Count) {
-                    skillLabels[i].color = hasSkill ? Color.white : new Color(1f, 1f, 1f, 0.45f);
+                    skillLabels[i].color = hasSkill ? Forest : new Color(Forest.r, Forest.g, Forest.b, 0.45f);
                 }
 
                 float cooldownPercent = coolingDown ? skill.CooldownPercent : 0f;
@@ -864,7 +938,8 @@ namespace Capstone.Game.HudSystem {
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Image));
             obj.transform.SetParent(parent, false);
             Image image = obj.GetComponent<Image>();
-            image.sprite = SolidSprite;
+            image.sprite = RoundedSprite;
+            image.type = Image.Type.Sliced;
             image.color = color;
             image.raycastTarget = false;
             return obj.GetComponent<RectTransform>();
@@ -897,15 +972,15 @@ namespace Capstone.Game.HudSystem {
         }
 
         static Button CreateButton(Transform parent, string name, string label) {
-            RectTransform rect = CreatePanel(parent, name, new Color(0.08f, 0.16f, 0.17f, 0.9f));
+            RectTransform rect = CreatePanel(parent, name, Paper);
             Image image = rect.GetComponent<Image>();
             image.raycastTarget = true;
 
             Button button = rect.gameObject.AddComponent<Button>();
-            SetButtonColor(button, new Color(0.08f, 0.16f, 0.17f, 0.9f));
+            SetButtonColor(button, Paper);
 
             if (!string.IsNullOrWhiteSpace(label)) {
-                Text text = CreateText(rect, "Text", label, 14, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
+                Text text = CreateText(rect, "Text", label, 14, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
                 Stretch(text.rectTransform, Vector2.zero, Vector2.zero);
             }
 
@@ -913,8 +988,10 @@ namespace Capstone.Game.HudSystem {
         }
 
         static RectTransform CreateBar(Transform parent, string name, Color fillColor, out Image fill) {
-            RectTransform bar = CreatePanel(parent, name, new Color(0.01f, 0.02f, 0.025f, 0.86f));
+            RectTransform bar = CreatePanel(parent, name, new Color(0.80f, 0.86f, 0.79f, 0.72f));
             fill = CreateImage(bar, "Fill", fillColor);
+            fill.sprite = RoundedSprite;
+            fill.type = Image.Type.Sliced;
             RectTransform fillRect = fill.rectTransform;
             fillRect.anchorMin = Vector2.zero;
             fillRect.anchorMax = new Vector2(1f, 1f);
@@ -922,6 +999,21 @@ namespace Capstone.Game.HudSystem {
             fillRect.offsetMin = Vector2.zero;
             fillRect.offsetMax = Vector2.zero;
             return bar;
+        }
+
+        static Outline AddOutline(GameObject target, Color color, float width) {
+            if (target == null) return null;
+            Outline outline = target.GetComponent<Outline>();
+            if (outline == null) outline = target.AddComponent<Outline>();
+            SetOutline(outline, color, width);
+            return outline;
+        }
+
+        static void SetOutline(Outline outline, Color color, float width) {
+            if (outline == null) return;
+            outline.effectColor = color;
+            outline.effectDistance = new Vector2(width, -width);
+            outline.useGraphicAlpha = true;
         }
 
         static RectTransform CreateRect(Transform parent, string name) {
@@ -1072,6 +1164,15 @@ namespace Capstone.Game.HudSystem {
             rect.localScale = Vector3.one;
         }
 
+        static void SetBottomRight(RectTransform rect, float right, float bottom, float width, float height) {
+            rect.anchorMin = new Vector2(1f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(1f, 0f);
+            rect.anchoredPosition = new Vector2(-right, bottom);
+            rect.sizeDelta = new Vector2(width, height);
+            rect.localScale = Vector3.one;
+        }
+
         static void SetCenter(RectTransform rect, float x, float y, float width, float height) {
             rect.anchorMin = new Vector2(0.5f, 0.5f);
             rect.anchorMax = new Vector2(0.5f, 0.5f);
@@ -1096,6 +1197,98 @@ namespace Capstone.Game.HudSystem {
                 solidSprite.hideFlags = HideFlags.HideAndDontSave;
                 return solidSprite;
             }
+        }
+
+        static Sprite RoundedSprite {
+            get {
+                if (roundedSprite != null) return roundedSprite;
+                roundedSprite = CreateRoundedSprite();
+                return roundedSprite;
+            }
+        }
+
+        static Sprite CircleSprite {
+            get {
+                if (circleSprite != null) return circleSprite;
+                circleSprite = CreateCircleSprite(false);
+                return circleSprite;
+            }
+        }
+
+        static Sprite CircleRingSprite {
+            get {
+                if (circleRingSprite != null) return circleRingSprite;
+                circleRingSprite = CreateCircleSprite(true);
+                return circleRingSprite;
+            }
+        }
+
+        static Sprite CreateRoundedSprite() {
+            const int size = 64;
+            const float radius = 12f;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) {
+                name = "GameplayHudRounded",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            float center = (size - 1f) * 0.5f;
+            float straight = center - radius;
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    float dx = Mathf.Max(Mathf.Abs(x - center) - straight, 0f);
+                    float dy = Mathf.Max(Mathf.Abs(y - center) - straight, 0f);
+                    float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                    float alpha = Mathf.Clamp01(radius + 0.5f - distance);
+                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            texture.Apply();
+            Sprite sprite = Sprite.Create(
+                texture,
+                new Rect(0f, 0f, size, size),
+                new Vector2(0.5f, 0.5f),
+                size,
+                0,
+                SpriteMeshType.FullRect,
+                new Vector4(14f, 14f, 14f, 14f));
+            sprite.name = "GameplayHudRounded";
+            sprite.hideFlags = HideFlags.HideAndDontSave;
+            return sprite;
+        }
+
+        static Sprite CreateCircleSprite(bool ringOnly) {
+            const int size = 128;
+            float center = (size - 1f) * 0.5f;
+            float outerRadius = center - 1f;
+            float innerRadius = outerRadius - 1.4f;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) {
+                name = ringOnly ? "GameplayHudCircleRing" : "GameplayHudCircle",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            for (int y = 0; y < size; y++) {
+                for (int x = 0; x < size; x++) {
+                    float distance = Vector2.Distance(new Vector2(x, y), new Vector2(center, center));
+                    float outerAlpha = Mathf.Clamp01(outerRadius + 0.5f - distance);
+                    float alpha = outerAlpha;
+                    if (ringOnly) {
+                        float innerAlpha = Mathf.Clamp01(innerRadius + 0.5f - distance);
+                        alpha = Mathf.Clamp01(outerAlpha - innerAlpha);
+                    }
+                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            texture.Apply();
+            Sprite sprite = Sprite.Create(texture, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), size);
+            sprite.name = texture.name;
+            sprite.hideFlags = HideFlags.HideAndDontSave;
+            return sprite;
         }
 
         static Font DefaultFont {

@@ -1,9 +1,17 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 public class BasicPlayerMovement : MonoBehaviour
 {
+    public enum ScriptedAction
+    {
+        None,
+        PickingUp,
+        Throw
+    }
+
     private const float InputDeadZone = 0.05f;
 
     private enum PlayerState
@@ -106,7 +114,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     [Header("Roll")]
     public bool enableRoll = false;
-    public KeyCode rollKey = KeyCode.Q;
+    public KeyCode rollKey = KeyCode.None;
     public float idleRollDuration = 0.78f;
     public float sprintRollDuration = 0.55f;
     public float idleRollDistance = 5.2f;
@@ -208,6 +216,29 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         get { return isCrouching; }
     }
+
+    public ScriptedAction ActiveScriptedAction => ToScriptedAction(currentState);
+
+    public bool IsScriptedActionPlaying
+    {
+        get { return activeOneShot && ActiveScriptedAction != ScriptedAction.None; }
+    }
+
+    public float ScriptedActionNormalizedTime
+    {
+        get
+        {
+            if (!IsScriptedActionPlaying || activeStateDuration <= 0f)
+            {
+                return 0f;
+            }
+
+            return Mathf.Clamp01(stateTimer / activeStateDuration);
+        }
+    }
+
+    public event Action<ScriptedAction> ScriptedActionStarted;
+    public event Action<ScriptedAction> ScriptedActionCompleted;
 
     private readonly Collider[] enemyProbeHits = new Collider[16];
     private readonly RaycastHit[] groundHits = new RaycastHit[8];
@@ -443,6 +474,53 @@ public class BasicPlayerMovement : MonoBehaviour
         aimHeld = false;
     }
 
+    public bool TryPlayScriptedThrow()
+    {
+        if (!CanStartScriptedAction())
+        {
+            return false;
+        }
+
+        if (isCrouching)
+        {
+            crouchWanted = false;
+            returnToCrouchAfterAction = false;
+            StartStandThen(PendingAfterStand.Throw, false);
+        }
+        else
+        {
+            StartThrow(false);
+        }
+
+        return true;
+    }
+
+    public bool TryPlayScriptedPickup()
+    {
+        if (!CanStartScriptedAction())
+        {
+            return false;
+        }
+
+        if (isCrouching)
+        {
+            crouchWanted = false;
+            returnToCrouchAfterAction = false;
+            StartStandThen(PendingAfterStand.PickUp, false);
+        }
+        else
+        {
+            StartPickUp();
+        }
+
+        return true;
+    }
+
+    private bool CanStartScriptedAction()
+    {
+        return enabled && gameObject.activeInHierarchy && grounded && !activeOneShot;
+    }
+
     public void ApplyAnimatorRootMotion(Vector3 animatorDeltaPosition, Quaternion animatorDeltaRotation)
     {
         if (!enabled || animator == null || !useRootMotion)
@@ -553,7 +631,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && enableRoll && Input.GetKeyDown(rollKey))
+        if (!inputBlocked && enableRoll && rollKey != KeyCode.None && rollKey != KeyCode.Q && Input.GetKeyDown(rollKey))
         {
             if (isCrouching)
             {
@@ -740,6 +818,12 @@ public class BasicPlayerMovement : MonoBehaviour
             ClearActionMomentum();
         }
         PlayState(state, true);
+
+        ScriptedAction scriptedAction = ToScriptedAction(state);
+        if (scriptedAction != ScriptedAction.None)
+        {
+            ScriptedActionStarted?.Invoke(scriptedAction);
+        }
     }
 
     private void ClearActionMomentum()
@@ -825,6 +909,12 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         PlayerState completedState = currentState;
         activeOneShot = false;
+        ScriptedAction completedScriptedAction = ToScriptedAction(completedState);
+        if (completedScriptedAction != ScriptedAction.None)
+        {
+            ScriptedActionCompleted?.Invoke(completedScriptedAction);
+        }
+
         if (IsRollState(completedState) || IsJumpState(completedState))
         {
             RestoreStandingControllerShape();
@@ -863,6 +953,19 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         EvaluateLocomotionState();
+    }
+
+    private static ScriptedAction ToScriptedAction(PlayerState state)
+    {
+        switch (state)
+        {
+            case PlayerState.PickingUp:
+                return ScriptedAction.PickingUp;
+            case PlayerState.Throw:
+                return ScriptedAction.Throw;
+            default:
+                return ScriptedAction.None;
+        }
     }
 
     private void ConsumePendingAfterStand()

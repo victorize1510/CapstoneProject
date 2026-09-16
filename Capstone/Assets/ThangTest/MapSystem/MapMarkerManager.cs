@@ -105,6 +105,14 @@ namespace Capstone.Game.MapSystem {
         void Awake() {
             EnsureMinimumIconScales();
             ResolveReferences();
+            DisableUnmanagedSceneIcons();
+        }
+
+        void DisableUnmanagedSceneIcons() {
+            foreach (AaMapIcon icon in FindObjectsByType<AaMapIcon>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)) {
+                if (icon == null || icon.GetComponentInParent<MapMarker>() != null) continue;
+                icon.gameObject.SetActive(false);
+            }
         }
 
         void OnEnable() {

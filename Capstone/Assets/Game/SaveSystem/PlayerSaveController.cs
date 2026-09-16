@@ -251,9 +251,15 @@ namespace Capstone.Game.SaveSystem {
             }
 
             if (petBoxProvider != null) {
-                foreach (PetController pet in petBoxProvider.StoredPets) {
+                for (int slotIndex = 0; slotIndex < petBoxProvider.Capacity; slotIndex++) {
+                    PetController pet = petBoxProvider.GetStoredPet(slotIndex);
                     string petId = ResolvePetId(pet, petIds);
-                    if (!string.IsNullOrWhiteSpace(petId)) saveData.boxPetIds.Add(petId);
+                    if (!string.IsNullOrWhiteSpace(petId)) {
+                        saveData.boxSlots.Add(new PetBoxSlotSaveData {
+                            slotIndex = slotIndex,
+                            petId = petId
+                        });
+                    }
                 }
             }
 
@@ -369,16 +375,17 @@ namespace Capstone.Game.SaveSystem {
             }
 
             if (petBoxProvider != null) {
-                var restoredBoxPets = new List<PetController>();
-                if (saveData.boxPetIds != null) {
-                    foreach (string petId in saveData.boxPetIds) {
-                        PetController pet = ResolvePet(petId, petsById);
-                        if (pet != null) restoredBoxPets.Add(pet);
+                int restoredCapacity = Mathf.Max(1, saveData.boxCapacity);
+                var restoredBoxPets = new PetController[restoredCapacity];
+                if (saveData.boxSlots != null) {
+                    foreach (PetBoxSlotSaveData slot in saveData.boxSlots) {
+                        if (slot == null || slot.slotIndex < 0 || slot.slotIndex >= restoredCapacity) continue;
+                        restoredBoxPets[slot.slotIndex] = ResolvePet(slot.petId, petsById);
                     }
                 }
                 petBoxProvider.RestoreState(
                     restoredBoxPets,
-                    saveData.boxCapacity,
+                    restoredCapacity,
                     saveData.releaseCountDateUtc,
                     saveData.releasedToday);
             }

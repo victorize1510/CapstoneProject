@@ -271,7 +271,9 @@ namespace Capstone.Game.HudSystem {
         void RefreshStats(PetLevelUpPreview preview) {
             SetStat("hp", preview.CurrentHealth, preview.NextHealth);
             SetStat("atk", preview.CurrentAttack, preview.NextAttack);
+            SetStat("magic-atk", preview.CurrentMagicAttack, preview.NextMagicAttack);
             SetStat("def", preview.CurrentDefense, preview.NextDefense);
+            SetStat("magic-def", preview.CurrentMagicDefense, preview.NextMagicDefense);
             SetStat("spd", preview.CurrentSpeed, preview.NextSpeed);
         }
 

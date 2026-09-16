@@ -260,8 +260,8 @@
 }
 
 .pet-details-middle-row {
-    height: 226px;
-    min-height: 226px;
+    height: 286px;
+    min-height: 286px;
     margin-top: 14px;
     flex-direction: row;
 }

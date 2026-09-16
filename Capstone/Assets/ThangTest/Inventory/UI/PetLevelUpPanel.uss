@@ -164,7 +164,7 @@
 .level-up-bar-value { width: 112px; margin-left: 10px; color: rgb(35, 48, 39); font-size: 13px; -unity-text-align: middle-right; }
 .level-up-exp-needed { height: 22px; margin-right: 112px; color: rgb(92, 107, 84); font-size: 12px; -unity-text-align: middle-right; }
 
-.level-up-stats-card { min-height: 205px; margin-top: 12px; padding: 8px 16px 12px 16px; }
+.level-up-stats-card { min-height: 292px; margin-top: 12px; padding: 8px 16px 12px 16px; }
 .level-up-section-title { height: 36px; color: rgb(53, 105, 48); font-size: 18px; -unity-font-style: bold; -unity-text-align: middle-center; border-bottom-width: 1px; border-bottom-color: rgb(221, 227, 215); }
 .level-up-stat-header,
 .level-up-stat-row { height: 33px; flex-direction: row; align-items: center; padding-left: 16px; padding-right: 16px; }

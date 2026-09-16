@@ -34,6 +34,8 @@ namespace Capstone.Game.HudSystem {
         [SerializeField, Min(0)] int attackBonus;
         [SerializeField, Min(0)] int defenseBonus;
         [SerializeField, Min(0)] int speedBonus;
+        [SerializeField, Min(0)] int magicAttackBonus;
+        [SerializeField, Min(0)] int magicDefenseBonus;
 
         public string EvolutionId => string.IsNullOrWhiteSpace(evolutionId)
             ? $"stage-{SourceStage}-to-{TargetStage}-{TargetFormId}"
@@ -57,6 +59,8 @@ namespace Capstone.Game.HudSystem {
         public int AttackBonus => Mathf.Max(0, attackBonus);
         public int DefenseBonus => Mathf.Max(0, defenseBonus);
         public int SpeedBonus => Mathf.Max(0, speedBonus);
+        public int MagicAttackBonus => Mathf.Max(0, magicAttackBonus);
+        public int MagicDefenseBonus => Mathf.Max(0, magicDefenseBonus);
 
         public static PetEvolutionRule CreateLegacy(
             string targetName,

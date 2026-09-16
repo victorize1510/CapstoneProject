@@ -356,6 +356,37 @@
 .box-filter-panel { display: none; min-height: 74px; flex-direction: row; flex-wrap: wrap; padding: 7px; margin-top: 5px; background-color: #f2f3e9; border-bottom-width: 1px; border-bottom-color: #c7cfbb; }
 .box-filter-chip { height: 28px; margin-right: 5px; margin-bottom: 5px; padding-left: 9px; padding-right: 9px; color: #516353; background-color: #fffdf8; border-left-color: #a9b8a2; border-right-color: #a9b8a2; border-top-color: #a9b8a2; border-bottom-color: #a9b8a2; }
 .box-filter-chip.is-selected { color: white; background-color: #43833c; }
+
+/* Keep runtime dropdown lists compact and vertical. Unity otherwise exposes a
+   horizontal scrollbar when one option is wider than the source field. */
+.unity-base-dropdown__container-outer {
+    min-width: 220px;
+    max-height: 250px;
+}
+
+.unity-base-dropdown__container-inner {
+    min-width: 218px;
+    max-height: 242px;
+}
+
+.unity-base-dropdown__container-inner .unity-scroll-view__horizontal-scroller {
+    display: none;
+}
+
+.unity-base-dropdown__container-inner .unity-scroll-view__vertical-scroller {
+    display: flex;
+}
+
+.unity-base-dropdown__item {
+    min-width: 214px;
+}
+
+.unity-base-dropdown__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .box-storage-scroll { flex-grow: 1; min-height: 0; margin-top: 8px; }
 .box-storage-grid { flex-direction: row; flex-wrap: wrap; align-content: flex-start; }
 .box-storage-card { width: 24%; min-width: 125px; height: 142px; margin-right: 6px; margin-bottom: 7px; padding: 6px; align-items: stretch; color: #263b29; background-color: #fbfaf4; border-left-color: #bdc9b5; border-right-color: #bdc9b5; border-top-color: #bdc9b5; border-bottom-color: #bdc9b5; border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; border-top-left-radius: 5px; border-top-right-radius: 5px; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }

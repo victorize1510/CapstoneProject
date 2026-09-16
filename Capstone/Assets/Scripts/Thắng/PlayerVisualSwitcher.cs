@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using Capstone.Game.MapSystem;
 using AaMapIcon = AAMAP.MapIcon;
 
@@ -31,9 +32,16 @@ public class PlayerVisualSwitcher : MonoBehaviour
     [SerializeField] private int defaultVisualIndex;
 
     private int activeVisualIndex = -1;
+    private bool runtimeSwitchLocked;
 
     public int ActiveVisualIndex => activeVisualIndex;
     public string ActiveVisualName => IsValidIndex(activeVisualIndex) ? visuals[activeVisualIndex].displayName : string.Empty;
+    public VisualProfile ActiveVisualProfile => IsValidIndex(activeVisualIndex) ? visuals[activeVisualIndex] : null;
+    public GameObject ActiveVisualRoot => ActiveVisualProfile != null ? ActiveVisualProfile.root : null;
+    public Animator ActiveVisualAnimator => ResolveAnimator(ActiveVisualProfile);
+    public bool RuntimeSwitchLocked => runtimeSwitchLocked;
+
+    public event Action<int, VisualProfile> ActiveVisualChanged;
 
     private void Reset()
     {
@@ -53,7 +61,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
     private void Update()
     {
-        if (!allowRuntimeSwitch || visuals == null || visuals.Length <= 1)
+        if (!allowRuntimeSwitch || runtimeSwitchLocked || visuals == null || visuals.Length <= 1)
         {
             return;
         }
@@ -66,7 +74,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
     public void SwitchToNext()
     {
-        if (visuals == null || visuals.Length == 0)
+        if (runtimeSwitchLocked || visuals == null || visuals.Length == 0)
         {
             return;
         }
@@ -77,7 +85,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
     public void SwitchTo(int visualIndex, bool restartCurrentState)
     {
-        if (!IsValidIndex(visualIndex))
+        if (runtimeSwitchLocked || !IsValidIndex(visualIndex))
         {
             return;
         }
@@ -113,11 +121,23 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
         DisableInactiveAnimators(activeAnimator);
         RefreshPlayerMapMarker();
+        ActiveVisualChanged?.Invoke(activeVisualIndex, activeVisual);
+    }
+
+    public void SetRuntimeSwitchLocked(bool locked)
+    {
+        runtimeSwitchLocked = locked;
+    }
+
+    public bool TryGetVisualProfile(int visualIndex, out VisualProfile profile)
+    {
+        profile = IsValidIndex(visualIndex) ? visuals[visualIndex] : null;
+        return profile != null;
     }
 
     private void RefreshPlayerMapMarker()
     {
-        MapMarkerManager markerManager = Object.FindFirstObjectByType<MapMarkerManager>();
+        MapMarkerManager markerManager = UnityEngine.Object.FindFirstObjectByType<MapMarkerManager>();
         if (markerManager == null)
         {
             return;

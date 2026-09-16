@@ -15,10 +15,10 @@
     min-height: 0;
 }
 
-/* Reference layout: header 8%, party 24%, details fill the remaining space. */
+/* Compact top area; the six party slots always stay in one horizontal row. */
 .pets-header {
-    height: 86px;
-    min-height: 86px;
+    height: 74px;
+    min-height: 74px;
 }
 
 .pets-title {
@@ -31,43 +31,46 @@
 }
 
 .pets-party-section {
-    height: 258px;
-    min-height: 258px;
-    padding-top: 12px;
+    height: 190px;
+    min-height: 190px;
+    padding-top: 8px;
 }
 
 .pets-section-title {
-    font-size: 17px;
-    margin-bottom: 9px;
+    font-size: 18px;
+    margin-bottom: 7px;
 }
 
 .pets-party-row {
-    height: 198px;
+    height: 132px;
+    min-height: 132px;
+    flex-direction: row;
+    flex-wrap: nowrap;
 }
 
 .pet-party-card {
-    padding-left: 8px;
-    padding-right: 8px;
-    padding-top: 7px;
-    padding-bottom: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 6px;
+    padding-bottom: 6px;
     margin-right: 8px;
     overflow: hidden;
 }
 
 .pet-card-top {
-    height: 24px;
+    height: 22px;
 }
 
 .pet-card-content {
-    margin-top: 6px;
+    margin-top: 3px;
     min-height: 0;
     align-items: stretch;
     overflow: hidden;
 }
 
 .pet-card-portrait {
-    width: 92px;
-    min-width: 72px;
+    width: 82px;
+    min-width: 64px;
     height: auto;
     min-height: 0;
     align-self: stretch;
@@ -75,46 +78,105 @@
 }
 
 .pet-card-info {
-    padding-left: 10px;
+    padding-left: 11px;
+    justify-content: center;
 }
 
 .pet-card-name {
-    font-size: 15px;
+    font-size: 16px;
+    height: 24px;
 }
 
 .pet-card-level,
-.pet-card-meta {
-    font-size: 11px;
-    margin-top: 4px;
+.pet-card-element {
+    color: rgb(82, 97, 79);
+    font-size: 13px;
+    height: 19px;
+    margin-top: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .pet-card-bar-row {
-    height: 24px;
+    height: 22px;
     margin-top: 2px;
 }
 
 .pet-card-bar-label {
-    width: 29px;
-    font-size: 9px;
+    width: 30px;
+    font-size: 12px;
 }
 
 .pet-card-bar-track {
-    height: 7px;
+    height: 8px;
 }
 
-.pet-card-hp-value,
-.pet-card-exp-value {
-    width: 54px;
-    font-size: 8px;
+.pet-card-hp-value {
+    display: none;
+}
+
+.pet-card-slot-number {
+    width: 24px;
+    height: 22px;
+    font-size: 13px;
+}
+
+.pet-card-lead,
+.pet-card-status {
+    font-size: 11px;
+}
+
+.pet-card-favorite {
+    font-size: 17px;
+}
+
+.pet-party-card.is-empty .pet-card-content {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.pet-party-card.is-empty .pet-card-portrait {
+    width: 58px;
+    min-width: 58px;
+    height: 54px;
+    align-self: center;
+    background-color: rgba(225, 237, 220, 0.78);
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+}
+
+.pet-party-card.is-empty .pet-card-portrait-fallback {
+    font-size: 31px;
+}
+
+.pet-party-card.is-empty .pet-card-info {
+    flex-grow: 0;
+    padding-left: 0;
+}
+
+.pet-party-card.is-empty .pet-card-name {
+    height: 24px;
+    margin-top: 4px;
+    -unity-text-align: middle-center;
+}
+
+.pet-party-card.is-empty .pet-card-level,
+.pet-party-card.is-empty .pet-card-element,
+.pet-party-card.is-empty .pet-card-bar-row {
+    display: none;
 }
 
 .pets-party-hint-row {
-    height: 30px;
+    height: 29px;
 }
 
 .pets-party-hint,
 .pets-lead-hint {
-    font-size: 11px;
+    font-size: 13px;
 }
 
 .pets-main-panel {
@@ -122,25 +184,26 @@
 }
 
 .pets-preview-panel {
-    flex-basis: 40%;
+    flex-basis: 39.5%;
     min-width: 390px;
 }
 
 .pets-selected-portrait {
-    width: 84%;
-    height: 84%;
+    width: 88%;
+    height: 88%;
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .pets-information-panel {
-    padding-left: 30px;
-    padding-right: 26px;
-    padding-top: 18px;
-    padding-bottom: 10px;
+    padding-left: 28px;
+    padding-right: 24px;
+    padding-top: 10px;
+    padding-bottom: 7px;
 }
 
 .pets-name-row {
-    height: 62px;
-    min-height: 62px;
+    height: 58px;
+    min-height: 58px;
     flex-grow: 0;
     flex-shrink: 0;
     padding-bottom: 4px;
@@ -150,12 +213,12 @@
     min-width: 0;
     flex-grow: 1;
     flex-shrink: 1;
-    height: 54px;
+    height: 52px;
     margin-right: 14px;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 38px;
+    font-size: 36px;
     -unity-text-align: middle-left;
 }
 
@@ -183,36 +246,42 @@
 }
 
 .pets-meta-row {
-    height: 50px;
-    min-height: 50px;
+    height: 44px;
+    min-height: 44px;
     flex-grow: 0;
     flex-shrink: 0;
-    padding-top: 8px;
-    padding-bottom: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
 }
 
 .pets-meta-label {
-    min-width: 124px;
-    margin-right: 16px;
-    font-size: 13px;
+    min-width: 126px;
+    margin-right: 17px;
+    font-size: 14px;
 }
 
-/* Keep HP/EXP together and reserve a readable fixed block for stats. */
 .pets-status-and-stats {
-    flex-grow: 0;
-    flex-shrink: 0;
-    flex-basis: auto;
-    height: 150px;
-    min-height: 150px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 0;
+    height: auto;
+    min-height: 268px;
+    flex-direction: column;
+    align-items: stretch;
 }
 
 .pets-status-bars {
-    padding-right: 28px;
+    width: 100%;
+    height: 56px;
+    min-height: 56px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding-right: 0;
 }
 
 .pets-large-bar-row {
-    height: 42px;
-    min-height: 42px;
+    height: 28px;
+    min-height: 28px;
 }
 
 .pets-large-bar-label {
@@ -221,60 +290,97 @@
 }
 
 .pets-large-bar-track {
-    height: 13px;
+    height: 10px;
 }
 
 .pets-large-bar-value {
-    width: 105px;
+    width: 118px;
     margin-left: 12px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .pets-stats-card {
-    width: 315px;
-    height: 142px;
+    width: 100%;
+    height: auto;
+    min-height: 209px;
+    flex-grow: 1;
+    flex-shrink: 1;
+    align-self: stretch;
+    margin-top: 3px;
     padding-left: 18px;
     padding-right: 18px;
     padding-top: 8px;
-    padding-bottom: 8px;
+    padding-bottom: 10px;
 }
 
 .pets-stats-title {
-    height: 26px;
-    font-size: 13px;
+    height: 30px;
+    min-height: 30px;
+    font-size: 20px;
 }
 
 .pets-stat-row {
-    min-height: 24px;
+    height: 25px;
+    min-height: 25px;
+    flex-grow: 1;
 }
 
-.pets-stat-name,
-.pets-stat-value {
-    font-size: 13px;
+.pets-stat-name {
+    width: 124px;
+    min-width: 124px;
+    font-size: 15px;
+}
+
+.pets-stat-track {
+    flex-grow: 1;
+    height: 10px;
+    min-width: 120px;
+    overflow: hidden;
+    background-color: rgb(222, 228, 220);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.pets-stat-fill {
+    width: 0;
+    height: 100%;
+    background-color: rgb(85, 137, 79);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 
 .pets-stat-value {
-    width: 62px;
+    width: 76px;
+    margin-left: 14px;
+    font-size: 15px;
 }
 
 .pets-skills-title {
-    margin-top: 4px;
-    margin-bottom: 4px;
+    margin-top: 8px;
+    margin-bottom: 5px;
 }
 
 .pets-skills-row {
     flex-grow: 0;
     flex-shrink: 0;
     flex-basis: auto;
-    height: 100px;
-    min-height: 100px;
+    height: 92px;
+    min-height: 92px;
     justify-content: center;
 }
 
 .pet-skill-card {
-    max-width: 280px;
-    height: 92px;
-    margin-right: 12px;
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 0;
+    max-width: none;
+    height: 84px;
+    margin-left: 4px;
+    margin-right: 4px;
     padding-left: 12px;
     padding-right: 12px;
     padding-top: 8px;
@@ -662,11 +768,11 @@
 }
 
 .pet-skill-name {
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .pet-skill-meta {
-    font-size: 11px;
+    font-size: 13px;
     margin-top: 6px;
 }
 
@@ -674,13 +780,1382 @@
     flex-grow: 0;
     flex-shrink: 0;
     flex-basis: auto;
-    height: 58px;
-    min-height: 58px;
+    height: 92px;
+    min-height: 92px;
+    margin-top: 6px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.pets-feedback-label {
+    height: 22px;
+    min-height: 0;
+    font-size: 13px;
+}
+
+.pets-action-button {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 0;
+    max-width: none;
+    height: 84px;
+    margin-left: 6px;
+    margin-right: 6px;
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 20px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.pets-action-button:active {
+    background-color: rgb(211, 232, 205);
+}
+
+/* Final responsive PETS layout, matched to the approved 1920x1080 mock-up. */
+.pets-header {
+    height: 64px;
+    min-height: 64px;
+    padding-left: 28px;
+    padding-right: 28px;
+}
+
+.pets-title {
+    font-size: 34px;
+}
+
+.pets-header-mark {
+    width: 30px;
+    height: 30px;
+}
+
+.pets-back-button {
+    width: 148px;
+    height: 42px;
+    font-size: 15px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.pets-party-section {
+    height: 180px;
+    min-height: 180px;
+    padding-left: 28px;
+    padding-right: 28px;
+    padding-top: 4px;
+}
+
+.pets-party-section > .pets-section-title {
+    height: 25px;
+    margin-bottom: 2px;
+    font-size: 17px;
+}
+
+.pets-party-row {
+    height: 130px;
+    min-height: 130px;
+}
+
+.pet-party-card {
+    height: 125px;
+    min-height: 125px;
+    margin-left: 0;
+    margin-right: 7px;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.pet-card-top {
+    height: 19px;
+    min-height: 19px;
+}
+
+.pet-card-content {
+    margin-top: 1px;
+}
+
+.pet-card-portrait {
+    width: 72px;
+    min-width: 72px;
+}
+
+.pet-card-info {
+    padding-left: 9px;
+}
+
+.pet-card-name {
+    height: 21px;
+    font-size: 14px;
+}
+
+.pet-card-level,
+.pet-card-element {
+    height: 16px;
+    font-size: 11px;
+}
+
+.pet-card-bar-row {
+    height: 16px;
+    margin-top: 0;
+}
+
+.pet-card-bar-label {
+    width: 26px;
+    font-size: 11px;
+}
+
+.pet-party-card.is-empty .pet-card-portrait {
+    width: 48px;
+    min-width: 48px;
+    height: 44px;
+    min-height: 44px;
+    background-color: rgba(216, 228, 220, 0.72);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+}
+
+.pet-party-card.is-empty .pet-card-portrait-fallback {
+    color: rgb(121, 143, 128);
+    font-size: 22px;
+}
+
+.pet-party-card.is-empty .pet-card-name {
+    height: 18px;
+    margin-top: 1px;
+    font-size: 12px;
+}
+
+.pets-party-hint-row {
+    height: 21px;
+    min-height: 21px;
+}
+
+.pets-party-hint,
+.pets-lead-hint {
+    font-size: 11px;
+}
+
+.pets-main-panel {
+    flex-grow: 1;
+    min-height: 0;
+    margin-left: 28px;
+    margin-right: 28px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.pets-preview-panel {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 39%;
+    min-width: 340px;
+    overflow: hidden;
+    background-color: rgb(224, 239, 222);
+}
+
+.pets-preview-backdrop {
+    display: none;
+}
+
+.pets-selected-portrait {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    -unity-background-scale-mode: scale-and-crop;
+}
+
+.pets-selected-portrait-fallback {
+    color: rgb(91, 130, 85);
+    font-size: 74px;
+}
+
+.pets-preview-caption {
+    position: absolute;
+    left: 20px;
+    bottom: 14px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    color: rgb(255, 255, 255);
+    background-color: rgba(27, 61, 33, 0.62);
+    font-size: 12px;
+    -unity-font-style: bold;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.pets-information-panel {
+    min-width: 0;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+    overflow: hidden;
+}
+
+.pets-name-row {
+    height: 52px;
+    min-height: 52px;
+    padding-bottom: 3px;
+}
+
+.pets-selected-name {
+    height: 47px;
+    margin-right: 10px;
+    font-size: 32px;
+}
+
+.pets-name-actions {
+    width: 100px;
+    min-width: 100px;
+}
+
+.pets-small-icon-button {
+    width: 43px;
+    height: 39px;
+    font-size: 19px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.pets-meta-row {
+    height: 31px;
+    min-height: 31px;
+    flex-wrap: nowrap;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    overflow: hidden;
+}
+
+.pets-meta-label {
+    width: auto;
+    min-width: 0;
+    flex-grow: 0;
+    flex-shrink: 1;
+    margin-right: 7px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.pets-meta-separator {
+    width: 8px;
+    min-width: 8px;
+    margin-right: 7px;
+    color: rgb(162, 174, 161);
+    font-size: 12px;
+    -unity-text-align: middle-center;
+}
+
+.pets-status-and-stats {
+    height: 396px;
+    min-height: 396px;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.pets-status-bars {
+    height: 53px;
+    min-height: 53px;
+}
+
+.pets-large-bar-row {
+    height: 25px;
+    min-height: 25px;
+}
+
+.pets-large-bar-label {
+    width: 42px;
+    font-size: 13px;
+}
+
+.pets-large-bar-track {
+    height: 10px;
+}
+
+.pets-large-bar-value {
+    width: 88px;
+    margin-left: 10px;
+    font-size: 13px;
+}
+
+.pets-stats-card {
+    height: 340px;
+    min-height: 340px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    margin-top: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 4px;
+    padding-bottom: 6px;
+    background-color: rgba(251, 253, 249, 0.9);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+.pets-stats-header,
+.pets-skills-header {
+    height: 34px;
+    min-height: 34px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pets-section-heading-group {
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+}
+
+.pets-section-heading-icon {
+    width: 28px;
+    min-width: 28px;
+    color: rgb(34, 91, 45);
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pets-stats-title {
+    width: auto;
+    height: 30px;
+    min-height: 30px;
+    color: rgb(37, 87, 42);
+    font-size: 19px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-left;
+}
+
+.pets-section-link-button {
+    width: 130px;
+    min-width: 130px;
+    height: 29px;
+    margin-left: 8px;
+    padding-left: 7px;
+    padding-right: 7px;
+    color: rgb(39, 80, 43);
+    background-color: rgb(252, 253, 249);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(72, 143, 76);
+    border-right-color: rgb(72, 143, 76);
+    border-top-color: rgb(72, 143, 76);
+    border-bottom-color: rgb(72, 143, 76);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    font-size: 10px;
+    -unity-font-style: bold;
+}
+
+.pets-section-link-button:hover {
+    background-color: rgb(232, 245, 229);
+}
+
+.pets-stats-columns {
+    flex-grow: 1;
+    min-height: 0;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.pets-stat-column {
+    flex-grow: 1;
+    flex-basis: 0;
+    min-width: 0;
+}
+
+.pets-stats-divider {
+    width: 1px;
+    min-width: 1px;
+    margin-left: 12px;
+    margin-right: 12px;
+    background-color: rgb(205, 219, 204);
+}
+
+.pets-stat-row {
+    height: 29px;
+    min-height: 29px;
+    flex-grow: 1;
+}
+
+.pets-stat-name {
+    width: 104px;
+    min-width: 104px;
+    font-size: 13px;
+}
+
+.pets-stat-track {
+    min-width: 48px;
+    height: 9px;
+}
+
+.pets-stat-value {
+    width: 54px;
+    min-width: 54px;
+    margin-left: 8px;
+    font-size: 13px;
+}
+
+.pets-skills-header {
+    height: 36px;
+    min-height: 36px;
+    margin-top: 4px;
+}
+
+.pets-skills-title {
+    height: 30px;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 17px;
+    -unity-text-align: middle-left;
+}
+
+.pets-skills-row {
+    height: 126px;
+    min-height: 126px;
+    justify-content: flex-start;
+}
+
+.pet-skill-card {
+    height: 118px;
+    min-height: 118px;
+    margin-left: 3px;
+    margin-right: 3px;
+    padding-left: 8px;
+    padding-right: 8px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.pet-skill-icon {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+}
+
+.pet-skill-text {
+    min-width: 0;
+    margin-left: 8px;
+}
+
+.pet-skill-name {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pet-skill-meta {
+    margin-top: 3px;
+    font-size: 11px;
+}
+
+.pets-actions-row {
+    height: 112px;
+    min-height: 112px;
     margin-top: 4px;
 }
 
 .pets-action-button {
-    max-width: 118px;
-    height: 50px;
+    height: 104px;
+    margin-left: 4px;
+    margin-right: 4px;
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.primary-pet-action {
+    color: rgb(255, 255, 255);
+    background-color: rgb(43, 151, 66);
+    border-left-color: rgb(37, 131, 56);
+    border-right-color: rgb(37, 131, 56);
+    border-top-color: rgb(37, 131, 56);
+    border-bottom-color: rgb(37, 131, 56);
+}
+
+.primary-pet-action:hover {
+    background-color: rgb(50, 165, 74);
+}
+
+.evolution-pet-action {
+    color: rgb(73, 97, 76);
+    background-color: rgb(237, 241, 235);
+    border-left-color: rgb(181, 194, 181);
+    border-right-color: rgb(181, 194, 181);
+    border-top-color: rgb(181, 194, 181);
+    border-bottom-color: rgb(181, 194, 181);
+}
+
+.pets-action-icon {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    margin-right: 11px;
+    color: rgb(255, 255, 255);
+    background-color: rgba(255, 255, 255, 0.16);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+    font-size: 27px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.evolution-pet-action .pets-action-icon {
+    color: rgb(106, 118, 106);
+    background-color: rgb(221, 226, 220);
+}
+
+.pets-action-copy {
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.pets-action-title {
+    color: rgb(255, 255, 255);
+    font-size: 18px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+.pets-action-subtitle {
+    margin-top: 2px;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.evolution-pet-action .pets-action-title,
+.evolution-pet-action .pets-action-subtitle {
+    color: rgb(104, 115, 104);
+}
+
+.pets-action-button:disabled {
+    background-color: rgb(234, 237, 232);
+    border-left-color: rgb(193, 201, 192);
+    border-right-color: rgb(193, 201, 192);
+    border-top-color: rgb(193, 201, 192);
+    border-bottom-color: rgb(193, 201, 192);
+    opacity: 0.78;
+}
+
+.pets-action-button:disabled .pets-action-title,
+.pets-action-button:disabled .pets-action-subtitle,
+.pets-action-button:disabled .pets-action-icon {
+    color: rgb(121, 130, 121);
+}
+
+.pets-feedback-label {
+    height: 14px;
+    min-height: 0;
+    margin-top: 0;
+    font-size: 10px;
+}
+
+/* Single-column stats and 22% larger typography. PETS title intentionally unchanged. */
+.pets-stats-columns {
+    flex-direction: column;
+}
+
+.pets-stat-column {
+    width: 100%;
+    flex-basis: auto;
+}
+
+.pets-stat-row {
+    height: 36px;
+    min-height: 36px;
+}
+
+.pets-stat-name {
+    width: 138px;
+    min-width: 138px;
+    font-size: 16px;
+}
+
+.pets-stat-value {
+    width: 65px;
+    min-width: 65px;
+    font-size: 16px;
+}
+
+.pets-back-button {
+    font-size: 18px;
+}
+
+.pets-party-section > .pets-section-title {
+    font-size: 21px;
+}
+
+.pet-card-slot-number {
+    font-size: 16px;
+}
+
+.pet-card-lead,
+.pet-card-status {
+    font-size: 14px;
+}
+
+.pet-card-favorite {
+    font-size: 21px;
+}
+
+.pet-card-name {
+    font-size: 17px;
+}
+
+.pet-card-level,
+.pet-card-element,
+.pet-card-bar-label {
+    font-size: 14px;
+}
+
+.pet-party-card.is-empty .pet-card-portrait-fallback {
+    font-size: 27px;
+}
+
+.pet-party-card.is-empty .pet-card-name {
+    font-size: 15px;
+}
+
+.pets-party-hint,
+.pets-lead-hint {
+    font-size: 13px;
+}
+
+.pets-selected-portrait-fallback {
+    font-size: 90px;
+}
+
+.pets-preview-caption {
+    font-size: 15px;
+}
+
+.pets-selected-name {
+    font-size: 39px;
+}
+
+.pets-small-icon-button {
+    font-size: 23px;
+}
+
+.pets-meta-label,
+.pets-meta-separator {
+    font-size: 15px;
+}
+
+.pets-large-bar-label,
+.pets-large-bar-value {
+    font-size: 16px;
+}
+
+.pets-section-heading-icon {
+    font-size: 24px;
+}
+
+.pets-stats-title {
+    font-size: 23px;
+}
+
+.pets-section-link-button {
+    font-size: 12px;
+}
+
+.pets-skills-title {
+    font-size: 21px;
+}
+
+.pet-skill-name {
+    font-size: 16px;
+}
+
+.pet-skill-meta {
+    font-size: 14px;
+}
+
+.pet-skill-icon-fallback {
+    font-size: 18px;
+}
+
+.pets-action-icon {
+    font-size: 33px;
+}
+
+.pets-action-title {
     font-size: 22px;
+}
+
+.pets-action-subtitle,
+.pets-feedback-label {
+    font-size: 12px;
+}
+
+.pets-tooltip-title {
+    font-size: 17px;
+}
+
+.pets-tooltip-body {
+    font-size: 14px;
+}
+
+.pets-rename-title {
+    font-size: 34px;
+}
+
+.pets-rename-ornament {
+    font-size: 28px;
+}
+
+.pets-rename-close {
+    font-size: 41px;
+}
+
+.pets-rename-portrait-fallback {
+    font-size: 54px;
+}
+
+.pets-rename-current-caption,
+.pets-rename-field-label,
+.pets-rename-button {
+    font-size: 18px;
+}
+
+.pets-rename-current-name {
+    font-size: 34px;
+}
+
+.pets-rename-pencil {
+    font-size: 27px;
+}
+
+.pets-rename-divider-mark,
+.pets-rename-note-icon {
+    font-size: 22px;
+}
+
+.pets-rename-input {
+    font-size: 21px;
+}
+
+.pets-rename-placeholder {
+    font-size: 20px;
+}
+
+.pets-rename-error,
+.pets-rename-counter,
+.pets-rename-help {
+    font-size: 15px;
+}
+
+/* 2026-09-14 — Pokémon-inspired Party cards and compact pet information panel. */
+.pets-party-section {
+    height: 232px;
+    min-height: 232px;
+    padding-top: 5px;
+}
+
+.pets-party-section > .pets-section-title {
+    height: 31px;
+    min-height: 31px;
+    margin-bottom: 3px;
+    color: rgb(24, 61, 69);
+    font-size: 19px;
+    -unity-text-align: middle-left;
+}
+
+.pets-party-row {
+    height: 174px;
+    min-height: 174px;
+}
+
+.pet-party-card {
+    position: relative;
+    height: 170px;
+    min-height: 170px;
+    margin-right: 7px;
+    padding: 6px;
+    overflow: hidden;
+    background-color: rgb(249, 253, 252);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-color: rgb(173, 199, 195);
+    border-right-color: rgb(173, 199, 195);
+    border-top-color: rgb(173, 199, 195);
+    border-bottom-color: rgb(173, 199, 195);
+    border-top-left-radius: 9px;
+    border-top-right-radius: 9px;
+    border-bottom-left-radius: 9px;
+    border-bottom-right-radius: 9px;
+}
+
+.pet-party-card:hover {
+    background-color: rgb(240, 250, 247);
+    border-left-color: rgb(83, 177, 164);
+    border-right-color: rgb(83, 177, 164);
+    border-top-color: rgb(83, 177, 164);
+    border-bottom-color: rgb(83, 177, 164);
+}
+
+.pet-party-card.is-selected {
+    background-color: rgb(233, 252, 251);
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-top-width: 3px;
+    border-bottom-width: 3px;
+    border-left-color: rgb(39, 207, 215);
+    border-right-color: rgb(39, 207, 215);
+    border-top-color: rgb(39, 207, 215);
+    border-bottom-color: rgb(39, 207, 215);
+}
+
+.pet-party-card.is-summoned {
+    background-color: rgb(246, 253, 248);
+}
+
+.pet-party-card.is-summoned.is-selected {
+    background-color: rgb(229, 251, 248);
+}
+
+.pet-card-top {
+    height: 23px;
+    min-height: 23px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pet-card-slot-number {
+    width: 27px;
+    min-width: 27px;
+    height: 23px;
+    padding: 0;
+    color: rgb(244, 250, 250);
+    background-color: rgb(48, 73, 83);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pet-card-element-icons {
+    min-width: 52px;
+    height: 23px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.pet-card-element {
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    margin-left: 4px;
+    color: white;
+    background-color: rgb(119, 143, 143);
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
+    border-bottom-left-radius: 11px;
+    border-bottom-right-radius: 11px;
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pet-card-element.is-nature { background-color: rgb(38, 166, 111); }
+.pet-card-element.is-fire { background-color: rgb(246, 84, 62); }
+.pet-card-element.is-water { background-color: rgb(49, 135, 238); }
+.pet-card-element.is-wind { background-color: rgb(42, 179, 183); }
+.pet-card-element.is-earth { background-color: rgb(165, 113, 63); }
+.pet-card-element.is-electric { background-color: rgb(243, 183, 44); }
+.pet-card-element.is-ice { background-color: rgb(62, 189, 226); }
+.pet-card-element.is-light { background-color: rgb(239, 177, 42); }
+.pet-card-element.is-dark { background-color: rgb(105, 75, 145); }
+.pet-card-element.is-unknown { background-color: rgb(126, 144, 145); }
+
+.pet-card-content {
+    flex-grow: 1;
+    min-height: 0;
+    margin-top: 3px;
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.pet-card-portrait {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    height: 91px;
+    min-height: 91px;
+    flex-grow: 0;
+    align-self: stretch;
+    overflow: hidden;
+    background-color: rgb(225, 239, 236);
+    -unity-background-scale-mode: scale-and-crop;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+}
+
+.pet-card-portrait-fallback {
+    width: 100%;
+    height: 100%;
+    color: rgb(102, 142, 136);
+    font-size: 28px;
+    -unity-text-align: middle-center;
+}
+
+.pet-card-level {
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+    height: 23px;
+    padding-left: 7px;
+    padding-right: 7px;
+    color: white;
+    background-color: rgba(22, 57, 67, 0.88);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pet-card-status {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    min-width: 58px;
+    height: 23px;
+    padding-left: 7px;
+    padding-right: 7px;
+    color: white;
+    background-color: rgb(39, 145, 229);
+    border-top-left-radius: 11px;
+    border-top-right-radius: 11px;
+    border-bottom-left-radius: 11px;
+    border-bottom-right-radius: 11px;
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pet-card-info {
+    flex-grow: 1;
+    min-width: 0;
+    padding-left: 0;
+    padding-top: 2px;
+    justify-content: flex-start;
+}
+
+.pet-card-name-row {
+    height: 22px;
+    min-height: 22px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pet-card-name {
+    flex-grow: 1;
+    min-width: 0;
+    height: 22px;
+    color: rgb(23, 55, 63);
+    font-size: 13px;
+    -unity-font-style: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pet-card-gender {
+    width: 22px;
+    min-width: 22px;
+    height: 22px;
+    color: rgb(39, 128, 220);
+    font-size: 17px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.pet-card-gender.is-male { color: rgb(39, 128, 220); }
+.pet-card-gender.is-female { color: rgb(235, 84, 144); }
+.pet-card-gender.is-unknown { color: rgb(126, 143, 143); }
+
+.pet-card-bar-row {
+    height: 21px;
+    min-height: 21px;
+    margin-top: 0;
+    flex-direction: row;
+    align-items: center;
+}
+
+.pet-card-bar-label {
+    width: 22px;
+    min-width: 22px;
+    color: rgb(43, 76, 66);
+    font-size: 11px;
+    -unity-font-style: bold;
+}
+
+.pet-card-bar-track {
+    flex-grow: 1;
+    min-width: 22px;
+    height: 7px;
+    background-color: rgb(220, 231, 225);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    overflow: hidden;
+}
+
+.pet-card-hp-fill {
+    height: 100%;
+    background-color: rgb(69, 188, 88);
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.pet-card-hp-value {
+    display: flex;
+    width: 48px;
+    min-width: 48px;
+    margin-left: 5px;
+    color: rgb(34, 68, 70);
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-right;
+}
+
+.pet-card-lead,
+.pet-card-favorite {
+    display: none;
+}
+
+.pet-party-card.is-empty {
+    opacity: 0.68;
+    background-color: rgb(243, 248, 247);
+}
+
+.pet-party-card.is-empty .pet-card-element-icons,
+.pet-party-card.is-empty .pet-card-level,
+.pet-party-card.is-empty .pet-card-status,
+.pet-party-card.is-empty .pet-card-bar-row,
+.pet-party-card.is-empty .pet-card-gender {
+    display: none;
+}
+
+.pet-party-card.is-empty .pet-card-content {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.pet-party-card.is-empty .pet-card-portrait {
+    width: 50px;
+    min-width: 50px;
+    height: 50px;
+    min-height: 50px;
+    flex-grow: 0;
+    align-self: center;
+    background-color: rgb(228, 237, 234);
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+}
+
+.pet-party-card.is-empty .pet-card-portrait-fallback {
+    color: rgb(130, 151, 148);
+    font-size: 22px;
+}
+
+.pet-party-card.is-empty .pet-card-info {
+    flex-grow: 0;
+    padding-top: 2px;
+}
+
+.pet-party-card.is-empty .pet-card-name {
+    height: 22px;
+    font-size: 12px;
+    -unity-text-align: middle-center;
+}
+
+.pets-party-hint-row {
+    height: 20px;
+    min-height: 20px;
+}
+
+.pets-party-hint,
+.pets-lead-hint {
+    font-size: 10px;
+}
+
+/* The information column must fit inside the remaining panel height. */
+.pets-information-panel {
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.pets-name-row {
+    height: 43px;
+    min-height: 43px;
+}
+
+.pets-selected-name {
+    height: 39px;
+    font-size: 29px;
+}
+
+.pets-small-icon-button {
+    width: 38px;
+    height: 35px;
+    font-size: 18px;
+}
+
+.pets-meta-row {
+    height: 25px;
+    min-height: 25px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+}
+
+.pets-meta-label,
+.pets-meta-separator {
+    font-size: 11px;
+}
+
+.pets-status-and-stats {
+    height: 254px;
+    min-height: 254px;
+}
+
+.pets-status-bars {
+    height: 46px;
+    min-height: 46px;
+}
+
+.pets-large-bar-row {
+    height: 22px;
+    min-height: 22px;
+}
+
+.pets-large-bar-label,
+.pets-large-bar-value {
+    font-size: 11px;
+}
+
+.pets-large-bar-label {
+    width: 34px;
+}
+
+.pets-large-bar-value {
+    width: 76px;
+}
+
+.pets-stats-card {
+    height: 205px;
+    min-height: 205px;
+    margin-top: 3px;
+    padding: 3px 9px 4px 9px;
+}
+
+.pets-stats-header {
+    height: 27px;
+    min-height: 27px;
+}
+
+.pets-section-heading-icon {
+    width: 23px;
+    min-width: 23px;
+    font-size: 16px;
+}
+
+.pets-stats-title {
+    height: 25px;
+    min-height: 25px;
+    font-size: 17px;
+}
+
+.pets-section-link-button {
+    width: 112px;
+    min-width: 112px;
+    height: 25px;
+    font-size: 9px;
+}
+
+.pets-stats-columns {
+    flex-direction: column;
+}
+
+.pets-stat-column {
+    width: 100%;
+    flex-basis: auto;
+}
+
+.pets-stat-row {
+    height: 21px;
+    min-height: 21px;
+    flex-grow: 0;
+}
+
+.pets-stat-name {
+    width: 112px;
+    min-width: 112px;
+    font-size: 11px;
+}
+
+.pets-stat-track {
+    height: 7px;
+}
+
+.pets-stat-value {
+    width: 48px;
+    min-width: 48px;
+    font-size: 11px;
+}
+
+.pets-skills-header {
+    height: 29px;
+    min-height: 29px;
+    margin-top: 2px;
+}
+
+.pets-skills-title {
+    height: 27px;
+    font-size: 16px;
+}
+
+.pets-skills-row {
+    height: 82px;
+    min-height: 82px;
+}
+
+.pet-skill-card {
+    height: 76px;
+    min-height: 76px;
+    margin-left: 3px;
+    margin-right: 3px;
+    padding: 5px 7px;
+}
+
+.pet-skill-icon {
+    width: 43px;
+    min-width: 43px;
+    height: 43px;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    border-bottom-left-radius: 22px;
+    border-bottom-right-radius: 22px;
+}
+
+.pet-skill-text {
+    margin-left: 7px;
+}
+
+.pet-skill-name {
+    font-size: 12px;
+}
+
+.pet-skill-meta {
+    font-size: 10px;
+}
+
+.pets-actions-row {
+    height: 76px;
+    min-height: 76px;
+    margin-top: 3px;
+}
+
+.pets-action-button {
+    height: 70px;
+    min-height: 70px;
+    padding: 6px 9px;
+}
+
+.pets-action-icon {
+    width: 43px;
+    min-width: 43px;
+    height: 43px;
+    font-size: 24px;
+}
+
+.pets-action-title {
+    font-size: 16px;
+}
+
+.pets-action-subtitle {
+    font-size: 9px;
+}
+
+.pets-feedback-label {
+    height: 12px;
+    font-size: 9px;
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Capstone.Game.HudSystem;
 using Capstone.Game.MapSystem;
 using UnityEngine;
 using UnityEngine.AI;
@@ -36,12 +37,21 @@ public class PetController : MonoBehaviour
     public float angularSpeed = 720f;
     public float turnSharpness = 14f;
     public float pointStoppingDistance = 0.35f;
-    public bool useNavMeshWhenAvailable = true;
+    public bool useNavMeshWhenAvailable = false;
     public bool useDirectMoveFallback = true;
     public bool snapFallbackToGround = true;
     public LayerMask groundMask = ~0;
+    [Header("Movement without NavMesh")]
+    [Min(0.1f)] public float directBodyRadius = 0.32f;
+    [Min(0.2f)] public float directProbeHeight = 0.65f;
+    [Min(0.2f)] public float directLookAhead = 0.9f;
+    [Min(0.05f)] public float directMaxStepHeight = 0.3f;
+    [Range(0.1f, 1f)] public float directMinGroundNormal = 0.65f;
+    public LayerMask directObstacleMask = ~0;
+    [Min(0.1f)] public float minimumNavigationRadius = 0.65f;
     [Min(0.02f)] public float navPathRefreshInterval = 0.12f;
     [Min(0.01f)] public float navDestinationThreshold = 0.15f;
+    [Min(0.1f)] public float navMeshRetryInterval = 1f;
 
     [Header("Combat")]
     public float attackRange = 1.45f;
@@ -50,6 +60,15 @@ public class PetController : MonoBehaviour
     public float attackRepathInterval = 0.12f;
     public bool snapFaceTargetOnCommand = true;
     public float attackDamage = 20f;
+
+    public float CurrentBaseAttackDamage
+    {
+        get
+        {
+            PetCollectionMetadata metadata = GetComponentInChildren<PetCollectionMetadata>(true);
+            return Mathf.Max(0f, attackDamage + (metadata != null ? metadata.Attack : 0));
+        }
+    }
     public float attackCooldown = 0.95f;
     public float attackHitDelay = 0.28f;
     public float attackStateTime = 0.75f;
@@ -93,11 +112,13 @@ public class PetController : MonoBehaviour
     private readonly HashSet<int> floatParameters = new HashSet<int>();
     private readonly HashSet<int> boolParameters = new HashSet<int>();
     private readonly HashSet<int> triggerParameters = new HashSet<int>();
-    private readonly RaycastHit[] groundHits = new RaycastHit[4];
+    private readonly RaycastHit[] groundHits = new RaycastHit[16];
+    private readonly RaycastHit[] directObstacleHits = new RaycastHit[24];
 
     private PetState state = PetState.FollowOwner;
     private DummyEnemy target;
     private MapMarker mapMarker;
+    private PetLevelUpService levelUpService;
     private Vector3 commandedPoint;
     private Vector3 attackDestination;
     private Vector3 roamDestination;
@@ -119,17 +140,20 @@ public class PetController : MonoBehaviour
     private bool hasRoamDestination;
     private bool hasPendingHit;
     private bool hasPendingSkillAnimation;
+    private bool recallLocked;
     private bool navDestinationInitialized;
     private bool undergroundSpotInitialized;
     private Vector3 lastNavDestination;
     private Vector3 lastUndergroundSpot;
     private float nextNavPathRefreshAt;
+    private float nextNavMeshRetryAt;
+    private int directAvoidanceSide = 1;
 
     public bool IsSummoned { get; private set; }
 
     public bool CanReceiveCommands
     {
-        get { return IsSummoned && state != PetState.Summoning; }
+        get { return IsSummoned && state != PetState.Summoning && !recallLocked; }
     }
 
     public bool HasCombatTarget
@@ -201,6 +225,13 @@ public class PetController : MonoBehaviour
         if (!IsSummoned)
         {
             UpdateUnderground();
+            return;
+        }
+
+        if (recallLocked)
+        {
+            StopMovement(false);
+            UpdateAnimator(0f);
             return;
         }
 
@@ -344,6 +375,27 @@ public class PetController : MonoBehaviour
         BeginSummon();
     }
 
+    public void SummonAt(Vector3 worldPosition, Vector3 facingDirection)
+    {
+        BeginSummon(false);
+
+        float searchRadius = Mathf.Max(2.5f, minimumNavigationRadius * 3f);
+        if (!useNavMeshWhenAvailable || !TryPlaceAgentOnNavMesh(worldPosition, searchRadius))
+        {
+            if (agent != null && agent.enabled)
+            {
+                agent.enabled = false;
+            }
+
+            transform.position = SnapToGround(worldPosition);
+        }
+
+        if (facingDirection.sqrMagnitude > 0.001f)
+        {
+            FaceDirection(facingDirection);
+        }
+    }
+
     public void HideUnderground()
     {
         EnterUnderground();
@@ -357,6 +409,35 @@ public class PetController : MonoBehaviour
         }
 
         EnterUnderground();
+    }
+
+    public void SetRecallLocked(bool locked)
+    {
+        if (recallLocked == locked)
+        {
+            return;
+        }
+
+        recallLocked = locked;
+        if (locked)
+        {
+            target = null;
+            hasRoamDestination = false;
+            hasPendingHit = false;
+            hasPendingSkillAnimation = false;
+            pendingSkillCandidates = null;
+            skillAnimationUntil = 0f;
+            StopMovement(false);
+            SetAnimatorBool(attackingParameter, false);
+            PlayAnimatorState(idleStates, locomotionFade, true);
+            return;
+        }
+
+        if (IsSummoned)
+        {
+            state = roamAroundOwner ? PetState.RoamAroundOwner : PetState.FollowOwner;
+            ScheduleNextRoam(0.1f);
+        }
     }
 
     public bool PlaySkillAnimation(string[] candidates, float duration, float fade, bool stopMovement, bool faceTarget)
@@ -432,8 +513,13 @@ public class PetController : MonoBehaviour
 
     private void EnterUnderground()
     {
+        recallLocked = false;
         IsSummoned = false;
         target = null;
+        hasPendingHit = false;
+        hasPendingSkillAnimation = false;
+        pendingSkillCandidates = null;
+        skillAnimationUntil = 0f;
         state = PetState.Underground;
         undergroundSpotInitialized = false;
         StopMovement(false);
@@ -499,20 +585,25 @@ public class PetController : MonoBehaviour
         FaceDirection(owner.forward);
     }
 
-    private void BeginSummon()
+    private void BeginSummon(bool moveToOwnerSpot = true)
     {
         if (state == PetState.Summoning)
         {
             return;
         }
 
+        recallLocked = false;
+        nextNavMeshRetryAt = 0f;
         IsSummoned = true;
         target = null;
         hasRoamDestination = false;
         state = PetState.Summoning;
         summonStartedAt = Time.time;
         StopMovement(false);
-        MoveToSummonSpot();
+        if (moveToOwnerSpot)
+        {
+            MoveToSummonSpot();
+        }
         PlayAnimatorState(spawnStates, attackFade, true);
     }
 
@@ -698,7 +789,13 @@ public class PetController : MonoBehaviour
             hasPendingHit = false;
             if (IsTargetInAttackRange())
             {
-                target.TakeDamage(attackDamage, gameObject);
+                DummyEnemy attackedEnemy = target;
+                bool wasAlive = attackedEnemy != null && attackedEnemy.IsAlive;
+                attackedEnemy?.TakeDamage(CalculateAttackDamage(), gameObject);
+                if (wasAlive && attackedEnemy != null && !attackedEnemy.IsAlive)
+                {
+                    AwardDefeatExperience(attackedEnemy);
+                }
             }
         }
 
@@ -778,12 +875,20 @@ public class PetController : MonoBehaviour
         if (useDirectMoveFallback)
         {
             MoveDirect(destination, speed, stopDistance);
+            return;
         }
+
+        StopMovement();
     }
 
     private bool TryMoveWithAgent(Vector3 destination, float speed, float stopDistance)
     {
-        if (!useNavMeshWhenAvailable || agent == null || !agent.enabled || !agent.gameObject.activeInHierarchy)
+        if (!useNavMeshWhenAvailable || agent == null || !agent.gameObject.activeInHierarchy)
+        {
+            return false;
+        }
+
+        if (!agent.enabled && !TryEnableAgentOnNavMesh())
         {
             return false;
         }
@@ -806,7 +911,7 @@ public class PetController : MonoBehaviour
         agent.speed = speed;
         agent.acceleration = acceleration;
         agent.angularSpeed = angularSpeed;
-        agent.stoppingDistance = stopDistance;
+        agent.stoppingDistance = Mathf.Max(stopDistance, agent.radius * 0.35f);
         float destinationThreshold = Mathf.Max(0.01f, navDestinationThreshold);
         bool destinationChanged = !navDestinationInitialized
             || (navDestination - lastNavDestination).sqrMagnitude
@@ -817,7 +922,11 @@ public class PetController : MonoBehaviour
         agent.isStopped = false;
         if (needsPath || (destinationChanged && canRefreshDestination))
         {
-            agent.SetDestination(navDestination);
+            if (!agent.SetDestination(navDestination))
+            {
+                StopMovement();
+                return true;
+            }
             lastNavDestination = navDestination;
             navDestinationInitialized = true;
             nextNavPathRefreshAt = Time.time + Mathf.Max(0.02f, navPathRefreshInterval);
@@ -827,17 +936,95 @@ public class PetController : MonoBehaviour
         return true;
     }
 
-    private bool TryWarpToNavMesh(Vector3 position, float searchRadius)
+    private void AwardDefeatExperience(DummyEnemy defeatedEnemy)
     {
-        NavMeshHit hit;
-        if (!NavMesh.SamplePosition(position, out hit, searchRadius, NavMesh.AllAreas))
+        if (defeatedEnemy == null || defeatedEnemy.ExperienceReward <= 0)
+        {
+            return;
+        }
+
+        if (levelUpService == null)
+        {
+            levelUpService = FindFirstObjectByType<PetLevelUpService>();
+        }
+
+        if (levelUpService == null)
+        {
+            levelUpService = gameObject.AddComponent<PetLevelUpService>();
+        }
+
+        levelUpService.GrantBattleExperience(this, defeatedEnemy.ExperienceReward, out _);
+    }
+
+    private float CalculateAttackDamage()
+    {
+        PetCollectionMetadata metadata = GetComponentInChildren<PetCollectionMetadata>(true);
+        float damage = CurrentBaseAttackDamage;
+        if (metadata == null || Random.value >= metadata.CriticalRate / 100f)
+        {
+            return damage;
+        }
+
+        return damage * (1f + metadata.CriticalDamagePercent / 100f);
+    }
+
+    private bool TryEnableAgentOnNavMesh()
+    {
+        if (agent == null || agent.enabled)
+        {
+            return agent != null && agent.enabled;
+        }
+
+        if (Time.time < nextNavMeshRetryAt)
         {
             return false;
         }
 
-        agent.Warp(hit.position);
+        nextNavMeshRetryAt = Time.time + Mathf.Max(0.1f, navMeshRetryInterval);
+        return TryPlaceAgentOnNavMesh(transform.position, 6f);
+    }
+
+    private bool TryWarpToNavMesh(Vector3 position, float searchRadius)
+    {
+        return TryPlaceAgentOnNavMesh(position, searchRadius);
+    }
+
+    private bool TryPlaceAgentOnNavMesh(Vector3 position, float searchRadius)
+    {
+        if (agent == null || !agent.gameObject.activeInHierarchy
+            || !NavMesh.SamplePosition(position, out NavMeshHit hit,
+                Mathf.Max(0.25f, searchRadius), agent.areaMask))
+        {
+            return false;
+        }
+
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            if (!agent.Warp(hit.position))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (agent.enabled)
+            {
+                agent.enabled = false;
+            }
+
+            transform.position = hit.position;
+            agent.enabled = true;
+            if (!agent.isOnNavMesh)
+            {
+                agent.enabled = false;
+                return false;
+            }
+        }
+
+        agent.isStopped = true;
+        agent.ResetPath();
         navDestinationInitialized = false;
-        return agent.isOnNavMesh;
+        return true;
     }
 
     private void MoveDirect(Vector3 destination, float speed, float stopDistance)
@@ -852,16 +1039,118 @@ public class PetController : MonoBehaviour
             return;
         }
 
-        Vector3 direction = toDestination.normalized;
-        Vector3 next = current + direction * speed * Time.deltaTime;
-        if (snapFallbackToGround)
+        float step = Mathf.Min(Mathf.Max(0f, speed) * Time.deltaTime,
+            toDestination.magnitude - stopDistance);
+        if (step <= 0f || !TryChooseDirectStep(current, toDestination.normalized, step,
+                out Vector3 next, out Vector3 direction))
         {
-            next = SnapToGround(next);
+            StopMovement();
+            return;
         }
 
         transform.position = next;
         FaceDirection(direction);
-        directMoveSpeed = speed;
+        directMoveSpeed = step / Mathf.Max(Time.deltaTime, 0.0001f);
+    }
+
+    private bool TryChooseDirectStep(Vector3 current, Vector3 desiredDirection, float step,
+        out Vector3 next, out Vector3 chosenDirection)
+    {
+        chosenDirection = desiredDirection;
+        if (TryDirectStep(current, desiredDirection, step, out next))
+        {
+            return true;
+        }
+
+        float[] angles = { 35f, 70f, 105f, 140f };
+        for (int sideIndex = 0; sideIndex < 2; sideIndex++)
+        {
+            int side = sideIndex == 0 ? directAvoidanceSide : -directAvoidanceSide;
+            for (int angleIndex = 0; angleIndex < angles.Length; angleIndex++)
+            {
+                Vector3 candidateDirection = Quaternion.Euler(0f, side * angles[angleIndex], 0f)
+                    * desiredDirection;
+                if (!TryDirectStep(current, candidateDirection, step, out next))
+                {
+                    continue;
+                }
+
+                directAvoidanceSide = side;
+                chosenDirection = candidateDirection;
+                return true;
+            }
+        }
+
+        next = current;
+        return false;
+    }
+
+    private bool TryDirectStep(Vector3 current, Vector3 direction, float step, out Vector3 next)
+    {
+        next = current;
+        float radius = Mathf.Max(0.1f, directBodyRadius);
+        Vector3 probeOrigin = current + Vector3.up
+            * Mathf.Max(directProbeHeight, radius + 0.1f);
+        float lookAhead = step + Mathf.Max(radius, directLookAhead);
+        int count = Physics.SphereCastNonAlloc(probeOrigin, radius, direction,
+            directObstacleHits, lookAhead, directObstacleMask, QueryTriggerInteraction.Ignore);
+        if (count == directObstacleHits.Length)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit hit = directObstacleHits[i];
+            Collider obstacle = hit.collider;
+            if (obstacle == null || IsIgnoredDirectObstacle(obstacle))
+            {
+                continue;
+            }
+
+            bool walkableGround = hit.normal.y >= directMinGroundNormal
+                && hit.point.y <= current.y + directMaxStepHeight;
+            if (!walkableGround)
+            {
+                return false;
+            }
+        }
+
+        Vector3 candidate = current + direction * step;
+        if (snapFallbackToGround)
+        {
+            if (!TryFindWalkableGround(candidate, directMaxStepHeight, out Vector3 groundPoint))
+            {
+                return false;
+            }
+
+            candidate.y = groundPoint.y;
+        }
+
+        next = candidate;
+        return true;
+    }
+
+    private bool IsIgnoredDirectObstacle(Collider obstacle)
+    {
+        if (obstacle.transform.IsChildOf(transform))
+        {
+            return true;
+        }
+
+        if (owner != null && obstacle.transform.IsChildOf(owner))
+        {
+            return true;
+        }
+
+        PetController pet = obstacle.GetComponentInParent<PetController>();
+        if (pet != null)
+        {
+            return true;
+        }
+
+        DummyEnemy enemy = obstacle.GetComponentInParent<DummyEnemy>();
+        return enemy != null && enemy == target;
     }
 
     private void StopMovement(bool updateAnimation = true)
@@ -991,26 +1280,46 @@ public class PetController : MonoBehaviour
 
     private Vector3 SnapToGround(Vector3 position)
     {
+        return TryFindWalkableGround(position, 0.5f, out Vector3 groundPoint)
+            ? groundPoint
+            : position;
+    }
+
+    private bool TryFindWalkableGround(Vector3 position, float maxHeightChange,
+        out Vector3 groundPoint)
+    {
+        groundPoint = position;
         Vector3 origin = position + Vector3.up * 1.5f;
         int count = Physics.RaycastNonAlloc(origin, Vector3.down, groundHits, 4f, groundMask, QueryTriggerInteraction.Ignore);
         if (count <= 0)
         {
-            return position;
+            return false;
         }
 
-        int best = 0;
-        float bestDistance = groundHits[0].distance;
-        for (int i = 1; i < count; i++)
+        int best = -1;
+        float bestDistance = float.PositiveInfinity;
+        for (int i = 0; i < count; i++)
         {
-            if (groundHits[i].distance < bestDistance)
+            RaycastHit hit = groundHits[i];
+            if (hit.collider == null || IsIgnoredDirectObstacle(hit.collider)
+                || hit.normal.y < directMinGroundNormal
+                || Mathf.Abs(hit.point.y - position.y) > maxHeightChange
+                || hit.distance >= bestDistance)
             {
-                best = i;
-                bestDistance = groundHits[i].distance;
+                continue;
             }
+
+            best = i;
+            bestDistance = hit.distance;
         }
 
-        position.y = groundHits[best].point.y;
-        return position;
+        if (best < 0)
+        {
+            return false;
+        }
+
+        groundPoint.y = groundHits[best].point.y;
+        return true;
     }
 
     private void FaceVelocity(Vector3 velocity)
@@ -1063,12 +1372,21 @@ public class PetController : MonoBehaviour
             return;
         }
 
+        if (!useNavMeshWhenAvailable && agent.enabled)
+        {
+            agent.enabled = false;
+        }
+
         agent.updateRotation = false;
         agent.speed = followSpeed;
         agent.acceleration = acceleration;
         agent.angularSpeed = angularSpeed;
         agent.stoppingDistance = followDistance;
+        agent.radius = Mathf.Max(agent.radius, minimumNavigationRadius);
         agent.autoBraking = true;
+        agent.autoRepath = true;
+        agent.autoTraverseOffMeshLink = false;
+        agent.obstacleAvoidanceType = ObstacleAvoidanceType.HighQualityObstacleAvoidance;
     }
 
     private void ConfigureAnimator()

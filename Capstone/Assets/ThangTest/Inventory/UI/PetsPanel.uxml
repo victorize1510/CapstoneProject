@@ -10,11 +10,11 @@
             <ui:Button name="pets-back-button" text="←  QUAY LẠI" class="pets-back-button"/>
         </ui:VisualElement>
         <ui:VisualElement class="pets-party-section">
-            <ui:Label text="ĐỘI HÌNH (PARTY)" class="pets-section-title"/>
+            <ui:Label name="pets-party-title" text="ĐỘI HÌNH  |  Party (0/6)" class="pets-section-title"/>
             <ui:VisualElement name="pets-party-row" class="pets-party-row"/>
             <ui:VisualElement class="pets-party-hint-row">
                 <ui:Label text="ⓘ  Double-click pet nguồn, sau đó click ô đích để đổi vị trí. Slot 1–6 tương ứng phím 1–6." class="pets-party-hint"/>
-                <ui:Label text="Slot 1 là LEAD" class="pets-lead-hint"/>
+                <ui:Label text="ACTIVE là pet đang sử dụng • Viền cyan là pet đang xem" class="pets-lead-hint"/>
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement class="pets-main-panel">
@@ -35,9 +35,13 @@
                 </ui:VisualElement>
                 <ui:VisualElement class="pets-meta-row">
                     <ui:Label name="pets-selected-species" text="Loài: -" class="pets-meta-label"/>
+                    <ui:Label text="|" class="pets-meta-separator"/>
                     <ui:Label name="pets-selected-level" text="Lv. -" class="pets-meta-label"/>
+                    <ui:Label text="|" class="pets-meta-separator"/>
                     <ui:Label name="pets-selected-gender" text="Giới tính: -" class="pets-meta-label"/>
+                    <ui:Label text="|" class="pets-meta-separator"/>
                     <ui:Label name="pets-selected-rarity" text="Độ hiếm: -" class="pets-meta-label"/>
+                    <ui:Label text="|" class="pets-meta-separator"/>
                     <ui:Label name="pets-selected-element" text="Hệ: -" class="pets-meta-label"/>
                 </ui:VisualElement>
                 <ui:VisualElement class="pets-status-and-stats">
@@ -58,35 +62,88 @@
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement class="pets-stats-card">
-                        <ui:Label text="CHỈ SỐ (STATS)" class="pets-stats-title"/>
-                        <ui:VisualElement class="pets-stat-row">
-                            <ui:Label text="♥  HP" class="pets-stat-name"/>
-                            <ui:Label name="pets-stat-health" text="-" class="pets-stat-value"/>
+                        <ui:VisualElement class="pets-stats-header">
+                            <ui:VisualElement class="pets-section-heading-group">
+                                <ui:Label text="▥" class="pets-section-heading-icon"/>
+                                <ui:Label text="CHỈ SỐ" class="pets-stats-title"/>
+                            </ui:VisualElement>
+                            <ui:Button name="pets-details-button" text="XEM CHI TIẾT" class="pets-section-link-button"/>
                         </ui:VisualElement>
-                        <ui:VisualElement class="pets-stat-row">
-                            <ui:Label text="⚔  ATK" class="pets-stat-name"/>
-                            <ui:Label name="pets-stat-attack" text="-" class="pets-stat-value"/>
-                        </ui:VisualElement>
-                        <ui:VisualElement class="pets-stat-row">
-                            <ui:Label text="◆  DEF" class="pets-stat-name"/>
-                            <ui:Label name="pets-stat-defense" text="-" class="pets-stat-value"/>
-                        </ui:VisualElement>
-                        <ui:VisualElement class="pets-stat-row">
-                            <ui:Label text="➤  SPD" class="pets-stat-name"/>
-                            <ui:Label name="pets-stat-speed" text="-" class="pets-stat-value"/>
+                        <ui:VisualElement class="pets-stats-columns">
+                            <ui:VisualElement class="pets-stat-column">
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="♥  HP" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-health-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-health" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="⚔  ATK" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-attack-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-attack" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="✦  SP.ATK" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-magic-attack-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-magic-attack" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="◆  DEF" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-defense-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-defense" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="✧  SP.DEF" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-magic-defense-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-magic-defense" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="➤  SPD" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-speed-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-speed" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="★  CRI Rate" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-critical-rate-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-critical-rate" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="pets-stat-row">
+                                    <ui:Label text="✹  CRI DMG" class="pets-stat-name"/>
+                                    <ui:VisualElement class="pets-stat-track"><ui:VisualElement name="pets-stat-critical-damage-fill" class="pets-stat-fill"/></ui:VisualElement>
+                                    <ui:Label name="pets-stat-critical-damage" text="-" class="pets-stat-value"/>
+                                </ui:VisualElement>
+                            </ui:VisualElement>
                         </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label text="KỸ NĂNG (SKILLS)" class="pets-section-title pets-skills-title"/>
+                <ui:VisualElement class="pets-skills-header">
+                    <ui:VisualElement class="pets-section-heading-group">
+                        <ui:Label text="✤" class="pets-section-heading-icon"/>
+                        <ui:Label text="KỸ NĂNG (SKILLS)" class="pets-section-title pets-skills-title"/>
+                    </ui:VisualElement>
+                </ui:VisualElement>
                 <ui:VisualElement name="pets-skills-row" class="pets-skills-row"/>
                 <ui:VisualElement class="pets-actions-row">
-                    <ui:Button name="pets-level-up-button" text="↑" class="pets-action-button" style="-unity-text-align: middle-center;"/>
-                    <ui:Button name="pets-heal-button" text="♥" class="pets-action-button"/>
-                    <ui:Button name="pets-skills-button" text="▤" class="pets-action-button"/>
-                    <ui:Button name="pets-details-button" text="☼" class="pets-action-button"/>
-                    <ui:Button name="pets-box-button" text="▣" class="pets-action-button"/>
-                    <ui:Button name="pets-evolution-button" text="❧" class="pets-action-button"/>
-                    <ui:Button name="pets-release-button" text="♢" class="pets-action-button danger-pet-action"/>
+                    <ui:Button name="pets-level-up-button" tooltip="Tăng cấp pet" class="pets-action-button primary-pet-action">
+                        <ui:Label text="↑" class="pets-action-icon"/>
+                        <ui:VisualElement class="pets-action-copy">
+                            <ui:Label text="TĂNG CẤP" class="pets-action-title"/>
+                            <ui:Label text="Tăng level cho pet" class="pets-action-subtitle"/>
+                        </ui:VisualElement>
+                    </ui:Button>
+                    <ui:Button name="pets-heal-button" tooltip="Hồi HP cho pet" class="pets-action-button primary-pet-action">
+                        <ui:Label text="♥" class="pets-action-icon"/>
+                        <ui:VisualElement class="pets-action-copy">
+                            <ui:Label text="HỒI PHỤC" class="pets-action-title"/>
+                            <ui:Label text="Khôi phục HP/MP" class="pets-action-subtitle"/>
+                        </ui:VisualElement>
+                    </ui:Button>
+                    <ui:Button name="pets-evolution-button" tooltip="Tiến hóa pet" class="pets-action-button evolution-pet-action">
+                        <ui:Label text="⌛" class="pets-action-icon"/>
+                        <ui:VisualElement class="pets-action-copy">
+                            <ui:Label text="TIẾN HÓA" class="pets-action-title"/>
+                            <ui:Label name="pets-evolution-subtitle" text="Chưa đủ điều kiện" class="pets-action-subtitle"/>
+                        </ui:VisualElement>
+                    </ui:Button>
                 </ui:VisualElement>
                 <ui:Label name="pets-feedback-label" text="" class="pets-feedback-label"/>
             </ui:VisualElement>

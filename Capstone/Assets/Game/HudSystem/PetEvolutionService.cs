@@ -126,7 +126,9 @@ namespace Capstone.Game.HudSystem {
             preview.Metadata.SetStats(
                 preview.Metadata.Attack + preview.Rule.AttackBonus,
                 preview.Metadata.Defense + preview.Rule.DefenseBonus,
-                preview.Metadata.Speed + preview.Rule.SpeedBonus);
+                preview.Metadata.Speed + preview.Rule.SpeedBonus,
+                preview.Metadata.MagicAttack + preview.Rule.MagicAttackBonus,
+                preview.Metadata.MagicDefense + preview.Rule.MagicDefenseBonus);
 
             if (consumedEvolutionItem) {
                 preview.Metadata.RecordResourceInvestment(

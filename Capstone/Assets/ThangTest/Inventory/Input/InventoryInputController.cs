@@ -237,6 +237,8 @@ namespace Capstone.Game.Inventory {
                 return true;
             }
 
+            if (!IsInventoryPanelActive()) return false;
+
             if (key == previousCategoryKey) {
                 inventory.SelectPreviousCategory();
                 MarkHandled();
@@ -333,6 +335,13 @@ namespace Capstone.Game.Inventory {
 
             bool inventoryHidden = inventoryPanelElement == null || inventoryPanelElement.resolvedStyle.display == DisplayStyle.None;
             return inventoryHidden || IsPointerOverQuestPanel();
+        }
+
+        bool IsInventoryPanelActive() {
+            if (document == null || document.rootVisualElement == null) return false;
+            if (inventoryPanelElement == null) inventoryPanelElement = document.rootVisualElement.Q<VisualElement>("inventory-panel");
+            return inventoryPanelElement != null
+                && inventoryPanelElement.resolvedStyle.display != DisplayStyle.None;
         }
 
         bool IsQuestPanelNavigationKey(KeyCode key) {

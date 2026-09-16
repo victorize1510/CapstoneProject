@@ -1087,6 +1087,37 @@ Transform:
   - {fileID: 213157727798922098}
   m_Father: {fileID: 5240520770269714720}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3541289269460465111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3530121000697867182}
+  m_Layer: 0
+  m_Name: BallSocket_PetSummon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3530121000697867182
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3541289269460465111}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.06, y: -0.02, z: -0.05}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3097741913698426480}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3906325653181889484
 GameObject:
   m_ObjectHideFlags: 0
@@ -1344,6 +1375,7 @@ Transform:
   - {fileID: 3576204896249332080}
   - {fileID: 9139747424640187844}
   - {fileID: 8618006501024682866}
+  - {fileID: 3530121000697867182}
   m_Father: {fileID: 4106679840280601085}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4945367551012528969
@@ -2010,6 +2042,37 @@ Transform:
   - {fileID: 8542628196328216378}
   m_Father: {fileID: 8768232395999743583}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6664728614547890248
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5057979997699391025}
+  m_Layer: 0
+  m_Name: BallSocket_PetSummon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5057979997699391025
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6664728614547890248}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.03, y: 0.08, z: 0.04}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8122807522786443080}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6816276297789604404
 GameObject:
   m_ObjectHideFlags: 0
@@ -2086,6 +2149,9 @@ GameObject:
   - component: {fileID: 2173805424448448813}
   - component: {fileID: 1299563619424707016}
   - component: {fileID: 3707334262660597724}
+  - component: {fileID: 1042859732734607457}
+  - component: {fileID: 733134733134733134}
+  - component: {fileID: 4665187600960235431}
   m_Layer: 0
   m_Name: Player_GenderSwitch
   m_TagString: Untagged
@@ -2146,7 +2212,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91222443b6439ca4aa39ef3dc2e961be, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::BasicPlayerMovement
   animator: {fileID: 1074651339150995333}
   cameraTransform: {fileID: 0}
@@ -2375,7 +2441,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d236282ab70bdb9419efd058a61e35e0, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVisualSwitcher
   movement: {fileID: 2173805424448448813}
   visuals:
@@ -2404,6 +2470,113 @@ MonoBehaviour:
   allowRuntimeSwitch: 1
   switchKey: 103
   defaultVisualIndex: 0
+--- !u!114 &1042859732734607457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7001572416413241313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bdf51f824b06704cb30aafc343ea2d4, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.PetSummon.PetSummonHandSocket
+  visualSwitcher: {fileID: 3707334262660597724}
+  ballPrefab: {fileID: 67811545955297273, guid: 3af14d9d9cd3a5349b28963a15ffa405, type: 3}
+  bindings:
+  - visualName: Vexa
+    socket: {fileID: 3530121000697867182}
+    ballLocalPosition: {x: 0, y: 0, z: 0}
+    ballLocalEulerAngles: {x: 0, y: 0, z: 0}
+    ballLocalScale: 0.28
+  - visualName: Boy
+    socket: {fileID: 5057979997699391025}
+    ballLocalPosition: {x: 0, y: 0, z: 0}
+    ballLocalEulerAngles: {x: 0, y: 0, z: 0}
+    ballLocalScale: 0.28
+  runtimeBallLocalScale: 0.26
+  visibleBallDiameter: 0.143
+  heldBallDownOffset: 0.035
+  heldBallInwardOffset: 0.04
+  boyExtraDownOffset: 0.02
+  vexaExtraDownOffset: 0.03
+  vexaExtraInwardOffset: 0.025
+--- !u!114 &733134733134733134
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7001572416413241313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0f9a30dd87a4b04b1be9f98686b180d, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.PetSummon.PetSummonDirector
+  movement: {fileID: 2173805424448448813}
+  visualSwitcher: {fileID: 3707334262660597724}
+  handSocket: {fileID: 1042859732734607457}
+  releaseEffect: {fileID: 4665187600960235431}
+  commandInput: {fileID: 0}
+  aimCamera: {fileID: 0}
+  throwDistance: 3.5
+  minimumThrowDistance: 2.5
+  landingSearchRadius: 1.25
+  groundProbeHeight: 2.5
+  groundProbeDistance: 6
+  obstacleProbeRadius: 0.12
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  navMeshAreaMask: -1
+  requireNavMesh: 0
+  releaseNormalizedTime: 0.45
+  throwStartTimeout: 3
+  flightDuration: 0.58
+  bounceDuration: 1.1
+  bounceHeight: 0.24
+  bounceHorizontalDamping: 0.35
+  hoverRiseDuration: 0.22
+  hoverHeight: 0.45
+  hoverHoldDuration: 0.5
+  spinDegreesPerSecond: 540
+  recallEffectNormalizedTime: 0.28
+  pickupStartTimeout: 3
+  pickupCompletionTimeout: 3
+--- !u!114 &4665187600960235431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7001572416413241313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e3b45fa1c6d4b82a58d7ef9346b12cd, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.PetSummon.PetSummonReleaseEffect
+  beamColor: {r: 0.2, g: 1, b: 0.58, a: 0.72}
+  coreColor: {r: 0.86, g: 1, b: 0.94, a: 1}
+  beamBuildDuration: 0.18
+  revealDuration: 0.48
+  recallBeamBuildDuration: 0.16
+  recallDuration: 0.46
+  settleDuration: 0.12
+  beamWidth: 0.16
+  beamWobble: 0.055
+  initialHorizontalScale: 0.12
+  initialVerticalScale: 0.04
+  beamTargetHeight: 0.06
+  particleHeight: 0.42
+  burstParticleCount: 26
+  energyScrollSpeed: 2.8
+  noiseTextureSize: 64
+  noiseTiling: 4.5
+  distortionAmount: 0.14
 --- !u!1 &7007341974252997811
 GameObject:
   m_ObjectHideFlags: 0
@@ -3256,7 +3429,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -639763325267172598, guid: 16ab05ccee76907448fd83e3f2e9f3e7, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5057979997699391025}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 16ab05ccee76907448fd83e3f2e9f3e7, type: 3}
 --- !u!4 &13407167781780393 stripped
@@ -3272,5 +3448,10 @@ GameObject:
 --- !u!95 &6255373898216268243 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 16ab05ccee76907448fd83e3f2e9f3e7, type: 3}
+  m_PrefabInstance: {fileID: 550873755215125570}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8122807522786443080 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -639763325267172598, guid: 16ab05ccee76907448fd83e3f2e9f3e7, type: 3}
   m_PrefabInstance: {fileID: 550873755215125570}
   m_PrefabAsset: {fileID: 0}

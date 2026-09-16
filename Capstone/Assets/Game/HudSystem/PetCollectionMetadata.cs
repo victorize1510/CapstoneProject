@@ -52,8 +52,10 @@ namespace Capstone.Game.HudSystem {
         [SerializeField, Min(0)] int attack;
         [SerializeField, Min(0)] int defense;
         [SerializeField, Min(0)] int speed;
-        [SerializeField, Range(0f, 100f)] float criticalRate;
-        [SerializeField, Min(0f)] float criticalDamagePercent;
+        [SerializeField, Min(0)] int magicAttack;
+        [SerializeField, Min(0)] int magicDefense;
+        [SerializeField, Range(0f, 100f)] float criticalRate = 5f;
+        [SerializeField, Min(0f)] float criticalDamagePercent = 10f;
         [SerializeField] long obtainedOrder;
 
         [Header("Pet Details")]
@@ -105,8 +107,14 @@ namespace Capstone.Game.HudSystem {
         public int Attack => Mathf.Max(0, attack);
         public int Defense => Mathf.Max(0, defense);
         public int Speed => Mathf.Max(0, speed);
-        public float CriticalRate => Mathf.Clamp(criticalRate, 0f, 100f);
-        public float CriticalDamagePercent => Mathf.Max(0f, criticalDamagePercent);
+        public int MagicAttack => Mathf.Max(0, magicAttack);
+        public int MagicDefense => Mathf.Max(0, magicDefense);
+        public float CriticalRate => IsDragonDuskPrototype()
+            ? 10f
+            : criticalRate > 0f ? Mathf.Clamp(criticalRate, 0f, 100f) : 5f;
+        public float CriticalDamagePercent => IsDragonDuskPrototype()
+            ? 25f
+            : criticalDamagePercent > 0f ? criticalDamagePercent : 10f;
         public long ObtainedOrder => obtainedOrder;
         public string CaptureDate => captureDate ?? string.Empty;
         public string CaptureLocation => captureLocation ?? string.Empty;
@@ -218,9 +226,26 @@ namespace Capstone.Game.HudSystem {
         }
 
         public void SetStats(int nextAttack, int nextDefense, int nextSpeed) {
+            SetStats(nextAttack, nextDefense, nextSpeed, MagicAttack, MagicDefense);
+        }
+
+        public void SetStats(
+            int nextAttack,
+            int nextDefense,
+            int nextSpeed,
+            int nextMagicAttack,
+            int nextMagicDefense) {
             attack = Mathf.Max(0, nextAttack);
             defense = Mathf.Max(0, nextDefense);
             speed = Mathf.Max(0, nextSpeed);
+            magicAttack = Mathf.Max(0, nextMagicAttack);
+            magicDefense = Mathf.Max(0, nextMagicDefense);
+            Changed?.Invoke();
+        }
+
+        public void SetCriticalStats(float nextCriticalRate, float nextCriticalDamagePercent) {
+            criticalRate = Mathf.Clamp(nextCriticalRate, 0f, 100f);
+            criticalDamagePercent = Mathf.Max(0f, nextCriticalDamagePercent);
             Changed?.Invoke();
         }
 
@@ -316,6 +341,8 @@ namespace Capstone.Game.HudSystem {
                 attack = Attack,
                 defense = Defense,
                 speed = Speed,
+                magicAttack = MagicAttack,
+                magicDefense = MagicDefense,
                 criticalRate = CriticalRate,
                 criticalDamagePercent = CriticalDamagePercent,
                 obtainedOrder = ObtainedOrder,
@@ -347,6 +374,8 @@ namespace Capstone.Game.HudSystem {
             attack = Mathf.Max(0, saveData.attack);
             defense = Mathf.Max(0, saveData.defense);
             speed = Mathf.Max(0, saveData.speed);
+            magicAttack = Mathf.Max(0, saveData.magicAttack);
+            magicDefense = Mathf.Max(0, saveData.magicDefense);
             criticalRate = Mathf.Clamp(saveData.criticalRate, 0f, 100f);
             criticalDamagePercent = Mathf.Max(0f, saveData.criticalDamagePercent);
             obtainedOrder = saveData.obtainedOrder;
@@ -376,6 +405,8 @@ namespace Capstone.Game.HudSystem {
             attack = Mathf.Max(0, attack);
             defense = Mathf.Max(0, defense);
             speed = Mathf.Max(0, speed);
+            magicAttack = Mathf.Max(0, magicAttack);
+            magicDefense = Mathf.Max(0, magicDefense);
             criticalRate = Mathf.Clamp(criticalRate, 0f, 100f);
             criticalDamagePercent = Mathf.Max(0f, criticalDamagePercent);
             evolutionLevelRequirement = Mathf.Max(0, evolutionLevelRequirement);
@@ -453,6 +484,16 @@ namespace Capstone.Game.HudSystem {
             return normalized.Length <= MaxNicknameLength
                 ? normalized
                 : normalized.Substring(0, MaxNicknameLength).Trim();
+        }
+
+        bool IsDragonDuskPrototype() {
+            if (string.Equals(species?.Trim(), "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) return true;
+            if (string.Equals(definitionId?.Trim(), "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) return true;
+
+            string objectName = gameObject != null
+                ? gameObject.name.Replace("(Clone)", string.Empty).Trim()
+                : string.Empty;
+            return objectName.StartsWith("Dragon Dusk", StringComparison.OrdinalIgnoreCase);
         }
 
         string EnsurePersistentId() {

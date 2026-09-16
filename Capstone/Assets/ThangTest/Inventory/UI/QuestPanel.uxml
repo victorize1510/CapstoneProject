@@ -22,7 +22,7 @@
             <ui:Label name="tracked-quest-label" text="Đang theo dõi: -" class="tracked-quest-label" />
         </ui:VisualElement>
         <ui:VisualElement class="quest-journal-body">
-            <ui:Label name="quest-page-empty" text="NONE" class="quest-page-empty" />
+            <ui:Label name="quest-page-empty" text="KHÔNG CÓ NHIỆM VỤ" class="quest-page-empty" />
             <ui:VisualElement name="quest-list-column" class="quest-list-column">
                 <ui:Label text="DANH SÁCH NHIỆM VỤ" class="quest-column-title" />
                 <ui:ScrollView name="quest-list-scroll" class="quest-list-scroll" />
@@ -33,42 +33,74 @@
                         <ui:VisualElement class="quest-detail-heading-row">
                             <ui:VisualElement name="quest-detail-icon" class="quest-detail-icon quest-main-icon" />
                             <ui:VisualElement class="quest-detail-heading-text">
-                                <ui:Label name="quest-detail-title" text="Select a quest" class="quest-detail-title" />
-                                <ui:VisualElement name="quest-location-row" class="quest-inline-row">
-                                    <ui:Label text="Khu vực:" class="quest-inline-label" />
-                                    <ui:Label name="quest-location-value" text="-" class="quest-location-title" />
+                                <ui:VisualElement class="quest-detail-title-row">
+                                    <ui:Label name="quest-detail-title" text="Chọn một nhiệm vụ" class="quest-detail-title" />
+                                    <ui:Button name="track-quest-button" text="☆  THEO DÕI" class="quest-header-track-button" />
+                                </ui:VisualElement>
+                                <ui:VisualElement class="quest-basic-info-grid">
+                                    <ui:VisualElement class="quest-basic-info-column">
+                                        <ui:VisualElement name="quest-location-row" class="quest-basic-info-row">
+                                            <ui:Label text="Khu vực:" class="quest-basic-info-label" />
+                                            <ui:Label name="quest-location-value" text="" class="quest-basic-info-value" />
+                                        </ui:VisualElement>
+                                        <ui:VisualElement name="quest-giver-row" class="quest-basic-info-row">
+                                            <ui:Label text="Người giao:" class="quest-basic-info-label" />
+                                            <ui:Label name="quest-giver-value" text="" class="quest-basic-info-value" />
+                                        </ui:VisualElement>
+                                    </ui:VisualElement>
+                                    <ui:VisualElement class="quest-basic-info-column">
+                                        <ui:VisualElement name="quest-distance-row" class="quest-basic-info-row">
+                                            <ui:Label text="Khoảng cách:" class="quest-basic-info-label" />
+                                            <ui:Label name="quest-distance-value" text="" class="quest-basic-info-value" />
+                                        </ui:VisualElement>
+                                        <ui:VisualElement name="quest-recommended-level-row" class="quest-basic-info-row">
+                                            <ui:Label text="Cấp đề xuất:" class="quest-basic-info-label" />
+                                            <ui:Label name="quest-recommended-level-value" text="" class="quest-basic-info-value" />
+                                        </ui:VisualElement>
+                                    </ui:VisualElement>
+                                </ui:VisualElement>
+                                <ui:VisualElement class="quest-detail-meta-row">
+                                    <ui:Label name="quest-type-pill" text="" class="quest-pill" />
+                                    <ui:Label name="quest-level-pill" text="" class="quest-pill" />
                                 </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:VisualElement class="quest-detail-meta-row">
-                            <ui:Label name="quest-type-pill" text="-" class="quest-pill" />
-                            <ui:Label name="quest-level-pill" text="Lv. -" class="quest-pill" />
+
+                        <ui:VisualElement name="quest-description-section" class="quest-detail-section">
+                            <ui:Label text="MÔ TẢ" class="quest-section-title" />
+                            <ui:Label name="quest-description-label" text="" class="quest-description" />
                         </ui:VisualElement>
-                        <ui:Label name="quest-description-label" text="No quest selected." class="quest-description" />
-                        <ui:VisualElement name="quest-objective-heading" class="quest-section-heading-row">
-                            <ui:Label text="MỤC TIÊU" class="quest-section-title" />
-                            <ui:Label name="quest-progress-value" text="0 / 0" class="quest-progress-value" />
+
+                        <ui:VisualElement name="quest-objectives-section" class="quest-detail-section">
+                            <ui:VisualElement name="quest-objective-heading" class="quest-section-heading-row">
+                                <ui:Label text="MỤC TIÊU" class="quest-section-title" />
+                                <ui:Label name="quest-progress-value" text="" class="quest-progress-value" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="quest-objective-list" class="objective-list" />
+                            <ui:ProgressBar name="quest-progress-bar" class="quest-progress-bar" value="0" low-value="0" high-value="100" title="" />
                         </ui:VisualElement>
-                        <ui:VisualElement name="quest-objective-list" class="objective-list" />
-                        <ui:ProgressBar name="quest-progress-bar" class="quest-progress-bar" value="0" low-value="0" high-value="100" title="" />
-                        <ui:VisualElement class="quest-state-grid">
-                            <ui:VisualElement name="quest-status-row" class="quest-state-row">
-                                <ui:Label text="Trạng thái" class="quest-state-label" />
-                                <ui:Label name="quest-status-value" text="-" class="quest-state-value" />
-                            </ui:VisualElement>
-                            <ui:VisualElement name="quest-distance-row" class="quest-state-row">
-                                <ui:Label text="Khoảng cách" class="quest-state-label" />
-                                <ui:Label name="quest-distance-value" text="-" class="quest-state-value" />
-                            </ui:VisualElement>
-                            <ui:VisualElement name="quest-time-row" class="quest-state-row">
-                                <ui:Label text="Thời gian" class="quest-state-label" />
-                                <ui:Label name="quest-time-value" text="-" class="quest-state-value" />
+
+                        <ui:VisualElement name="quest-rewards-section" class="quest-detail-section">
+                            <ui:Label name="quest-rewards-title" text="PHẦN THƯỞNG" class="quest-section-title" />
+                            <ui:VisualElement name="quest-reward-list" class="reward-list" />
+                            <ui:Label name="quest-reward-feedback" text="" class="quest-reward-feedback" />
+                        </ui:VisualElement>
+
+                        <ui:VisualElement name="quest-extra-info-section" class="quest-detail-section">
+                            <ui:Label text="THÔNG TIN KHÁC" class="quest-section-title" />
+                            <ui:VisualElement class="quest-extra-info-list">
+                                <ui:VisualElement name="quest-extra-note-row" class="quest-extra-info-row">
+                                    <ui:Label text="ⓘ" class="quest-extra-info-icon" />
+                                    <ui:Label name="quest-extra-info-value" text="" class="quest-extra-info-note" />
+                                </ui:VisualElement>
+                                <ui:VisualElement name="quest-time-row" class="quest-extra-info-row">
+                                    <ui:Label text="Thời gian còn lại:" class="quest-extra-info-label" />
+                                    <ui:Label name="quest-time-value" text="" class="quest-extra-info-value" />
+                                </ui:VisualElement>
                             </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:Label name="quest-rewards-title" text="PHẦN THƯỞNG" class="quest-section-title" />
-                        <ui:VisualElement name="quest-reward-list" class="reward-list" />
+
                         <ui:VisualElement name="quest-actions" class="quest-actions">
-                            <ui:Button name="track-quest-button" text="Theo dõi nhiệm vụ" class="quest-action-button primary-quest-action" />
                             <ui:Button name="show-map-button" text="Xem nhiệm vụ hiện tại" class="quest-action-button" />
                             <ui:Button name="abandon-quest-button" text="Hủy nhiệm vụ" class="quest-action-button danger-quest-action" />
                         </ui:VisualElement>

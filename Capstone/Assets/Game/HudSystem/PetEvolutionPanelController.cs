@@ -13,7 +13,6 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] bool autoFindReferences = true;
 
         MonsterInventoryAdapter inventory;
-        PetLevelUpService levelUpService;
         VisualElement overlay;
         VisualElement content;
         VisualElement currentPortrait;
@@ -35,6 +34,7 @@ namespace Capstone.Game.HudSystem {
         PetEvolutionPreview preview;
         bool controlsRegistered;
         bool resultShown;
+        bool openedAutomatically;
 
         PetCommandHudProvider CommandProvider => petHudProvider as PetCommandHudProvider;
         public bool IsOpen => overlay != null && overlay.resolvedStyle.display != DisplayStyle.None;
@@ -53,6 +53,8 @@ namespace Capstone.Game.HudSystem {
         }
 
         public void Bind(UIDocument targetDocument, MonsterInventoryAdapter targetInventory) {
+            Unsubscribe();
+            UnregisterControls();
             document = targetDocument != null ? targetDocument : document;
             inventory = targetInventory != null ? targetInventory : inventory;
             ResolveReferences();
@@ -70,6 +72,7 @@ namespace Capstone.Game.HudSystem {
             targetPet = pet != null ? pet : CommandProvider?.GetSelectedPetController();
             preview = evolutionService?.CreatePreview(targetPet);
             resultShown = false;
+            openedAutomatically = automaticPrompt;
             overlay.style.display = DisplayStyle.Flex;
             overlay.BringToFront();
             Refresh(automaticPrompt);
@@ -99,7 +102,22 @@ namespace Capstone.Game.HudSystem {
             targetPet = null;
             preview = null;
             resultShown = false;
+            openedAutomatically = false;
             if (overlay != null) overlay.style.display = DisplayStyle.None;
+        }
+
+        public void DismissPanel() {
+            Dismiss();
+        }
+
+        void Dismiss() {
+            bool closeInventory = openedAutomatically;
+            Close();
+            if (!closeInventory) return;
+
+            MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
+            if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
+            controller?.Close();
         }
 
         void Refresh(bool automaticPrompt = false) {
@@ -141,7 +159,7 @@ namespace Capstone.Game.HudSystem {
 
         void ConfirmEvolution() {
             if (resultShown) {
-                Close();
+                Dismiss();
                 return;
             }
 
@@ -150,8 +168,8 @@ namespace Capstone.Game.HudSystem {
             string evolvedName = preview.TargetName;
             bool success = evolutionService.TryEvolve(targetPet, out string message);
             if (!success) {
-                if (feedback != null) feedback.text = message;
                 Refresh();
+                if (feedback != null) feedback.text = message;
                 return;
             }
 
@@ -181,7 +199,6 @@ namespace Capstone.Game.HudSystem {
             if (evolutionService == null) evolutionService = GetComponent<PetEvolutionService>();
             if (evolutionService == null && Application.isPlaying) evolutionService = gameObject.AddComponent<PetEvolutionService>();
             evolutionService?.Bind(inventory);
-            levelUpService = GetComponent<PetLevelUpService>();
         }
 
         void CacheElements() {
@@ -208,7 +225,7 @@ namespace Capstone.Game.HudSystem {
 
         void RegisterControls() {
             if (controlsRegistered || overlay == null) return;
-            if (laterButton != null) laterButton.clicked += Close;
+            if (laterButton != null) laterButton.clicked += Dismiss;
             if (confirmButton != null) confirmButton.clicked += ConfirmEvolution;
             if (content != null) content.RegisterCallback<KeyDownEvent>(HandleKeyDown);
             controlsRegistered = true;
@@ -216,7 +233,7 @@ namespace Capstone.Game.HudSystem {
 
         void UnregisterControls() {
             if (!controlsRegistered) return;
-            if (laterButton != null) laterButton.clicked -= Close;
+            if (laterButton != null) laterButton.clicked -= Dismiss;
             if (confirmButton != null) confirmButton.clicked -= ConfirmEvolution;
             if (content != null) content.UnregisterCallback<KeyDownEvent>(HandleKeyDown);
             controlsRegistered = false;
@@ -227,15 +244,13 @@ namespace Capstone.Game.HudSystem {
                 inventory.ItemsChanged -= HandleInventoryChanged;
                 inventory.ItemsChanged += HandleInventoryChanged;
             }
-            if (levelUpService != null) {
-                levelUpService.PetLeveledUp -= HandlePetLeveledUp;
-                levelUpService.PetLeveledUp += HandlePetLeveledUp;
-            }
+            PetLevelUpService.AnyPetLeveledUp -= HandlePetLeveledUp;
+            PetLevelUpService.AnyPetLeveledUp += HandlePetLeveledUp;
         }
 
         void Unsubscribe() {
             if (inventory != null) inventory.ItemsChanged -= HandleInventoryChanged;
-            if (levelUpService != null) levelUpService.PetLeveledUp -= HandlePetLeveledUp;
+            PetLevelUpService.AnyPetLeveledUp -= HandlePetLeveledUp;
         }
 
         void HandleInventoryChanged(System.Collections.Generic.IReadOnlyList<InventoryItemSnapshot> _) {
@@ -246,14 +261,17 @@ namespace Capstone.Game.HudSystem {
             PetEvolutionPreview next = evolutionService?.CreatePreview(pet);
             if (next == null || !next.ShouldAutoPrompt) return;
             document?.rootVisualElement?.schedule.Execute(() => {
-                Open(pet, true);
+                MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
+                if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
+                if (controller != null) controller.OpenAutomaticPetEvolutionPrompt(pet);
+                else Open(pet, true);
                 if (IsOpen) evolutionService.MarkAutoPromptShown(next);
             });
         }
 
         void HandleKeyDown(KeyDownEvent evt) {
             if (evt.keyCode != KeyCode.Escape) return;
-            Close();
+            Dismiss();
             evt.StopImmediatePropagation();
         }
 

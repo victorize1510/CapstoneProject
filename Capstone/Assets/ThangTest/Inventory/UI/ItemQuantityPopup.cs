@@ -55,7 +55,7 @@ namespace Capstone.Game.Inventory {
             itemName.AddToClassList("quantity-popup-item-name");
             panel.Add(itemName);
 
-            ownedQuantity = new Label { name = "quantity-owned", text = "Owned: 0" };
+            ownedQuantity = new Label { name = "quantity-owned", text = "Sở hữu: 0" };
             ownedQuantity.AddToClassList("quantity-popup-owned");
             panel.Add(ownedQuantity);
 
@@ -110,7 +110,7 @@ namespace Capstone.Game.Inventory {
 
             actionTitle.text = title ?? "Action";
             itemName.text = item != null ? item.Name : "Item";
-            ownedQuantity.text = item != null ? $"Owned: {maxQuantity}" : "Owned: 0";
+            ownedQuantity.text = item != null ? $"Sở hữu: {maxQuantity}" : "Sở hữu: 0";
             SetIcon(item != null ? item.Icon : null);
             ApplyFixedQuantityState();
             SetQuantity(1);

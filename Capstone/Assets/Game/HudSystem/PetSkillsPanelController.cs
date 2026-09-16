@@ -246,9 +246,9 @@ namespace Capstone.Game.HudSystem {
                 slot.EnableInClassList("is-empty", !available);
                 slot.userData = i;
 
-                SetText(slot, "equipped-name", available ? SafeName(skill.displayName) : "EMPTY");
-                SetText(slot, "equipped-meta", available ? FormatCooldown(skill) : "Chọn skill rồi chọn ô");
-                VisualElement icon = slot.Q<VisualElement>("equipped-icon");
+                SetText(slot, "skills-equipped-name", available ? SafeName(skill.displayName) : "EMPTY");
+                SetText(slot, "skills-equipped-meta", available ? FormatCooldown(skill) : "Chọn skill rồi chọn ô");
+                VisualElement icon = slot.Q<VisualElement>(className: "skills-equipped-icon");
                 Label fallback = icon?.Q<Label>(className: "skills-icon-fallback");
                 SetPortrait(icon, fallback, available ? skill.icon : null, available ? skill.displayName : "+");
             }
@@ -408,8 +408,8 @@ namespace Capstone.Game.HudSystem {
             return label;
         }
 
-        static void SetText(VisualElement root, string name, string value) {
-            Label label = root?.Q<Label>(name);
+        static void SetText(VisualElement root, string className, string value) {
+            Label label = root?.Q<Label>(className: className);
             if (label != null) label.text = value;
         }
 

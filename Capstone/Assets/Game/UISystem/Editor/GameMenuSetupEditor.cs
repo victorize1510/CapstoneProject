@@ -56,6 +56,12 @@ namespace Capstone.Game.UISystem.Editor {
             AssignObject(menu, "mapInput", mapInput);
             AssignObject(menu, "profile", profile);
             AssignObject(menu, "controlLock", controlLock);
+            AssignKey(menu, "menuKey", KeyCode.Tab);
+            AssignKey(menu, "inventoryKey", KeyCode.I);
+            AssignKey(menu, "mapKey", KeyCode.M);
+            AssignKey(menu, "questKey", KeyCode.Q);
+            AssignKey(menu, "petsKey", KeyCode.P);
+            AssignKey(menu, "closeKey", KeyCode.Escape);
             AssignBool(menu, "buildOnAwake", true);
             AssignBool(menu, "closeOnStart", true);
             AssignBool(menu, "disableStandaloneUiHotkeys", true);
@@ -72,7 +78,7 @@ namespace Capstone.Game.UISystem.Editor {
             Undo.CollapseUndoOperations(undoGroup);
             Selection.activeGameObject = menuObject;
 
-            Debug.Log("Main Menu setup: created/updated GameMenu. TAB opens the main menu, I opens Inventory, M opens Map, Escape closes the active UI.");
+            Debug.Log("Main Menu setup: TAB opens Menu, I opens Inventory, M opens Map, Q opens Quest, P opens Pets, and Escape opens Settings or goes back.");
         }
 
         static GameObject EnsureMenuObject() {
@@ -183,6 +189,10 @@ namespace Capstone.Game.UISystem.Editor {
 
         static void AssignBool(Object target, string propertyName, bool value) {
             AssignProperty(target, propertyName, property => property.boolValue = value);
+        }
+
+        static void AssignKey(Object target, string propertyName, KeyCode value) {
+            AssignProperty(target, propertyName, property => property.intValue = (int)value);
         }
 
         static void AssignProperty(Object target, string propertyName, System.Action<SerializedProperty> setter) {

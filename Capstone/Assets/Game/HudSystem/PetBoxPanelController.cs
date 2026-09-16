@@ -9,15 +9,23 @@ using UnityEngine.UIElements;
 namespace Capstone.Game.HudSystem {
     public enum PetBoxReturnTarget {
         Menu,
-        Pets
+        Pets,
+        Gameplay
     }
 
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
     public sealed class PetBoxPanelController : MonoBehaviour {
+        const int PartySize = 6;
+        const int SlotsPerPage = 30;
+        const int StorageColumns = 6;
+        const float StorageCardOuterWidth = 148f;
+        const float StorageCardOuterHeight = 112f;
+        const float StorageGridPreferredWidth = StorageColumns * StorageCardOuterWidth;
         const float DoubleClickInterval = 0.45f;
 
         static readonly string[] SortChoices = {
+            "Vị trí Box",
             "Mới nhận",
             "Tên A → Z",
             "Tên Z → A",
@@ -38,6 +46,7 @@ namespace Capstone.Game.HudSystem {
         readonly Dictionary<PetElement, Button> elementButtons = new Dictionary<PetElement, Button>();
         readonly HashSet<PetElement> selectedElements = new HashSet<PetElement>();
         readonly List<BoxViewEntry> visibleStorage = new List<BoxViewEntry>();
+        readonly List<Button> sortOptionButtons = new List<Button>();
 
         MonsterInventoryController inventoryController;
         GameMenuController gameMenuController;
@@ -45,26 +54,33 @@ namespace Capstone.Game.HudSystem {
         VisualElement panel;
         VisualElement partyRow;
         VisualElement storageGrid;
-        VisualElement storageScroll;
+        ScrollView storageScroll;
         VisualElement filterPanel;
+        VisualElement sortPopup;
+        ScrollView sortScroll;
         VisualElement purchasePopup;
         VisualElement selectedPortrait;
-        Label selectedPortraitFallback;
+        VisualElement selectedHealthFill;
+        VisualElement radarHost;
         Label partyCountLabel;
         Label capacityLabel;
+        Label pageTitle;
+        Label pageCount;
         Label emptyLabel;
+        Label selectedPortraitFallback;
+        Label selectedFavorite;
         Label selectedName;
-        Label selectedMeta;
-        Label selectedHealth;
-        Label selectedExperience;
-        VisualElement healthFill;
-        VisualElement experienceFill;
-        Label statHealth;
-        Label statAttack;
-        Label statDefense;
-        Label statSpeed;
-        VisualElement selectedSkills;
+        Label selectedLocation;
+        Label selectedLevel;
+        Label selectedElement;
+        Label selectedGender;
+        Label selectedRarity;
+        Label selectedHealthValue;
+        Label selectedPersonality;
+        Label selectedNatureUp;
+        Label selectedNatureDown;
         Label feedback;
+        Label footerSummary;
         Label sourceLabel;
         Label purchaseTitle;
         Label purchaseCurrent;
@@ -77,8 +93,10 @@ namespace Capstone.Game.HudSystem {
         Button detailsButton;
         Button allFilterButton;
         Button purchaseConfirmButton;
+        Button previousPageButton;
+        Button nextPageButton;
+        Button sortButton;
         TextField searchField;
-        DropdownField sortField;
 
         PetBoxReturnTarget returnTarget = PetBoxReturnTarget.Menu;
         SelectionSource selectionSource;
@@ -89,8 +107,13 @@ namespace Capstone.Game.HudSystem {
         SelectionSource lastClickSource;
         int lastClickIndex = -1;
         float lastClickTime = float.NegativeInfinity;
+        int currentPage;
+        int sortIndex;
         bool controlsRegistered;
         bool subscribed;
+        VisualElement registeredStorageViewport;
+        RadarChartElement radarChart;
+        Label[] radarLabels;
 
         public event Action<PetController> DetailsRequested;
 
@@ -113,17 +136,89 @@ namespace Capstone.Game.HudSystem {
             public PetElement element;
             public PetRarity rarity;
             public int level;
-            public float health;
-            public float maxHealth;
-            public int experience;
-            public int maxExperience;
-            public int attack;
-            public int defense;
-            public int speed;
             public long obtainedOrder;
             public bool favorite;
             public Sprite icon;
-            public IReadOnlyList<SkillHudData> skills;
+            public float health;
+            public float maxHealth;
+            public int attack;
+            public int defense;
+            public int speed;
+            public int magicAttack;
+            public int magicDefense;
+            public string personality;
+        }
+
+        sealed class RadarChartElement : VisualElement {
+            const int AxisCount = 6;
+            readonly float[] values = new float[AxisCount];
+
+            public RadarChartElement() {
+                pickingMode = PickingMode.Ignore;
+                generateVisualContent += Draw;
+            }
+
+            public void SetValues(float hp, float attack, float defense, float speed, float magicDefense, float magicAttack) {
+                float maximum = Mathf.Max(1f, hp, attack, defense, speed, magicDefense, magicAttack);
+                values[0] = Normalize(hp, maximum);
+                values[1] = Normalize(attack, maximum);
+                values[2] = Normalize(defense, maximum);
+                values[3] = Normalize(speed, maximum);
+                values[4] = Normalize(magicDefense, maximum);
+                values[5] = Normalize(magicAttack, maximum);
+                MarkDirtyRepaint();
+            }
+
+            static float Normalize(float value, float maximum) {
+                if (value <= 0f) return 0f;
+                return Mathf.Lerp(0.14f, 1f, Mathf.Clamp01(value / maximum));
+            }
+
+            void Draw(MeshGenerationContext context) {
+                Rect rect = contentRect;
+                if (rect.width <= 1f || rect.height <= 1f) return;
+
+                Vector2 center = rect.center;
+                float radius = Mathf.Max(4f, Mathf.Min(rect.width, rect.height) * 0.39f);
+                Painter2D painter = context.painter2D;
+
+                painter.lineWidth = 1f;
+                painter.strokeColor = new Color(0.45f, 0.72f, 0.80f, 0.52f);
+                for (int ring = 1; ring <= 3; ring++) {
+                    DrawPolygon(painter, center, radius * ring / 3f, null);
+                }
+
+                painter.strokeColor = new Color(0.49f, 0.72f, 0.78f, 0.48f);
+                for (int i = 0; i < AxisCount; i++) {
+                    painter.BeginPath();
+                    painter.MoveTo(center);
+                    painter.LineTo(Point(center, radius, i));
+                    painter.Stroke();
+                }
+
+                painter.fillColor = new Color(0.22f, 0.62f, 0.96f, 0.34f);
+                painter.strokeColor = new Color(0.16f, 0.48f, 0.91f, 0.95f);
+                painter.lineWidth = 2f;
+                DrawPolygon(painter, center, radius, values);
+            }
+
+            static void DrawPolygon(Painter2D painter, Vector2 center, float radius, float[] scales) {
+                painter.BeginPath();
+                for (int i = 0; i < AxisCount; i++) {
+                    float scale = scales != null ? scales[i] : 1f;
+                    Vector2 point = Point(center, radius * scale, i);
+                    if (i == 0) painter.MoveTo(point);
+                    else painter.LineTo(point);
+                }
+                painter.ClosePath();
+                if (scales != null) painter.Fill();
+                painter.Stroke();
+            }
+
+            static Vector2 Point(Vector2 center, float radius, int index) {
+                float angle = -Mathf.PI * 0.5f + index * Mathf.PI * 2f / AxisCount;
+                return center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            }
         }
 
         void OnEnable() {
@@ -138,6 +233,7 @@ namespace Capstone.Game.HudSystem {
             ClearSwapSelection();
             UnsubscribeProvider();
             UnregisterControls();
+            UnregisterStorageLayoutCallback();
         }
 
         public void Bind(UIDocument targetDocument, MonsterInventoryController owner) {
@@ -161,6 +257,28 @@ namespace Capstone.Game.HudSystem {
             HidePurchasePopup();
             ClearSwapSelection();
             if (filterPanel != null) filterPanel.style.display = DisplayStyle.None;
+            if (sortPopup != null) sortPopup.style.display = DisplayStyle.None;
+        }
+
+        public bool TryCancelInteraction() {
+            if (purchasePopup != null && purchasePopup.resolvedStyle.display != DisplayStyle.None) {
+                HidePurchasePopup();
+                return true;
+            }
+            if (pendingSwapSource != SelectionSource.None) {
+                ClearSwapSelection();
+                SetFeedback("Đã hủy thay thế.");
+                return true;
+            }
+            if (filterPanel != null && filterPanel.resolvedStyle.display != DisplayStyle.None) {
+                filterPanel.style.display = DisplayStyle.None;
+                return true;
+            }
+            if (sortPopup != null && sortPopup.resolvedStyle.display != DisplayStyle.None) {
+                sortPopup.style.display = DisplayStyle.None;
+                return true;
+            }
+            return false;
         }
 
         public void Refresh() {
@@ -175,8 +293,8 @@ namespace Capstone.Game.HudSystem {
             RefreshActions();
             RefreshFilterButtons();
 
-            if (partyCountLabel != null) partyCountLabel.text = $"TEAM ({provider.PartyCount} / 6)";
-            if (capacityLabel != null) capacityLabel.text = $"SLOT BOX: {provider.StoredCount} / {provider.Capacity}";
+            if (partyCountLabel != null) partyCountLabel.text = $"ĐỘI HÌNH ({provider.PartyCount} / 6)";
+            if (capacityLabel != null) capacityLabel.text = $"{provider.StoredCount} / {provider.Capacity}";
         }
 
         void ResolveReferences() {
@@ -194,26 +312,35 @@ namespace Capstone.Game.HudSystem {
             panel = docRoot.Q<VisualElement>("box-panel");
             partyRow = docRoot.Q<VisualElement>("box-party-row");
             storageGrid = docRoot.Q<VisualElement>("box-storage-grid");
-            storageScroll = docRoot.Q<VisualElement>("box-storage-scroll");
+            storageScroll = docRoot.Q<ScrollView>("box-storage-scroll");
+            ConfigureStorageScroll();
             filterPanel = docRoot.Q<VisualElement>("box-filter-panel");
+            sortPopup = docRoot.Q<VisualElement>("box-sort-popup");
+            sortScroll = docRoot.Q<ScrollView>("box-sort-scroll");
+            ConfigureSortScroll();
             purchasePopup = docRoot.Q<VisualElement>("box-purchase-popup");
             selectedPortrait = docRoot.Q<VisualElement>("box-selected-portrait");
-            selectedPortraitFallback = docRoot.Q<Label>("box-selected-portrait-fallback");
+            selectedHealthFill = docRoot.Q<VisualElement>("box-selected-health-fill");
+            radarHost = docRoot.Q<VisualElement>("box-radar-host");
             partyCountLabel = docRoot.Q<Label>("box-party-count");
             capacityLabel = docRoot.Q<Label>("box-capacity-label");
+            pageTitle = docRoot.Q<Label>("box-page-title");
+            pageCount = docRoot.Q<Label>("box-page-count");
             emptyLabel = docRoot.Q<Label>("box-empty-label");
+            selectedPortraitFallback = docRoot.Q<Label>("box-selected-portrait-fallback");
+            selectedFavorite = docRoot.Q<Label>("box-selected-favorite");
             selectedName = docRoot.Q<Label>("box-selected-name");
-            selectedMeta = docRoot.Q<Label>("box-selected-meta");
-            selectedHealth = docRoot.Q<Label>("box-selected-health");
-            selectedExperience = docRoot.Q<Label>("box-selected-experience");
-            healthFill = docRoot.Q<VisualElement>("box-health-fill");
-            experienceFill = docRoot.Q<VisualElement>("box-experience-fill");
-            statHealth = docRoot.Q<Label>("box-stat-health");
-            statAttack = docRoot.Q<Label>("box-stat-attack");
-            statDefense = docRoot.Q<Label>("box-stat-defense");
-            statSpeed = docRoot.Q<Label>("box-stat-speed");
-            selectedSkills = docRoot.Q<VisualElement>("box-selected-skills");
+            selectedLocation = docRoot.Q<Label>("box-selected-location");
+            selectedLevel = docRoot.Q<Label>("box-selected-level");
+            selectedElement = docRoot.Q<Label>("box-selected-element");
+            selectedGender = docRoot.Q<Label>("box-selected-gender");
+            selectedRarity = docRoot.Q<Label>("box-selected-rarity");
+            selectedHealthValue = docRoot.Q<Label>("box-selected-health-value");
+            selectedPersonality = docRoot.Q<Label>("box-selected-personality");
+            selectedNatureUp = docRoot.Q<Label>("box-selected-nature-up");
+            selectedNatureDown = docRoot.Q<Label>("box-selected-nature-down");
             feedback = docRoot.Q<Label>("box-feedback");
+            footerSummary = docRoot.Q<Label>("box-footer-summary");
             sourceLabel = docRoot.Q<Label>("box-source-label");
             purchaseTitle = docRoot.Q<Label>("box-purchase-title");
             purchaseCurrent = docRoot.Q<Label>("box-purchase-current");
@@ -221,13 +348,93 @@ namespace Capstone.Game.HudSystem {
             purchasePrice = docRoot.Q<Label>("box-purchase-price");
             purchaseAfter = docRoot.Q<Label>("box-purchase-after");
             purchaseConfirmButton = docRoot.Q<Button>("box-purchase-confirm");
+            previousPageButton = docRoot.Q<Button>("box-page-previous");
+            nextPageButton = docRoot.Q<Button>("box-page-next");
             replaceButton = docRoot.Q<Button>("box-replace-button");
             addButton = docRoot.Q<Button>("box-add-button");
             moveButton = docRoot.Q<Button>("box-move-button");
             detailsButton = docRoot.Q<Button>("box-details-button");
             allFilterButton = docRoot.Q<Button>("box-filter-all");
             searchField = docRoot.Q<TextField>("box-search-field");
-            sortField = docRoot.Q<DropdownField>("box-sort-field");
+            sortButton = docRoot.Q<Button>("box-sort-button");
+            EnsureRadarChart(docRoot);
+            RegisterStorageLayoutCallback();
+        }
+
+        void EnsureRadarChart(VisualElement docRoot) {
+            if (radarHost != null && (radarChart == null || radarChart.parent != radarHost)) {
+                radarChart?.RemoveFromHierarchy();
+                radarChart = new RadarChartElement { name = "box-radar-chart" };
+                radarChart.AddToClassList("box-radar-chart");
+                radarHost.Add(radarChart);
+            }
+            radarLabels = new[] {
+                docRoot.Q<Label>(className: "box-radar-hp"),
+                docRoot.Q<Label>(className: "box-radar-atk"),
+                docRoot.Q<Label>(className: "box-radar-def"),
+                docRoot.Q<Label>(className: "box-radar-spd"),
+                docRoot.Q<Label>(className: "box-radar-spdef"),
+                docRoot.Q<Label>(className: "box-radar-spatk")
+            };
+        }
+
+        void RegisterStorageLayoutCallback() {
+            VisualElement viewport = storageScroll?.contentViewport;
+            if (registeredStorageViewport == viewport) return;
+            UnregisterStorageLayoutCallback();
+            registeredStorageViewport = viewport;
+            registeredStorageViewport?.RegisterCallback<GeometryChangedEvent>(HandleStorageViewportGeometryChanged);
+            ApplyStorageGridWidth(viewport != null ? viewport.resolvedStyle.width : 0f);
+        }
+
+        void ConfigureStorageScroll() {
+            if (storageScroll == null) return;
+
+            storageScroll.mode = ScrollViewMode.Vertical;
+            storageScroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            storageScroll.verticalScrollerVisibility = ScrollerVisibility.Auto;
+        }
+
+        void ConfigureSortScroll() {
+            if (sortScroll == null) return;
+
+            sortScroll.mode = ScrollViewMode.Vertical;
+            sortScroll.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            sortScroll.verticalScrollerVisibility = ScrollerVisibility.Auto;
+        }
+
+        void UnregisterStorageLayoutCallback() {
+            registeredStorageViewport?.UnregisterCallback<GeometryChangedEvent>(HandleStorageViewportGeometryChanged);
+            registeredStorageViewport = null;
+        }
+
+        void HandleStorageViewportGeometryChanged(GeometryChangedEvent evt) {
+            ApplyStorageGridWidth(evt.newRect.width);
+        }
+
+        void ApplyStorageGridWidth(float viewportWidth) {
+            if (storageGrid == null) return;
+
+            bool hasViewportWidth = !float.IsNaN(viewportWidth)
+                && !float.IsInfinity(viewportWidth)
+                && viewportWidth > 1f;
+            float resolvedWidth = hasViewportWidth
+                ? Mathf.Min(StorageGridPreferredWidth, Mathf.Floor(viewportWidth))
+                : StorageGridPreferredWidth;
+            int columnCount = Mathf.Max(1, Mathf.FloorToInt(resolvedWidth / StorageCardOuterWidth));
+            int rowCount = Mathf.CeilToInt(SlotsPerPage / (float)columnCount);
+            float resolvedHeight = rowCount * StorageCardOuterHeight;
+
+            storageGrid.style.alignSelf = Align.Center;
+            storageGrid.style.width = resolvedWidth;
+            storageGrid.style.minWidth = resolvedWidth;
+            storageGrid.style.height = resolvedHeight;
+            storageGrid.style.minHeight = resolvedHeight;
+            if (storageScroll != null) {
+                storageScroll.contentContainer.style.alignItems = Align.Center;
+                storageScroll.contentContainer.style.width = Length.Percent(100f);
+                storageScroll.contentContainer.style.minWidth = Length.Percent(100f);
+            }
         }
 
         void RegisterControls() {
@@ -236,6 +443,9 @@ namespace Capstone.Game.HudSystem {
             RegisterButton(document.rootVisualElement.Q<Button>("box-back-button"), GoBack);
             RegisterButton(document.rootVisualElement.Q<Button>("box-expand-button"), () => ShowPurchasePopup(false));
             RegisterButton(document.rootVisualElement.Q<Button>("box-filter-toggle"), ToggleFilterPanel);
+            RegisterButton(sortButton, ToggleSortPopup);
+            RegisterButton(previousPageButton, () => ChangePage(-1));
+            RegisterButton(nextPageButton, () => ChangePage(1));
             RegisterButton(document.rootVisualElement.Q<Button>("box-purchase-cancel"), HidePurchasePopup);
             RegisterButton(purchaseConfirmButton, RequestPurchase);
             RegisterButton(replaceButton, ReplaceSelectedPet);
@@ -253,11 +463,7 @@ namespace Capstone.Game.HudSystem {
             RegisterElementButton("box-filter-light", PetElement.Light);
             RegisterElementButton("box-filter-dark", PetElement.Dark);
 
-            if (sortField != null) {
-                sortField.choices = SortChoices.ToList();
-                sortField.index = 0;
-                sortField.RegisterValueChangedCallback(HandleSortChanged);
-            }
+            BuildSortOptions();
             searchField?.RegisterValueChangedCallback(HandleSearchChanged);
             controlsRegistered = true;
         }
@@ -265,13 +471,39 @@ namespace Capstone.Game.HudSystem {
         void UnregisterControls() {
             foreach (KeyValuePair<Button, Action> pair in buttonCallbacks) pair.Key.clicked -= pair.Value;
             buttonCallbacks.Clear();
-            sortField?.UnregisterValueChangedCallback(HandleSortChanged);
+            sortOptionButtons.Clear();
             searchField?.UnregisterValueChangedCallback(HandleSearchChanged);
             controlsRegistered = false;
         }
 
-        void HandleSortChanged(ChangeEvent<string> _) {
+        void SelectSortOption(int index) {
+            sortIndex = Mathf.Clamp(index, 0, SortChoices.Length - 1);
+            if (sortButton != null) sortButton.text = $"{SortChoices[sortIndex]}  ▾";
+            for (int i = 0; i < sortOptionButtons.Count; i++) {
+                sortOptionButtons[i].EnableInClassList("is-selected", i == sortIndex);
+            }
+            if (sortPopup != null) sortPopup.style.display = DisplayStyle.None;
+            currentPage = 0;
+            ClearSwapSelection();
             RebuildStorage();
+            RefreshActions();
+        }
+
+        void BuildSortOptions() {
+            if (sortScroll == null) return;
+
+            sortScroll.contentContainer.Clear();
+            sortOptionButtons.Clear();
+            for (int i = 0; i < SortChoices.Length; i++) {
+                int optionIndex = i;
+                var option = new Button { text = SortChoices[i] };
+                option.AddToClassList("box-sort-option");
+                option.EnableInClassList("is-selected", i == sortIndex);
+                RegisterButton(option, () => SelectSortOption(optionIndex));
+                sortOptionButtons.Add(option);
+                sortScroll.Add(option);
+            }
+            if (sortButton != null) sortButton.text = $"{SortChoices[sortIndex]}  ▾";
         }
 
         void HandleSearchChanged(ChangeEvent<string> _) {
@@ -321,33 +553,28 @@ namespace Capstone.Game.HudSystem {
             partyRow.Clear();
             partyCards.Clear();
 
-            for (int i = 0; i < 6; i++) {
+            for (int i = 0; i < PartySize; i++) {
                 int slotIndex = i;
                 PetSnapshot snapshot = BuildSnapshot(provider.GetPartyPet(i));
-                var card = new Button { name = $"box-party-slot-{i + 1}", text = string.Empty, userData = i };
+                var card = new Button {
+                    name = $"box-party-slot-{i + 1}",
+                    text = string.Empty,
+                    userData = i,
+                    tooltip = snapshot.pet != null ? snapshot.displayName : $"Slot Party {i + 1}"
+                };
                 card.AddToClassList("box-party-card");
                 card.EnableInClassList("is-empty", snapshot.pet == null);
                 card.EnableInClassList("is-selected", selectionSource == SelectionSource.Party && selectedPet == snapshot.pet && snapshot.pet != null);
-                card.EnableInClassList("is-target", targetPartySlot == i);
                 card.EnableInClassList("is-swap-source", pendingSwapSource == SelectionSource.Party && pendingSwapSourceIndex == i);
                 card.RegisterCallback<ClickEvent>(
                     _ => HandleBoxCardClick(SelectionSource.Party, slotIndex),
                     TrickleDown.TrickleDown);
 
-                var top = new VisualElement();
-                top.AddToClassList("box-card-top");
-                top.Add(CreateLabel((i + 1).ToString(), "box-slot-number"));
-                top.Add(CreateLabel(i == 0 ? "LEAD" : string.Empty, "box-lead-badge"));
-                top.Add(CreateLabel(snapshot.pet != null && snapshot.favorite ? "\u2605" : string.Empty, "box-favorite-badge"));
-                card.Add(top);
                 card.Add(CreatePortrait(snapshot, "box-party-portrait"));
-                card.Add(CreateLabel(snapshot.pet != null ? snapshot.displayName : "Slot trống", "box-card-name"));
-                card.Add(CreateLabel(
-                    snapshot.pet != null ? $"Lv.{snapshot.level}  {Safe(snapshot.gender)}  {FormatElement(snapshot.element)}" : "+",
-                    "box-card-meta"));
-                card.Add(CreateLabel(snapshot.pet != null ? FormatRarity(snapshot.rarity) : string.Empty, "box-card-rarity"));
-                card.Add(CreateSmallBar("HP", Percent(snapshot.health, snapshot.maxHealth), "box-hp-fill"));
-                card.Add(CreateSmallBar("EXP", Percent(snapshot.experience, snapshot.maxExperience), "box-exp-fill"));
+                card.Add(CreateLabel((i + 1).ToString(), "box-slot-number"));
+                if (i == 0) card.Add(CreateLabel("LEAD", "box-lead-badge"));
+                if (snapshot.pet != null && snapshot.favorite) card.Add(CreateLabel("\u2605", "box-favorite-badge"));
+                if (snapshot.pet != null) card.Add(CreateLabel($"Lv. {Mathf.Max(1, snapshot.level)}", "box-party-level"));
                 partyCards.Add(card);
                 partyRow.Add(card);
             }
@@ -355,97 +582,154 @@ namespace Capstone.Game.HudSystem {
 
         void RebuildStorage() {
             if (storageGrid == null || provider == null) return;
+            ApplyStorageGridWidth(storageScroll?.contentViewport.resolvedStyle.width ?? 0f);
             storageGrid.Clear();
             storageCards.Clear();
             visibleStorage.Clear();
 
+            List<BoxViewEntry> orderedSlots = BuildOrderedStorage();
+            visibleStorage.AddRange(orderedSlots);
+            int pageCountValue = Mathf.Max(1, Mathf.CeilToInt(provider.Capacity / (float)SlotsPerPage));
+            currentPage = Mathf.Clamp(currentPage, 0, pageCountValue - 1);
+            int start = currentPage * SlotsPerPage;
             string query = searchField != null ? searchField.value?.Trim() : string.Empty;
-            for (int i = 0; i < provider.StoredPets.Count; i++) {
-                PetSnapshot snapshot = BuildSnapshot(provider.StoredPets[i]);
-                if (snapshot.pet == null || !MatchesSearch(snapshot, query) || !MatchesElement(snapshot.element)) continue;
-                visibleStorage.Add(new BoxViewEntry { providerIndex = i, snapshot = snapshot });
-            }
-
-            SortVisibleStorage();
-            foreach (BoxViewEntry entry in visibleStorage) {
-                BoxViewEntry local = entry;
-                var card = new Button { text = string.Empty, userData = local.providerIndex };
+            int occupiedOnPage = 0;
+            var pageEntries = new List<BoxViewEntry>(SlotsPerPage);
+            for (int cellIndex = 0; cellIndex < SlotsPerPage; cellIndex++) {
+                int viewIndex = start + cellIndex;
+                BoxViewEntry local = viewIndex < visibleStorage.Count
+                    ? visibleStorage[viewIndex]
+                    : new BoxViewEntry { providerIndex = -1 };
+                pageEntries.Add(local);
+                bool locked = local.providerIndex < 0;
+                bool empty = local.snapshot.pet == null;
+                bool matches = empty || (MatchesSearch(local.snapshot, query) && MatchesElement(local.snapshot.element));
+                bool selected = selectionSource == SelectionSource.Storage
+                    && local.providerIndex >= 0 && selectedPet == local.snapshot.pet && local.snapshot.pet != null;
+                if (!empty) occupiedOnPage++;
+                var card = new Button {
+                    text = string.Empty,
+                    userData = local.providerIndex,
+                    tooltip = !empty
+                        ? local.snapshot.displayName
+                        : locked ? "Slot chưa mở" : $"Box slot {local.providerIndex + 1}"
+                };
                 card.AddToClassList("box-storage-card");
-                card.EnableInClassList("is-selected", selectionSource == SelectionSource.Storage && selectedPet == local.snapshot.pet);
+                card.EnableInClassList("is-empty", empty && !locked);
+                card.EnableInClassList("is-locked", locked);
+                card.EnableInClassList("is-filtered-out", !matches && !selected);
+                card.EnableInClassList("is-selected", selected);
                 card.EnableInClassList("is-swap-source", pendingSwapSource == SelectionSource.Storage && pendingSwapSourceIndex == local.providerIndex);
-                card.RegisterCallback<ClickEvent>(
-                    _ => HandleBoxCardClick(SelectionSource.Storage, local.providerIndex),
-                    TrickleDown.TrickleDown);
-                card.Add(CreatePortrait(local.snapshot, "box-storage-portrait"));
-                card.Add(CreateLabel(local.snapshot.displayName, "box-storage-name"));
-                card.Add(CreateLabel(
-                    $"Lv.{local.snapshot.level}  {Safe(local.snapshot.gender)}  {FormatElement(local.snapshot.element)}  {FormatRarity(local.snapshot.rarity)}",
-                    "box-storage-meta"));
-                card.Add(CreateSmallBar(string.Empty, Percent(local.snapshot.health, local.snapshot.maxHealth), "box-hp-fill"));
-                card.Add(CreateLabel(local.snapshot.favorite ? "\u2605" : string.Empty, "box-storage-favorite"));
+                if (!locked) {
+                    int targetIndex = local.providerIndex;
+                    card.RegisterCallback<ClickEvent>(
+                        _ => HandleBoxCardClick(SelectionSource.Storage, targetIndex),
+                        TrickleDown.TrickleDown);
+                }
+                if (!empty) {
+                    card.Add(CreatePortrait(local.snapshot, "box-storage-portrait"));
+                    card.Add(CreateStorageCardInfo(local.snapshot));
+                }
+                if (local.snapshot.favorite) card.Add(CreateLabel("\u2605", "box-storage-favorite"));
                 storageCards.Add(card);
                 storageGrid.Add(card);
             }
 
-            if (emptyLabel != null) emptyLabel.style.display = visibleStorage.Count == 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            visibleStorage.Clear();
+            visibleStorage.AddRange(pageEntries);
+            if (emptyLabel != null) emptyLabel.style.display = DisplayStyle.None;
+            if (pageTitle != null) pageTitle.text = $"BOX {currentPage + 1:00}";
+            if (pageCount != null) pageCount.text = $"{occupiedOnPage} PET  •  TRANG {currentPage + 1} / {pageCountValue}";
+            if (footerSummary != null) {
+                footerSummary.text = $"Box {currentPage + 1:00} — {provider.StoredCount} / {provider.Capacity} pet • Trang {currentPage + 1} / {pageCountValue}";
+            }
+            if (previousPageButton != null) previousPageButton.SetEnabled(currentPage > 0);
+            if (nextPageButton != null) nextPageButton.SetEnabled(currentPage + 1 < pageCountValue);
+            ScrollSelectedStorageCardIntoView();
         }
 
-        void SortVisibleStorage() {
-            int index = sortField != null ? sortField.index : 0;
+        void ScrollSelectedStorageCardIntoView() {
+            if (storageScroll == null || selectionSource != SelectionSource.Storage || selectedPet == null) return;
+            int cardIndex = visibleStorage.FindIndex(entry => entry.snapshot.pet == selectedPet);
+            if (cardIndex < 0 || cardIndex >= storageCards.Count) return;
+            Button selectedCard = storageCards[cardIndex];
+            storageScroll.schedule.Execute(() => {
+                if (selectedCard.panel != null) storageScroll.ScrollTo(selectedCard);
+            });
+        }
+
+        List<BoxViewEntry> BuildOrderedStorage() {
+            var entries = new List<BoxViewEntry>(provider != null ? provider.Capacity : 0);
+            if (provider == null) return entries;
+            for (int i = 0; i < provider.Capacity; i++) {
+                entries.Add(new BoxViewEntry { providerIndex = i, snapshot = BuildSnapshot(provider.GetStoredPet(i)) });
+            }
+            SortStorage(entries);
+            return entries;
+        }
+
+        void SortStorage(List<BoxViewEntry> entries) {
+            int index = sortIndex;
+            if (index <= 0) return;
+            var occupied = entries.Where(entry => entry.snapshot.pet != null).ToList();
+            var empty = entries.Where(entry => entry.snapshot.pet == null).ToList();
             Comparison<BoxViewEntry> comparison;
             switch (index) {
-                case 1: comparison = (a, b) => string.Compare(a.snapshot.displayName, b.snapshot.displayName, StringComparison.CurrentCultureIgnoreCase); break;
-                case 2: comparison = (a, b) => string.Compare(b.snapshot.displayName, a.snapshot.displayName, StringComparison.CurrentCultureIgnoreCase); break;
-                case 3: comparison = (a, b) => b.snapshot.level.CompareTo(a.snapshot.level); break;
-                case 4: comparison = (a, b) => a.snapshot.level.CompareTo(b.snapshot.level); break;
-                case 5: comparison = (a, b) => b.snapshot.rarity.CompareTo(a.snapshot.rarity); break;
-                case 6: comparison = (a, b) => a.snapshot.rarity.CompareTo(b.snapshot.rarity); break;
+                case 2: comparison = (a, b) => string.Compare(a.snapshot.displayName, b.snapshot.displayName, StringComparison.CurrentCultureIgnoreCase); break;
+                case 3: comparison = (a, b) => string.Compare(b.snapshot.displayName, a.snapshot.displayName, StringComparison.CurrentCultureIgnoreCase); break;
+                case 4: comparison = (a, b) => b.snapshot.level.CompareTo(a.snapshot.level); break;
+                case 5: comparison = (a, b) => a.snapshot.level.CompareTo(b.snapshot.level); break;
+                case 6: comparison = (a, b) => b.snapshot.rarity.CompareTo(a.snapshot.rarity); break;
+                case 7: comparison = (a, b) => a.snapshot.rarity.CompareTo(b.snapshot.rarity); break;
                 default: comparison = (a, b) => b.snapshot.obtainedOrder.CompareTo(a.snapshot.obtainedOrder); break;
             }
-            visibleStorage.Sort(comparison);
+            occupied.Sort(comparison);
+            entries.Clear();
+            entries.AddRange(occupied);
+            entries.AddRange(empty);
         }
 
         void SelectPartySlot(int slotIndex) {
             PetController pet = provider?.GetPartyPet(slotIndex);
-            if (selectionSource == SelectionSource.Storage && selectedPet != null) {
-                targetPartySlot = slotIndex;
-                SetFeedback($"Đã chọn slot Party {slotIndex + 1}. Bấm THAY THẾ để xác nhận.");
+            if (pet == null) {
+                SetFeedback("Slot Party đang trống. Chọn hoặc double-click pet nguồn trước.");
+                return;
             }
-            else {
-                selectionSource = pet != null ? SelectionSource.Party : SelectionSource.None;
-                selectedPet = pet;
-                targetPartySlot = slotIndex;
-            }
+            selectionSource = SelectionSource.Party;
+            selectedPet = pet;
+            targetPartySlot = slotIndex;
             Refresh();
         }
 
         void SelectStoragePet(int providerIndex) {
             PetController pet = provider?.GetStoredPet(providerIndex);
-            if (pet == null) return;
+            if (pet == null) {
+                SetFeedback("Slot Box đang trống. Chọn hoặc double-click pet nguồn trước.");
+                return;
+            }
             selectionSource = SelectionSource.Storage;
             selectedPet = pet;
-            SetFeedback(targetPartySlot >= 0 ? $"Chọn THAY THẾ để đưa pet vào slot {targetPartySlot + 1}." : "Chọn slot Party để thay, hoặc bấm ĐƯA VÀO ĐỘI.");
+            targetPartySlot = -1;
+            SetFeedback(string.Empty);
             Refresh();
         }
 
         void ReplaceSelectedPet() {
-            if (provider == null || selectionSource != SelectionSource.Storage || selectedPet == null) {
-                SetFeedback("Chọn một pet trong Box trước.");
+            if (provider == null || selectionSource == SelectionSource.None || selectedPet == null) {
+                SetFeedback("Chọn một pet trước.");
                 return;
             }
-            if (targetPartySlot < 0) {
-                SetFeedback("Chọn slot Party muốn thay.");
+            int index = selectionSource == SelectionSource.Party
+                ? IndexOfPartyPet(selectedPet)
+                : IndexOfStoredPet(selectedPet);
+            if (index < 0) {
+                SetFeedback("Pet không còn ở vị trí đã chọn.");
                 return;
             }
-
-            int boxIndex = IndexOfStoredPet(selectedPet);
-            if (provider.TryMoveBoxToParty(boxIndex, targetPartySlot, out string error)) {
-                selectedPet = provider.GetPartyPet(targetPartySlot);
-                selectionSource = SelectionSource.Party;
-                SetFeedback($"Đã cập nhật slot Party {targetPartySlot + 1}.");
-            }
-            else SetFeedback(error);
-            Refresh();
+            pendingSwapSource = selectionSource;
+            pendingSwapSourceIndex = index;
+            UpdateSwapSelectionVisual();
+            SetFeedback($"Đã chọn {FormatSource(selectionSource, index)}. Click ô đích để thay thế.");
         }
 
         void AddSelectedPetToParty() {
@@ -467,10 +751,21 @@ namespace Capstone.Game.HudSystem {
             if (provider.TryMovePartyToBox(partyIndex, out string error)) {
                 selectionSource = SelectionSource.Storage;
                 targetPartySlot = -1;
-                SetFeedback("Đã chuyển pet vào Box.");
+                int boxIndex = IndexOfStoredPet(selectedPet);
+                FocusStoredPet(selectedPet);
+                SetFeedback(boxIndex >= 0
+                    ? $"Đã chuyển {BuildSnapshot(selectedPet).displayName} vào Box {boxIndex / SlotsPerPage + 1:00}, slot {boxIndex + 1:00}."
+                    : "Đã chuyển pet vào Box.");
             }
             else SetFeedback(error);
             Refresh();
+        }
+
+        void FocusStoredPet(PetController pet) {
+            if (provider == null || pet == null) return;
+            List<BoxViewEntry> entries = BuildOrderedStorage();
+            int viewIndex = entries.FindIndex(entry => entry.snapshot.pet == pet);
+            if (viewIndex >= 0) currentPage = viewIndex / SlotsPerPage;
         }
 
         void RequestDetails() {
@@ -481,52 +776,74 @@ namespace Capstone.Game.HudSystem {
 
         void RefreshSelectedDetails() {
             PetSnapshot snapshot = BuildSnapshot(selectedPet);
-            SetPortrait(selectedPortrait, selectedPortraitFallback, snapshot.icon, snapshot.displayName);
+            SetSelectedPortrait(snapshot);
             if (selectedName != null) selectedName.text = snapshot.pet != null ? snapshot.displayName : "Chọn một pet";
-            if (selectedMeta != null) {
-                selectedMeta.text = snapshot.pet != null
-                    ? $"{Safe(snapshot.species)}  •  Lv.{snapshot.level}  •  {Safe(snapshot.gender)}  •  {FormatElement(snapshot.element)}  •  {FormatRarity(snapshot.rarity)}"
-                    : "Chọn pet trong Party hoặc Box để xem thông tin.";
+            if (selectedLocation != null) {
+                int index = snapshot.pet == null
+                    ? -1
+                    : selectionSource == SelectionSource.Party ? IndexOfPartyPet(snapshot.pet) : IndexOfStoredPet(snapshot.pet);
+                selectedLocation.text = index < 0
+                    ? "Chọn pet trong Party hoặc Box"
+                    : selectionSource == SelectionSource.Party
+                        ? $"Trong Party (Slot {index + 1})"
+                        : $"Trong Box {index / SlotsPerPage + 1:00} (Ô {index % SlotsPerPage + 1})";
             }
-            if (selectedHealth != null) selectedHealth.text = FormatPair(snapshot.health, snapshot.maxHealth);
-            if (selectedExperience != null) selectedExperience.text = FormatPair(snapshot.experience, snapshot.maxExperience);
-            SetFill(healthFill, Percent(snapshot.health, snapshot.maxHealth));
-            SetFill(experienceFill, Percent(snapshot.experience, snapshot.maxExperience));
-            SetLabel(statHealth, snapshot.maxHealth > 0f ? Mathf.RoundToInt(snapshot.maxHealth).ToString() : "-");
-            SetLabel(statAttack, snapshot.attack > 0 ? snapshot.attack.ToString() : "-");
-            SetLabel(statDefense, snapshot.defense > 0 ? snapshot.defense.ToString() : "-");
-            SetLabel(statSpeed, snapshot.speed > 0 ? snapshot.speed.ToString() : "-");
-            RebuildSelectedSkills(snapshot.skills);
-        }
+            bool hasSelection = snapshot.pet != null;
+            if (selectedLevel != null) selectedLevel.text = hasSelection ? $"Lv. {Mathf.Max(1, snapshot.level)}" : "—";
+            if (selectedElement != null) selectedElement.text = hasSelection ? FormatElement(snapshot.element) : "—";
+            if (selectedGender != null) selectedGender.text = hasSelection ? FormatGender(snapshot.gender) : "—";
+            if (selectedRarity != null) selectedRarity.text = hasSelection ? FormatRarity(snapshot.rarity) : "—";
+            if (selectedHealthValue != null) {
+                selectedHealthValue.text = hasSelection && snapshot.maxHealth > 0f
+                    ? $"{Mathf.RoundToInt(snapshot.health):N0} / {Mathf.RoundToInt(snapshot.maxHealth):N0}"
+                    : "— / —";
+            }
+            SetFill(selectedHealthFill, hasSelection && snapshot.maxHealth > 0f
+                ? snapshot.health / snapshot.maxHealth
+                : 0f);
+            if (selectedPersonality != null) {
+                selectedPersonality.text = hasSelection && !string.IsNullOrWhiteSpace(snapshot.personality)
+                    ? snapshot.personality.Trim()
+                    : "Trung tính";
+            }
 
-        void RebuildSelectedSkills(IReadOnlyList<SkillHudData> skills) {
-            if (selectedSkills == null) return;
-            selectedSkills.Clear();
-            int visibleSkillCount = Mathf.Clamp(skills?.Count ?? 0, 0, 4);
-            for (int i = 0; i < visibleSkillCount; i++) {
-                bool hasSkill = skills != null && i < skills.Count && skills[i].unlocked;
-                SkillHudData skill = hasSkill ? skills[i] : default;
-                var card = new VisualElement();
-                card.AddToClassList("box-skill-chip");
-                var icon = new VisualElement();
-                icon.AddToClassList("box-skill-icon");
-                if (hasSkill && skill.icon != null) icon.style.backgroundImage = new StyleBackground(skill.icon);
-                card.Add(icon);
-                card.Add(CreateLabel(hasSkill ? skill.displayName : "-", "box-skill-name"));
-                card.Add(CreateLabel(hasSkill ? FormatSkillMeta(skill) : string.Empty, "box-skill-meta"));
-                selectedSkills.Add(card);
+            ResolveNatureEffect(snapshot.personality, out string increasedStat, out string decreasedStat);
+            if (selectedNatureUp != null) {
+                selectedNatureUp.text = hasSelection
+                    ? increasedStat != null ? $"Tăng {increasedStat}" : "Không tăng chỉ số"
+                    : "Chỉ số tăng: —";
             }
+            if (selectedNatureDown != null) {
+                selectedNatureDown.text = hasSelection
+                    ? decreasedStat != null ? $"Giảm {decreasedStat}" : "Không giảm chỉ số"
+                    : "Chỉ số giảm: —";
+            }
+
+            radarChart?.SetValues(
+                hasSelection ? snapshot.maxHealth : 0f,
+                hasSelection ? snapshot.attack : 0f,
+                hasSelection ? snapshot.defense : 0f,
+                hasSelection ? snapshot.speed : 0f,
+                hasSelection ? snapshot.magicDefense : 0f,
+                hasSelection ? snapshot.magicAttack : 0f);
+            RefreshRadarNatureColors(increasedStat, decreasedStat);
+            SetVisible(selectedFavorite, hasSelection && snapshot.favorite);
         }
 
         void RefreshActions() {
             bool hasSelection = selectedPet != null;
             bool fromStorage = selectionSource == SelectionSource.Storage;
             bool fromParty = selectionSource == SelectionSource.Party;
-            SetVisible(replaceButton, fromStorage);
-            SetVisible(addButton, fromStorage && provider != null && provider.PartyCount < 6);
-            SetVisible(moveButton, fromParty);
+            bool canAdd = hasSelection && fromStorage && provider != null && provider.PartyCount < PartySize;
+            bool canMove = hasSelection && fromParty && provider != null && !provider.IsFull;
+            SetVisible(addButton, canAdd);
+            SetVisible(moveButton, canMove);
+            SetVisible(replaceButton, hasSelection);
             SetVisible(detailsButton, hasSelection);
-            if (replaceButton != null) replaceButton.SetEnabled(fromStorage && targetPartySlot >= 0);
+            addButton?.SetEnabled(canAdd);
+            moveButton?.SetEnabled(canMove);
+            replaceButton?.SetEnabled(hasSelection);
+            detailsButton?.SetEnabled(hasSelection);
         }
 
         void HandleBoxCardClick(SelectionSource source, int index) {
@@ -585,15 +902,17 @@ namespace Capstone.Game.HudSystem {
                 succeeded = provider.TrySwapPartySlots(sourceIndex, targetIndex, out error);
             }
             else if (source == SelectionSource.Storage && target == SelectionSource.Party) {
-                succeeded = provider.TryMoveBoxToParty(sourceIndex, targetIndex, out error);
+                succeeded = provider.TrySwapPartyWithBox(targetIndex, sourceIndex, out error);
             }
             else if (source == SelectionSource.Party && target == SelectionSource.Storage) {
-                succeeded = provider.TryMoveBoxToParty(targetIndex, sourceIndex, out error);
-                target = SelectionSource.Party;
-                targetIndex = sourceIndex;
+                succeeded = provider.TrySwapPartyWithBox(sourceIndex, targetIndex, out error);
             }
             else if (source == SelectionSource.Storage && target == SelectionSource.Storage) {
-                succeeded = provider.TrySwapStoredPets(sourceIndex, targetIndex, out error);
+                if (sortIndex > 0) {
+                    succeeded = false;
+                    error = "Hãy chọn “Vị trí Box” trước khi đổi hai slot Box.";
+                }
+                else succeeded = provider.TrySwapStoredPets(sourceIndex, targetIndex, out error);
             }
 
             if (!succeeded) {
@@ -645,12 +964,31 @@ namespace Capstone.Game.HudSystem {
         }
 
         static string FormatSource(SelectionSource source, int index) {
-            return source == SelectionSource.Party ? $"Party {index + 1}" : $"Box {index + 1}";
+            return source == SelectionSource.Party
+                ? $"Party {index + 1}"
+                : $"Box {index / SlotsPerPage + 1:00}, slot {index + 1:00}";
+        }
+
+        void ChangePage(int direction) {
+            int pageCountValue = provider == null
+                ? 1
+                : Mathf.Max(1, Mathf.CeilToInt(provider.Capacity / (float)SlotsPerPage));
+            currentPage = Mathf.Clamp(currentPage + direction, 0, pageCountValue - 1);
+            RebuildStorage();
         }
 
         void ToggleFilterPanel() {
             if (filterPanel == null) return;
+            if (sortPopup != null) sortPopup.style.display = DisplayStyle.None;
             filterPanel.style.display = filterPanel.resolvedStyle.display == DisplayStyle.None ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        void ToggleSortPopup() {
+            if (sortPopup == null) return;
+            if (filterPanel != null) filterPanel.style.display = DisplayStyle.None;
+            sortPopup.style.display = sortPopup.resolvedStyle.display == DisplayStyle.None
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
         }
 
         void ToggleElement(PetElement element) {
@@ -774,6 +1112,7 @@ namespace Capstone.Game.HudSystem {
             }
 
             inventoryController?.Close();
+            if (returnTarget == PetBoxReturnTarget.Gameplay) return;
             gameMenuController = gameMenuController != null ? gameMenuController : FindFirstObjectByType<GameMenuController>();
             gameMenuController?.OpenMenu();
         }
@@ -827,17 +1166,17 @@ namespace Capstone.Game.HudSystem {
                 element = metadata != null ? metadata.Element : PetElement.Unknown,
                 rarity = metadata != null ? metadata.Rarity : PetRarity.Unknown,
                 level = data != null ? data.Level : 0,
-                health = data != null ? data.Health : 0f,
-                maxHealth = data != null ? data.MaxHealth : 0f,
-                experience = metadata != null ? metadata.Experience : 0,
-                maxExperience = metadata != null ? metadata.ExperienceToNextLevel : 0,
-                attack = metadata != null ? metadata.Attack : 0,
-                defense = metadata != null ? metadata.Defense : 0,
-                speed = metadata != null ? metadata.Speed : 0,
                 obtainedOrder = metadata != null ? metadata.ObtainedOrder : 0,
                 favorite = metadata != null && metadata.IsFavorite,
                 icon = data?.Icon,
-                skills = data?.GetSkills()
+                health = data != null ? Mathf.Max(0f, data.Health) : 0f,
+                maxHealth = data != null ? Mathf.Max(0f, data.MaxHealth) : 0f,
+                attack = metadata != null ? metadata.Attack : 0,
+                defense = metadata != null ? metadata.Defense : 0,
+                speed = metadata != null ? metadata.Speed : 0,
+                magicAttack = metadata != null ? metadata.MagicAttack : 0,
+                magicDefense = metadata != null ? metadata.MagicDefense : 0,
+                personality = metadata?.Personality
             };
         }
 
@@ -849,6 +1188,96 @@ namespace Capstone.Game.HudSystem {
             return null;
         }
 
+        void SetSelectedPortrait(PetSnapshot snapshot) {
+            if (selectedPortrait != null) {
+                if (snapshot.icon != null) selectedPortrait.style.backgroundImage = new StyleBackground(snapshot.icon);
+                else selectedPortrait.style.backgroundImage = StyleKeyword.None;
+            }
+            if (selectedPortraitFallback != null) {
+                selectedPortraitFallback.text = snapshot.pet != null ? FirstLetter(snapshot.displayName) : "?";
+                SetVisible(selectedPortraitFallback, snapshot.icon == null);
+            }
+        }
+
+        static string FormatElement(PetElement value) {
+            switch (value) {
+                case PetElement.Nature: return "Thảo";
+                case PetElement.Fire: return "Lửa";
+                case PetElement.Water: return "Nước";
+                case PetElement.Wind: return "Gió";
+                case PetElement.Earth: return "Đất";
+                case PetElement.Electric: return "Điện";
+                case PetElement.Ice: return "Băng";
+                case PetElement.Light: return "Ánh sáng";
+                case PetElement.Dark: return "Bóng tối";
+                default: return "Chưa rõ";
+            }
+        }
+
+        static string FormatRarity(PetRarity value) {
+            switch (value) {
+                case PetRarity.Common: return "★ Thường";
+                case PetRarity.Uncommon: return "★★ Ít gặp";
+                case PetRarity.Rare: return "★★★ Hiếm";
+                case PetRarity.Epic: return "★★★★ Sử thi";
+                case PetRarity.Legendary: return "★★★★★ Huyền thoại";
+                default: return "Chưa rõ";
+            }
+        }
+
+        void RefreshRadarNatureColors(string increasedStat, string decreasedStat) {
+            if (radarLabels == null) return;
+            string[] statNames = { "HP", "Attack", "Defense", "Speed", "Sp. Def", "Sp. Atk" };
+            for (int i = 0; i < radarLabels.Length && i < statNames.Length; i++) {
+                Label label = radarLabels[i];
+                if (label == null) continue;
+                label.EnableInClassList("is-up", StatMatches(statNames[i], increasedStat));
+                label.EnableInClassList("is-down", StatMatches(statNames[i], decreasedStat));
+            }
+        }
+
+        static bool StatMatches(string left, string right) {
+            return !string.IsNullOrWhiteSpace(right)
+                && string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+        }
+
+        static void ResolveNatureEffect(string personality, out string increasedStat, out string decreasedStat) {
+            increasedStat = null;
+            decreasedStat = null;
+            if (string.IsNullOrWhiteSpace(personality)) return;
+
+            switch (personality.Trim().ToLowerInvariant()) {
+                case "lonely": case "cô độc": increasedStat = "Attack"; decreasedStat = "Defense"; break;
+                case "brave": case "dũng cảm": increasedStat = "Attack"; decreasedStat = "Speed"; break;
+                case "adamant": case "kiên định": increasedStat = "Attack"; decreasedStat = "Sp. Atk"; break;
+                case "naughty": case "nghịch ngợm": increasedStat = "Attack"; decreasedStat = "Sp. Def"; break;
+                case "bold": case "táo bạo": increasedStat = "Defense"; decreasedStat = "Attack"; break;
+                case "relaxed": case "thư giãn": increasedStat = "Defense"; decreasedStat = "Speed"; break;
+                case "impish": case "tinh quái": increasedStat = "Defense"; decreasedStat = "Sp. Atk"; break;
+                case "lax": case "lỏng lẻo": increasedStat = "Defense"; decreasedStat = "Sp. Def"; break;
+                case "timid": case "rụt rè": increasedStat = "Speed"; decreasedStat = "Attack"; break;
+                case "hasty": case "vội vàng": increasedStat = "Speed"; decreasedStat = "Defense"; break;
+                case "jolly": case "vui vẻ": increasedStat = "Speed"; decreasedStat = "Sp. Atk"; break;
+                case "naive": case "ngây thơ": increasedStat = "Speed"; decreasedStat = "Sp. Def"; break;
+                case "modest": case "khiêm tốn": increasedStat = "Sp. Atk"; decreasedStat = "Attack"; break;
+                case "mild": case "ôn hòa": increasedStat = "Sp. Atk"; decreasedStat = "Defense"; break;
+                case "quiet": case "trầm lặng": increasedStat = "Sp. Atk"; decreasedStat = "Speed"; break;
+                case "rash": case "hấp tấp": increasedStat = "Sp. Atk"; decreasedStat = "Sp. Def"; break;
+                case "calm": case "điềm tĩnh": increasedStat = "Sp. Def"; decreasedStat = "Attack"; break;
+                case "gentle": case "dịu dàng": increasedStat = "Sp. Def"; decreasedStat = "Defense"; break;
+                case "sassy": case "táo tợn": increasedStat = "Sp. Def"; decreasedStat = "Speed"; break;
+                case "careful": case "cẩn thận": increasedStat = "Sp. Def"; decreasedStat = "Sp. Atk"; break;
+            }
+        }
+
+        static string FormatGender(string value) {
+            if (string.IsNullOrWhiteSpace(value)) return "Chưa rõ";
+            string normalized = value.Trim().ToLowerInvariant();
+            if (normalized == "f" || normalized.Contains("female") || normalized.Contains("cái")) return "♀ Cái";
+            if (normalized == "m" || normalized.Contains("male") || normalized.Contains("đực")) return "♂ Đực";
+            return value.Trim();
+        }
+
         static VisualElement CreatePortrait(PetSnapshot snapshot, string className) {
             var portrait = new VisualElement();
             portrait.AddToClassList(className);
@@ -857,19 +1286,14 @@ namespace Capstone.Game.HudSystem {
             return portrait;
         }
 
-        static VisualElement CreateSmallBar(string label, float percent, string fillClass) {
-            var row = new VisualElement();
-            row.AddToClassList("box-small-bar-row");
-            if (!string.IsNullOrEmpty(label)) row.Add(CreateLabel(label, "box-small-bar-label"));
-            var track = new VisualElement();
-            track.AddToClassList("box-small-bar-track");
-            var fill = new VisualElement();
-            fill.AddToClassList("box-small-bar-fill");
-            fill.AddToClassList(fillClass);
-            fill.style.width = Length.Percent(Mathf.Clamp01(percent) * 100f);
-            track.Add(fill);
-            row.Add(track);
-            return row;
+        static VisualElement CreateStorageCardInfo(PetSnapshot snapshot) {
+            var info = new VisualElement();
+            info.AddToClassList("box-storage-info");
+            var name = CreateLabel(snapshot.displayName, "box-storage-name");
+            name.tooltip = snapshot.displayName;
+            info.Add(name);
+            info.Add(CreateLabel($"Lv. {Mathf.Max(1, snapshot.level)}", "box-storage-meta"));
+            return info;
         }
 
         static Label CreateLabel(string text, string className) {
@@ -878,38 +1302,20 @@ namespace Capstone.Game.HudSystem {
             return label;
         }
 
-        static void SetPortrait(VisualElement portrait, Label fallback, Sprite sprite, string name) {
-            if (portrait == null) return;
-            if (sprite != null) portrait.style.backgroundImage = new StyleBackground(sprite);
-            else portrait.style.backgroundImage = StyleKeyword.None;
-            if (fallback != null) {
-                fallback.text = FirstLetter(name);
-                fallback.style.display = sprite == null ? DisplayStyle.Flex : DisplayStyle.None;
-            }
-        }
-
-        static void SetFill(VisualElement fill, float percent) {
-            if (fill != null) fill.style.width = Length.Percent(Mathf.Clamp01(percent) * 100f);
-        }
-
         static void SetVisible(VisualElement element, bool visible) {
             if (element != null) element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        static void SetLabel(Label label, string value) {
-            if (label != null) label.text = value;
+        static void SetFill(VisualElement element, float normalized) {
+            if (element != null) element.style.width = Length.Percent(Mathf.Clamp01(normalized) * 100f);
         }
 
         void SetFeedback(string message) {
-            if (feedback != null) feedback.text = message ?? string.Empty;
-        }
-
-        static float Percent(float current, float maximum) {
-            return maximum > 0f ? Mathf.Clamp01(current / maximum) : 0f;
-        }
-
-        static string FormatPair(float current, float maximum) {
-            return maximum > 0f ? $"{Mathf.RoundToInt(current):N0} / {Mathf.RoundToInt(maximum):N0}" : "- / -";
+            if (feedback == null) return;
+            feedback.text = message ?? string.Empty;
+            feedback.style.display = string.IsNullOrWhiteSpace(feedback.text)
+                ? DisplayStyle.None
+                : DisplayStyle.Flex;
         }
 
         static string CleanName(string preferred, string fallback) {
@@ -921,21 +1327,5 @@ namespace Capstone.Game.HudSystem {
             return string.IsNullOrWhiteSpace(value) ? "?" : value.Trim().Substring(0, 1).ToUpperInvariant();
         }
 
-        static string Safe(string value) {
-            return string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
-        }
-
-        static string FormatElement(PetElement element) {
-            return element == PetElement.Unknown ? "Hệ -" : element.ToString();
-        }
-
-        static string FormatRarity(PetRarity rarity) {
-            return rarity == PetRarity.Unknown ? "Rarity -" : rarity.ToString();
-        }
-
-        static string FormatSkillMeta(SkillHudData skill) {
-            if (skill.cooldownSeconds > 0f) return $"Lv.{Mathf.Max(1, skill.skillLevel)}  •  CD {skill.cooldownSeconds:0.#}s";
-            return $"Lv.{Mathf.Max(1, skill.skillLevel)}";
-        }
     }
 }
