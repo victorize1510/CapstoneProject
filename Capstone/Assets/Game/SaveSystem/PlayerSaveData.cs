@@ -6,7 +6,7 @@ using Capstone.Game.QuestSystem;
 namespace Capstone.Game.SaveSystem {
     [Serializable]
     public sealed class PlayerSaveData {
-        public const int CurrentVersion = 8;
+        public const int CurrentVersion = 12;
 
         public int version = CurrentVersion;
         public string savedAtUtc = string.Empty;
@@ -59,6 +59,7 @@ namespace Capstone.Game.SaveSystem {
 
     [Serializable]
     public sealed class InventorySaveData {
+        public string[] quickItemIds = new string[2];
         public bool captured;
         public int capacity = 40;
         public List<InventoryItemSaveData> items = new List<InventoryItemSaveData>();
@@ -118,6 +119,7 @@ namespace Capstone.Game.SaveSystem {
         public bool favorite;
         public int experience;
         public int experienceToNextLevel;
+        public int hpStat;
         public int attack;
         public int defense;
         public int speed;
@@ -130,12 +132,17 @@ namespace Capstone.Game.SaveSystem {
         public string captureLocation = string.Empty;
         public string trainerName = string.Empty;
         public string personality = string.Empty;
+        public bool hasGenetics;
+        public Capstone.Game.HudSystem.PetStatValues individualValues;
+        public Capstone.Game.HudSystem.PetStatValues effortValues;
+        public string nature = "Serious";
         public bool codexRegistered;
         public string codexNumber = string.Empty;
         public string codexDescription = string.Empty;
         public bool nextEvolutionDiscovered;
         public string currentFormId = "base";
         public int evolutionStage;
+        public Capstone.Game.HudSystem.PetElement secondaryElement;
         public List<string> promptedEvolutionIds = new List<string>();
         public List<PetResourceInvestmentSaveData> resourceInvestments = new List<PetResourceInvestmentSaveData>();
     }

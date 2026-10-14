@@ -76,7 +76,8 @@ namespace Capstone.Game.MapSystem.Editor {
             ConfigureWorldMap(worldMapObject, mapManager, mapCameraObject, worldMapTexture, minimapObject, mapCenter, worldMapInitialSize, worldMapCloseSize, worldMapFarSize);
             ConfigureCamera(minimapCamera, player != null ? player.position : Vector3.zero, 60f, 28f, minimapTexture);
             ConfigureCamera(mapCamera, player != null ? player.position : new Vector3(mapCenter.x, 0f, mapCenter.y), 180f, worldMapInitialSize, worldMapTexture);
-            DisableSceneMinimap(minimapObject, minimapCameraObject);
+            minimapObject.SetActive(true);
+            minimapCameraObject.SetActive(true);
 
             RectTransform mapRect = FindChildComponent<RectTransform>(worldMapObject.transform, "Map Mask");
             if (mapRect == null) mapRect = worldMapObject.GetComponent<RectTransform>();
@@ -111,7 +112,7 @@ namespace Capstone.Game.MapSystem.Editor {
             SetObjectReference(binder, "minimapCamera", minimapCameraObject);
             SetObjectReference(binder, "mapCamera", mapCameraObject);
             SetObjectReference(binder, "playerTarget", player);
-            SetBool(binder, "minimapDisabled", true);
+            SetBool(binder, "minimapDisabled", false);
 
             SetObjectReference(minimapController, "minimapManager", minimapManager);
             SetObjectReference(minimapController, "minimapCamera", minimapCamera);
@@ -119,7 +120,7 @@ namespace Capstone.Game.MapSystem.Editor {
             SetBool(minimapController, "clampToWorldBounds", true);
             SetVector2(minimapController, "worldCenter", mapCenter);
             SetVector2(minimapController, "worldSize", mapSize);
-            minimapController.enabled = false;
+            minimapController.enabled = true;
             EditorUtility.SetDirty(minimapController);
 
             SetObjectReference(worldMapController, "mapManager", mapManager);
@@ -184,6 +185,7 @@ namespace Capstone.Game.MapSystem.Editor {
             EditorUtility.SetDirty(root);
             EditorUtility.SetDirty(minimapObject);
             EditorUtility.SetDirty(worldMapObject);
+            WorldMapUISetup.Remake(worldMapController);
             AssetDatabase.SaveAssets();
 
             bool ok = validator.ValidateSetup(true);

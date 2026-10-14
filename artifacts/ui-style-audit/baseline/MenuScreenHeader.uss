@@ -1,0 +1,19 @@
+/* One header geometry for the full-screen Bag, Pets, Box and Quest screens.
+   Higher specificity wins over panel-specific legacy rules. */
+.inventory-panel .screen-header, .pets-panel .screen-header, .box-panel .screen-header, .quest-panel .screen-header {
+    height: 76px; min-height: 76px; max-height: 76px; flex-shrink: 0; padding: 0 22px 0 24px;
+    flex-direction: row; align-items: center; justify-content: space-between;
+    -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf");
+}
+.screen-header .screen-heading { min-width: 300px; width: auto; flex-shrink: 0; flex-direction: row; align-items: center; }
+.screen-header .screen-heading-mark { width: 28px; height: 28px; min-width: 28px; margin-right: 14px; rotate: 45deg; background-color: #54825b; border-width: 2px; border-color: #d6e3ca; }
+.screen-header .screen-title { margin: 0; padding: 0; font-size: 38px; -unity-font-style: bold; color: #174a30; white-space: nowrap; }
+.screen-header .screen-back { width: 146px; min-width: 146px; max-width: 146px; height: 42px; flex-shrink: 0; margin: 0; color: #31573d; background-color: #fffdf6; border-width: 1px; border-color: #a9bd9c; border-radius: 6px; font-size: 15px; -unity-font-style: bold; }
+.screen-header .screen-back:hover { background-color: #e4edda; }
+/* Bag, PETS and BOX fill the viewport; body padding remains inside each screen. */
+.pets-panel { width: auto; height: auto; left: 0; top: 0; right: 0; bottom: 0; border-width: 0; border-radius: 0; }
+.box-panel { left: 0; top: 0; right: 0; bottom: 0; width: auto; height: auto; border-width: 0; border-radius: 0; }
+.quest-panel { border-width: 1px; }
+.pets-panel .screen-header { margin-left: -18px; margin-right: -18px; }
+.box-panel .screen-header .box-subtitle { display: none; }
+.inventory-panel .inventory-shell { border-width: 0; border-radius: 0; }

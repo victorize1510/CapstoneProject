@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using Capstone.Game.MapSystem;
 using AaMapIcon = AAMAP.MapIcon;
@@ -14,6 +14,8 @@ public class PlayerVisualSwitcher : MonoBehaviour
         public Animator animator;
         public RuntimeAnimatorController controller;
         [Min(0.05f)] public float animatorSpeed = 1f;
+        [Tooltip("Throw clip frame where the ball leaves this model's hand. Zero uses the summon director default.")]
+        [Min(0)] public int throwReleaseFrame;
         public Vector3 localPosition = Vector3.zero;
         public Vector3 localEulerAngles = Vector3.zero;
         public Vector3 localScale = Vector3.one;
@@ -40,6 +42,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
     public GameObject ActiveVisualRoot => ActiveVisualProfile != null ? ActiveVisualProfile.root : null;
     public Animator ActiveVisualAnimator => ResolveAnimator(ActiveVisualProfile);
     public bool RuntimeSwitchLocked => runtimeSwitchLocked;
+    public KeyCode SwitchKey => allowRuntimeSwitch && visuals.Length > 1 ? switchKey : KeyCode.None;
 
     public event Action<int, VisualProfile> ActiveVisualChanged;
 
@@ -79,6 +82,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
             return;
         }
 
+        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "switch-model")) return;
         int nextIndex = activeVisualIndex < 0 ? 0 : (activeVisualIndex + 1) % visuals.Length;
         SwitchTo(nextIndex, true);
     }

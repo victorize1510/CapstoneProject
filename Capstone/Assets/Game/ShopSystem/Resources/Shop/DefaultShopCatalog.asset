@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a41bb92eefe415a9ff5f7598da066e8, type: 3}
+  m_Name: DefaultShopCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.ShopSystem.ShopCatalog
+  offers:
+  - Id: potion
+    Item: {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
+    Category: -1
+    GoldPrice: -1
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    LockedReason: ''
+  - Id: dusk-stone
+    Item: {fileID: 11400000, guid: 5bd730739fc04e47a6f9f66bc2a2bf4d, type: 2}
+    Category: 4
+    GoldPrice: -1
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    LockedReason: ''

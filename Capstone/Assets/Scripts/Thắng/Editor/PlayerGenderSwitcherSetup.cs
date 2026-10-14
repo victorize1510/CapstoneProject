@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -17,15 +17,14 @@ public static class PlayerGenderSwitcherSetup
     private const string BoyJumpPath = "Assets/Animations/Th\u1EAFng/Boy/Jump_Boy.fbx";
     private const string BoyPickUpPath = "Assets/Animations/Th\u1EAFng/Boy/PickupBOY.fbx";
     private const string BoyThrowPath = "Assets/Animations/Th\u1EAFng/Boy/Throw_boy.fbx";
-    private const string OutputPrefabPath = "Assets/Prefabs/Th\u1EAFng/Player_GenderSwitch.prefab";
+    private const string OutputPrefabPath = "Assets/Prefabs/Th\u1EAFng/Player.prefab";
     private const string BoyControllerPath = "Assets/Animations/Th\u1EAFng/Boy/BoyBasic.controller";
     private const string BoyRetargetedFolder = "Assets/Animations/Th\u1EAFng/Boy/RuntimeFixed";
     private const float BoyAnimatorSpeed = 1f;
     private const float BoyRunStateSpeed = 2f;
-    private static readonly Vector3 DefaultVisualPosition = Vector3.zero;
-    private static readonly Vector3 DefaultVisualEulerAngles = Vector3.zero;
+    // Measured sole gap in IdleBoy with the controller grounded at its 0.02 m skin width.
+    private static readonly Vector3 DefaultBoyVisualPosition = GirlFinalPlayerSetup.BoyPosition;
     private static readonly Vector3 DefaultBoyVisualEulerAngles = Vector3.zero;
-    private static readonly Vector3 DefaultVisualScale = Vector3.one;
 
     [MenuItem(PlayerMenuRoot + "Setup All Player", priority = 0)]
     public static void SetupAllPlayer()
@@ -61,7 +60,7 @@ public static class PlayerGenderSwitcherSetup
         AssetDatabase.Refresh();
         EditorUtility.DisplayDialog(
             "Setup All Player",
-            "Player setup finished.\n\nIncluded: Vexa setup, BOY Mixamo repair, gender switch with G, jump enabled for Vexa and BOY, roll/crouch disabled.",
+            "Player setup finished.\n\nPlayer > Boy / GirlFinal. G switches models; jumping enabled; roll/crouch disabled.",
             "OK");
     }
     [MenuItem(MenuRoot + "Create/Update Gender Switch Player Prefab")]
@@ -77,14 +76,14 @@ public static class PlayerGenderSwitcherSetup
 
     private static bool CreateOrUpdateGenderSwitchPrefabInternal(bool showDialog)
     {
-        GameObject vexaPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(VexaPrefabPath);
-        if (vexaPrefab == null)
+        string sourcePath = AssetDatabase.LoadAssetAtPath<GameObject>(OutputPrefabPath) != null ? OutputPrefabPath : VexaPrefabPath;
+        if (AssetDatabase.LoadAssetAtPath<GameObject>(sourcePath) == null)
         {
-            string message = "Cannot find:\n" + VexaPrefabPath;
+            string message = "Cannot find:\n" + sourcePath;
             Debug.LogError(message);
             if (showDialog)
             {
-                EditorUtility.DisplayDialog("Missing Vexa prefab", message, "OK");
+                EditorUtility.DisplayDialog("Missing Player prefab", message, "OK");
             }
 
             return false;
@@ -92,10 +91,10 @@ public static class PlayerGenderSwitcherSetup
 
         EnsureFolders();
         AnimatorController boyController = EnsureBoyAnimatorController();
-        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(VexaPrefabPath);
+        GameObject prefabRoot = PrefabUtility.LoadPrefabContents(sourcePath);
         try
         {
-            prefabRoot.name = "Player_GenderSwitch";
+            prefabRoot.name = "Player";
             SetupPlayer(prefabRoot, boyController, true);
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, OutputPrefabPath);
         }
@@ -106,7 +105,7 @@ public static class PlayerGenderSwitcherSetup
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        string successMessage = "Created/updated:\n" + OutputPrefabPath + "\n\nPress G at runtime to switch Vexa/Boy.";
+        string successMessage = "Created/updated:\n" + OutputPrefabPath + "\n\nPress G at runtime to switch GirlFinal/Boy.";
         Debug.Log(successMessage);
         if (showDialog)
         {
@@ -273,98 +272,10 @@ public static class PlayerGenderSwitcherSetup
 
     private static void SetupPlayer(GameObject player, AnimatorController boyController, bool prefabAssetMode)
     {
-        BasicPlayerMovement movement = player.GetComponent<BasicPlayerMovement>();
-        if (movement == null)
-        {
-            movement = prefabAssetMode ? player.AddComponent<BasicPlayerMovement>() : Undo.AddComponent<BasicPlayerMovement>(player);
-        }
-
-        Animator vexaAnimator = movement.animator != null ? movement.animator : FindBestAnimator(player.transform);
-        GameObject boy = FindOrCreateBoyVisual(player.transform, prefabAssetMode);
-        Animator boyAnimator = boy.GetComponent<Animator>();
-        if (boyAnimator == null)
-        {
-            boyAnimator = boy.GetComponentInChildren<Animator>(true);
-        }
-
-        if (boyAnimator == null)
-        {
-            boyAnimator = prefabAssetMode ? boy.AddComponent<Animator>() : Undo.AddComponent<Animator>(boy);
-        }
-
-        Avatar boyAvatar = FindBoyAvatar();
-        if (boyAvatar != null)
-        {
-            boyAnimator.avatar = boyAvatar;
-        }
-
-        boyAnimator.runtimeAnimatorController = boyController;
-        boyAnimator.applyRootMotion = false;
-        boyAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-        boyAnimator.speed = BoyAnimatorSpeed;
-
-        PlayerVisualSwitcher switcher = player.GetComponent<PlayerVisualSwitcher>();
-        if (switcher == null)
-        {
-            switcher = prefabAssetMode ? player.AddComponent<PlayerVisualSwitcher>() : Undo.AddComponent<PlayerVisualSwitcher>(player);
-        }
-
-        SerializedObject serializedSwitcher = new SerializedObject(switcher);
-        serializedSwitcher.FindProperty("movement").objectReferenceValue = movement;
-        serializedSwitcher.FindProperty("allowRuntimeSwitch").boolValue = true;
-        serializedSwitcher.FindProperty("switchKey").intValue = (int)KeyCode.G;
-        serializedSwitcher.FindProperty("defaultVisualIndex").intValue = 0;
-
-        SerializedProperty visuals = serializedSwitcher.FindProperty("visuals");
-        visuals.arraySize = 2;
-        ConfigureVisual(visuals.GetArrayElementAtIndex(0), "Vexa", player, vexaAnimator, vexaAnimator != null ? vexaAnimator.runtimeAnimatorController : null, 1f, DefaultVisualPosition, DefaultVisualEulerAngles, DefaultVisualScale, true, false, false);
-        ConfigureVisual(visuals.GetArrayElementAtIndex(1), "Boy", boy, boyAnimator, boyController, BoyAnimatorSpeed, DefaultVisualPosition, DefaultBoyVisualEulerAngles, DefaultVisualScale, true, false, false);
-        serializedSwitcher.ApplyModifiedPropertiesWithoutUndo();
-
-        movement.animator = vexaAnimator != null ? vexaAnimator : boyAnimator;
-        movement.enableRoll = false;
-        movement.enableJump = true;
-        movement.enableCrouch = false;
-        movement.useRootMotion = false;
-        movement.rootMotionDrivesLocomotion = false;
-        movement.rootMotionDrivesRoll = false;
-        movement.rootMotionDrivesJump = false;
-        movement.applyAnimatorRootYaw = false;
-        movement.applyAnimatorRootRotationToVisual = false;
-        movement.keepAnimatorTransformPinned = false;
-
-        boy.SetActive(false);
-        EditorUtility.SetDirty(player);
-        EditorUtility.SetDirty(switcher);
-        EditorUtility.SetDirty(movement);
-        EditorUtility.SetDirty(boy);
+        GirlFinalPlayerSetup.ConfigurePlayer(player, boyController);
     }
 
-    private static void ConfigureVisual(SerializedProperty element, string displayName, GameObject root, Animator animator, RuntimeAnimatorController controller, float speed, Vector3 localPosition, Vector3 localEulerAngles, Vector3 localScale, bool jump, bool crouch, bool roll)
-    {
-        element.FindPropertyRelative("displayName").stringValue = displayName;
-        element.FindPropertyRelative("root").objectReferenceValue = root;
-        element.FindPropertyRelative("animator").objectReferenceValue = animator;
-        element.FindPropertyRelative("controller").objectReferenceValue = controller;
-        element.FindPropertyRelative("animatorSpeed").floatValue = speed;
-        SetVector3(element, "localPosition", localPosition);
-        SetVector3(element, "localEulerAngles", localEulerAngles);
-        SetVector3(element, "localScale", localScale);
-        element.FindPropertyRelative("enableJump").boolValue = jump;
-        element.FindPropertyRelative("enableCrouch").boolValue = crouch;
-        element.FindPropertyRelative("enableRoll").boolValue = roll;
-    }
-
-    private static void SetVector3(SerializedProperty parent, string propertyName, Vector3 value)
-    {
-        SerializedProperty property = parent.FindPropertyRelative(propertyName);
-        if (property != null)
-        {
-            property.vector3Value = value;
-        }
-    }
-
-    private static GameObject FindOrCreateBoyVisual(Transform player, bool prefabAssetMode)
+    internal static GameObject FindOrCreateBoyVisual(Transform player, bool prefabAssetMode)
     {
         Transform existingChild = player.Find("Boy");
         if (existingChild != null)
@@ -408,7 +319,7 @@ public static class PlayerGenderSwitcherSetup
 
     private static void NormalizeBoyTransform(Transform boy)
     {
-        boy.localPosition = Vector3.zero;
+        boy.localPosition = DefaultBoyVisualPosition;
         boy.localRotation = Quaternion.Euler(DefaultBoyVisualEulerAngles);
         boy.localScale = Vector3.one;
     }
@@ -639,12 +550,6 @@ public static class PlayerGenderSwitcherSetup
         }
 
         return null;
-    }
-
-    private static Animator FindBestAnimator(Transform root)
-    {
-        Animator rootAnimator = root.GetComponent<Animator>();
-        return rootAnimator != null ? rootAnimator : root.GetComponentInChildren<Animator>(true);
     }
 
     private static Transform FindChildRecursive(Transform parent, string name)

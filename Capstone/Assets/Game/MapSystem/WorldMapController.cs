@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using AAMAP;
 using UnityEngine;
@@ -70,6 +70,7 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] Transform playerTarget = null;
         [SerializeField] MapMarker waypointMarker = null;
         [SerializeField] RectTransform customFrame = null;
+        [SerializeField] UI.WorldMapUIController presentation;
 
         [Header("Camera")]
         [SerializeField] bool startClosed = true;
@@ -143,6 +144,17 @@ namespace Capstone.Game.MapSystem {
         public float InitialVisiblePercent => initialVisiblePercent;
         public float MaximumVisiblePercent => maximumVisiblePercent;
         public bool IsOpen => worldMapOpen;
+        public RectTransform OverlayRoot => overlayRoot;
+        public UI.WorldMapUIController Presentation => presentation;
+
+        public void UsePresentation(UI.WorldMapUIController view, RectTransform overlay) {
+            UnwireButtons();
+            presentation = view; overlayRoot = overlay;
+            regionNameText = null; closeButton = zoomInButton = zoomOutButton = centerOnPlayerButton = clearWaypointButton = null;
+            filterBindings.Clear();
+            WireButtons();
+        }
+        public void RequestBackFromUI() => RequestBack();
 
         void Awake() {
             ResolveReferences();
@@ -150,7 +162,7 @@ namespace Capstone.Game.MapSystem {
             NormalizeVisiblePercents();
             NormalizeWorldBoundsInsets();
             EnsureOpaqueMapVisuals();
-            SetMinimapVisible(false);
+            SetMinimapVisible(!IsOpen);
             ApplyMapSetBoundsIfAvailable();
         }
 
@@ -160,7 +172,7 @@ namespace Capstone.Game.MapSystem {
             NormalizeVisiblePercents();
             NormalizeWorldBoundsInsets();
             EnsureOpaqueMapVisuals();
-            SetMinimapVisible(false);
+            SetMinimapVisible(!IsOpen);
         }
 
         void Start() {
@@ -169,7 +181,7 @@ namespace Capstone.Game.MapSystem {
             NormalizeVisiblePercents();
             NormalizeWorldBoundsInsets();
             EnsureOpaqueMapVisuals();
-            SetMinimapVisible(false);
+            SetMinimapVisible(!IsOpen);
             ApplyMapSetBoundsIfAvailable();
             ApplyCameraDefaults();
             if (startClosed) CloseMap();
@@ -248,7 +260,7 @@ namespace Capstone.Game.MapSystem {
             SetOverlayVisible(false);
             HideCustomFrame();
             SetWorldMapRootVisible(false);
-            SetMinimapVisible(false);
+            RestoreMinimapVisible();
             SetMapOnlySceneVisualsHidden(false);
             SetHudRootsVisibleForMap(false);
         }
@@ -447,6 +459,7 @@ namespace Capstone.Game.MapSystem {
             return false;
         }
         void ResolveReferences() {
+            if (presentation == null) presentation = GetComponent<UI.WorldMapUIController>();
             if (mapManager == null) mapManager = FindFirst<MapManager>();
             if (mapCamera == null && mapManager != null && mapManager.GetMapCamera() != null) mapCamera = mapManager.GetMapCamera().GetComponent<Camera>();
             if (mapCamera == null) {
@@ -589,11 +602,14 @@ namespace Capstone.Game.MapSystem {
         }
 
         void EnsureOpaqueMapVisuals() {
+            presentation?.EnsureBuilt();
             Color backgroundColor = new Color(0.015f, 0.035f, 0.035f, 1f);
             RenderTexture renderTexture = EnsureWorldMapRenderTexture();
 
             if (mapManager != null) {
-                EnsurePanelBackdrop(mapManager.transform, backgroundColor);
+                Color backdropColor = presentation != null && presentation.Theme != null
+                    ? presentation.Theme.background : backgroundColor;
+                EnsurePanelBackdrop(mapManager.transform, backdropColor);
                 mapManager.mapOpacity = 1f;
                 mapManager.mapColor = Color.white;
                 mapManager.haveBorder = false;
@@ -654,7 +670,8 @@ namespace Capstone.Game.MapSystem {
             Transform exitButton = mapRoot.Find("Map Exit Button");
             if (exitButton != null) exitButton.gameObject.SetActive(false);
 
-            StyleAndArrangeOverlay();
+            if (presentation != null) presentation.FitViewport();
+            else StyleAndArrangeOverlay();
         }
 
         bool HasValidMapVisualState() {
@@ -676,8 +693,8 @@ namespace Capstone.Game.MapSystem {
 
         RenderTexture EnsureWorldMapRenderTexture() {
             const int width = 2048;
-            const int height = 1152;
-            const float targetAspect = 16f / 9f;
+            float targetAspect = presentation != null ? presentation.ViewportAspect : 16f / 9f;
+            int height = Mathf.RoundToInt(width / targetAspect);
 
             RenderTexture current = mapManager != null ? mapManager.renderTexture : null;
             bool valid = current != null
@@ -722,6 +739,7 @@ namespace Capstone.Game.MapSystem {
         }
 
         void ApplyViewportLayout(RectTransform rect) {
+            if (presentation != null) { presentation.FitViewport(); return; }
             if (!enforceRuntimeViewport || rect == null) return;
 
             // Full-screen map surface. Zoom limits still control how much of the world is visible.
@@ -735,24 +753,27 @@ namespace Capstone.Game.MapSystem {
             rect.localScale = Vector3.one;
         }
         void SetMinimapVisible(bool visible) {
-            // Minimap is intentionally removed from the current HUD. Keep AA objects disabled
-            // so the setup tool or AA defaults cannot revive it on the second Play press.
+            MapSystemController system = GetComponent<MapSystemController>();
+            if (system != null) {
+                system.SetMinimapVisible(visible);
+                return;
+            }
             if (minimapRoot == null) {
                 MinimapManager minimap = FindFirst<MinimapManager>();
                 if (minimap != null) minimapRoot = minimap.gameObject;
             }
 
-            if (minimapRoot != null) minimapRoot.SetActive(false);
+            if (minimapRoot != null) minimapRoot.SetActive(visible);
 
             MinimapManager manager = FindFirst<MinimapManager>();
-            if (manager != null) manager.gameObject.SetActive(false);
+            if (manager != null) manager.gameObject.SetActive(visible);
 
-            GameObject cameraObject = GameObject.Find("Minimap Camera");
-            if (cameraObject != null) cameraObject.SetActive(false);
+            GameObject cameraObject = manager != null ? manager.GetCamera() : GameObject.Find("Minimap Camera");
+            if (cameraObject != null) cameraObject.SetActive(visible);
         }
 
         void RestoreMinimapVisible() {
-            SetMinimapVisible(false);
+            SetMinimapVisible(true);
         }
         static Image EnsureRuntimeImage(Transform parent, string name, Color color) {
             Transform child = parent.Find(name);
@@ -1049,14 +1070,17 @@ namespace Capstone.Game.MapSystem {
         }
 
         void HandleZoomIn() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HandleZoomIn")) return;
             Zoom(1f);
         }
 
         void HandleZoomOut() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HandleZoomOut")) return;
             Zoom(-1f);
         }
 
         void RequestBack() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "RequestBack")) return;
             if (BackRequested != null) BackRequested.Invoke();
             else CloseMap();
         }

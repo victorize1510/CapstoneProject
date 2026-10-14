@@ -12,6 +12,7 @@ namespace Capstone.Game.PetSummon
             Idle,
             Flight,
             Bounce,
+            Deflected,
             Settled,
             Failed
         }
@@ -27,15 +28,19 @@ namespace Capstone.Game.PetSummon
         float bounceTimeout;
         float bounceHorizontalDamping;
         float phaseDeadline;
+        float bounceStartedAt;
+        bool bounceLeftGround;
         bool launched;
         Collider expectedGroundCollider;
         Vector3 plannedGroundPoint;
+        float motionSpeed = 1f;
 
         public MotionPhase Phase { get; private set; } = MotionPhase.Idle;
         public bool IsFinished => Phase == MotionPhase.Settled || Phase == MotionPhase.Failed;
         public bool Succeeded => Phase == MotionPhase.Settled;
         public Vector3 GroundPoint { get; private set; }
         public string FailureReason { get; private set; } = string.Empty;
+        public float ExpectedFlightDuration { get; private set; }
 
         void Awake()
         {
@@ -44,8 +49,34 @@ namespace Capstone.Game.PetSummon
 
         void FixedUpdate()
         {
-            if (!launched || IsFinished || Time.time <= phaseDeadline)
+            if (!launched || IsFinished)
             {
+                return;
+            }
+
+            // Scale velocity and gravity together so a faster throw keeps the same arc.
+            if (Phase == MotionPhase.Flight)
+                body.AddForce(Physics.gravity * (motionSpeed * motionSpeed - 1f), ForceMode.Acceleration);
+
+            if (Phase == MotionPhase.Bounce)
+            {
+                bounceLeftGround |= body.position.y > GroundPoint.y + ballRadius + 0.12f;
+                if (bounceLeftGround && Time.time > bounceStartedAt + Time.fixedDeltaTime
+                    && body.linearVelocity.y <= 0.05f)
+                {
+                    Settle();
+                    return;
+                }
+            }
+
+            if (Time.time <= phaseDeadline)
+            {
+                return;
+            }
+
+            if (Phase == MotionPhase.Deflected)
+            {
+                Fail("Bóng va vào tường hoặc vật cản; không gọi pet.");
                 return;
             }
 
@@ -56,49 +87,82 @@ namespace Capstone.Game.PetSummon
 
         void OnCollisionEnter(Collision collision)
         {
-            if (!launched || IsFinished || collision == null || collision.collider == null
-                || !IsGroundLayer(collision.collider.gameObject.layer))
+            if (!launched || IsFinished || Phase == MotionPhase.Deflected
+                || collision == null || collision.collider == null)
             {
                 return;
             }
 
-            if (!TryGetGroundContact(collision, out ContactPoint contact))
+            if (!IsGroundLayer(collision.collider.gameObject.layer)
+                || !TryGetGroundContact(collision, out ContactPoint contact)
+                || !IsValidGroundContact(collision.collider, contact.point))
             {
+                Deflect(collision);
                 return;
             }
 
-            if (!IsValidGroundContact(collision.collider, contact.point))
-            {
-                return;
-            }
-
-            GroundPoint = contact.point;
             if (Phase == MotionPhase.Flight)
             {
+                GroundPoint = contact.point;
                 Phase = MotionPhase.Bounce;
+                bounceStartedAt = Time.time;
+                bounceLeftGround = false;
                 phaseDeadline = Time.time + bounceTimeout;
 
-                Vector3 horizontalVelocity = Vector3.ProjectOnPlane(body.linearVelocity, contact.normal)
-                    * bounceHorizontalDamping;
-                float bounceSpeed = Mathf.Sqrt(2f * Physics.gravity.magnitude * bounceHeight);
+                Vector3 horizontalVelocity = Vector3.ProjectOnPlane(body.linearVelocity, Vector3.up)
+                    * (bounceHorizontalDamping / motionSpeed);
+                float bounceSpeed = Mathf.Sqrt(2f * -Physics.gravity.y * bounceHeight);
                 body.position += contact.normal * 0.01f;
-                body.linearVelocity = horizontalVelocity + contact.normal * bounceSpeed;
+                body.linearVelocity = horizontalVelocity + Vector3.up * bounceSpeed;
                 return;
             }
 
-            if (Phase == MotionPhase.Bounce)
+            if (Phase == MotionPhase.Bounce && bounceLeftGround)
             {
-                Settle(contact.point);
+                Fail("Bóng chạm đất trước khi hoàn tất cú nảy.");
             }
         }
 
-        public bool Launch(Vector3 groundTarget, float radius, float flightDuration,
+        public static bool TryCalculateArc(Vector3 start, Vector3 target,
+            float apexAboveEndpoints, out Vector3 initialVelocity, out float duration, float speed = 1f)
+        {
+            initialVelocity = default;
+            duration = 0f;
+            float gravity = -Physics.gravity.y;
+            if (gravity <= 0.01f)
+            {
+                return false;
+            }
+
+            float apex = Mathf.Max(start.y, target.y) + Mathf.Max(0.1f, apexAboveEndpoints);
+            float rise = apex - start.y;
+            float fall = apex - target.y;
+            float verticalSpeed = Mathf.Sqrt(2f * gravity * rise);
+            duration = verticalSpeed / gravity + Mathf.Sqrt(2f * fall / gravity);
+            if (duration <= 0.01f)
+            {
+                return false;
+            }
+
+            Vector3 horizontal = target - start;
+            horizontal.y = 0f;
+            initialVelocity = horizontal / duration + Vector3.up * verticalSpeed;
+            speed = Mathf.Max(0.1f, speed);
+            initialVelocity *= speed;
+            duration /= speed;
+            return true;
+        }
+
+        public bool Launch(Vector3 groundTarget, float radius, float arcApexHeight,
             float bounceArcHeight, float horizontalDamping, float maximumBounceDuration,
-            LayerMask validGroundLayers, Collider plannedGroundCollider, Transform ownerRoot)
+            LayerMask validGroundLayers, Collider plannedGroundCollider, Transform ownerRoot,
+            float speed = 1f)
         {
             CacheComponents();
             FailureReason = string.Empty;
             GroundPoint = default;
+            ExpectedFlightDuration = 0f;
+            motionSpeed = Mathf.Max(0.1f, speed);
 
             if (body == null || ballColliders.Length == 0)
             {
@@ -109,6 +173,12 @@ namespace Capstone.Game.PetSummon
             if (plannedGroundCollider == null)
             {
                 Fail("Collider mặt đất dự kiến đã biến mất trước lúc ném bóng.");
+                return false;
+            }
+
+            if (Physics.gravity.y >= -0.01f)
+            {
+                Fail("Cần trọng lực hướng xuống để ném và nảy bóng.");
                 return false;
             }
 
@@ -133,19 +203,28 @@ namespace Capstone.Game.PetSummon
                 ballCollider.isTrigger = false;
             }
 
-            float duration = Mathf.Max(0.2f, flightDuration);
+            // The hand animated after the previous physics step. Keep the exact
+            // visible release pose instead of launching from a stale Rigidbody pose.
+            body.position = transform.position;
+            Physics.SyncTransforms();
             Vector3 targetCenter = groundTarget + Vector3.up * ballRadius;
-            Vector3 displacement = targetCenter - body.position;
+            if (!TryCalculateArc(body.position, targetCenter, arcApexHeight,
+                out Vector3 launchVelocity, out float duration, motionSpeed))
+            {
+                Fail("Không tính được quỹ đạo ném bóng.");
+                return false;
+            }
 
             body.isKinematic = false;
             body.useGravity = true;
             body.interpolation = RigidbodyInterpolation.Interpolate;
             body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
             body.constraints = RigidbodyConstraints.None;
-            body.linearVelocity = displacement / duration - Physics.gravity * (0.5f * duration);
+            body.linearVelocity = launchVelocity;
             body.angularVelocity = transform.right * 12f;
 
             launched = true;
+            ExpectedFlightDuration = duration;
             Phase = MotionPhase.Flight;
             phaseDeadline = Time.time + duration + 1f;
             return true;
@@ -204,12 +283,26 @@ namespace Capstone.Game.PetSummon
             }
         }
 
-        void Settle(Vector3 groundPoint)
+        void Settle()
         {
-            GroundPoint = groundPoint;
             launched = false;
             Phase = MotionPhase.Settled;
             FreezeForHover();
+        }
+
+        void Deflect(Collision collision)
+        {
+            Phase = MotionPhase.Deflected;
+            phaseDeadline = Time.time + 0.35f;
+            if (body != null && collision.contactCount > 0)
+            {
+                Vector3 incoming = collision.relativeVelocity.sqrMagnitude > 0.01f
+                    ? collision.relativeVelocity
+                    : body.linearVelocity;
+                Vector3 reflected = Vector3.Reflect(incoming,
+                    collision.GetContact(0).normal) * 0.5f;
+                body.linearVelocity = reflected + Vector3.up * 0.5f;
+            }
         }
 
         void Fail(string reason)
@@ -231,14 +324,13 @@ namespace Capstone.Game.PetSummon
             RestoreOwnerCollisions();
             IgnoreRootCollisions(ownerRoot);
 
-            PetController[] pets = FindObjectsByType<PetController>(
-                FindObjectsInactive.Include, FindObjectsSortMode.None);
-            for (int i = 0; i < pets.Length; i++)
+            PetCommandInput commandInput = ownerRoot != null
+                ? ownerRoot.GetComponent<PetCommandInput>()
+                : null;
+            PetController activePet = commandInput != null ? commandInput.activePet : null;
+            if (activePet != null && activePet.IsSummoned)
             {
-                if (pets[i] != null)
-                {
-                    IgnoreRootCollisions(pets[i].transform);
-                }
+                IgnoreRootCollisions(activePet.transform);
             }
         }
 
@@ -297,11 +389,6 @@ namespace Capstone.Game.PetSummon
 
         bool IsValidGroundContact(Collider collider, Vector3 point)
         {
-            if (collider == expectedGroundCollider)
-            {
-                return true;
-            }
-
             if (collider.GetComponentInParent<PetController>() != null
                 || collider.GetComponentInParent<DummyEnemy>() != null
                 || Mathf.Abs(point.y - plannedGroundPoint.y) > 0.4f)
@@ -311,7 +398,8 @@ namespace Capstone.Game.PetSummon
 
             Vector3 offset = point - plannedGroundPoint;
             offset.y = 0f;
-            return offset.sqrMagnitude <= 2.25f;
+            return offset.sqrMagnitude <= 2.25f
+                && (collider == expectedGroundCollider || IsGroundLayer(collider.gameObject.layer));
         }
 
         static bool TryGetGroundContact(Collision collision, out ContactPoint bestContact)

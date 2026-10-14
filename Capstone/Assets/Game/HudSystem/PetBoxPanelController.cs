@@ -25,7 +25,7 @@ namespace Capstone.Game.HudSystem {
         const float DoubleClickInterval = 0.45f;
 
         static readonly string[] SortChoices = {
-            "Vị trí Box",
+            "Vị trí Kho thú",
             "Mới nhận",
             "Tên A → Z",
             "Tên Z → A",
@@ -61,6 +61,7 @@ namespace Capstone.Game.HudSystem {
         VisualElement purchasePopup;
         VisualElement selectedPortrait;
         VisualElement selectedHealthFill;
+        VisualElement selectedExperienceFill;
         VisualElement radarHost;
         Label partyCountLabel;
         Label capacityLabel;
@@ -76,9 +77,8 @@ namespace Capstone.Game.HudSystem {
         Label selectedGender;
         Label selectedRarity;
         Label selectedHealthValue;
+        Label selectedExperienceValue;
         Label selectedPersonality;
-        Label selectedNatureUp;
-        Label selectedNatureDown;
         Label feedback;
         Label footerSummary;
         Label sourceLabel;
@@ -101,6 +101,7 @@ namespace Capstone.Game.HudSystem {
         PetBoxReturnTarget returnTarget = PetBoxReturnTarget.Menu;
         SelectionSource selectionSource;
         PetController selectedPet;
+        public PetController SelectedPet => selectedPet;
         int targetPartySlot = -1;
         SelectionSource pendingSwapSource;
         int pendingSwapSourceIndex = -1;
@@ -112,8 +113,9 @@ namespace Capstone.Game.HudSystem {
         bool controlsRegistered;
         bool subscribed;
         VisualElement registeredStorageViewport;
+        VisualElement registeredDetailsViewport;
+        VisualElement selectedBody;
         RadarChartElement radarChart;
-        Label[] radarLabels;
 
         public event Action<PetController> DetailsRequested;
 
@@ -134,6 +136,7 @@ namespace Capstone.Game.HudSystem {
             public string species;
             public string gender;
             public PetElement element;
+            public PetElement secondaryElement;
             public PetRarity rarity;
             public int level;
             public long obtainedOrder;
@@ -141,6 +144,10 @@ namespace Capstone.Game.HudSystem {
             public Sprite icon;
             public float health;
             public float maxHealth;
+            public int experience;
+            public int experienceToNextLevel;
+            public bool isMaxLevel;
+            public int hpStat;
             public int attack;
             public int defense;
             public int speed;
@@ -152,34 +159,59 @@ namespace Capstone.Game.HudSystem {
         sealed class RadarChartElement : VisualElement {
             const int AxisCount = 6;
             readonly float[] values = new float[AxisCount];
+            readonly Label[] axisLabels = new Label[AxisCount];
 
             public RadarChartElement() {
                 pickingMode = PickingMode.Ignore;
                 generateVisualContent += Draw;
+                string[] names = { "HP", "Tấn công", "Phòng thủ", "Tốc độ", "P.thủ ĐB", "T.công ĐB" };
+                for (int i = 0; i < AxisCount; i++) {
+                    axisLabels[i] = CreateLabel(names[i], "box-radar-label");
+                    axisLabels[i].pickingMode = PickingMode.Ignore;
+                    Add(axisLabels[i]);
+                }
+                RegisterCallback<GeometryChangedEvent>(_ => LayoutLabels());
             }
 
-            public void SetValues(float hp, float attack, float defense, float speed, float magicDefense, float magicAttack) {
-                float maximum = Mathf.Max(1f, hp, attack, defense, speed, magicDefense, magicAttack);
-                values[0] = Normalize(hp, maximum);
-                values[1] = Normalize(attack, maximum);
-                values[2] = Normalize(defense, maximum);
-                values[3] = Normalize(speed, maximum);
-                values[4] = Normalize(magicDefense, maximum);
-                values[5] = Normalize(magicAttack, maximum);
+            static float Radius(Rect rect) => Mathf.Max(4f,
+                Mathf.Min(Mathf.Min(rect.width, rect.height) * 0.32f,
+                    Mathf.Min((rect.width * 0.5f - 70f) / 0.866f, rect.height * 0.5f - 34f)));
+
+            void LayoutLabels() {
+                Rect rect = contentRect;
+                float radius = Radius(rect);
+                for (int i = 0; i < AxisCount; i++) {
+                    Vector2 direction = Point(Vector2.zero, 1f, i);
+                    Vector2 anchor = Point(rect.center, radius + 12f, i);
+                    Label label = axisLabels[i];
+                    label.style.width = 58f;
+                    label.style.height = 20f;
+                    label.style.left = anchor.x - (direction.x < -0.1f ? 58f : direction.x > 0.1f ? 0f : 29f);
+                    label.style.top = anchor.y - (direction.y < -0.9f ? 20f : direction.y > 0.9f ? 0f : 10f);
+                    label.style.unityTextAlign = direction.x < -0.1f ? TextAnchor.MiddleRight
+                        : direction.x > 0.1f ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter;
+                }
+            }
+
+            public void SetValues(int level, float hp, float attack, float defense, float speed, float magicDefense, float magicAttack) {
+                values[0] = Normalize(hp, level, PetCoreStat.Hp);
+                values[1] = Normalize(attack, level, PetCoreStat.Attack);
+                values[2] = Normalize(defense, level, PetCoreStat.Defense);
+                values[3] = Normalize(speed, level, PetCoreStat.Speed);
+                values[4] = Normalize(magicDefense, level, PetCoreStat.MagicDefense);
+                values[5] = Normalize(magicAttack, level, PetCoreStat.MagicAttack);
                 MarkDirtyRepaint();
             }
 
-            static float Normalize(float value, float maximum) {
-                if (value <= 0f) return 0f;
-                return Mathf.Lerp(0.14f, 1f, Mathf.Clamp01(value / maximum));
-            }
+            static float Normalize(float value, int level, PetCoreStat stat) =>
+                PetStatCalculator.DisplayRatio(Mathf.RoundToInt(value), level, stat);
 
             void Draw(MeshGenerationContext context) {
                 Rect rect = contentRect;
                 if (rect.width <= 1f || rect.height <= 1f) return;
 
                 Vector2 center = rect.center;
-                float radius = Mathf.Max(4f, Mathf.Min(rect.width, rect.height) * 0.39f);
+                float radius = Radius(rect);
                 Painter2D painter = context.painter2D;
 
                 painter.lineWidth = 1f;
@@ -230,10 +262,11 @@ namespace Capstone.Game.HudSystem {
         }
 
         void OnDisable() {
-            ClearSwapSelection();
+            CloseTransientUi();
             UnsubscribeProvider();
             UnregisterControls();
             UnregisterStorageLayoutCallback();
+            UnregisterDetailsLayoutCallback();
         }
 
         public void Bind(UIDocument targetDocument, MonsterInventoryController owner) {
@@ -249,7 +282,7 @@ namespace Capstone.Game.HudSystem {
         public void OpenFrom(PetBoxReturnTarget target) {
             ClearSwapSelection();
             returnTarget = target;
-            if (sourceLabel != null) sourceLabel.text = target == PetBoxReturnTarget.Pets ? "Nguồn mở: TỪ PETS" : "Nguồn mở: TỪ MENU";
+            if (sourceLabel != null) sourceLabel.text = target == PetBoxReturnTarget.Pets ? "Nguồn mở: TỪ thú" : "Nguồn mở: TỪ MENU";
             Refresh();
         }
 
@@ -321,6 +354,7 @@ namespace Capstone.Game.HudSystem {
             purchasePopup = docRoot.Q<VisualElement>("box-purchase-popup");
             selectedPortrait = docRoot.Q<VisualElement>("box-selected-portrait");
             selectedHealthFill = docRoot.Q<VisualElement>("box-selected-health-fill");
+            selectedExperienceFill = docRoot.Q<VisualElement>("box-selected-exp-fill");
             radarHost = docRoot.Q<VisualElement>("box-radar-host");
             partyCountLabel = docRoot.Q<Label>("box-party-count");
             capacityLabel = docRoot.Q<Label>("box-capacity-label");
@@ -336,9 +370,8 @@ namespace Capstone.Game.HudSystem {
             selectedGender = docRoot.Q<Label>("box-selected-gender");
             selectedRarity = docRoot.Q<Label>("box-selected-rarity");
             selectedHealthValue = docRoot.Q<Label>("box-selected-health-value");
+            selectedExperienceValue = docRoot.Q<Label>("box-selected-exp-value");
             selectedPersonality = docRoot.Q<Label>("box-selected-personality");
-            selectedNatureUp = docRoot.Q<Label>("box-selected-nature-up");
-            selectedNatureDown = docRoot.Q<Label>("box-selected-nature-down");
             feedback = docRoot.Q<Label>("box-feedback");
             footerSummary = docRoot.Q<Label>("box-footer-summary");
             sourceLabel = docRoot.Q<Label>("box-source-label");
@@ -359,6 +392,30 @@ namespace Capstone.Game.HudSystem {
             sortButton = docRoot.Q<Button>("box-sort-button");
             EnsureRadarChart(docRoot);
             RegisterStorageLayoutCallback();
+            RegisterDetailsLayoutCallback(docRoot);
+        }
+
+        void RegisterDetailsLayoutCallback(VisualElement docRoot) {
+            VisualElement viewport = docRoot.Q<ScrollView>("box-details-scroll")?.contentViewport;
+            selectedBody = docRoot.Q<VisualElement>("box-selected-body");
+            if (registeredDetailsViewport != viewport) {
+                UnregisterDetailsLayoutCallback();
+                registeredDetailsViewport = viewport;
+                registeredDetailsViewport?.RegisterCallback<GeometryChangedEvent>(HandleDetailsGeometryChanged);
+            }
+            ResizeSelectedBody(viewport?.resolvedStyle.height ?? 0f);
+        }
+
+        void HandleDetailsGeometryChanged(GeometryChangedEvent evt) => ResizeSelectedBody(evt.newRect.height);
+
+        void ResizeSelectedBody(float height) {
+            if (selectedBody != null && height > 0f && !float.IsNaN(height))
+                selectedBody.style.height = Mathf.Max(340f, height);
+        }
+
+        void UnregisterDetailsLayoutCallback() {
+            registeredDetailsViewport?.UnregisterCallback<GeometryChangedEvent>(HandleDetailsGeometryChanged);
+            registeredDetailsViewport = null;
         }
 
         void EnsureRadarChart(VisualElement docRoot) {
@@ -368,14 +425,6 @@ namespace Capstone.Game.HudSystem {
                 radarChart.AddToClassList("box-radar-chart");
                 radarHost.Add(radarChart);
             }
-            radarLabels = new[] {
-                docRoot.Q<Label>(className: "box-radar-hp"),
-                docRoot.Q<Label>(className: "box-radar-atk"),
-                docRoot.Q<Label>(className: "box-radar-def"),
-                docRoot.Q<Label>(className: "box-radar-spd"),
-                docRoot.Q<Label>(className: "box-radar-spdef"),
-                docRoot.Q<Label>(className: "box-radar-spatk")
-            };
         }
 
         void RegisterStorageLayoutCallback() {
@@ -440,6 +489,7 @@ namespace Capstone.Game.HudSystem {
         void RegisterControls() {
             if (controlsRegistered || root == null) return;
 
+            RegisterButton(document.rootVisualElement.Q<Button>("box-search-field-clear"), () => { searchField.value = string.Empty; searchField.Focus(); });
             RegisterButton(document.rootVisualElement.Q<Button>("box-back-button"), GoBack);
             RegisterButton(document.rootVisualElement.Q<Button>("box-expand-button"), () => ShowPurchasePopup(false));
             RegisterButton(document.rootVisualElement.Q<Button>("box-filter-toggle"), ToggleFilterPanel);
@@ -496,7 +546,7 @@ namespace Capstone.Game.HudSystem {
             sortOptionButtons.Clear();
             for (int i = 0; i < SortChoices.Length; i++) {
                 int optionIndex = i;
-                var option = new Button { text = SortChoices[i] };
+                var option = new Button { name = "box-sort-option-" + i, text = SortChoices[i] };
                 option.AddToClassList("box-sort-option");
                 option.EnableInClassList("is-selected", i == sortIndex);
                 RegisterButton(option, () => SelectSortOption(optionIndex));
@@ -512,8 +562,9 @@ namespace Capstone.Game.HudSystem {
 
         void RegisterButton(Button button, Action callback) {
             if (button == null || callback == null || buttonCallbacks.ContainsKey(button)) return;
-            button.clicked += callback;
-            buttonCallbacks.Add(button, callback);
+            Action guarded = Capstone.Game.UISystem.PlayerActionGate.Guard(this, "button:" + button.name, callback);
+            button.clicked += guarded;
+            buttonCallbacks.Add(button, guarded);
         }
 
         void RegisterElementButton(string name, PetElement element) {
@@ -539,7 +590,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void HandleProviderChanged() {
-            Refresh();
+            if (inventoryController != null && inventoryController.IsBoxSectionOpen) Refresh();
         }
 
         void HandleStorageFull(PetController _) {
@@ -560,7 +611,7 @@ namespace Capstone.Game.HudSystem {
                     name = $"box-party-slot-{i + 1}",
                     text = string.Empty,
                     userData = i,
-                    tooltip = snapshot.pet != null ? snapshot.displayName : $"Slot Party {i + 1}"
+                    tooltip = snapshot.pet != null ? snapshot.displayName : $"Ô Đội hình {i + 1}"
                 };
                 card.AddToClassList("box-party-card");
                 card.EnableInClassList("is-empty", snapshot.pet == null);
@@ -570,11 +621,33 @@ namespace Capstone.Game.HudSystem {
                     _ => HandleBoxCardClick(SelectionSource.Party, slotIndex),
                     TrickleDown.TrickleDown);
 
-                card.Add(CreatePortrait(snapshot, "box-party-portrait"));
+                if (snapshot.pet != null) {
+                    card.Add(CreatePortrait(snapshot, "box-party-portrait"));
+                    var info = new VisualElement();
+                    info.AddToClassList("box-party-info");
+                    var name = CreateLabel(snapshot.displayName, "box-party-name");
+                    name.tooltip = snapshot.displayName;
+                    info.Add(name);
+                    var hpRow = new VisualElement();
+                    hpRow.AddToClassList("box-party-hp-row");
+                    hpRow.Add(CreateLabel("HP", "box-party-hp-label"));
+                    var track = new VisualElement();
+                    track.AddToClassList("box-party-hp-track");
+                    var fill = new VisualElement();
+                    fill.AddToClassList("box-health-fill");
+                    SetFill(fill, snapshot.maxHealth > 0f ? snapshot.health / snapshot.maxHealth : 0f);
+                    track.Add(fill);
+                    hpRow.Add(track);
+                    info.Add(hpRow);
+                    info.Add(CreateLabel($"{Mathf.RoundToInt(snapshot.health):N0} / {Mathf.RoundToInt(snapshot.maxHealth):N0}", "box-party-hp-value"));
+                    card.Add(info);
+                }
+                else card.Add(CreateEmptySlotContent());
                 card.Add(CreateLabel((i + 1).ToString(), "box-slot-number"));
-                if (i == 0) card.Add(CreateLabel("LEAD", "box-lead-badge"));
+                if (i == 0) card.Add(CreateLabel("DẪN ĐẦU", "box-lead-badge"));
                 if (snapshot.pet != null && snapshot.favorite) card.Add(CreateLabel("\u2605", "box-favorite-badge"));
-                if (snapshot.pet != null) card.Add(CreateLabel($"Lv. {Mathf.Max(1, snapshot.level)}", "box-party-level"));
+                if (snapshot.pet != null) card.Q<VisualElement>(className: "box-party-portrait")
+                    .Add(CreateLabel($"Cấp {Mathf.Max(1, snapshot.level)}", "box-party-level"));
                 partyCards.Add(card);
                 partyRow.Add(card);
             }
@@ -603,7 +676,8 @@ namespace Capstone.Game.HudSystem {
                 pageEntries.Add(local);
                 bool locked = local.providerIndex < 0;
                 bool empty = local.snapshot.pet == null;
-                bool matches = empty || (MatchesSearch(local.snapshot, query) && MatchesElement(local.snapshot.element));
+                bool matches = empty || (MatchesSearch(local.snapshot, query)
+                    && MatchesElement(local.snapshot.element, local.snapshot.secondaryElement));
                 bool selected = selectionSource == SelectionSource.Storage
                     && local.providerIndex >= 0 && selectedPet == local.snapshot.pet && local.snapshot.pet != null;
                 if (!empty) occupiedOnPage++;
@@ -612,7 +686,7 @@ namespace Capstone.Game.HudSystem {
                     userData = local.providerIndex,
                     tooltip = !empty
                         ? local.snapshot.displayName
-                        : locked ? "Slot chưa mở" : $"Box slot {local.providerIndex + 1}"
+                        : locked ? "Ô chưa mở" : $"Kho thú ô {local.providerIndex + 1}"
                 };
                 card.AddToClassList("box-storage-card");
                 card.EnableInClassList("is-empty", empty && !locked);
@@ -637,11 +711,16 @@ namespace Capstone.Game.HudSystem {
 
             visibleStorage.Clear();
             visibleStorage.AddRange(pageEntries);
-            if (emptyLabel != null) emptyLabel.style.display = DisplayStyle.None;
-            if (pageTitle != null) pageTitle.text = $"BOX {currentPage + 1:00}";
-            if (pageCount != null) pageCount.text = $"{occupiedOnPage} PET  •  TRANG {currentPage + 1} / {pageCountValue}";
+            if (emptyLabel != null) {
+                bool filtering = !string.IsNullOrWhiteSpace(query) || selectedElements.Count > 0;
+                bool anyMatch = orderedSlots.Exists(entry => entry.snapshot.pet != null && MatchesSearch(entry.snapshot, query) && MatchesElement(entry.snapshot.element, entry.snapshot.secondaryElement));
+                emptyLabel.text = filtering ? "Không tìm thấy thú phù hợp. Hãy thử bộ lọc khác." : string.Empty;
+                emptyLabel.style.display = filtering && !anyMatch ? DisplayStyle.Flex : DisplayStyle.None;
+            }
+            if (pageTitle != null) pageTitle.text = $"KHO THÚ {currentPage + 1:00}";
+            if (pageCount != null) pageCount.text = $"{occupiedOnPage} thú  •  TRANG {currentPage + 1} / {pageCountValue}";
             if (footerSummary != null) {
-                footerSummary.text = $"Box {currentPage + 1:00} — {provider.StoredCount} / {provider.Capacity} pet • Trang {currentPage + 1} / {pageCountValue}";
+                footerSummary.text = $"Kho thú {currentPage + 1:00} — {provider.StoredCount} / {provider.Capacity} thú • Trang {currentPage + 1} / {pageCountValue}";
             }
             if (previousPageButton != null) previousPageButton.SetEnabled(currentPage > 0);
             if (nextPageButton != null) nextPageButton.SetEnabled(currentPage + 1 < pageCountValue);
@@ -692,7 +771,7 @@ namespace Capstone.Game.HudSystem {
         void SelectPartySlot(int slotIndex) {
             PetController pet = provider?.GetPartyPet(slotIndex);
             if (pet == null) {
-                SetFeedback("Slot Party đang trống. Chọn hoặc double-click pet nguồn trước.");
+                SetFeedback("ô Party đang trống. Chọn hoặc nhấp đúp thú nguồn trước.");
                 return;
             }
             selectionSource = SelectionSource.Party;
@@ -704,7 +783,7 @@ namespace Capstone.Game.HudSystem {
         void SelectStoragePet(int providerIndex) {
             PetController pet = provider?.GetStoredPet(providerIndex);
             if (pet == null) {
-                SetFeedback("Slot Box đang trống. Chọn hoặc double-click pet nguồn trước.");
+                SetFeedback("ô Kho thú đang trống. Chọn hoặc nhấp đúp thú nguồn trước.");
                 return;
             }
             selectionSource = SelectionSource.Storage;
@@ -716,14 +795,14 @@ namespace Capstone.Game.HudSystem {
 
         void ReplaceSelectedPet() {
             if (provider == null || selectionSource == SelectionSource.None || selectedPet == null) {
-                SetFeedback("Chọn một pet trước.");
+                SetFeedback("Chọn một thú trước.");
                 return;
             }
             int index = selectionSource == SelectionSource.Party
                 ? IndexOfPartyPet(selectedPet)
                 : IndexOfStoredPet(selectedPet);
             if (index < 0) {
-                SetFeedback("Pet không còn ở vị trí đã chọn.");
+                SetFeedback("Thú không còn ở vị trí đã chọn.");
                 return;
             }
             pendingSwapSource = selectionSource;
@@ -739,7 +818,7 @@ namespace Capstone.Game.HudSystem {
                 selectedPet = provider.GetPartyPet(slot);
                 selectionSource = SelectionSource.Party;
                 targetPartySlot = slot;
-                SetFeedback($"Đã đưa pet vào slot {slot + 1}.");
+                SetFeedback($"Đã đưa thú vào ô {slot + 1}.");
             }
             else SetFeedback(error);
             Refresh();
@@ -754,8 +833,8 @@ namespace Capstone.Game.HudSystem {
                 int boxIndex = IndexOfStoredPet(selectedPet);
                 FocusStoredPet(selectedPet);
                 SetFeedback(boxIndex >= 0
-                    ? $"Đã chuyển {BuildSnapshot(selectedPet).displayName} vào Box {boxIndex / SlotsPerPage + 1:00}, slot {boxIndex + 1:00}."
-                    : "Đã chuyển pet vào Box.");
+                    ? $"Đã chuyển {BuildSnapshot(selectedPet).displayName} vào Kho thú {boxIndex / SlotsPerPage + 1:00}, ô {boxIndex + 1:00}."
+                    : "Đã chuyển thú vào Kho thú.");
             }
             else SetFeedback(error);
             Refresh();
@@ -777,20 +856,22 @@ namespace Capstone.Game.HudSystem {
         void RefreshSelectedDetails() {
             PetSnapshot snapshot = BuildSnapshot(selectedPet);
             SetSelectedPortrait(snapshot);
-            if (selectedName != null) selectedName.text = snapshot.pet != null ? snapshot.displayName : "Chọn một pet";
+            if (selectedName != null) selectedName.text = snapshot.pet != null ? snapshot.displayName : "Chọn một thú";
             if (selectedLocation != null) {
                 int index = snapshot.pet == null
                     ? -1
                     : selectionSource == SelectionSource.Party ? IndexOfPartyPet(snapshot.pet) : IndexOfStoredPet(snapshot.pet);
                 selectedLocation.text = index < 0
-                    ? "Chọn pet trong Party hoặc Box"
+                    ? "Chọn thú trong Đội hình hoặc Kho thú"
                     : selectionSource == SelectionSource.Party
-                        ? $"Trong Party (Slot {index + 1})"
-                        : $"Trong Box {index / SlotsPerPage + 1:00} (Ô {index % SlotsPerPage + 1})";
+                        ? $"Trong Đội hình (Ô {index + 1})"
+                        : $"Trong Kho thú {index / SlotsPerPage + 1:00} (Ô {index % SlotsPerPage + 1})";
             }
             bool hasSelection = snapshot.pet != null;
-            if (selectedLevel != null) selectedLevel.text = hasSelection ? $"Lv. {Mathf.Max(1, snapshot.level)}" : "—";
-            if (selectedElement != null) selectedElement.text = hasSelection ? FormatElement(snapshot.element) : "—";
+            if (selectedLevel != null) selectedLevel.text = hasSelection ? $"Cấp {Mathf.Max(1, snapshot.level)}" : "—";
+            if (selectedElement != null) selectedElement.text = hasSelection
+                ? snapshot.secondaryElement == PetElement.Unknown ? FormatElement(snapshot.element)
+                    : $"{FormatElement(snapshot.element)} / {FormatElement(snapshot.secondaryElement)}" : "—";
             if (selectedGender != null) selectedGender.text = hasSelection ? FormatGender(snapshot.gender) : "—";
             if (selectedRarity != null) selectedRarity.text = hasSelection ? FormatRarity(snapshot.rarity) : "—";
             if (selectedHealthValue != null) {
@@ -801,32 +882,25 @@ namespace Capstone.Game.HudSystem {
             SetFill(selectedHealthFill, hasSelection && snapshot.maxHealth > 0f
                 ? snapshot.health / snapshot.maxHealth
                 : 0f);
+            if (selectedExperienceValue != null) selectedExperienceValue.text = !hasSelection ? "— / —"
+                : snapshot.isMaxLevel ? "MAX" : $"{snapshot.experience:N0} / {snapshot.experienceToNextLevel:N0}";
+            SetFill(selectedExperienceFill, !hasSelection ? 0f : snapshot.isMaxLevel ? 1f
+                : snapshot.experienceToNextLevel > 0 ? (float)snapshot.experience / snapshot.experienceToNextLevel : 0f);
             if (selectedPersonality != null) {
                 selectedPersonality.text = hasSelection && !string.IsNullOrWhiteSpace(snapshot.personality)
-                    ? snapshot.personality.Trim()
-                    : "Trung tính";
+                    ? Capstone.Game.UISystem.VietnameseUI.Personality(snapshot.personality)
+                    : Capstone.Game.UISystem.VietnameseUI.Unknown;
             }
 
-            ResolveNatureEffect(snapshot.personality, out string increasedStat, out string decreasedStat);
-            if (selectedNatureUp != null) {
-                selectedNatureUp.text = hasSelection
-                    ? increasedStat != null ? $"Tăng {increasedStat}" : "Không tăng chỉ số"
-                    : "Chỉ số tăng: —";
-            }
-            if (selectedNatureDown != null) {
-                selectedNatureDown.text = hasSelection
-                    ? decreasedStat != null ? $"Giảm {decreasedStat}" : "Không giảm chỉ số"
-                    : "Chỉ số giảm: —";
-            }
 
             radarChart?.SetValues(
-                hasSelection ? snapshot.maxHealth : 0f,
+                hasSelection ? snapshot.level : 1,
+                hasSelection ? snapshot.hpStat : 0f,
                 hasSelection ? snapshot.attack : 0f,
                 hasSelection ? snapshot.defense : 0f,
                 hasSelection ? snapshot.speed : 0f,
                 hasSelection ? snapshot.magicDefense : 0f,
                 hasSelection ? snapshot.magicAttack : 0f);
-            RefreshRadarNatureColors(increasedStat, decreasedStat);
             SetVisible(selectedFavorite, hasSelection && snapshot.favorite);
         }
 
@@ -872,7 +946,7 @@ namespace Capstone.Game.HudSystem {
                 ? provider.GetPartyPet(index)
                 : provider.GetStoredPet(index);
             if (pet == null) {
-                SetFeedback("Hãy double-click một ô đang có pet.");
+                SetFeedback("Hãy nhấp đúp một ô đang có thú.");
                 return;
             }
 
@@ -910,13 +984,13 @@ namespace Capstone.Game.HudSystem {
             else if (source == SelectionSource.Storage && target == SelectionSource.Storage) {
                 if (sortIndex > 0) {
                     succeeded = false;
-                    error = "Hãy chọn “Vị trí Box” trước khi đổi hai slot Box.";
+                    error = "Hãy chọn “Vị trí Kho thú” trước khi đổi hai ô Kho thú.";
                 }
                 else succeeded = provider.TrySwapStoredPets(sourceIndex, targetIndex, out error);
             }
 
             if (!succeeded) {
-                SetFeedback(string.IsNullOrWhiteSpace(error) ? "Không thể đổi hai pet này." : error);
+                SetFeedback(string.IsNullOrWhiteSpace(error) ? "Không thể đổi hai thú này." : error);
                 Refresh();
                 return;
             }
@@ -965,8 +1039,8 @@ namespace Capstone.Game.HudSystem {
 
         static string FormatSource(SelectionSource source, int index) {
             return source == SelectionSource.Party
-                ? $"Party {index + 1}"
-                : $"Box {index / SlotsPerPage + 1:00}, slot {index + 1:00}";
+                ? $"Đội hình {index + 1}"
+                : $"Kho thú {index / SlotsPerPage + 1:00}, ô {index + 1:00}";
         }
 
         void ChangePage(int direction) {
@@ -1011,8 +1085,9 @@ namespace Capstone.Game.HudSystem {
             }
         }
 
-        bool MatchesElement(PetElement element) {
-            return selectedElements.Count == 0 || selectedElements.Contains(element);
+        bool MatchesElement(PetElement element, PetElement secondaryElement) {
+            return selectedElements.Count == 0 || selectedElements.Contains(element)
+                || selectedElements.Contains(secondaryElement);
         }
 
         static bool MatchesSearch(PetSnapshot snapshot, string query) {
@@ -1027,19 +1102,19 @@ namespace Capstone.Game.HudSystem {
                 && provider.StoredCount < provider.Capacity;
             if (purchaseTitle != null) {
                 purchaseTitle.text = retryPendingCapture
-                    ? "HOÀN TẤT BẮT PET"
-                    : isFull ? "BOX ĐÃ ĐẦY" : "MUA THÊM SLOT";
+                    ? "HOÀN TẤT THU PHỤC"
+                    : isFull ? "KHO THÚ ĐÃ ĐẦY" : "MỞ RỘNG KHO";
             }
             if (purchaseCurrent != null) purchaseCurrent.text = $"Hiện tại: {provider.StoredCount} / {provider.Capacity}";
             if (purchaseExpand != null) {
                 purchaseExpand.text = retryPendingCapture
-                    ? "Pet đang chờ được lưu vào Box"
-                    : $"Mở rộng: +{provider.ExpansionSize} slot";
+                    ? "Thú đang chờ được lưu vào kho"
+                    : $"Mở rộng: +{provider.ExpansionSize} ô";
             }
             if (purchasePrice != null) {
                 purchasePrice.text = retryPendingCapture
-                    ? "Không tốn thêm Gold"
-                    : $"Giá: {provider.ExpansionGoldCost:N0} Gold";
+                    ? "Không tốn thêm Vàng"
+                    : $"Giá: {provider.ExpansionGoldCost:N0} Vàng";
             }
             if (purchaseAfter != null) {
                 purchaseAfter.text = retryPendingCapture
@@ -1050,10 +1125,12 @@ namespace Capstone.Game.HudSystem {
                 purchaseConfirmButton.text = retryPendingCapture ? "THỬ LẠI" : "MUA THÊM";
             }
             purchasePopup.style.display = DisplayStyle.Flex;
+            Capstone.Game.UISystem.PanelFocusUtility.Open(purchasePopup);
         }
 
         void HidePurchasePopup() {
             if (purchasePopup != null) purchasePopup.style.display = DisplayStyle.None;
+            Capstone.Game.UISystem.PanelFocusUtility.Close(purchasePopup);
         }
 
         void RequestPurchase() {
@@ -1061,10 +1138,10 @@ namespace Capstone.Game.HudSystem {
 
             if (provider.PendingCapturedPet != null && provider.StoredCount < provider.Capacity) {
                 if (TryCommitPendingCapture(out string retryError)) {
-                    SetFeedback("Đã đưa pet vừa bắt vào Box.");
+                    SetFeedback("Đã đưa thú vừa bắt vào Kho thú.");
                 }
                 else {
-                    SetFeedback($"Pet vẫn đang chờ: {retryError}");
+                    SetFeedback($"Thú vẫn đang chờ: {retryError}");
                 }
                 Refresh();
                 HidePurchasePopup();
@@ -1075,14 +1152,14 @@ namespace Capstone.Game.HudSystem {
                 PetController pendingCapture = provider.PendingCapturedPet;
                 if (pendingCapture != null) {
                     if (TryCommitPendingCapture(out string captureError)) {
-                        SetFeedback($"Đã mở thêm {provider.ExpansionSize} slot và đưa pet vừa bắt vào Box.");
+                        SetFeedback($"Đã mở thêm {provider.ExpansionSize} ô và đưa thú vừa bắt vào Kho thú.");
                     }
                     else {
-                        SetFeedback($"Đã mở thêm {provider.ExpansionSize} slot, nhưng pet vẫn đang chờ: {captureError}.");
+                        SetFeedback($"Đã mở thêm {provider.ExpansionSize} ô, nhưng thú vẫn đang chờ: {captureError}.");
                     }
                 }
                 else {
-                    SetFeedback($"Đã mở thêm {provider.ExpansionSize} slot Box.");
+                    SetFeedback($"Đã mở thêm {provider.ExpansionSize} ô Kho thú.");
                 }
                 Refresh();
             }
@@ -1097,13 +1174,14 @@ namespace Capstone.Game.HudSystem {
                 ? captureCoordinator
                 : FindFirstObjectByType<PetCaptureCoordinator>(FindObjectsInactive.Include);
             if (captureCoordinator == null) {
-                error = "không tìm thấy bộ xử lý bắt pet";
+                error = "không tìm thấy bộ xử lý bắt thú";
                 return false;
             }
 
             return captureCoordinator.TryCommitPendingCapture(out error);
         }
 
+        public void RequestBack() => GoBack();
         void GoBack() {
             HidePurchasePopup();
             if (returnTarget == PetBoxReturnTarget.Pets && inventoryController != null) {
@@ -1157,6 +1235,7 @@ namespace Capstone.Game.HudSystem {
             if (pet == null) return default;
             IPetHudDataSource data = FindDataSource(pet);
             PetCollectionMetadata metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
+            PetStatSnapshot scores = metadata != null ? metadata.CurrentStats : default;
             string baseName = CleanName(data?.DisplayName, pet.name);
             return new PetSnapshot {
                 pet = pet,
@@ -1164,6 +1243,7 @@ namespace Capstone.Game.HudSystem {
                 species = metadata?.Species,
                 gender = metadata?.Gender,
                 element = metadata != null ? metadata.Element : PetElement.Unknown,
+                secondaryElement = metadata != null ? metadata.SecondaryElement : PetElement.Unknown,
                 rarity = metadata != null ? metadata.Rarity : PetRarity.Unknown,
                 level = data != null ? data.Level : 0,
                 obtainedOrder = metadata != null ? metadata.ObtainedOrder : 0,
@@ -1171,11 +1251,15 @@ namespace Capstone.Game.HudSystem {
                 icon = data?.Icon,
                 health = data != null ? Mathf.Max(0f, data.Health) : 0f,
                 maxHealth = data != null ? Mathf.Max(0f, data.MaxHealth) : 0f,
-                attack = metadata != null ? metadata.Attack : 0,
-                defense = metadata != null ? metadata.Defense : 0,
-                speed = metadata != null ? metadata.Speed : 0,
-                magicAttack = metadata != null ? metadata.MagicAttack : 0,
-                magicDefense = metadata != null ? metadata.MagicDefense : 0,
+                experience = metadata != null ? metadata.Experience : 0,
+                experienceToNextLevel = metadata != null ? metadata.ExperienceToNextLevel : 0,
+                isMaxLevel = metadata != null && data != null && data.Level >= metadata.MaxLevel,
+                hpStat = scores.Hp,
+                attack = scores.Attack,
+                defense = scores.Defense,
+                speed = scores.Speed,
+                magicAttack = scores.MagicAttack,
+                magicDefense = scores.MagicDefense,
                 personality = metadata?.Personality
             };
         }
@@ -1199,83 +1283,25 @@ namespace Capstone.Game.HudSystem {
             }
         }
 
-        static string FormatElement(PetElement value) {
-            switch (value) {
-                case PetElement.Nature: return "Thảo";
-                case PetElement.Fire: return "Lửa";
-                case PetElement.Water: return "Nước";
-                case PetElement.Wind: return "Gió";
-                case PetElement.Earth: return "Đất";
-                case PetElement.Electric: return "Điện";
-                case PetElement.Ice: return "Băng";
-                case PetElement.Light: return "Ánh sáng";
-                case PetElement.Dark: return "Bóng tối";
-                default: return "Chưa rõ";
-            }
-        }
+        static string FormatElement(PetElement value) => Capstone.Game.UISystem.VietnameseUI.Element(value);
 
-        static string FormatRarity(PetRarity value) {
-            switch (value) {
-                case PetRarity.Common: return "★ Thường";
-                case PetRarity.Uncommon: return "★★ Ít gặp";
-                case PetRarity.Rare: return "★★★ Hiếm";
-                case PetRarity.Epic: return "★★★★ Sử thi";
-                case PetRarity.Legendary: return "★★★★★ Huyền thoại";
-                default: return "Chưa rõ";
-            }
-        }
-
-        void RefreshRadarNatureColors(string increasedStat, string decreasedStat) {
-            if (radarLabels == null) return;
-            string[] statNames = { "HP", "Attack", "Defense", "Speed", "Sp. Def", "Sp. Atk" };
-            for (int i = 0; i < radarLabels.Length && i < statNames.Length; i++) {
-                Label label = radarLabels[i];
-                if (label == null) continue;
-                label.EnableInClassList("is-up", StatMatches(statNames[i], increasedStat));
-                label.EnableInClassList("is-down", StatMatches(statNames[i], decreasedStat));
-            }
-        }
-
-        static bool StatMatches(string left, string right) {
-            return !string.IsNullOrWhiteSpace(right)
-                && string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
-        }
-
-        static void ResolveNatureEffect(string personality, out string increasedStat, out string decreasedStat) {
-            increasedStat = null;
-            decreasedStat = null;
-            if (string.IsNullOrWhiteSpace(personality)) return;
-
-            switch (personality.Trim().ToLowerInvariant()) {
-                case "lonely": case "cô độc": increasedStat = "Attack"; decreasedStat = "Defense"; break;
-                case "brave": case "dũng cảm": increasedStat = "Attack"; decreasedStat = "Speed"; break;
-                case "adamant": case "kiên định": increasedStat = "Attack"; decreasedStat = "Sp. Atk"; break;
-                case "naughty": case "nghịch ngợm": increasedStat = "Attack"; decreasedStat = "Sp. Def"; break;
-                case "bold": case "táo bạo": increasedStat = "Defense"; decreasedStat = "Attack"; break;
-                case "relaxed": case "thư giãn": increasedStat = "Defense"; decreasedStat = "Speed"; break;
-                case "impish": case "tinh quái": increasedStat = "Defense"; decreasedStat = "Sp. Atk"; break;
-                case "lax": case "lỏng lẻo": increasedStat = "Defense"; decreasedStat = "Sp. Def"; break;
-                case "timid": case "rụt rè": increasedStat = "Speed"; decreasedStat = "Attack"; break;
-                case "hasty": case "vội vàng": increasedStat = "Speed"; decreasedStat = "Defense"; break;
-                case "jolly": case "vui vẻ": increasedStat = "Speed"; decreasedStat = "Sp. Atk"; break;
-                case "naive": case "ngây thơ": increasedStat = "Speed"; decreasedStat = "Sp. Def"; break;
-                case "modest": case "khiêm tốn": increasedStat = "Sp. Atk"; decreasedStat = "Attack"; break;
-                case "mild": case "ôn hòa": increasedStat = "Sp. Atk"; decreasedStat = "Defense"; break;
-                case "quiet": case "trầm lặng": increasedStat = "Sp. Atk"; decreasedStat = "Speed"; break;
-                case "rash": case "hấp tấp": increasedStat = "Sp. Atk"; decreasedStat = "Sp. Def"; break;
-                case "calm": case "điềm tĩnh": increasedStat = "Sp. Def"; decreasedStat = "Attack"; break;
-                case "gentle": case "dịu dàng": increasedStat = "Sp. Def"; decreasedStat = "Defense"; break;
-                case "sassy": case "táo tợn": increasedStat = "Sp. Def"; decreasedStat = "Speed"; break;
-                case "careful": case "cẩn thận": increasedStat = "Sp. Def"; decreasedStat = "Sp. Atk"; break;
-            }
-        }
+        static string FormatRarity(PetRarity value) => Capstone.Game.UISystem.VietnameseUI.Rarity(value);
 
         static string FormatGender(string value) {
             if (string.IsNullOrWhiteSpace(value)) return "Chưa rõ";
             string normalized = value.Trim().ToLowerInvariant();
+            if (normalized == "unknown") return Capstone.Game.UISystem.VietnameseUI.Unknown;
             if (normalized == "f" || normalized.Contains("female") || normalized.Contains("cái")) return "♀ Cái";
             if (normalized == "m" || normalized.Contains("male") || normalized.Contains("đực")) return "♂ Đực";
             return value.Trim();
+        }
+
+        static VisualElement CreateEmptySlotContent() {
+            var content = new VisualElement { pickingMode = PickingMode.Ignore };
+            content.AddToClassList("box-empty-slot-content");
+            content.Add(CreateLabel("🐾", "box-empty-slot-icon"));
+            content.Add(CreateLabel("Trống", "box-empty-slot-text"));
+            return content;
         }
 
         static VisualElement CreatePortrait(PetSnapshot snapshot, string className) {
@@ -1292,7 +1318,7 @@ namespace Capstone.Game.HudSystem {
             var name = CreateLabel(snapshot.displayName, "box-storage-name");
             name.tooltip = snapshot.displayName;
             info.Add(name);
-            info.Add(CreateLabel($"Lv. {Mathf.Max(1, snapshot.level)}", "box-storage-meta"));
+            info.Add(CreateLabel($"Cấp {Mathf.Max(1, snapshot.level)}", "box-storage-meta"));
             return info;
         }
 

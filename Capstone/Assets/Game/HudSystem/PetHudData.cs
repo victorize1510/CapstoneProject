@@ -51,6 +51,8 @@ namespace Capstone.Game.HudSystem {
         [TextArea] public string description;
         public Sprite icon;
         public string[] animatorStates;
+        [Range(0f, 100f)] public float criticalRateBonus;
+        [Range(0f, 100f)] public float criticalDamageBonus;
         [Min(0f)] public float animationDuration;
         [Min(0f)] public float animationFade;
         [Min(0f)] public float windupSeconds;

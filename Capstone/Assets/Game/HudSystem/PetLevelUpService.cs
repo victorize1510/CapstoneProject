@@ -21,14 +21,6 @@ namespace Capstone.Game.HudSystem {
         [SerializeField, Min(0)] int experienceRequirementPerLevel = DefaultExperienceRequirementPerLevel;
         [SerializeField, Min(0)] int quadraticExperienceRequirement = DefaultQuadraticExperienceRequirement;
 
-        [Header("Stat Growth Per Level")]
-        [SerializeField, Min(0)] int healthGrowth = 25;
-        [SerializeField, Min(0)] int attackGrowth = 5;
-        [SerializeField, Min(0)] int defenseGrowth = 4;
-        [SerializeField, Min(0)] int speedGrowth = 3;
-        [SerializeField, Min(0)] int magicAttackGrowth = 5;
-        [SerializeField, Min(0)] int magicDefenseGrowth = 4;
-
         MonsterInventoryAdapter inventory;
         PlayerSaveController saveController;
 
@@ -42,7 +34,7 @@ namespace Capstone.Game.HudSystem {
         public PetLevelUpPreview CreatePreview(PetController pet) {
             var preview = new PetLevelUpPreview { Pet = pet };
             if (pet == null) {
-                preview.DisabledReason = "Chưa chọn pet để tăng cấp.";
+                preview.DisabledReason = "Chưa chọn thú để tăng cấp.";
                 return preview;
             }
 
@@ -50,7 +42,7 @@ namespace Capstone.Game.HudSystem {
             preview.Metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
             if (preview.Metadata == null) preview.Metadata = pet.gameObject.AddComponent<PetCollectionMetadata>();
             if (preview.RuntimeStats == null) {
-                preview.DisabledReason = "Pet chưa có PetHudRuntimeStats.";
+                preview.DisabledReason = "Thú chưa có PetHudRuntimeStats.";
                 return preview;
             }
 
@@ -77,23 +69,25 @@ namespace Capstone.Game.HudSystem {
             preview.OwnedItemQuantity = preview.Item != null ? preview.Item.Quantity : 0;
             preview.ItemIcon = preview.Item?.Icon;
 
-            preview.CurrentHealth = Mathf.RoundToInt(preview.RuntimeStats.MaxHealth);
-            preview.NextHealth = preview.CurrentHealth + healthGrowth;
-            preview.CurrentAttack = preview.Metadata.Attack;
-            preview.NextAttack = preview.CurrentAttack + attackGrowth;
-            preview.CurrentDefense = preview.Metadata.Defense;
-            preview.NextDefense = preview.CurrentDefense + defenseGrowth;
-            preview.CurrentSpeed = preview.Metadata.Speed;
-            preview.NextSpeed = preview.CurrentSpeed + speedGrowth;
-            preview.CurrentMagicAttack = preview.Metadata.MagicAttack;
-            preview.NextMagicAttack = preview.CurrentMagicAttack + magicAttackGrowth;
-            preview.CurrentMagicDefense = preview.Metadata.MagicDefense;
-            preview.NextMagicDefense = preview.CurrentMagicDefense + magicDefenseGrowth;
+            PetStatSnapshot currentScores = preview.Metadata.GetStatsAtLevel(currentLevel);
+            PetStatSnapshot nextScores = preview.Metadata.GetStatsAtLevel(preview.NextLevel);
+            preview.CurrentHealth = currentScores.Hp;
+            preview.NextHealth = nextScores.Hp;
+            preview.CurrentAttack = currentScores.Attack;
+            preview.NextAttack = nextScores.Attack;
+            preview.CurrentDefense = currentScores.Defense;
+            preview.NextDefense = nextScores.Defense;
+            preview.CurrentSpeed = currentScores.Speed;
+            preview.NextSpeed = nextScores.Speed;
+            preview.CurrentMagicAttack = currentScores.MagicAttack;
+            preview.NextMagicAttack = nextScores.MagicAttack;
+            preview.CurrentMagicDefense = currentScores.MagicDefense;
+            preview.NextMagicDefense = nextScores.MagicDefense;
             preview.HasNewSkill = !preview.IsMaxLevel
                 && preview.RuntimeStats.TryGetSkillUnlockingAtLevel(preview.NextLevel, out preview.NewSkill);
 
             if (preview.IsMaxLevel) {
-                preview.DisabledReason = "Pet đã đạt cấp tối đa.";
+                preview.DisabledReason = "Thú đã đạt cấp tối đa.";
             }
             else if (preview.Item == null) {
                 preview.DisabledReason = $"Chưa có {preview.ItemName} trong Bag.";
@@ -110,6 +104,11 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TryLevelUp(PetController pet, out string message) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryBegin(this, "level-up", out var operation)) { message = string.Empty; return false; }
+            using (operation) return TryLevelUpCore(pet, out message);
+        }
+
+        bool TryLevelUpCore(PetController pet, out string message) {
             PetLevelUpPreview preview = CreatePreview(pet);
             if (!preview.CanLevelUp) {
                 message = preview.DisabledReason;
@@ -121,7 +120,7 @@ namespace Capstone.Game.HudSystem {
 
             Result removeResult = inventory.RemoveItem(preview.Item.ItemBase, preview.RequiredItemQuantity);
             if (removeResult is Fail) {
-                message = $"Không thể dùng {preview.ItemName}. Hãy kiểm tra lại Bag.";
+                message = $"Không thể dùng {preview.ItemName}. Hãy kiểm tra lại Túi đồ.";
                 return false;
             }
 
@@ -140,20 +139,12 @@ namespace Capstone.Game.HudSystem {
 
             PetHudRuntimeStats stats = preview.RuntimeStats;
             float oldMaxHealth = stats.MaxHealth;
-            float newMaxHealth = oldMaxHealth > 0f
-                ? oldMaxHealth + healthGrowth
-                : Mathf.Max(1, healthGrowth);
-            float newHealth = oldMaxHealth > 0f
-                ? Mathf.Min(newMaxHealth, stats.Health + healthGrowth)
+            float newMaxHealth = preview.Metadata.GetStatsAtLevel(preview.NextLevel).MaxHealth;
+            float newHealth = stats.Health <= 0f ? 0f : oldMaxHealth > 0f
+                ? Mathf.Clamp(stats.Health + newMaxHealth - oldMaxHealth, 0f, newMaxHealth)
                 : newMaxHealth;
 
             preview.Metadata.SetProgress(remainingExperience, nextRequirement);
-            preview.Metadata.SetStats(
-                preview.NextAttack,
-                preview.NextDefense,
-                preview.NextSpeed,
-                preview.NextMagicAttack,
-                preview.NextMagicDefense);
             stats.SetIdentity(stats.DisplayName, preview.NextLevel, stats.Icon);
             stats.SetStatus(newHealth, newMaxHealth, stats.Energy, stats.MaxEnergy);
             stats.UnlockSkillsUpToLevel(preview.NextLevel, out _);
@@ -217,7 +208,7 @@ namespace Capstone.Game.HudSystem {
 
             metadata.SetProgress(currentExperience, nextRequirement);
             if (levelsGained > 0) {
-                ApplyLevelGrowth(stats, metadata, currentLevel, levelsGained);
+                ApplyLevelGrowth(stats, metadata, currentLevel);
                 NotifyPetLeveledUp(pet);
             }
 
@@ -253,27 +244,18 @@ namespace Capstone.Game.HudSystem {
             AnyPetLeveledUp?.Invoke(pet);
         }
 
+        public void NotifyDebugLevelChange(PetController pet) => NotifyPetLeveledUp(pet);
+
         void ApplyLevelGrowth(
             PetHudRuntimeStats stats,
             PetCollectionMetadata metadata,
-            int newLevel,
-            int levelsGained) {
-            int gained = Mathf.Max(0, levelsGained);
-            float totalHealthGrowth = healthGrowth * gained;
+            int newLevel) {
             float oldMaxHealth = stats.MaxHealth;
-            float newMaxHealth = oldMaxHealth > 0f
-                ? oldMaxHealth + totalHealthGrowth
-                : Mathf.Max(1f, totalHealthGrowth);
-            float newHealth = oldMaxHealth > 0f
-                ? Mathf.Min(newMaxHealth, stats.Health + totalHealthGrowth)
+            float newMaxHealth = metadata.GetStatsAtLevel(newLevel).MaxHealth;
+            float newHealth = stats.Health <= 0f ? 0f : oldMaxHealth > 0f
+                ? Mathf.Clamp(stats.Health + newMaxHealth - oldMaxHealth, 0f, newMaxHealth)
                 : newMaxHealth;
 
-            metadata.SetStats(
-                metadata.Attack + attackGrowth * gained,
-                metadata.Defense + defenseGrowth * gained,
-                metadata.Speed + speedGrowth * gained,
-                metadata.MagicAttack + magicAttackGrowth * gained,
-                metadata.MagicDefense + magicDefenseGrowth * gained);
             stats.SetIdentity(stats.DisplayName, newLevel, stats.Icon);
             stats.SetStatus(newHealth, newMaxHealth, stats.Energy, stats.MaxEnergy);
             stats.UnlockSkillsUpToLevel(newLevel, out _);
@@ -309,12 +291,6 @@ namespace Capstone.Game.HudSystem {
             baseExperienceRequirement = Mathf.Max(1, baseExperienceRequirement);
             experienceRequirementPerLevel = Mathf.Max(0, experienceRequirementPerLevel);
             quadraticExperienceRequirement = Mathf.Max(0, quadraticExperienceRequirement);
-            healthGrowth = Mathf.Max(0, healthGrowth);
-            attackGrowth = Mathf.Max(0, attackGrowth);
-            defenseGrowth = Mathf.Max(0, defenseGrowth);
-            speedGrowth = Mathf.Max(0, speedGrowth);
-            magicAttackGrowth = Mathf.Max(0, magicAttackGrowth);
-            magicDefenseGrowth = Mathf.Max(0, magicDefenseGrowth);
         }
     }
 

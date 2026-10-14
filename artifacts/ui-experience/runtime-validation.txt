@@ -1,0 +1,185 @@
+PASS TestChar UI owners available
+PASS shared font references existing LiberationSans asset
+PASS first Tab opens Menu and preserves passive camera tracking
+PASS same key edge delivered twice in one frame executes once
+PASS Trainer font: AvatarPlaceholder
+PASS Trainer font: Title
+PASS Trainer font: PlayerName
+PASS Trainer font: Cấp độ
+PASS Trainer font: ExperienceCaption
+PASS Trainer font: ExperienceValue
+PASS Trainer font: Label
+PASS Trainer font: AreaLabel
+PASS Trainer font: AreaValue
+PASS Trainer font: Label
+PASS Trainer font: PlayTimeLabel
+PASS Trainer font: PlayTimeValue
+PASS Trainer font: Label
+PASS Trainer font: PartyLabel
+PASS Trainer font: PartyValue
+PASS Trainer font: Label
+PASS Trainer font: Label
+PASS Trainer font: Description
+PASS Trainer font: Label
+PASS Trainer font: Label
+PASS Trainer font: Description
+PASS Trainer font: Label
+PASS Trainer font: Label
+PASS Trainer font: Description
+PASS Trainer font: Label
+PASS Trainer font: Label
+PASS Trainer font: Description
+PASS Trainer font: Label
+PASS Trainer font: Label
+PASS Trainer font: Description
+PASS Trainer font: Label
+PASS Trainer font: Label
+PASS Trainer font: Description
+PASS Trainer font: Description
+PASS Trainer font: Icon
+PASS Trainer font: Label
+PASS Trainer font: Label
+PASS Trainer font: Title
+PASS Trainer font: Text
+PASS Trainer font: Body
+PASS Trainer font: Text
+PASS Trainer Back uses common caption
+PASS second Tab closes Menu and restores gameplay
+PASS shortcut opens correct panel I
+PASS shared font and Back style I
+PASS shared title font I
+PASS panel body inherits shared font I
+PASS same shortcut closes to gameplay I
+PASS shortcut opens correct panel Q
+PASS shared font and Back style Q
+PASS shared title font Q
+PASS panel body inherits shared font Q
+PASS same shortcut closes to gameplay Q
+PASS shortcut opens correct panel P
+PASS shared font and Back style P
+PASS shared title font P
+PASS panel body inherits shared font P
+PASS same shortcut closes to gameplay P
+PASS shortcut opens correct panel M
+PASS same shortcut closes to gameplay M
+PASS same shortcut returns to originating Trainer Menu
+PASS UI event plus legacy shortcut cannot reopen Quest in same frame
+PASS search focus is recognized as text editing
+PASS typing shortcut letters does not close or switch Bag
+PASS Profile font: Title
+PASS Profile font: Subtitle
+PASS Profile font: Text
+PASS Profile font: AvatarPlaceholder
+PASS Profile font: Text
+PASS Profile font: Text
+PASS Profile font: DisplayName
+PASS Profile font: Text
+PASS Profile font: LevelCaption
+PASS Profile font: LevelValue
+PASS Profile font: ExperienceCaption
+PASS Profile font: ExperiencePercent
+PASS Profile font: ExperienceValue
+PASS Profile font: TeamTitle
+PASS Profile font: Text
+PASS Profile font: PetName
+PASS Profile font: SlotNumber
+PASS Profile font: Text
+PASS Profile font: PetName
+PASS Profile font: SlotNumber
+PASS Profile font: Text
+PASS Profile font: PetName
+PASS Profile font: SlotNumber
+PASS Profile font: Text
+PASS Profile font: PetName
+PASS Profile font: SlotNumber
+PASS Profile font: Text
+PASS Profile font: PetName
+PASS Profile font: SlotNumber
+PASS Profile font: Text
+PASS Profile font: PetName
+PASS Profile font: SlotNumber
+PASS Profile font: HeaderTitle
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: HeaderTitle
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Value
+PASS Profile font: Label
+PASS Profile font: Title
+PASS Profile font: Text
+PASS Profile font: Placeholder
+PASS Profile font: Error
+PASS Profile font: Text
+PASS Profile font: Text
+PASS Profile font: Title
+PASS Profile font: Text
+PASS Profile common Back caption
+PASS editing player name suppresses Bag shortcut
+PASS Escape closes rename popup before Profile
+PASS next Escape returns Profile to Menu
+PASS direct Profile returns to gameplay using same Back route
+PASS Box shares title and Back font
+PASS native dropdown is visible
+PASS keyboard-opened dropdown inherits shared font and theme
+PASS native cancel plus legacy Escape preserves Shop: shop=True, popup=False
+PASS legacy Escape first cancels native dropdown without closing screen
+PASS Map TMP uses same font source
+PASS unused legacy minimap direction labels stay hidden
+PASS HUD font: ActivePetInfo/PortraitFrame/EmptyPortrait (LiberationSans)
+PASS HUD font: ActivePetInfo/PortraitFrame/ActiveBadge/Label (LiberationSans)
+PASS HUD font: ActivePetInfo/PetName (LiberationSans)
+PASS HUD font: ActivePetInfo/Level (LiberationSans)
+PASS HUD font: ActivePetInfo/HPLabel (LiberationSans)
+PASS HUD font: ActivePetInfo/HP (LiberationSans)
+PASS HUD font: ActivePetInfo/MPLabel (LiberationSans)
+PASS HUD font: ActivePetInfo/MP (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile0/Empty (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile0/PartySlotNumber (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile6/Empty (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile6/PartySlotNumber (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile1/Empty (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile1/PartySlotNumber (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile5/Empty (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile5/PartySlotNumber (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile2/Empty (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile2/PartySlotNumber (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile4/Empty (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile4/PartySlotNumber (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile3/Empty (LiberationSans)
+PASS HUD font: PartyCarousel/LoopViewport/CarouselTile3/PartySlotNumber (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot1/Skill/Content/EmptyOrMissingIcon (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot1/Skill/CooldownSeconds (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot1/Keycap/Binding (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot2/Skill/Content/EmptyOrMissingIcon (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot2/Skill/CooldownSeconds (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot2/Keycap/Binding (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot3/Skill/Content/EmptyOrMissingIcon (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot3/Skill/CooldownSeconds (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot3/Keycap/Binding (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot4/Skill/Content/EmptyOrMissingIcon (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot4/Skill/CooldownSeconds (LiberationSans)
+PASS HUD font: SkillBar/SkillSlot4/Keycap/Binding (LiberationSans)
+PASS HUD font: QuickItems/QuickItem1/Item/EmptyOrMissingIcon (LiberationSans)
+PASS HUD font: QuickItems/QuickItem1/Item/Quantity (LiberationSans)
+PASS HUD font: QuickItems/QuickItem1/Keycap/Binding (LiberationSans)
+PASS HUD font: QuickItems/QuickItem2/Item/EmptyOrMissingIcon (LiberationSans)
+PASS HUD font: QuickItems/QuickItem2/Item/Quantity (LiberationSans)
+PASS HUD font: QuickItems/QuickItem2/Keycap/Binding (LiberationSans)
+PASS hidden minimap stops its camera
+PASS menu open and close cannot override minimap preference
+PASS full Map remains available with minimap hidden

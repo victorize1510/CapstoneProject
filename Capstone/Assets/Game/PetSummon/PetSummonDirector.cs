@@ -8,6 +8,10 @@ namespace Capstone.Game.PetSummon
     [DisallowMultipleComponent]
     public sealed class PetSummonDirector : MonoBehaviour
     {
+        static readonly float[] LandingAngles = { 0f, -25f, 25f, -45f, 45f };
+        static readonly float[] LandingDistanceFactors = { 1f, 0.5f, 0f };
+        static readonly WaitForFixedUpdate WaitForBallPhysics = new WaitForFixedUpdate();
+
         public enum SequenceState
         {
             Idle,
@@ -29,8 +33,9 @@ namespace Capstone.Game.PetSummon
         [SerializeField] Camera aimCamera;
 
         [Header("Landing")]
-        [SerializeField, Min(0.5f)] float throwDistance = 3.5f;
-        [SerializeField, Min(0.25f)] float minimumThrowDistance = 2.5f;
+        [SerializeField, Min(0.5f)] float throwDistance = 5f;
+        [SerializeField, Min(0.25f)] float minimumThrowDistance = 3.5f;
+        [SerializeField, Min(0.1f)] float petSpawnAheadDistance = 0.7f;
         [SerializeField, Min(0.1f)] float landingSearchRadius = 1.25f;
         [SerializeField, Min(0.25f)] float groundProbeHeight = 2.5f;
         [SerializeField, Min(0.5f)] float groundProbeDistance = 6f;
@@ -41,16 +46,13 @@ namespace Capstone.Game.PetSummon
         [SerializeField] bool requireNavMesh = false;
 
         [Header("Timing")]
-        [SerializeField, Range(0.05f, 0.95f)] float releaseNormalizedTime = 0.45f;
+        [SerializeField, Min(1)] int releaseFrame = 32;
         [SerializeField, Min(0.25f)] float throwStartTimeout = 3f;
-        [SerializeField, Min(0.05f)] float flightDuration = 0.58f;
+        [SerializeField, Min(0.1f)] float throwApexHeight = 1.2f;
+        [SerializeField, Min(0.1f)] float ballMotionSpeed = 1f;
         [SerializeField, Min(0.05f)] float bounceDuration = 1.1f;
-        [SerializeField, Min(0f)] float bounceHeight = 0.24f;
+        [SerializeField, Min(0f)] float bounceHeight = 1.1f;
         [SerializeField, Range(0f, 1f)] float bounceHorizontalDamping = 0.35f;
-        [SerializeField, Min(0.05f)] float hoverRiseDuration = 0.22f;
-        [SerializeField, Min(0f)] float hoverHeight = 0.45f;
-        [SerializeField, Min(0f)] float hoverHoldDuration = 0.5f;
-        [SerializeField, Min(0f)] float spinDegreesPerSecond = 540f;
         [SerializeField, Range(0.05f, 0.95f)] float recallEffectNormalizedTime = 0.28f;
         [SerializeField, Min(0.25f)] float pickupStartTimeout = 3f;
         [SerializeField, Min(0.25f)] float pickupCompletionTimeout = 3f;
@@ -60,12 +62,13 @@ namespace Capstone.Game.PetSummon
         readonly Collider[] clearanceHits = new Collider[16];
 
         Coroutine sequenceRoutine;
+        Coroutine queuedSwitchRoutine;
         bool sequenceRunning;
+        int queuedSlotIndex = -1;
         GameObject travellingBall;
         int pendingSlotIndex = -1;
         PetController recallingPet;
         bool playerLockedBySequence;
-        float nextHeldBallRetryTime;
 
         public SequenceState State { get; private set; } = SequenceState.Idle;
         public bool IsSequenceRunning => sequenceRunning;
@@ -87,52 +90,14 @@ namespace Capstone.Game.PetSummon
             ResolveReferences();
         }
 
-        IEnumerator Start()
-        {
-            // PlayerSaveController restores the saved summoned state one frame after Start.
-            yield return null;
-            yield return null;
-            if (handSocket != null && (commandInput == null || commandInput.activePet == null || !commandInput.activePet.IsSummoned))
-            {
-                if (!handSocket.ShowBallInActiveHand())
-                {
-                    Debug.LogWarning("Pet summon cannot show the held ball: "
-                        + handSocket.LastFailureReason, this);
-                }
-            }
-        }
-
-        void LateUpdate()
-        {
-            if (sequenceRunning || handSocket == null)
-            {
-                return;
-            }
-
-            bool petIsOut = commandInput != null && commandInput.activePet != null
-                && commandInput.activePet.IsSummoned;
-            if (petIsOut)
-            {
-                if (handSocket.HasHeldBall)
-                {
-                    handSocket.DestroyHeldBall();
-                }
-                return;
-            }
-
-            if (!handSocket.HasHeldBall && Time.unscaledTime >= nextHeldBallRetryTime)
-            {
-                nextHeldBallRetryTime = Time.unscaledTime + 2f;
-                if (!handSocket.ShowBallInActiveHand())
-                {
-                    Debug.LogWarning("Pet summon cannot show the held ball: "
-                        + handSocket.LastFailureReason, this);
-                }
-            }
-        }
-
         void OnDisable()
         {
+            if (queuedSwitchRoutine != null)
+            {
+                StopCoroutine(queuedSwitchRoutine);
+                queuedSwitchRoutine = null;
+            }
+            queuedSlotIndex = -1;
             if (sequenceRoutine != null)
             {
                 StopCoroutine(sequenceRoutine);
@@ -140,18 +105,10 @@ namespace Capstone.Game.PetSummon
             }
 
             sequenceRunning = false;
-            if (travellingBall != null)
-            {
-                Destroy(travellingBall);
-                travellingBall = null;
-            }
+            ClearSequenceBalls();
 
             releaseEffect?.Cancel();
             recallingPet?.SetRecallLocked(false);
-            if (recallingPet != null && recallingPet.IsSummoned)
-            {
-                handSocket?.DestroyHeldBall();
-            }
 
             recallingPet = null;
             UnlockPlayer();
@@ -172,22 +129,38 @@ namespace Capstone.Game.PetSummon
             releaseEffect = effect;
         }
 
-        public bool RequestSummonSlot(int slotIndex)
+        public bool RequestSummonSlot(int slotIndex) {
+            if (slotIndex < 0 || slotIndex >= 6 || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "summon:" + slotIndex)) return false;
+            return RequestSummonSlotCore(slotIndex);
+        }
+
+        bool RequestSummonSlotCore(int slotIndex)
         {
             ResolveReferences();
-            if (IsSequenceRunning)
-            {
-                return RejectSummon("Một thao tác gọi/thu pet khác đang chạy.");
-            }
-
             if (!TryGetPetInSlot(slotIndex, out PetController selectedPet))
             {
                 return RejectSummon($"Slot {slotIndex + 1} không có pet.");
             }
 
+            if (IsSequenceRunning)
+            {
+                if (State != SequenceState.Recall && pendingSlotIndex == slotIndex)
+                {
+                    queuedSlotIndex = -1;
+                    return true;
+                }
+                return QueuePetSwitch(slotIndex);
+            }
+
             if (selectedPet.IsSummoned)
             {
-                return RejectSummon($"{selectedPet.name} đã được gọi ra.");
+                return selectedPet == commandInput?.activePet
+                    || RejectSummon($"{selectedPet.name} đã được gọi ra.");
+            }
+
+            if (commandInput?.activePet != null && commandInput.activePet.IsSummoned)
+            {
+                return QueuePetSwitch(slotIndex);
             }
 
             if (movement == null)
@@ -195,17 +168,23 @@ namespace Capstone.Game.PetSummon
                 return RejectSummon("Player thiếu BasicPlayerMovement để chạy animation Throw.");
             }
 
-            if (handSocket == null
-                || (!handSocket.HasHeldBall && !handSocket.ShowBallInActiveHand()))
+            if (!movement.CanStartPetThrow)
             {
-                string socketReason = handSocket != null ? handSocket.LastFailureReason : "Thiếu PetSummonHandSocket.";
-                return RejectSummon("Không thể chuẩn bị bóng trong tay. " + socketReason);
+                return RejectSummon("Chỉ có thể ném bóng khi player đứng vững trên mặt đất.");
             }
 
+            // A direct new request supersedes any older queued switch.
+            queuedSlotIndex = -1;
             if (!TryResolveLanding(out LandingPlan landing, out string landingFailure))
             {
                 return RejectSummon("Không tìm được điểm đáp an toàn cách player tối thiểu "
                     + minimumThrowDistance.ToString("0.0") + " m. " + landingFailure);
+            }
+
+            if (handSocket == null || !handSocket.ShowBallInActiveHand())
+            {
+                string socketReason = handSocket != null ? handSocket.LastFailureReason : "Thiếu PetSummonHandSocket.";
+                return RejectSummon("Không thể chuẩn bị bóng trong tay. " + socketReason);
             }
 
             LastFailureReason = string.Empty;
@@ -215,7 +194,87 @@ namespace Capstone.Game.PetSummon
             return true;
         }
 
-        public bool RequestRecall()
+        bool QueuePetSwitch(int slotIndex)
+        {
+            queuedSlotIndex = slotIndex;
+            LastFailureReason = string.Empty;
+            if (queuedSwitchRoutine == null)
+                queuedSwitchRoutine = StartCoroutine(ProcessQueuedPetSwitch());
+            return true;
+        }
+
+        IEnumerator ProcessQueuedPetSwitch()
+        {
+            yield return null;
+            int recallAttempts = 0;
+            int lastTargetSlot = -1;
+            float nextLandingCheck = 0;
+            while (queuedSlotIndex >= 0)
+            {
+                if (queuedSlotIndex != lastTargetSlot)
+                {
+                    lastTargetSlot = queuedSlotIndex;
+                    recallAttempts = 0;
+                    nextLandingCheck = 0;
+                }
+                if (!TryGetPetInSlot(queuedSlotIndex, out PetController target))
+                {
+                    queuedSlotIndex = -1;
+                    break;
+                }
+                if (sequenceRunning) { yield return null; continue; }
+                if (target.IsSummoned)
+                {
+                    queuedSlotIndex = -1;
+                    break;
+                }
+
+                PetController current = commandInput != null ? commandInput.activePet : null;
+                if (current != null && current.IsSummoned)
+                {
+                    if (recallAttempts >= 2)
+                    {
+                        RejectSummon("Không thể hoàn tất animation thu pet cũ để đổi slot.");
+                        queuedSlotIndex = -1;
+                        break;
+                    }
+                    if (!RequestRecallCore()) { yield return null; continue; }
+                    recallAttempts++;
+                    yield return null;
+                    continue;
+                }
+                recallAttempts = 0;
+
+                if (movement == null || handSocket == null)
+                {
+                    RejectSummon("Không thể đổi pet vì thiếu animation player hoặc bóng trong tay.");
+                    queuedSlotIndex = -1;
+                    break;
+                }
+                if (!movement.CanStartPetThrow || Time.unscaledTime < nextLandingCheck)
+                {
+                    yield return null;
+                    continue;
+                }
+                // A blocked destination can remain blocked for seconds; avoid repeated multi-ray searches every frame.
+                nextLandingCheck = Time.unscaledTime + .2f;
+                if (!TryResolveLanding(out _, out _)) { yield return null; continue; }
+
+                int nextSlot = queuedSlotIndex;
+                queuedSlotIndex = -1;
+                if (RequestSummonSlotCore(nextSlot)) break;
+                queuedSlotIndex = nextSlot;
+                yield return new WaitForSecondsRealtime(0.35f);
+            }
+            queuedSwitchRoutine = null;
+        }
+
+        public bool RequestRecall() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "recall")) return false;
+            return RequestRecallCore();
+        }
+
+        bool RequestRecallCore()
         {
             ResolveReferences();
             if (IsSequenceRunning)
@@ -235,7 +294,15 @@ namespace Capstone.Game.PetSummon
                 return true;
             }
 
-            RestoreBallToHand();
+            var saveController = FindFirstObjectByType<Capstone.Game.SaveSystem.PlayerSaveController>();
+            if (saveController != null && commandInput != null
+                && saveController.CancelPendingSummonedRestore(commandInput.activePet))
+            {
+                ClearSequenceBalls();
+                return true;
+            }
+
+            ClearSequenceBalls();
             return false;
         }
 
@@ -256,10 +323,6 @@ namespace Capstone.Game.PetSummon
                 }
 
                 pet.SetRecallLocked(true);
-
-                Vector3 direction = pet.transform.position - transform.position;
-                direction.y = 0f;
-                FaceDirection(direction);
 
                 State = SequenceState.Recall;
                 float deadline = Time.unscaledTime + pickupStartTimeout;
@@ -333,6 +396,8 @@ namespace Capstone.Game.PetSummon
                     yield break;
                 }
 
+                handSocket.DestroyHeldBall();
+
                 while (Time.unscaledTime < pickupDeadline
                     && movement.IsScriptedActionPlaying
                     && movement.ActiveScriptedAction == BasicPlayerMovement.ScriptedAction.PickingUp)
@@ -348,14 +413,7 @@ namespace Capstone.Game.PetSummon
             {
                 releaseEffect?.Cancel();
                 pet?.SetRecallLocked(false);
-                if (!petWithdrawn && pet != null && pet.IsSummoned)
-                {
-                    handSocket?.DestroyHeldBall();
-                }
-                else if (petWithdrawn && handSocket != null && !handSocket.HasHeldBall)
-                {
-                    handSocket.ShowBallInActiveHand();
-                }
+                ClearSequenceBalls();
 
                 int completedSlot = pendingSlotIndex;
                 pendingSlotIndex = -1;
@@ -433,11 +491,43 @@ namespace Capstone.Game.PetSummon
                     yield break;
                 }
 
-                while (movement.IsScriptedActionPlaying
-                    && movement.ActiveScriptedAction == BasicPlayerMovement.ScriptedAction.Throw
-                    && movement.ScriptedActionNormalizedTime < releaseNormalizedTime)
+                float releaseNormalizedTime = 0f;
+                float clipDeadline = Time.unscaledTime + 0.25f;
+                while (!TryGetThrowReleaseTime(out releaseNormalizedTime)
+                    && Time.unscaledTime < clipDeadline)
                 {
                     yield return null;
+                }
+
+                if (releaseNormalizedTime <= 0f)
+                {
+                    failureReason = "Không tìm thấy clip Throw của model đang dùng để xác định khung thả bóng.";
+                    yield break;
+                }
+
+                while (movement.IsScriptedActionPlaying
+                    && movement.ActiveScriptedAction == BasicPlayerMovement.ScriptedAction.Throw
+                    && (!TryGetThrowPlaybackTime(out float throwProgress)
+                        || throwProgress < releaseNormalizedTime))
+                {
+                    yield return null;
+                }
+
+                if (!movement.IsGroundedForPetThrow
+                    || movement.ActiveScriptedAction != BasicPlayerMovement.ScriptedAction.Throw
+                    || !TryGetThrowPlaybackTime(out float releaseProgress)
+                    || releaseProgress < releaseNormalizedTime)
+                {
+                    failureReason = "Player rời mặt đất hoặc animation Throw kết thúc trước khi thả bóng.";
+                    yield break;
+                }
+
+                if (!TryFindGround(landing.GroundPoint, out RaycastHit currentGround)
+                    || currentGround.collider != landing.GroundCollider
+                    || HasTrajectoryObstacle(landing.GroundPoint, landing.GroundCollider))
+                {
+                    failureReason = "Đường bay hoặc điểm đáp đã bị chắn trước lúc bóng rời tay.";
+                    yield break;
                 }
 
                 travellingBall = handSocket.DetachHeldBall();
@@ -454,22 +544,23 @@ namespace Capstone.Game.PetSummon
                 }
 
                 float ballRadius = GetBallRadius(travellingBall);
-                if (!projectile.Launch(landing.GroundPoint, ballRadius, flightDuration,
+                if (!projectile.Launch(landing.GroundPoint, ballRadius, throwApexHeight,
                     bounceHeight, bounceHorizontalDamping, bounceDuration, groundLayers,
-                    landing.GroundCollider, transform))
+                    landing.GroundCollider, transform, ballMotionSpeed))
                 {
                     failureReason = projectile.FailureReason;
                     yield break;
                 }
 
                 State = SequenceState.Flight;
-                float motionDeadline = Time.time + flightDuration + bounceDuration + 1f;
+                float motionDeadline = Time.time + projectile.ExpectedFlightDuration
+                    + bounceDuration + 1f;
                 while (!projectile.IsFinished && Time.time < motionDeadline)
                 {
                     State = projectile.Phase == PetSummonBallProjectile.MotionPhase.Bounce
                         ? SequenceState.Bounce
                         : SequenceState.Flight;
-                    yield return new WaitForFixedUpdate();
+                    yield return WaitForBallPhysics;
                 }
 
                 if (!projectile.Succeeded)
@@ -495,42 +586,43 @@ namespace Capstone.Game.PetSummon
                     actualDirection = directionFromPlayer.normalized;
                 }
 
-                State = SequenceState.Hover;
-                projectile.FreezeForHover();
-                Vector3 hoverPosition = actualGroundPoint + Vector3.up * (ballRadius + hoverHeight);
-                yield return AnimateLinear(travellingBall.transform.position, hoverPosition,
-                    hoverRiseDuration);
-                LastHoverPosition = hoverPosition;
-
-                float hoverUntil = Time.time + hoverHoldDuration;
-                while (Time.time < hoverUntil)
+                if (!TryResolvePetSpawnPoint(actualGroundPoint, actualDirection,
+                    out Vector3 petSpawnPoint))
                 {
-                    SpinBall();
-                    yield return null;
+                    failureReason = "Phía trước bóng không có nền và khoảng trống an toàn cho pet.";
+                    yield break;
                 }
 
+                // The projectile freezes itself at the physical bounce apex.
+                LastHoverPosition = travellingBall.transform.position;
                 State = SequenceState.Release;
                 ReleaseReached?.Invoke(pendingSlotIndex, LastHoverPosition);
 
                 Action releasePet = () =>
                 {
-                    petReleased = ReleasePet(selectedPet, actualGroundPoint, actualDirection);
+                    petReleased = ReleasePet(selectedPet, petSpawnPoint, actualDirection);
                 };
 
                 if (releaseEffect != null)
                 {
                     yield return releaseEffect.PlaySummon(
                         selectedPet,
+                        petSpawnPoint,
                         travellingBall.transform,
-                        actualGroundPoint,
-                        releasePet);
+                        releasePet,
+                        actualGroundPoint);
                 }
                 else
                 {
                     releasePet();
+                    if (petReleased && selectedPet != null)
+                    {
+                        petReleased = selectedPet.CompleteSummonPresentation(petSpawnPoint);
+                    }
                 }
 
-                if (!petReleased)
+                if (!petReleased || selectedPet == null || !selectedPet.IsSummoned
+                    || selectedPet.IsSummonPresentationPending)
                 {
                     failureReason = "Pet không chuyển sang trạng thái summoned sau hiệu ứng thả.";
                     yield break;
@@ -548,15 +640,12 @@ namespace Capstone.Game.PetSummon
             }
             finally
             {
-                if (!succeeded && !petReleased)
+                if (!succeeded && selectedPet != null && selectedPet.IsSummonPresentationPending)
                 {
-                    RestoreBallToHand();
+                    selectedPet.Withdraw();
                 }
-                else if (!succeeded && travellingBall != null)
-                {
-                    Destroy(travellingBall);
-                    travellingBall = null;
-                }
+
+                ClearSequenceBalls();
 
                 int completedSlot = pendingSlotIndex;
                 pendingSlotIndex = -1;
@@ -575,22 +664,96 @@ namespace Capstone.Game.PetSummon
             }
         }
 
-        IEnumerator AnimateLinear(Vector3 start, Vector3 end, float duration)
+        bool TryGetThrowReleaseTime(out float normalizedTime)
         {
-            float elapsed = 0f;
-            while (elapsed < duration && travellingBall != null)
+            normalizedTime = 0f;
+            Animator animator = visualSwitcher != null ? visualSwitcher.ActiveVisualAnimator : null;
+            animator ??= movement != null ? movement.animator : null;
+            if (animator == null || animator.runtimeAnimatorController == null)
             {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / duration);
-                travellingBall.transform.position = Vector3.Lerp(start, end, Smooth01(t));
-                SpinBall();
-                yield return null;
+                return false;
             }
 
-            if (travellingBall != null)
+            AnimationClip throwClip = null;
+            AnimatorClipInfo[] playingClips = animator.IsInTransition(0)
+                ? animator.GetNextAnimatorClipInfo(0)
+                : animator.GetCurrentAnimatorClipInfo(0);
+            for (int i = 0; i < playingClips.Length; i++)
             {
-                travellingBall.transform.position = end;
+                AnimationClip clip = playingClips[i].clip;
+                if (clip != null && clip.name.IndexOf("Throw", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    throwClip = clip;
+                    break;
+                }
             }
+
+            if (throwClip == null && playingClips.Length > 0)
+            {
+                AnimatorStateInfo stateInfo = animator.IsInTransition(0)
+                    ? animator.GetNextAnimatorStateInfo(0)
+                    : animator.GetCurrentAnimatorStateInfo(0);
+                if (stateInfo.shortNameHash == Animator.StringToHash("Throw"))
+                {
+                    throwClip = playingClips[0].clip;
+                }
+            }
+
+            if (throwClip == null)
+            {
+                AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
+                for (int i = 0; i < clips.Length; i++)
+                {
+                    AnimationClip clip = clips[i];
+                    if (clip != null && clip.name.IndexOf("Throw", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        throwClip = clip;
+                        break;
+                    }
+                }
+            }
+
+            if (throwClip == null || throwClip.length <= 0f || throwClip.frameRate <= 0f)
+            {
+                return false;
+            }
+
+            var profile = visualSwitcher != null ? visualSwitcher.ActiveVisualProfile : null;
+            int activeReleaseFrame = profile != null && profile.throwReleaseFrame > 0
+                ? profile.throwReleaseFrame : releaseFrame;
+            normalizedTime = Mathf.Clamp01(activeReleaseFrame / (throwClip.length * throwClip.frameRate));
+            return normalizedTime > 0f && normalizedTime < 1f;
+        }
+
+        bool TryGetThrowPlaybackTime(out float normalizedTime)
+        {
+            normalizedTime = 0f;
+            Animator animator = visualSwitcher != null ? visualSwitcher.ActiveVisualAnimator : null;
+            animator ??= movement != null ? movement.animator : null;
+            if (animator == null)
+            {
+                return false;
+            }
+
+            int throwHash = Animator.StringToHash("Throw");
+            if (animator.IsInTransition(0))
+            {
+                AnimatorStateInfo next = animator.GetNextAnimatorStateInfo(0);
+                if (next.shortNameHash == throwHash)
+                {
+                    normalizedTime = next.normalizedTime;
+                    return true;
+                }
+            }
+
+            AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
+            if (current.shortNameHash != throwHash)
+            {
+                return false;
+            }
+
+            normalizedTime = current.normalizedTime;
+            return true;
         }
 
         bool TryResolveLanding(out LandingPlan landing, out string failureDetail)
@@ -599,15 +762,21 @@ namespace Capstone.Game.PetSummon
             failureDetail = string.Empty;
             Vector3 forward = GetAimDirection();
             float farDistance = Mathf.Max(minimumThrowDistance, throwDistance);
-            float middleDistance = Mathf.Lerp(farDistance, minimumThrowDistance, 0.5f);
-            float[] distances = { farDistance, middleDistance, minimumThrowDistance };
-            float[] angles = { 0f, -25f, 25f, -45f, 45f };
             float candidateSearchRadius = Mathf.Clamp(landingSearchRadius, 0.35f, 0.85f);
             RaycastHit ownerGroundHit = default;
-            bool hasOwnerGround = requireNavMesh
-                && TryFindGround(transform.position, out ownerGroundHit);
+            bool hasOwnerGround = TryFindGround(transform.position, out ownerGroundHit);
+            if (!hasOwnerGround)
+            {
+                failureDetail = "Player chưa đứng trên một mặt đất hợp lệ.";
+                return false;
+            }
+            if (Mathf.Abs(ownerGroundHit.point.y - transform.position.y) > 0.35f)
+            {
+                failureDetail = "Player đang ở trên không hoặc mép địa hình.";
+                return false;
+            }
             NavMeshHit ownerNavHit = default;
-            bool hasOwnerOnNavMesh = hasOwnerGround
+            bool hasOwnerOnNavMesh = requireNavMesh && hasOwnerGround
                 && NavMesh.SamplePosition(ownerGroundHit.point, out ownerNavHit,
                     Mathf.Max(1f, candidateSearchRadius), navMeshAreaMask);
             int missingGround = 0;
@@ -617,16 +786,26 @@ namespace Capstone.Game.PetSummon
             int heightMismatch = 0;
             int blockedPhysics = 0;
 
-            for (int distanceIndex = 0; distanceIndex < distances.Length; distanceIndex++)
+            for (int distanceIndex = 0; distanceIndex < LandingDistanceFactors.Length;
+                distanceIndex++)
             {
-                for (int angleIndex = 0; angleIndex < angles.Length; angleIndex++)
+                float candidateDistance = Mathf.Lerp(minimumThrowDistance, farDistance,
+                    LandingDistanceFactors[distanceIndex]);
+                for (int angleIndex = 0; angleIndex < LandingAngles.Length; angleIndex++)
                 {
-                    Vector3 direction = Quaternion.Euler(0f, angles[angleIndex], 0f) * forward;
-                    Vector3 candidate = transform.position + direction * distances[distanceIndex];
+                    Vector3 direction = Quaternion.Euler(0f, LandingAngles[angleIndex], 0f)
+                        * forward;
+                    Vector3 candidate = transform.position + direction * candidateDistance;
 
                     if (!TryFindGround(candidate, out RaycastHit groundHit))
                     {
                         missingGround++;
+                        continue;
+                    }
+
+                    if (Mathf.Abs(groundHit.point.y - ownerGroundHit.point.y) > 1.2f)
+                    {
+                        heightMismatch++;
                         continue;
                     }
 
@@ -663,7 +842,8 @@ namespace Capstone.Game.PetSummon
                     }
 
                     if (!HasLandingClearance(groundHit.point, groundHit.collider)
-                        || HasHorizontalObstacle(groundHit.point, groundHit.collider))
+                        || HasHorizontalObstacle(groundHit.point, groundHit.collider)
+                        || HasTrajectoryObstacle(groundHit.point, groundHit.collider))
                     {
                         blockedPhysics++;
                         continue;
@@ -681,7 +861,8 @@ namespace Capstone.Game.PetSummon
                     + $"đường NavMesh bị chặn {blockedNavMesh}, lệch độ cao {heightMismatch}, "
                     + $"vướng vật cản {blockedPhysics}."
                 : $"Kiểm tra 15 vị trí: thiếu collider nền {missingGround}, "
-                    + $"quá gần {tooNear}, vướng vật cản {blockedPhysics}.";
+                    + $"quá gần {tooNear}, lệch độ cao {heightMismatch}, "
+                    + $"vướng vật cản {blockedPhysics}.";
             return false;
         }
 
@@ -696,6 +877,7 @@ namespace Capstone.Game.PetSummon
             }
 
             if (!TryFindGround(impactPoint, out RaycastHit groundHit)
+                || Mathf.Abs(groundHit.point.y - impactPoint.y) > 0.2f
                 || !HasLandingClearance(groundHit.point, groundHit.collider))
             {
                 return false;
@@ -719,23 +901,91 @@ namespace Capstone.Game.PetSummon
             return true;
         }
 
+        bool TryResolvePetSpawnPoint(Vector3 ballGroundPoint, Vector3 direction,
+            out Vector3 spawnPoint)
+        {
+            spawnPoint = default;
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.001f)
+            {
+                return false;
+            }
+
+            Vector3 candidate = ballGroundPoint
+                + direction.normalized * Mathf.Max(0.1f, petSpawnAheadDistance);
+            if (!TryFindGround(candidate, out RaycastHit groundHit)
+                || Mathf.Abs(groundHit.point.y - ballGroundPoint.y) > 0.35f
+                || !HasPetSpawnClearance(groundHit.point, groundHit.collider)
+                || HasHorizontalObstacle(groundHit.point, groundHit.collider))
+            {
+                return false;
+            }
+
+            spawnPoint = groundHit.point;
+            return true;
+        }
+
+        bool HasPetSpawnClearance(Vector3 groundPoint, Collider groundCollider)
+        {
+            Vector3 lower = groundPoint + Vector3.up * 0.5f;
+            Vector3 upper = groundPoint + Vector3.up * 1.2f;
+            int count = Physics.OverlapCapsuleNonAlloc(lower, upper, 0.42f,
+                clearanceHits, obstacleLayers, QueryTriggerInteraction.Ignore);
+            if (count == clearanceHits.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                Collider candidate = clearanceHits[i];
+                if (candidate == null || candidate == groundCollider
+                    || candidate.transform.IsChildOf(transform)
+                    || (travellingBall != null
+                        && candidate.transform.IsChildOf(travellingBall.transform))
+                    || IsSupportingSurface(candidate, groundPoint))
+                {
+                    continue;
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
         bool TryFindGround(Vector3 point, out RaycastHit bestHit)
         {
             Vector3 origin = point + Vector3.up * groundProbeHeight;
             int hitCount = Physics.RaycastNonAlloc(origin, Vector3.down, groundHits,
                 groundProbeHeight + groundProbeDistance, groundLayers, QueryTriggerInteraction.Ignore);
+            if (hitCount == groundHits.Length)
+            {
+                bestHit = default;
+                return false;
+            }
+
             int bestIndex = -1;
-            float bestDistance = float.PositiveInfinity;
+            float bestHeightDelta = float.PositiveInfinity;
             for (int i = 0; i < hitCount; i++)
             {
                 RaycastHit hit = groundHits[i];
-                if (ShouldIgnore(hit.collider) || hit.normal.y < 0.45f || hit.distance >= bestDistance)
+                if (ShouldIgnore(hit.collider)
+                    || (hit.collider.attachedRigidbody != null
+                        && !hit.collider.attachedRigidbody.isKinematic)
+                    || hit.normal.y < 0.65f)
+                {
+                    continue;
+                }
+
+                float heightDelta = Mathf.Abs(hit.point.y - point.y);
+                if (heightDelta >= bestHeightDelta)
                 {
                     continue;
                 }
 
                 bestIndex = i;
-                bestDistance = hit.distance;
+                bestHeightDelta = heightDelta;
             }
 
             bestHit = bestIndex >= 0 ? groundHits[bestIndex] : default;
@@ -791,6 +1041,67 @@ namespace Capstone.Game.PetSummon
             return false;
         }
 
+        bool HasTrajectoryObstacle(Vector3 groundPoint, Collider groundCollider)
+        {
+            if (handSocket == null || !handSocket.TryGetLaunchPosition(out Vector3 start))
+            {
+                return true;
+            }
+
+            float radius = handSocket.HeldBall != null ? GetBallRadius(handSocket.HeldBall) : handSocket.BallRadius;
+            Vector3 target = groundPoint + Vector3.up * radius;
+            if (!PetSummonBallProjectile.TryCalculateArc(start, target, throwApexHeight,
+                out Vector3 velocity, out float duration, ballMotionSpeed))
+            {
+                return true;
+            }
+            Vector3 previous = start;
+            const int segments = 20;
+            for (int segment = 1; segment <= segments; segment++)
+            {
+                float time = duration * segment / segments;
+                float speed = Mathf.Max(0.1f, ballMotionSpeed);
+                Vector3 next = start + velocity * time
+                    + Physics.gravity * (0.5f * speed * speed * time * time);
+                Vector3 delta = next - previous;
+                float distance = delta.magnitude;
+                if (distance > 0.001f)
+                {
+                    int count = Physics.SphereCastNonAlloc(previous, obstacleProbeRadius,
+                        delta / distance, obstacleHits, distance, obstacleLayers,
+                        QueryTriggerInteraction.Ignore);
+                    if (count == obstacleHits.Length)
+                    {
+                        return true;
+                    }
+
+                    for (int i = 0; i < count; i++)
+                    {
+                        RaycastHit hit = obstacleHits[i];
+                        Collider collider = hit.collider;
+                        if (collider == null || ShouldIgnore(collider)
+                            || (handSocket.HeldBall != null
+                                && collider.transform.IsChildOf(handSocket.HeldBall.transform)))
+                        {
+                            continue;
+                        }
+
+                        if (collider == groundCollider && segment >= segments - 1
+                            && hit.normal.y >= 0.65f)
+                        {
+                            continue;
+                        }
+
+                        return true;
+                    }
+                }
+
+                previous = next;
+            }
+
+            return false;
+        }
+
         bool IsSupportingSurface(Collider candidate, Vector3 groundPoint)
         {
             float probeHeight = Mathf.Max(0.5f, groundProbeHeight);
@@ -828,13 +1139,18 @@ namespace Capstone.Game.PetSummon
             PetController previousPet = commandInput.activePet;
             if (previousPet != null && previousPet != pet && previousPet.IsSummoned)
             {
-                previousPet.Withdraw();
+                LastFailureReason = "Pet cũ phải hoàn tất animation thu trước khi gọi pet mới.";
+                return false;
             }
 
             pet.AssignOwner(transform);
+            if (!pet.TrySummonAt(spawnPoint, facingDirection, true))
+            {
+                return false;
+            }
+
             commandInput.SetActivePet(pet);
-            pet.SummonAt(spawnPoint, facingDirection);
-            return pet.IsSummoned;
+            return true;
         }
 
         bool ShouldIgnore(Collider candidate)
@@ -918,44 +1234,15 @@ namespace Capstone.Game.PetSummon
             visualSwitcher?.SetRuntimeSwitchLocked(false);
         }
 
-        void RestoreBallToHand()
+        void ClearSequenceBalls()
         {
-            if (handSocket == null)
-            {
-                if (travellingBall != null)
-                {
-                    Destroy(travellingBall);
-                    travellingBall = null;
-                }
-                return;
-            }
-
-            if (travellingBall != null && handSocket.AttachBallToActiveHand(travellingBall))
-            {
-                travellingBall = null;
-                return;
-            }
-
             if (travellingBall != null)
             {
+                travellingBall.SetActive(false);
                 Destroy(travellingBall);
                 travellingBall = null;
             }
-
-            if (!handSocket.HasHeldBall && !handSocket.ShowBallInActiveHand())
-            {
-                Debug.LogWarning("Pet summon cannot restore the held ball: "
-                    + handSocket.LastFailureReason, this);
-            }
-        }
-
-        void SpinBall()
-        {
-            if (travellingBall != null && spinDegreesPerSecond > 0f)
-            {
-                travellingBall.transform.Rotate(Vector3.right,
-                    spinDegreesPerSecond * Time.deltaTime, Space.Self);
-            }
+            handSocket?.DestroyHeldBall();
         }
 
         static float GetBallRadius(GameObject ball)
@@ -973,11 +1260,6 @@ namespace Capstone.Game.PetSummon
             }
 
             return Mathf.Clamp(bounds.extents.y, 0.04f, 0.3f);
-        }
-
-        static float Smooth01(float value)
-        {
-            return value * value * (3f - 2f * value);
         }
 
         readonly struct LandingPlan

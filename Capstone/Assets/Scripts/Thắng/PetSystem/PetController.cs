@@ -1,15 +1,25 @@
 ﻿using System.Collections.Generic;
 using Capstone.Game.HudSystem;
 using Capstone.Game.MapSystem;
+using Capstone.Game.SaveSystem;
 using UnityEngine;
 using UnityEngine.AI;
 
 [DisallowMultipleComponent]
 public class PetController : MonoBehaviour
 {
+    private static readonly float[] DirectAvoidanceAngles = { 35f, 70f, 105f, 140f };
+    private static readonly Vector3[] SafeSpotFallbackOffsets =
+    {
+        new Vector3(1.7f, 0f, -1.7f),
+        new Vector3(-2.2f, 0f, 0f),
+        new Vector3(2.2f, 0f, 0f),
+        new Vector3(0f, 0f, -2.2f)
+    };
+
     private enum PetState
     {
-        Underground,
+        Dormant,
         Summoning,
         FollowOwner,
         RoamAroundOwner,
@@ -21,14 +31,53 @@ public class PetController : MonoBehaviour
     [Header("References")]
     public Transform owner;
     public Animator animator;
+    public float SummonPresentationAnimationDuration => summonAnimationDuration;
+    public bool HasSummonPresentationAnimationFinished
+    {
+        get
+        {
+            if (!summonPresentationAnimationStarted) return false;
+            if (!summonCastActive) return Time.time - summonStartedAt >= summonAnimationDuration;
+            if (animator == null) return true;
+            var info = animator.GetCurrentAnimatorStateInfo(0);
+            bool inCast = info.shortNameHash == Animator.StringToHash("Cast Spell");
+            return !animator.IsInTransition(0) && (inCast && info.normalizedTime >= .98f
+                || !inCast && Time.time - summonStartedAt >= summonAnimationDuration);
+        }
+    }
+    public void BindVisualAnimator(Animator nextAnimator)
+    {
+        if (nextAnimator == null) return;
+        RestoreSummonAnimatorSpeed();
+        animator = nextAnimator;
+        animatorInitiallyEnabled = nextAnimator.enabled;
+        ConfigureAnimator();
+    }
+
+    public bool ShouldShowVisualRenderer(Renderer renderer)
+    {
+        if (renderer == null || !IsSummoned) return false;
+        var visual = GetComponentInChildren<Capstone.Game.HudSystem.PetEvolutionVisualController>(true);
+        return (visual == null || visual.IsCurrentVisualRenderer(renderer))
+            && rendererEnabledStates.TryGetValue(renderer, out bool allowed) && allowed;
+    }
+
+    public void SetVisualRendererEnabled(Renderer renderer, bool enabled)
+    {
+        if (renderer == null) return;
+        rendererEnabledStates[renderer] = enabled;
+        renderer.enabled = enabled && IsSummoned;
+    }
+
+    public void RefreshVisualPresence() => SetWorldPresence(IsSummoned);
     public NavMeshAgent agent;
 
     [Header("Follow")]
     public Vector3 followOffset = new Vector3(-1.4f, 0f, -1.6f);
-    public float followDistance = 2.2f;
-    public float followResumeDistance = 3.1f;
-    public float leashDistance = 12f;
-    public float teleportDistance = 35f;
+    public float followDistance = 4f;
+    public float followResumeDistance = 7f;
+    public float leashDistance = 10f;
+    public float teleportDistance = 24f;
 
     [Header("Movement")]
     public float followSpeed = 4.2f;
@@ -74,28 +123,23 @@ public class PetController : MonoBehaviour
     public float attackStateTime = 0.75f;
 
     [Header("Summon")]
-    public bool startUnderground = true;
     public bool useSelfInput = false;
     public KeyCode summonKey = KeyCode.Alpha1;
-    public Vector3 summonOffset = new Vector3(0f, 0f, 2.4f);
     public float spawnDuration = 1.1f;
-    public bool keepUndergroundNearOwner = true;
     public bool summonOnCommand = false;
-    [Min(0.05f)] public float undergroundFollowThreshold = 0.25f;
 
     [Header("Roam")]
     public bool roamAroundOwner = true;
-    public float roamMinRadius = 1.8f;
-    public float roamMaxRadius = 4.2f;
-    public float roamIdleTimeMin = 0.75f;
-    public float roamIdleTimeMax = 2.2f;
-    public float roamWalkSpeed = 2.1f;
+    public float roamMinRadius = 2.2f;
+    public float roamMaxRadius = 5f;
+    public float roamIdleTimeMin = 1f;
+    public float roamIdleTimeMax = 3f;
+    public float roamWalkSpeed = 2f;
     public float roamRunSpeed = 4.6f;
-    public float roamRunChance = 0.3f;
+    public float roamRunChance = 0.12f;
     public float roamPointTolerance = 0.45f;
 
     [Header("Animator States")]
-    public string[] undergroundStates = { "Underground", "Idle" };
     public string[] spawnStates = { "Spawn", "Idle" };
     public string[] idleStates = { "Idle", "Idle 1", "Idle Happy" };
     public string[] moveStates = { "Move", "Fly Forward In Place", "Run Forward In Place", "Walk Forward In Place", "Run Forward", "Walk Forward" };
@@ -115,16 +159,20 @@ public class PetController : MonoBehaviour
     private readonly RaycastHit[] groundHits = new RaycastHit[16];
     private readonly RaycastHit[] directObstacleHits = new RaycastHit[24];
 
-    private PetState state = PetState.FollowOwner;
+    private PetState state = PetState.Dormant;
     private DummyEnemy target;
     private MapMarker mapMarker;
     private PetLevelUpService levelUpService;
     private Vector3 commandedPoint;
     private Vector3 attackDestination;
     private Vector3 roamDestination;
+    private Vector3 lastRoamDirection;
     private string currentAnimatorState;
     private float attackStartedAt;
     private float summonStartedAt;
+    private float summonAnimationDuration;
+    private float summonAnimatorSpeedBefore;
+    private bool summonAnimatorSpeedOverridden;
     private float nextRoamAt;
     private float activeRoamSpeed;
     private float nextAttackAt;
@@ -141,15 +189,30 @@ public class PetController : MonoBehaviour
     private bool hasPendingHit;
     private bool hasPendingSkillAnimation;
     private bool recallLocked;
+    private DummyEnemy recallFacingEnemy;
+    private bool recallWasInCombat;
+    private bool summonRevealPending;
+    private bool summonCastActive;
+    private bool summonPresentationAnimationStarted;
+    private bool warnedMissingCastSpell;
     private bool navDestinationInitialized;
-    private bool undergroundSpotInitialized;
+    private readonly Dictionary<Renderer, bool> rendererEnabledStates = new Dictionary<Renderer, bool>();
+    private readonly Dictionary<Collider, bool> colliderEnabledStates = new Dictionary<Collider, bool>();
+    private readonly Collider[] presenceHits = new Collider[24];
+    private bool animatorInitiallyEnabled;
+    private bool markerInitiallyEnabled;
     private Vector3 lastNavDestination;
-    private Vector3 lastUndergroundSpot;
+    private float directAvoidanceUntil;
+    private float directAvoidanceAngle;
+    private float directStuckSince;
     private float nextNavPathRefreshAt;
     private float nextNavMeshRetryAt;
     private int directAvoidanceSide = 1;
+    private int roamOrbitSide = 1;
+    private int roamStepsInDirection;
 
     public bool IsSummoned { get; private set; }
+    public bool IsSummonPresentationPending => summonRevealPending;
 
     public bool CanReceiveCommands
     {
@@ -181,11 +244,19 @@ public class PetController : MonoBehaviour
 
         ConfigureAnimator();
         ConfigureAgent();
+        animatorInitiallyEnabled = animator != null && animator.enabled;
+        CacheWorldPresence();
+        SetWorldPresence(false);
     }
 
     private void OnEnable()
     {
         EnsureMapMarker();
+        markerInitiallyEnabled = mapMarker != null && mapMarker.enabled;
+        if (!IsSummoned && mapMarker != null)
+        {
+            mapMarker.enabled = false;
+        }
     }
 
     private void Start()
@@ -199,15 +270,11 @@ public class PetController : MonoBehaviour
             }
         }
 
-        if (startUnderground)
+        // A pet instantiated while loading a save can be restored before its first
+        // Start frame. Do not hide it again after that restore has succeeded.
+        if (!IsSummoned)
         {
-            EnterUnderground();
-        }
-        else
-        {
-            IsSummoned = true;
-            state = PetState.FollowOwner;
-            PlayAnimatorState(idleStates, locomotionFade, true);
+            EnterDormant();
         }
     }
 
@@ -224,14 +291,13 @@ public class PetController : MonoBehaviour
 
         if (!IsSummoned)
         {
-            UpdateUnderground();
             return;
         }
 
         if (recallLocked)
         {
             StopMovement(false);
-            UpdateAnimator(0f);
+            UpdateRecallFacing();
             return;
         }
 
@@ -288,7 +354,6 @@ public class PetController : MonoBehaviour
     public void AssignOwner(Transform newOwner)
     {
         owner = newOwner;
-        undergroundSpotInitialized = false;
         if (state == PetState.FollowOwner)
         {
             MoveToFollowSpot();
@@ -301,7 +366,7 @@ public class PetController : MonoBehaviour
         {
             if (summonOnCommand)
             {
-                BeginSummon();
+                Summon();
             }
 
             return;
@@ -320,7 +385,7 @@ public class PetController : MonoBehaviour
         {
             if (summonOnCommand)
             {
-                BeginSummon();
+                Summon();
             }
 
             return;
@@ -334,6 +399,7 @@ public class PetController : MonoBehaviour
 
         target = enemy;
         hasRoamDestination = false;
+        directStuckSince = 0f;
         state = PetState.ChaseTarget;
         nextAttackRepathAt = 0f;
         if (snapFaceTargetOnCommand)
@@ -353,6 +419,7 @@ public class PetController : MonoBehaviour
 
         target = null;
         hasRoamDestination = false;
+        directStuckSince = 0f;
         state = PetState.FollowOwner;
         MoveToFollowSpot();
     }
@@ -372,55 +439,194 @@ public class PetController : MonoBehaviour
             return;
         }
 
-        BeginSummon();
+        if (owner == null || !TryFindSafeSpotNearOwner(out Vector3 spot)
+            || !TrySummonAt(spot, owner.forward))
+        {
+            Debug.LogWarning("Pet summon failed: không có mặt đất an toàn gần player.", this);
+        }
     }
 
     public void SummonAt(Vector3 worldPosition, Vector3 facingDirection)
     {
-        BeginSummon(false);
-
-        float searchRadius = Mathf.Max(2.5f, minimumNavigationRadius * 3f);
-        if (!useNavMeshWhenAvailable || !TryPlaceAgentOnNavMesh(worldPosition, searchRadius))
+        if (!TrySummonAt(worldPosition, facingDirection))
         {
-            if (agent != null && agent.enabled)
-            {
-                agent.enabled = false;
-            }
+            Debug.LogWarning("Pet summon failed: vị trí spawn không có nền an toàn.", this);
+        }
+    }
 
-            transform.position = SnapToGround(worldPosition);
+    public bool TrySummonAt(Vector3 worldPosition, Vector3 facingDirection)
+    {
+        return TrySummonAt(worldPosition, facingDirection, false);
+    }
+
+    public bool TrySummonAt(Vector3 worldPosition, Vector3 facingDirection, bool deferSpawnAnimation)
+    {
+        if (!TryPlaceForSummon(worldPosition))
+        {
+            return false;
         }
 
+        IsSummoned = true;
+        SetWorldPresence(true);
+        BeginSummon(deferSpawnAnimation);
         if (facingDirection.sqrMagnitude > 0.001f)
         {
             FaceDirection(facingDirection);
         }
+
+        return true;
     }
 
-    public void HideUnderground()
+    public void SetSummonPresentationPosition(Vector3 position)
     {
-        EnterUnderground();
-    }
-
-    public void Withdraw()
-    {
-        if (!IsSummoned && state == PetState.Underground)
+        if (!IsSummoned || !summonRevealPending)
         {
             return;
         }
 
-        EnterUnderground();
+        DisableNavigationAgent();
+        SetPresentationColliders(false);
+        transform.position = position;
+    }
+
+    public bool CompleteSummonPresentation(Vector3 groundPosition)
+    {
+        if (!IsSummoned || !summonRevealPending || !TryPlaceForSummon(groundPosition))
+        {
+            return false;
+        }
+
+        StartSummonPresentationAnimation();
+        SetPresentationColliders(true);
+        summonRevealPending = false;
+        return true;
+    }
+
+    public void StartSummonPresentationAnimation(float presentationSpeed = 1f)
+    {
+        if (!IsSummoned || !summonRevealPending || summonPresentationAnimationStarted)
+        {
+            return;
+        }
+
+        summonPresentationAnimationStarted = true;
+        summonStartedAt = Time.time;
+        float speed = Mathf.Max(0.1f, presentationSpeed);
+        if (animator != null)
+        {
+            summonAnimatorSpeedBefore = animator.speed;
+            summonAnimatorSpeedOverridden = true;
+            animator.speed = speed;
+        }
+        string[] castState = { "Cast Spell" };
+        if (HasAnimatorState(castState) && PlayAnimatorState(castState, attackFade, true))
+        {
+            summonAnimationDuration = FindAnimationDuration("Cast Spell", spawnDuration) / speed;
+            summonCastActive = true;
+        }
+        else
+        {
+            if (!warnedMissingCastSpell)
+            {
+                Debug.LogWarning("Pet has no Cast Spell animation; using its spawn animation.", this);
+                warnedMissingCastSpell = true;
+            }
+            PlayAnimatorState(spawnStates, attackFade, true);
+            summonAnimationDuration = spawnDuration / speed;
+            summonCastActive = false;
+        }
+    }
+
+    public void SetRecallPresentation(bool active)
+    {
+        if (active)
+        {
+            DisableNavigationAgent();
+        }
+
+        SetPresentationColliders(!active && IsSummoned);
+    }
+
+    private void SetPresentationColliders(bool visible)
+    {
+        foreach (KeyValuePair<Collider, bool> entry in colliderEnabledStates)
+        {
+            if (entry.Key != null)
+            {
+                entry.Key.enabled = visible && entry.Value;
+            }
+        }
+    }
+
+    private float FindAnimationDuration(string clipName, float fallback)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null)
+        {
+            return fallback;
+        }
+
+        foreach (AnimationClip clip in animator.runtimeAnimatorController.animationClips)
+        {
+            if (clip != null && clip.name.IndexOf(clipName, System.StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return Mathf.Max(0.05f, clip.length);
+            }
+        }
+
+        return fallback;
+    }
+
+    public bool TryRestoreSummonedNearOwner()
+    {
+        if (!TryFindSafeSpotNearOwner(out Vector3 spot, 2.5f, true) || !TryPlaceForSummon(spot))
+        {
+            EnterDormant();
+            return false;
+        }
+
+        IsSummoned = true;
+        SetWorldPresence(true);
+        recallLocked = false;
+        target = null;
+        hasRoamDestination = false;
+        directStuckSince = 0f;
+        state = roamAroundOwner ? PetState.RoamAroundOwner : PetState.FollowOwner;
+        ScheduleNextRoam(0.5f);
+        PlayAnimatorState(idleStates, locomotionFade, true);
+        return true;
+    }
+
+    public void Withdraw()
+    {
+        if (!IsSummoned && state == PetState.Dormant)
+        {
+            return;
+        }
+
+        EnterDormant();
     }
 
     public void SetRecallLocked(bool locked)
     {
+        if (!locked)
+        {
+            recallFacingEnemy = null;
+            recallWasInCombat = false;
+            hasRecallVisualCenter = false;
+            recallFacingTargetLost = false;
+        }
         if (recallLocked == locked)
         {
             return;
         }
 
-        recallLocked = locked;
         if (locked)
         {
+            hasRecallVisualCenter = false;
+            recallFacingTargetLost = false;
+            recallWasInCombat = HasCombatTarget;
+            recallFacingEnemy = recallWasInCombat ? target : null;
+            recallLocked = true;
             target = null;
             hasRoamDestination = false;
             hasPendingHit = false;
@@ -429,15 +635,43 @@ public class PetController : MonoBehaviour
             skillAnimationUntil = 0f;
             StopMovement(false);
             SetAnimatorBool(attackingParameter, false);
-            PlayAnimatorState(idleStates, locomotionFade, true);
+            UpdateRecallFacing();
             return;
         }
+
+        recallLocked = false;
+        recallFacingEnemy = null;
+        recallWasInCombat = false;
 
         if (IsSummoned)
         {
             state = roamAroundOwner ? PetState.RoamAroundOwner : PetState.FollowOwner;
             ScheduleNextRoam(0.1f);
         }
+    }
+
+    private void UpdateRecallFacing()
+    {
+        Vector3 origin = hasRecallVisualCenter ? recallVisualCenter : transform.position;
+        if (recallWasInCombat)
+        {
+            if (!recallFacingTargetLost && recallFacingEnemy != null && recallFacingEnemy.IsAlive)
+                FaceDirection(recallFacingEnemy.TargetPosition - origin);
+            else recallFacingTargetLost = true;
+            // A lost combat target must not turn the pet back toward its owner.
+        }
+        else if (owner != null) FaceDirection(owner.position - origin);
+    }
+
+    private Vector3 recallVisualCenter;
+    private bool hasRecallVisualCenter;
+    private bool recallFacingTargetLost;
+
+    public void SetRecallVisualCenter(Vector3 center)
+    {
+        if (!recallLocked) return;
+        recallVisualCenter = center;
+        hasRecallVisualCenter = true;
     }
 
     public bool PlaySkillAnimation(string[] candidates, float duration, float fade, bool stopMovement, bool faceTarget)
@@ -499,7 +733,7 @@ public class PetController : MonoBehaviour
     {
         if (!IsSummoned)
         {
-            BeginSummon();
+            Summon();
             return;
         }
 
@@ -511,8 +745,12 @@ public class PetController : MonoBehaviour
         ReturnToOwner();
     }
 
-    private void EnterUnderground()
+    private void EnterDormant()
     {
+        RestoreSummonAnimatorSpeed();
+        summonRevealPending = false;
+        summonCastActive = false;
+        summonPresentationAnimationStarted = false;
         recallLocked = false;
         IsSummoned = false;
         target = null;
@@ -520,101 +758,242 @@ public class PetController : MonoBehaviour
         hasPendingSkillAnimation = false;
         pendingSkillCandidates = null;
         skillAnimationUntil = 0f;
-        state = PetState.Underground;
-        undergroundSpotInitialized = false;
+        state = PetState.Dormant;
+        hasRoamDestination = false;
+        lastRoamDirection = Vector3.zero;
+        directStuckSince = 0f;
         StopMovement(false);
-        MoveUndergroundNearOwner();
-        PlayAnimatorState(undergroundStates, locomotionFade, true);
+        SetWorldPresence(false);
     }
 
-    private void UpdateUnderground()
+    private bool TryPlaceForSummon(Vector3 requestedPosition)
     {
-        StopMovement(false);
-        MoveUndergroundNearOwner();
-        PlayAnimatorState(undergroundStates, locomotionFade, false);
+        if (!TryFindWalkableGround(requestedPosition, 0.65f, out Vector3 groundPoint)
+            || !HasRoomAt(groundPoint))
+        {
+            return false;
+        }
+
+        if (useNavMeshWhenAvailable && TryPlaceAgentOnNavMesh(groundPoint, 0.75f))
+        {
+            return true;
+        }
+
+        DisableNavigationAgent();
+
+        transform.position = groundPoint;
+        return true;
     }
 
-    private void MoveUndergroundNearOwner()
+    private bool TryFindSafeSpotNearOwner(out Vector3 spot, float ownerGroundTolerance = 1f,
+        bool expandedSearch = false)
     {
-        if (!keepUndergroundNearOwner || owner == null)
+        spot = default;
+        if (owner == null || !TryFindWalkableGround(owner.position, ownerGroundTolerance,
+                out Vector3 ownerGround))
         {
-            return;
+            return false;
         }
 
-        Vector3 desiredSpot = owner.TransformPoint(summonOffset);
-        float threshold = Mathf.Max(0.05f, undergroundFollowThreshold);
-        if (undergroundSpotInitialized
-            && (desiredSpot - lastUndergroundSpot).sqrMagnitude <= threshold * threshold)
+        if (TryResolveSafeSpot(followOffset, ownerGround.y, out spot))
         {
-            return;
+            return true;
         }
 
-        lastUndergroundSpot = desiredSpot;
-        undergroundSpotInitialized = true;
-
-        MoveToSummonSpot();
-    }
-
-    private void MoveToSummonSpot()
-    {
-        if (owner == null)
+        for (int i = 0; i < SafeSpotFallbackOffsets.Length; i++)
         {
-            return;
-        }
-
-        Vector3 spot = owner.TransformPoint(summonOffset);
-        spot = SnapToGround(spot);
-
-        if (agent != null && agent.enabled)
-        {
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(spot, out hit, 3f, NavMesh.AllAreas))
+            if (TryResolveSafeSpot(SafeSpotFallbackOffsets[i], ownerGround.y, out spot))
             {
-                agent.Warp(hit.position);
-            }
-            else
-            {
-                transform.position = spot;
+                return true;
             }
         }
-        else
+
+        if (expandedSearch)
         {
-            transform.position = spot;
+            // A fixed offset can land inside scenery when a save first loads.
+            // Search nearby walkable ground rather than hiding the pet forever.
+            for (int ring = 0; ring < 2; ring++)
+            {
+                float radius = ring == 0 ? 2.6f : 4f;
+                for (int step = 0; step < 12; step++)
+                {
+                    float angle = step * Mathf.PI / 6f;
+                    Vector3 offset = new Vector3(Mathf.Sin(angle) * radius, 0f,
+                        Mathf.Cos(angle) * radius);
+                    if (TryResolveSafeSpot(offset, ownerGround.y, out spot)) return true;
+                }
+            }
         }
 
-        FaceDirection(owner.forward);
+        return false;
     }
 
-    private void BeginSummon(bool moveToOwnerSpot = true)
+    private bool TryResolveSafeSpot(Vector3 localOffset, float groundHeight, out Vector3 spot)
+    {
+        Vector3 candidate = owner.TransformPoint(localOffset);
+        candidate.y = groundHeight;
+        if (TryFindWalkableGround(candidate, 0.6f, out spot) && HasRoomAt(spot))
+        {
+            return true;
+        }
+
+        spot = default;
+        return false;
+    }
+
+    private bool HasRoomAt(Vector3 point)
+    {
+        int count = Physics.OverlapCapsuleNonAlloc(point + Vector3.up * 0.45f,
+            point + Vector3.up * 1.2f, Mathf.Max(0.25f, directBodyRadius),
+            presenceHits, directObstacleMask, QueryTriggerInteraction.Ignore);
+        if (count == presenceHits.Length)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            Collider candidate = presenceHits[i];
+            if (candidate != null && !IsIgnoredDirectObstacle(candidate)
+                && !IsSupportingGround(candidate, point)
+                && candidate.bounds.max.y > point.y + directMaxStepHeight)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool IsSupportingGround(Collider collider, Vector3 point)
+    {
+        Ray ray = new Ray(point + Vector3.up, Vector3.down);
+        return collider.Raycast(ray, out RaycastHit hit, 1.5f)
+            && hit.normal.y >= directMinGroundNormal
+            && Mathf.Abs(hit.point.y - point.y) <= 0.2f;
+    }
+
+    private void CacheWorldPresence()
+    {
+        foreach (Renderer renderer in GetComponentsInChildren<Renderer>(true))
+        {
+            if (renderer != null && renderer.GetComponentInParent<AAMAP.MapIcon>(true) == null
+                && !rendererEnabledStates.ContainsKey(renderer))
+            {
+                rendererEnabledStates.Add(renderer, renderer.enabled);
+            }
+        }
+
+        foreach (Collider collider in GetComponentsInChildren<Collider>(true))
+        {
+            if (collider != null && !colliderEnabledStates.ContainsKey(collider))
+            {
+                colliderEnabledStates.Add(collider, collider.enabled);
+            }
+        }
+
+    }
+
+    private void SetWorldPresence(bool visible)
+    {
+        CacheWorldPresence();
+        foreach (KeyValuePair<Renderer, bool> entry in rendererEnabledStates)
+        {
+            if (entry.Key != null)
+            {
+                entry.Key.enabled = visible && entry.Value;
+            }
+        }
+
+        foreach (KeyValuePair<Collider, bool> entry in colliderEnabledStates)
+        {
+            if (entry.Key != null)
+            {
+                entry.Key.enabled = visible && entry.Value;
+            }
+        }
+
+        if (animator != null)
+        {
+            animator.enabled = visible && animatorInitiallyEnabled;
+        }
+
+        if (mapMarker != null)
+        {
+            mapMarker.enabled = visible && markerInitiallyEnabled;
+        }
+
+        if (!visible)
+        {
+            DisableNavigationAgent();
+        }
+    }
+
+    private void BeginSummon(bool deferSpawnAnimation)
     {
         if (state == PetState.Summoning)
         {
             return;
         }
 
+        RestoreSummonAnimatorSpeed();
         recallLocked = false;
         nextNavMeshRetryAt = 0f;
-        IsSummoned = true;
         target = null;
         hasRoamDestination = false;
+        directStuckSince = 0f;
+        IsSummoned = true;
         state = PetState.Summoning;
         summonStartedAt = Time.time;
+        summonRevealPending = deferSpawnAnimation;
+        summonCastActive = false;
+        summonPresentationAnimationStarted = false;
+        summonAnimationDuration = spawnDuration;
         StopMovement(false);
-        if (moveToOwnerSpot)
+        SetAnimatorFloat(speedParameter, 0f);
+        SetAnimatorBool(movingParameter, false);
+        if (!deferSpawnAnimation)
         {
-            MoveToSummonSpot();
+            PlayAnimatorState(spawnStates, attackFade, true);
         }
-        PlayAnimatorState(spawnStates, attackFade, true);
     }
 
     private void UpdateSummoning()
     {
         StopMovement(false);
-        if (Time.time - summonStartedAt < spawnDuration)
+        if (summonRevealPending)
         {
             return;
         }
 
+        if (summonCastActive)
+        {
+            AnimatorStateInfo castState = animator != null
+                ? animator.GetCurrentAnimatorStateInfo(0) : default;
+            bool castFinished = animator != null && !animator.IsInTransition(0)
+                && castState.shortNameHash == Animator.StringToHash("Cast Spell")
+                && castState.normalizedTime >= 0.98f;
+            bool castExitedAfterDuration = animator != null && !animator.IsInTransition(0)
+                && castState.shortNameHash != Animator.StringToHash("Cast Spell")
+                && Time.time - summonStartedAt >= summonAnimationDuration;
+            if (!castFinished && !castExitedAfterDuration && Time.time - summonStartedAt
+                < Mathf.Max(3f, summonAnimationDuration + 0.5f))
+            {
+                return;
+            }
+
+            if (!castFinished && !castExitedAfterDuration)
+            {
+                Debug.LogWarning("Cast Spell did not finish before the summon animation timeout.", this);
+            }
+        }
+        else if (Time.time - summonStartedAt < summonAnimationDuration)
+        {
+            return;
+        }
+
+        summonCastActive = false;
+        RestoreSummonAnimatorSpeed();
         state = roamAroundOwner ? PetState.RoamAroundOwner : PetState.FollowOwner;
         ScheduleNextRoam(0.25f);
         PlayAnimatorState(idleStates, locomotionFade, true);
@@ -624,13 +1003,28 @@ public class PetController : MonoBehaviour
         }
     }
 
+    private void RestoreSummonAnimatorSpeed()
+    {
+        if (!summonAnimatorSpeedOverridden) return;
+        if (animator != null) animator.speed = summonAnimatorSpeedBefore;
+        summonAnimatorSpeedOverridden = false;
+    }
+
+    private void OnDisable()
+    {
+        RestoreSummonAnimatorSpeed();
+    }
+
     private void UpdateFollow()
     {
         float ownerDistance = FlatDistance(transform.position, owner.position);
-        if (ownerDistance > teleportDistance)
+        if (ownerDistance > teleportDistance
+            || Mathf.Abs(transform.position.y - owner.position.y) > 3f)
         {
-            TeleportNearOwner();
-            return;
+            if (TeleportNearOwner())
+            {
+                return;
+            }
         }
 
         if (ownerDistance > leashDistance || ownerDistance > followResumeDistance)
@@ -659,10 +1053,13 @@ public class PetController : MonoBehaviour
         }
 
         float ownerDistance = FlatDistance(transform.position, owner.position);
-        if (ownerDistance > teleportDistance)
+        if (ownerDistance > teleportDistance
+            || Mathf.Abs(transform.position.y - owner.position.y) > 3f)
         {
-            TeleportNearOwner();
-            return;
+            if (TeleportNearOwner())
+            {
+                return;
+            }
         }
 
         if (ownerDistance > leashDistance || ownerDistance > followResumeDistance)
@@ -699,37 +1096,65 @@ public class PetController : MonoBehaviour
 
     private void PickNextRoamPoint()
     {
-        if (owner == null)
+        if (owner == null || !TryFindWalkableGround(owner.position, 1f,
+                out Vector3 ownerGround))
         {
+            ScheduleNextRoam();
             return;
         }
 
-        Vector2 random = Random.insideUnitCircle;
-        if (random.sqrMagnitude < 0.001f)
+        for (int attempt = 0; attempt < 8; attempt++)
         {
-            random = Vector2.up;
-        }
+            Vector3 direction;
+            if (lastRoamDirection.sqrMagnitude > 0.001f)
+            {
+                float turn = Random.Range(35f, 85f) * roamOrbitSide;
+                direction = Quaternion.Euler(0f, turn, 0f) * lastRoamDirection;
+            }
+            else
+            {
+                Vector2 random = Random.insideUnitCircle.normalized;
+                direction = new Vector3(random.x, 0f, random.y);
+            }
 
-        float radius = Random.Range(roamMinRadius, Mathf.Max(roamMinRadius, roamMaxRadius));
-        Vector3 desired = owner.position + new Vector3(random.normalized.x, 0f, random.normalized.y) * radius;
-        desired = SnapToGround(desired);
+            if (direction.sqrMagnitude < 0.001f)
+            {
+                continue;
+            }
 
-        if (agent != null && agent.enabled)
-        {
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(desired, out hit, 2.5f, NavMesh.AllAreas))
+            float radius = Random.Range(roamMinRadius, Mathf.Max(roamMinRadius, roamMaxRadius));
+            Vector3 desired = owner.position + direction.normalized * radius;
+            desired.y = ownerGround.y;
+            if (!TryFindWalkableGround(desired, 0.65f, out desired)
+                || !HasRoomAt(desired))
+            {
+                continue;
+            }
+
+            if (useNavMeshWhenAvailable && agent != null && agent.enabled
+                && NavMesh.SamplePosition(desired, out NavMeshHit hit, 2.5f,
+                    NavMesh.AllAreas))
             {
                 desired = hit.position;
             }
+
+            roamDestination = desired;
+            activeRoamSpeed = Random.value < roamRunChance ? roamRunSpeed : roamWalkSpeed;
+            hasRoamDestination = FlatDistance(transform.position, roamDestination) > roamPointTolerance;
+            if (hasRoamDestination)
+            {
+                lastRoamDirection = direction.normalized;
+                if (++roamStepsInDirection >= 3
+                    && (roamStepsInDirection >= 6 || Random.value < 0.35f))
+                {
+                    roamOrbitSide = -roamOrbitSide;
+                    roamStepsInDirection = 0;
+                }
+                return;
+            }
         }
 
-        roamDestination = desired;
-        activeRoamSpeed = Random.value < roamRunChance ? roamRunSpeed : roamWalkSpeed;
-        hasRoamDestination = FlatDistance(transform.position, roamDestination) > roamPointTolerance;
-        if (!hasRoamDestination)
-        {
-            ScheduleNextRoam();
-        }
+        ScheduleNextRoam();
     }
 
     private void ScheduleNextRoam(float initialDelay = -1f)
@@ -897,6 +1322,7 @@ public class PetController : MonoBehaviour
         {
             if (!TryWarpToNavMesh(transform.position, 2.5f))
             {
+                DisableNavigationAgent();
                 return false;
             }
         }
@@ -924,8 +1350,8 @@ public class PetController : MonoBehaviour
         {
             if (!agent.SetDestination(navDestination))
             {
-                StopMovement();
-                return true;
+                DisableNavigationAgent();
+                return false;
             }
             lastNavDestination = navDestination;
             navDestinationInitialized = true;
@@ -938,10 +1364,20 @@ public class PetController : MonoBehaviour
 
     private void AwardDefeatExperience(DummyEnemy defeatedEnemy)
     {
-        if (defeatedEnemy == null || defeatedEnemy.ExperienceReward <= 0)
+        if (defeatedEnemy == null)
         {
             return;
         }
+
+        PetCollectionMetadata metadata = GetComponentInChildren<PetCollectionMetadata>(true);
+        if (metadata == null) metadata = gameObject.AddComponent<PetCollectionMetadata>();
+        bool gainedEffort = metadata.GrantEffortValues(defeatedEnemy.EffortYield);
+        if (gainedEffort)
+        {
+            FindFirstObjectByType<PlayerSaveController>()?.RequestSave();
+            FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();
+        }
+        if (defeatedEnemy.ExperienceReward <= 0) return;
 
         if (levelUpService == null)
         {
@@ -959,21 +1395,31 @@ public class PetController : MonoBehaviour
     private float CalculateAttackDamage()
     {
         PetCollectionMetadata metadata = GetComponentInChildren<PetCollectionMetadata>(true);
-        float damage = CurrentBaseAttackDamage;
-        if (metadata == null || Random.value >= metadata.CriticalRate / 100f)
+        if (metadata == null) return Mathf.Max(0f, attackDamage);
+
+        PetStatSnapshot stats = metadata.CurrentStats;
+        float damage = Mathf.Max(0f, attackDamage + stats.Attack);
+        if (Random.value >= stats.CriticalRate / 100f)
         {
             return damage;
         }
 
-        return damage * (1f + metadata.CriticalDamagePercent / 100f);
+        return damage * (1f + stats.CriticalDamage / 100f);
     }
 
     private bool TryEnableAgentOnNavMesh()
     {
-        if (agent == null || agent.enabled)
+        if (agent == null)
         {
-            return agent != null && agent.enabled;
+            return false;
         }
+
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            return true;
+        }
+
+        DisableNavigationAgent();
 
         if (Time.time < nextNavMeshRetryAt)
         {
@@ -993,7 +1439,8 @@ public class PetController : MonoBehaviour
     {
         if (agent == null || !agent.gameObject.activeInHierarchy
             || !NavMesh.SamplePosition(position, out NavMeshHit hit,
-                Mathf.Max(0.25f, searchRadius), agent.areaMask))
+                Mathf.Max(0.25f, searchRadius), agent.areaMask)
+            || Mathf.Abs(hit.position.y - position.y) > 0.35f)
         {
             return false;
         }
@@ -1007,16 +1454,13 @@ public class PetController : MonoBehaviour
         }
         else
         {
-            if (agent.enabled)
-            {
-                agent.enabled = false;
-            }
+            DisableNavigationAgent();
 
             transform.position = hit.position;
             agent.enabled = true;
             if (!agent.isOnNavMesh)
             {
-                agent.enabled = false;
+                DisableNavigationAgent();
                 return false;
             }
         }
@@ -1041,13 +1485,32 @@ public class PetController : MonoBehaviour
 
         float step = Mathf.Min(Mathf.Max(0f, speed) * Time.deltaTime,
             toDestination.magnitude - stopDistance);
-        if (step <= 0f || !TryChooseDirectStep(current, toDestination.normalized, step,
-                out Vector3 next, out Vector3 direction))
+        if (step <= 0f)
         {
+            directStuckSince = 0f;
             StopMovement();
             return;
         }
 
+        if (!TryChooseDirectStep(current, toDestination.normalized, step,
+                out Vector3 next, out Vector3 direction))
+        {
+            if (directStuckSince <= 0f)
+            {
+                directStuckSince = Time.time;
+            }
+            else if (Time.time - directStuckSince > 2.5f
+                && (state == PetState.FollowOwner || state == PetState.RoamAroundOwner))
+            {
+                TeleportNearOwner();
+                directStuckSince = 0f;
+            }
+
+            StopMovement();
+            return;
+        }
+
+        directStuckSince = 0f;
         transform.position = next;
         FaceDirection(direction);
         directMoveSpeed = step / Mathf.Max(Time.deltaTime, 0.0001f);
@@ -1057,18 +1520,30 @@ public class PetController : MonoBehaviour
         out Vector3 next, out Vector3 chosenDirection)
     {
         chosenDirection = desiredDirection;
+        if (Time.time < directAvoidanceUntil && Mathf.Abs(directAvoidanceAngle) > 0.01f)
+        {
+            Vector3 heldDirection = Quaternion.Euler(0f, directAvoidanceAngle, 0f)
+                * desiredDirection;
+            if (TryDirectStep(current, heldDirection, step, out next))
+            {
+                chosenDirection = heldDirection;
+                return true;
+            }
+        }
+
         if (TryDirectStep(current, desiredDirection, step, out next))
         {
+            directAvoidanceAngle = 0f;
             return true;
         }
 
-        float[] angles = { 35f, 70f, 105f, 140f };
         for (int sideIndex = 0; sideIndex < 2; sideIndex++)
         {
             int side = sideIndex == 0 ? directAvoidanceSide : -directAvoidanceSide;
-            for (int angleIndex = 0; angleIndex < angles.Length; angleIndex++)
+            for (int angleIndex = 0; angleIndex < DirectAvoidanceAngles.Length; angleIndex++)
             {
-                Vector3 candidateDirection = Quaternion.Euler(0f, side * angles[angleIndex], 0f)
+                float avoidanceAngle = side * DirectAvoidanceAngles[angleIndex];
+                Vector3 candidateDirection = Quaternion.Euler(0f, avoidanceAngle, 0f)
                     * desiredDirection;
                 if (!TryDirectStep(current, candidateDirection, step, out next))
                 {
@@ -1076,6 +1551,8 @@ public class PetController : MonoBehaviour
                 }
 
                 directAvoidanceSide = side;
+                directAvoidanceAngle = avoidanceAngle;
+                directAvoidanceUntil = Time.time + 0.55f;
                 chosenDirection = candidateDirection;
                 return true;
             }
@@ -1172,7 +1649,7 @@ public class PetController : MonoBehaviour
         directMoveSpeed = 0f;
         if (state != PetState.AttackTarget)
         {
-            if (updateAnimation && state != PetState.Underground && state != PetState.Summoning)
+            if (updateAnimation && state != PetState.Dormant && state != PetState.Summoning)
             {
                 UpdateAnimator(0f);
             }
@@ -1194,27 +1671,48 @@ public class PetController : MonoBehaviour
         return FlatDistance(transform.position, point) <= tolerance;
     }
 
-    private void TeleportNearOwner()
+    private bool TeleportNearOwner()
     {
-        Vector3 spot = owner.TransformPoint(followOffset);
-        if (agent != null && agent.enabled)
+        if (!TryFindSafeSpotNearOwner(out Vector3 spot))
         {
-            NavMeshHit hit;
-            if (NavMesh.SamplePosition(spot, out hit, 4f, NavMesh.AllAreas))
-            {
-                agent.Warp(hit.position);
-            }
-            else
-            {
-                transform.position = SnapToGround(spot);
-            }
-        }
-        else
-        {
-            transform.position = SnapToGround(spot);
+            return false;
         }
 
+        if (useNavMeshWhenAvailable && TryPlaceAgentOnNavMesh(spot, 0.75f))
+        {
+            StopMovement();
+            return true;
+        }
+
+        DisableNavigationAgent();
+
+        transform.position = spot;
         StopMovement();
+        return true;
+    }
+
+    private void DisableNavigationAgent()
+    {
+        if (agent == null)
+        {
+            return;
+        }
+
+        if (agent.enabled && agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            if (agent.hasPath)
+            {
+                agent.ResetPath();
+            }
+        }
+
+        if (agent.enabled)
+        {
+            agent.enabled = false;
+        }
+
+        navDestinationInitialized = false;
     }
 
     private Vector3 GetTargetPosition()
@@ -1278,39 +1776,39 @@ public class PetController : MonoBehaviour
         return directMoveSpeed;
     }
 
-    private Vector3 SnapToGround(Vector3 position)
-    {
-        return TryFindWalkableGround(position, 0.5f, out Vector3 groundPoint)
-            ? groundPoint
-            : position;
-    }
-
     private bool TryFindWalkableGround(Vector3 position, float maxHeightChange,
         out Vector3 groundPoint)
     {
         groundPoint = position;
         Vector3 origin = position + Vector3.up * 1.5f;
         int count = Physics.RaycastNonAlloc(origin, Vector3.down, groundHits, 4f, groundMask, QueryTriggerInteraction.Ignore);
-        if (count <= 0)
+        if (count <= 0 || count == groundHits.Length)
         {
             return false;
         }
 
         int best = -1;
-        float bestDistance = float.PositiveInfinity;
+        float bestHeightDelta = float.PositiveInfinity;
         for (int i = 0; i < count; i++)
         {
             RaycastHit hit = groundHits[i];
             if (hit.collider == null || IsIgnoredDirectObstacle(hit.collider)
+                || (hit.collider.attachedRigidbody != null
+                    && !hit.collider.attachedRigidbody.isKinematic)
                 || hit.normal.y < directMinGroundNormal
-                || Mathf.Abs(hit.point.y - position.y) > maxHeightChange
-                || hit.distance >= bestDistance)
+                || Mathf.Abs(hit.point.y - position.y) > maxHeightChange)
+            {
+                continue;
+            }
+
+            float heightDelta = Mathf.Abs(hit.point.y - position.y);
+            if (heightDelta >= bestHeightDelta)
             {
                 continue;
             }
 
             best = i;
-            bestDistance = hit.distance;
+            bestHeightDelta = heightDelta;
         }
 
         if (best < 0)
@@ -1372,9 +1870,9 @@ public class PetController : MonoBehaviour
             return;
         }
 
-        if (!useNavMeshWhenAvailable && agent.enabled)
+        if (!useNavMeshWhenAvailable)
         {
-            agent.enabled = false;
+            DisableNavigationAgent();
         }
 
         agent.updateRotation = false;
@@ -1421,7 +1919,7 @@ public class PetController : MonoBehaviour
 
     private void UpdateAnimator(float speed)
     {
-        if (animator == null || IsSkillAnimationActive() || state == PetState.AttackTarget || state == PetState.Underground || state == PetState.Summoning)
+        if (animator == null || IsSkillAnimationActive() || state == PetState.AttackTarget || state == PetState.Dormant || state == PetState.Summoning)
         {
             return;
         }

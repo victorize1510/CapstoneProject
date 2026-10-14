@@ -5,6 +5,7 @@ namespace Capstone.Game.SaveSystem {
     [DisallowMultipleComponent]
     public sealed class PlayerCurrencyWallet : MonoBehaviour {
         [SerializeField, Min(0)] int gold;
+        bool receivingPurchase;
 
         public int Gold => Mathf.Max(0, gold);
 
@@ -18,12 +19,29 @@ namespace Capstone.Game.SaveSystem {
         }
 
         public bool TrySpendGold(int amount) {
+            if (receivingPurchase) return false;
             if (amount <= 0) return true;
             if (Gold < amount) return false;
 
             gold -= amount;
             GoldChanged?.Invoke(Gold);
             return true;
+        }
+
+        // Reserve without notifying observers; receive must either commit the whole
+        // delivery or leave inventory unchanged. Both events then see final balances.
+        public bool TrySpendGold(int amount, Func<bool> receive) {
+            if (receivingPurchase || amount < 0 || receive == null || Gold < amount) return false;
+            receivingPurchase = true;
+            gold -= amount;
+            bool accepted = false;
+            try { accepted = receive(); }
+            finally {
+                if (!accepted) gold += amount;
+                receivingPurchase = false;
+            }
+            if (accepted) GoldChanged?.Invoke(Gold);
+            return accepted;
         }
 
         public CurrencySaveData CreateSaveData() {

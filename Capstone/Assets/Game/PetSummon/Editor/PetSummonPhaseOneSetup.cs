@@ -13,7 +13,7 @@ namespace Capstone.Game.PetSummon.Editor
         const string MaterialFolder = RootFolder + "/Materials";
         const string BallPrefabPath = PrefabFolder + "/BallGreenClose.prefab";
         const string BallMaterialPath = MaterialFolder + "/BallGreenClose.mat";
-        const string PlayerPrefabPath = "Assets/Prefabs/Thắng/Player_GenderSwitch.prefab";
+        const string PlayerPrefabPath = "Assets/Prefabs/Thắng/Player.prefab";
         const string BallArtFolder = RootFolder + "/Art/BallGreenClose";
         const string BallModelPath = BallArtFolder + "/Meshy_AI_Emerald_Orb_with_Gold_0721122943_texture.fbx";
         const string BaseColorPath = BallArtFolder + "/Meshy_AI_Emerald_Orb_with_Gold_0721122943_texture.png";
@@ -139,10 +139,17 @@ namespace Capstone.Game.PetSummon.Editor
 
             SetTextureIfSupported(material, "_BaseMap", baseColor);
             SetTextureIfSupported(material, "_MainTex", baseColor);
+            SetTextureIfSupported(material, "_EmissionMap", baseColor);
             SetTextureIfSupported(material, "_BumpMap", normal);
             SetTextureIfSupported(material, "_MetallicGlossMap", metallic);
             SetFloatIfSupported(material, "_Metallic", 0.85f);
             SetFloatIfSupported(material, "_Smoothness", 0.68f);
+            if (material.HasProperty("_EmissionColor"))
+            {
+                material.SetColor("_EmissionColor", new Color(0.08f, 1.15f, 0.42f));
+                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
+                material.EnableKeyword("_EMISSION");
+            }
             if (normal != null)
             {
                 material.EnableKeyword("_NORMALMAP");
@@ -296,6 +303,16 @@ namespace Capstone.Game.PetSummon.Editor
                 if (switcher == null)
                 {
                     throw new InvalidOperationException("Player_GenderSwitch is missing PlayerVisualSwitcher.");
+                }
+
+                if (GirlFinalPlayerSetup.IsConfiguredPlayer(root))
+                {
+                    var component = root.GetComponent<PetSummonHandSocket>();
+                    if (component == null) component = root.AddComponent<PetSummonHandSocket>();
+                    component.Configure(switcher, ballPrefab, Array.Empty<PetSummonHandSocket.VisualBinding>());
+                    GirlFinalPlayerSetup.ConfigureHandSockets(root);
+                    PrefabUtility.SaveAsPrefabAsset(root, PlayerPrefabPath);
+                    return;
                 }
 
                 Transform vexaHand = FindDescendant(root.transform, "Base HumanRPalm");

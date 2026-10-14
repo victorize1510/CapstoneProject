@@ -9,7 +9,7 @@ namespace Capstone.Game.PetSummon.Editor
     {
         static readonly string[] PlayerPrefabPaths =
         {
-            "Assets/Prefabs/Thắng/Player_GenderSwitch.prefab",
+            "Assets/Prefabs/Thắng/Player.prefab",
             "Assets/Prefabs/Thắng/Vexa/Vefects_Vexa.prefab"
         };
 

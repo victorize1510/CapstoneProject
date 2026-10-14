@@ -48,7 +48,7 @@ namespace Capstone.Game.HudSystem {
             ResolveReferences();
             var preview = new PetReleasePreview { Pet = pet };
             if (pet == null) {
-                preview.DisabledReason = "Chưa chọn pet để thả.";
+                preview.DisabledReason = "Chưa chọn thú để thả.";
                 return preview;
             }
 
@@ -56,7 +56,7 @@ namespace Capstone.Game.HudSystem {
             preview.Metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
             if (preview.Metadata == null) preview.Metadata = pet.gameObject.AddComponent<PetCollectionMetadata>();
             if (preview.RuntimeStats == null) {
-                preview.DisabledReason = "Pet chưa có PetHudRuntimeStats.";
+                preview.DisabledReason = "Thú chưa có PetHudRuntimeStats.";
                 return preview;
             }
 
@@ -75,21 +75,26 @@ namespace Capstone.Game.HudSystem {
 
             BuildRefunds(preview);
 
-            if (preview.Metadata.IsReleased) preview.DisabledReason = "Pet này đã được thả.";
-            else if (preview.IsFavorite) preview.DisabledReason = "Bỏ Yêu thích trước khi thả pet.";
-            else if (IsProtectedSpecies(preview.Species)) preview.DisabledReason = "Pet này được bảo vệ và không thể thả.";
-            else if (roster == null || !roster.Contains(pet)) preview.DisabledReason = "Pet không còn nằm trong Party hoặc Box.";
-            else if (roster.OwnedCount <= 1) preview.DisabledReason = "Không thể thả pet cuối cùng của bạn.";
-            else if (roster.ReleasedToday >= DailyReleaseLimit) preview.DisabledReason = $"Đã đạt giới hạn thả {DailyReleaseLimit} pet hôm nay.";
+            if (preview.Metadata.IsReleased) preview.DisabledReason = "Thú này đã được thả.";
+            else if (preview.IsFavorite) preview.DisabledReason = "Bỏ Yêu thích trước khi thả thú.";
+            else if (IsProtectedSpecies(preview.Species)) preview.DisabledReason = "Thú này được bảo vệ và không thể thả.";
+            else if (roster == null || !roster.Contains(pet)) preview.DisabledReason = "Thú không còn nằm trong Party hoặc Kho thú.";
+            else if (roster.OwnedCount <= 1) preview.DisabledReason = "Không thể thả thú cuối cùng của bạn.";
+            else if (roster.ReleasedToday >= DailyReleaseLimit) preview.DisabledReason = $"Đã đạt giới hạn thả {DailyReleaseLimit} thú hôm nay.";
             else if (currencyWallet == null) preview.DisabledReason = "Không tìm thấy ví Gold của người chơi.";
             else if (saveController == null) preview.DisabledReason = "Không tìm thấy PlayerSaveController để lưu thao tác.";
-            else if (preview.HasUnresolvedRefund) preview.DisabledReason = "Thiếu Item Definition để hoàn lại tài nguyên đã đầu tư.";
+            else if (preview.HasUnresolvedRefund) preview.DisabledReason = "Thiếu vật phẩm Definition để hoàn lại tài nguyên đã đầu tư.";
 
             preview.CanRelease = string.IsNullOrWhiteSpace(preview.DisabledReason);
             return preview;
         }
 
         public bool TryRelease(PetController pet, out string message) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryBegin(this, "release", out var operation)) { message = string.Empty; return false; }
+            using (operation) return TryReleaseCore(pet, out message);
+        }
+
+        bool TryReleaseCore(PetController pet, out string message) {
             PetReleasePreview preview = CreatePreview(pet);
             if (!preview.CanRelease) {
                 message = preview.DisabledReason;
@@ -102,7 +107,7 @@ namespace Capstone.Game.HudSystem {
                 Result addResult = inventory.AddItem(refund.ItemBase, refund.RefundQuantity);
                 if (addResult is Fail) {
                     RollbackRefunds(addedRefunds);
-                    message = "Bag không đủ chỗ để nhận toàn bộ tài nguyên hoàn lại.";
+                    message = "Túi đồ không đủ chỗ để nhận toàn bộ tài nguyên hoàn lại.";
                     return false;
                 }
                 addedRefunds.Add(refund);
@@ -131,7 +136,7 @@ namespace Capstone.Game.HudSystem {
                 roster.RestoreDetachedPet(rosterToken, out _);
                 currencyWallet.TrySpendGold(preview.GoldValue);
                 RollbackRefunds(addedRefunds);
-                message = "Không thể lưu game nên pet chưa bị thả.";
+                message = "Không thể lưu game nên thú chưa bị thả.";
                 return false;
             }
 

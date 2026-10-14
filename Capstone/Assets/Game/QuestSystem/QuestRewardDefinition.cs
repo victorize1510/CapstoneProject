@@ -24,6 +24,7 @@ namespace Capstone.Game.QuestSystem {
         [SerializeField] string currencyId = string.Empty;
         [SerializeField] string customKey = string.Empty;
         [SerializeField] Sprite icon = null;
+        [SerializeField] GDS.Core.ItemBase itemDefinition = null;
 
         public string RewardId => rewardId;
         public string DisplayName => displayName;
@@ -33,5 +34,6 @@ namespace Capstone.Game.QuestSystem {
         public string CurrencyId => currencyId;
         public string CustomKey => customKey;
         public Sprite Icon => icon;
+        public GDS.Core.ItemBase ItemDefinition => itemDefinition;
     }
 }

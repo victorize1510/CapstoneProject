@@ -18,6 +18,11 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] bool disableMinimap;
 
         bool minimapVisibleRequested = true;
+        bool minimapPreference = true;
+        bool? minimapVisibleApplied;
+        bool shuttingDown;
+
+        void OnApplicationQuit() { shuttingDown = true; }
 
         public AAMapRuntimeBinder Binder => aaBinder;
         public MinimapController Minimap => minimap;
@@ -58,8 +63,8 @@ namespace Capstone.Game.MapSystem {
                 aaBinder.ApplyBindings();
             }
 
-            if (disableMinimap || !minimapVisibleRequested) DisableMinimapSceneObjects();
-            else EnableMinimapSceneObjects();
+            minimapVisibleApplied = null;
+            ApplyMinimapVisibility();
             if (worldMap != null) worldMap.SetTarget(playerTarget);
             if (input != null) input.SetReferences(this, worldMap, worldMap != null ? worldMap.MapManager : null, controlLock);
             if (iconRegistry != null) iconRegistry.SetMarkerManager(markerManager);
@@ -88,9 +93,23 @@ namespace Capstone.Game.MapSystem {
         }
 
         public void SetMinimapVisible(bool visible) {
-            if (minimapVisibleRequested == visible) return;
+            // Menu teardown can request HUD restoration after scene objects start being destroyed.
+            if (shuttingDown) return;
             minimapVisibleRequested = visible;
-            if (disableMinimap || !visible) DisableMinimapSceneObjects();
+            ApplyMinimapVisibility();
+        }
+
+        public void SetUserMinimapVisible(bool visible) {
+            if (shuttingDown) return;
+            minimapPreference = visible;
+            ApplyMinimapVisibility();
+        }
+
+        void ApplyMinimapVisibility() {
+            bool visible = minimapVisibleRequested && minimapPreference && !disableMinimap;
+            if (minimapVisibleApplied == visible) return;
+            minimapVisibleApplied = visible;
+            if (!visible) DisableMinimapSceneObjects();
             else EnableMinimapSceneObjects();
         }
 

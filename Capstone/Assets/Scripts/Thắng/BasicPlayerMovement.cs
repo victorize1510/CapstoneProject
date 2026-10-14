@@ -135,10 +135,16 @@ public class BasicPlayerMovement : MonoBehaviour
     public KeyCode pickUpKey = KeyCode.E;
     public bool enableAimMode = false;
     public int aimMouseButton = 1;
+    [Tooltip("Legacy manual Throw input. Summon sequences invoke Throw through the scripted-action API.")]
+    public bool allowManualThrowInput = false;
     public bool rightMouseButtonThrows = false;
     public bool faceLockedEnemy = false;
-    public bool requirePickupTarget = false;
-    public bool hasPickupTarget = false;
+    [Tooltip("World item being picked up. E cannot play Pickup without a visible, reachable target.")]
+    public Transform pickupTarget;
+    [Min(.1f)] public float pickupDistance = 2f;
+    [Range(1f, 180f)] public float pickupViewAngle = Capstone.Game.UISystem.WorldInteractionView.DefaultViewAngle;
+    public LayerMask pickupObstructionLayers = Physics.DefaultRaycastLayers;
+    private TextMesh pickupPrompt;
     public float jumpDuration = 0.95f;
     public float pickUpDuration = 1.15f;
     public float throwDuration = 0.95f;
@@ -312,7 +318,14 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool CanPickUp
     {
-        get { return !requirePickupTarget || hasPickupTarget; }
+        get { return Capstone.Game.UISystem.WorldInteractionView.CanInteract(transform, pickupTarget,
+            pickupDistance, pickupViewAngle, pickupObstructionLayers); }
+    }
+
+    // World item systems bind/clear their candidate here; scripted pet recall bypasses this gate.
+    public void SetPickupTarget(Transform target)
+    {
+        pickupTarget = target;
     }
 
     private void Reset()
@@ -416,6 +429,7 @@ public class BasicPlayerMovement : MonoBehaviour
     private void OnDisable()
     {
         RestoreStandingControllerShape();
+        if (pickupPrompt != null) pickupPrompt.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -457,6 +471,31 @@ public class BasicPlayerMovement : MonoBehaviour
         {
             PinAnimatorTransform();
         }
+        UpdatePickupPrompt();
+    }
+
+    private void UpdatePickupPrompt()
+    {
+        bool visible = Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible
+            && !IsGameplayInputBlocked() && !activeOneShot && CanPickUp;
+        if (visible && pickupPrompt == null)
+        {
+            var prompt = new GameObject("Pickup Prompt");
+            prompt.transform.SetParent(transform, false);
+            pickupPrompt = prompt.AddComponent<TextMesh>();
+            pickupPrompt.text = "[" + pickUpKey + "] Nhặt đồ";
+            pickupPrompt.anchor = TextAnchor.MiddleCenter;
+            pickupPrompt.alignment = TextAlignment.Center;
+            pickupPrompt.characterSize = .075f;
+            pickupPrompt.fontSize = 64;
+        }
+        if (pickupPrompt == null) return;
+        pickupPrompt.gameObject.SetActive(visible);
+        if (!visible) return;
+        pickupPrompt.transform.position = pickupTarget.position + Vector3.up * .5f;
+        Camera camera = Camera.main;
+        if (camera != null) pickupPrompt.transform.rotation = Quaternion.LookRotation(
+            pickupPrompt.transform.position - camera.transform.position, camera.transform.up);
     }
 
     public void SetGameplayInputLocked(bool locked)
@@ -494,6 +533,9 @@ public class BasicPlayerMovement : MonoBehaviour
 
         return true;
     }
+
+    public bool CanStartPetThrow => CanStartScriptedAction() && !IsJumpState(currentState);
+    public bool IsGroundedForPetThrow => grounded && !IsJumpState(currentState);
 
     public bool TryPlayScriptedPickup()
     {
@@ -631,7 +673,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && enableRoll && rollKey != KeyCode.None && rollKey != KeyCode.Q && Input.GetKeyDown(rollKey))
+        if (!inputBlocked && enableRoll && rollKey != KeyCode.None && rollKey != KeyCode.Q && Input.GetKeyDown(rollKey) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "roll"))
         {
             if (isCrouching)
             {
@@ -676,7 +718,8 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && Input.GetKeyDown(pickUpKey) && CanPickUp)
+        if (!inputBlocked && Input.GetKeyDown(pickUpKey) && CanPickUp
+            && Capstone.Game.UISystem.WorldInteractionView.TryConsumePress())
         {
             if (isCrouching)
             {
@@ -691,7 +734,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && enableCrouch && (Input.GetKeyDown(crouchKey) || Input.GetKeyDown(alternateCrouchKey)))
+        if (!inputBlocked && enableCrouch && (Input.GetKeyDown(crouchKey) || Input.GetKeyDown(alternateCrouchKey)) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "crouch"))
         {
             ToggleCrouch();
             return;
@@ -1723,7 +1766,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return false;
         }
 
-        return jumpKey != KeyCode.None && Input.GetKeyDown(jumpKey);
+        return jumpKey != KeyCode.None && Input.GetKeyDown(jumpKey) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "jump");
     }
 
     private bool IsJumpKeyHeld()
@@ -1738,17 +1781,17 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool WantsToThrow()
     {
-        if (IsGameplayInputBlocked())
+        if (!allowManualThrowInput || IsGameplayInputBlocked())
         {
             return false;
         }
 
         if (Input.GetMouseButtonDown(0))
         {
-            return true;
+            return Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "throw");
         }
 
-        return rightMouseButtonThrows && Input.GetMouseButtonDown(aimMouseButton);
+        return rightMouseButtonThrows && Input.GetMouseButtonDown(aimMouseButton) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "throw");
     }
 
     private bool IsGameplayInputBlocked()

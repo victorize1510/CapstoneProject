@@ -1,0 +1,66 @@
+PASS missing preferences preserve defaults without writing
+PASS partial JSON preserves missing defaults
+PASS unknown preference version falls back safely
+PASS corrupt preferences do not prevent opening screen
+PASS normalization protects ranges and supported language
+PASS non-finite preferences recover
+PASS volume, mute and display survive repository reload
+PASS resolutions deduplicate refresh rates and prefer matching aspect
+PASS 50 percent preserves Inspector sensitivity and zero stays usable
+PASS Vietnamese title uses shared header
+PASS slider applies instantly and displays percent
+PASS mute preserves slider value
+PASS invert switch reaches model
+PASS fullscreen preference includes valid resolution for next launch
+PASS only supported language is shown
+PASS two columns and two rows (1920.00, 1080.00)
+PASS four cards fit viewport (1920.00, 1080.00)
+PASS shared title and Back geometry (1920.00, 1080.00)
+PASS slider and percent do not overlap (1920.00, 1080.00)
+PASS pill switches represent actual state (1920.00, 1080.00)
+PASS pill background never collapses to native checkbox width (1920.00, 1080.00)
+PASS exit action visible without scrolling (1920.00, 1080.00)
+PASS two columns and two rows (1600.00, 900.00)
+PASS four cards fit viewport (1600.00, 900.00)
+PASS shared title and Back geometry (1600.00, 900.00)
+PASS slider and percent do not overlap (1600.00, 900.00)
+PASS pill switches represent actual state (1600.00, 900.00)
+PASS pill background never collapses to native checkbox width (1600.00, 900.00)
+PASS two columns and two rows (2560.00, 1440.00)
+PASS four cards fit viewport (2560.00, 1440.00)
+PASS shared title and Back geometry (2560.00, 1440.00)
+PASS slider and percent do not overlap (2560.00, 1440.00)
+PASS pill switches represent actual state (2560.00, 1440.00)
+PASS pill background never collapses to native checkbox width (2560.00, 1440.00)
+PASS exit action visible without scrolling (2560.00, 1440.00)
+PASS two columns and two rows (1366.00, 768.00)
+PASS four cards fit viewport (1366.00, 768.00)
+PASS shared title and Back geometry (1366.00, 768.00)
+PASS slider and percent do not overlap (1366.00, 768.00)
+PASS pill switches represent actual state (1366.00, 768.00)
+PASS pill background never collapses to native checkbox width (1366.00, 768.00)
+PASS two columns and two rows (1920.00, 1200.00)
+PASS four cards fit viewport (1920.00, 1200.00)
+PASS shared title and Back geometry (1920.00, 1200.00)
+PASS slider and percent do not overlap (1920.00, 1200.00)
+PASS pill switches represent actual state (1920.00, 1200.00)
+PASS pill background never collapses to native checkbox width (1920.00, 1200.00)
+PASS exit action visible without scrolling (1920.00, 1200.00)
+PASS two columns and two rows (2560.00, 1080.00)
+PASS four cards fit viewport (2560.00, 1080.00)
+PASS shared title and Back geometry (2560.00, 1080.00)
+PASS slider and percent do not overlap (2560.00, 1080.00)
+PASS pill switches represent actual state (2560.00, 1080.00)
+PASS pill background never collapses to native checkbox width (2560.00, 1080.00)
+PASS exit action visible without scrolling (2560.00, 1080.00)
+PASS reset requires confirmation
+PASS Tab stays inside modal rather than background controls
+PASS Esc cancels reset without changing settings
+PASS confirmed reset restores project defaults
+PASS controls guide is read-only
+PASS failed scene exit stays on confirmation with explanation
+PASS rebind has exactly one callback 0
+PASS rebind has exactly one callback 1
+PASS rebind has exactly one callback 2
+PASS unsupported controls hide and Editor display disables
+PASS confirmed exit cannot run twice or close while loading

@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a9989b00d989044e8ca9ec211f91658, type: 3}
+  m_Name: RecoveryItems
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.InventoryRecoveryCatalog
+  items:
+  - {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
+  - {fileID: 11400000, guid: a206ddcbe109a494ea900aa905b1702c, type: 2}
+  - {fileID: 11400000, guid: 2515b74e7584dda42bec74dc04cb3b88, type: 2}
+  - {fileID: 11400000, guid: 5bd730739fc04e47a6f9f66bc2a2bf4d, type: 2}

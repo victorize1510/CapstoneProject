@@ -1,603 +1,603 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using Capstone.Game.HudSystem;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Capstone.Game.PetSummon
 {
     [DisallowMultipleComponent]
     public sealed class PetSummonReleaseEffect : MonoBehaviour
     {
-        [Header("Colour")]
-        [SerializeField] Color beamColor = new Color(0.2f, 1f, 0.58f, 0.72f);
-        [SerializeField] Color coreColor = new Color(0.86f, 1f, 0.94f, 1f);
+        [SerializeField] PetVFXProfile vfxProfile;
+        [SerializeField] PetVFXQuality quality = PetVFXQuality.Medium;
+        [SerializeField] Shader bodyGlowShader;
+        [SerializeField, Min(.1f)] float presentationSpeed = 1f;
 
-        [Header("Timing")]
-        [SerializeField, Min(0.05f)] float beamBuildDuration = 0.18f;
-        [SerializeField, Min(0.05f)] float revealDuration = 0.48f;
-        [SerializeField, Min(0.05f)] float recallBeamBuildDuration = 0.16f;
-        [SerializeField, Min(0.05f)] float recallDuration = 0.46f;
-        [SerializeField, Min(0f)] float settleDuration = 0.12f;
+        sealed class BodyBinding
+        {
+            public Renderer source, glow;
+            public Bounds localBounds, poseBounds;
+            public bool enabledBefore, offscreenBefore;
+            public readonly List<Material> sources = new List<Material>();
+            public readonly List<Vector3> poseVertices = new List<Vector3>();
+            public Material[] materials;
+        }
 
-        [Header("Shape")]
-        [SerializeField, Min(0.01f)] float beamWidth = 0.16f;
-        [SerializeField, Min(0f)] float beamWobble = 0.055f;
-        [SerializeField, Range(0.01f, 1f)] float initialHorizontalScale = 0.12f;
-        [SerializeField, Range(0.01f, 1f)] float initialVerticalScale = 0.04f;
-        [SerializeField, Min(0f)] float beamTargetHeight = 0.06f;
-        [SerializeField, Min(0f)] float particleHeight = 0.42f;
-        [SerializeField, Range(0, 64)] int burstParticleCount = 26;
+        static class ShaderIds
+        {
+            public static readonly int GlowColor = Shader.PropertyToID("_GlowColor");
+            public static readonly int BodyCenter = Shader.PropertyToID("_BodyCenter");
+            public static readonly int PresentationCenter = Shader.PropertyToID("_PresentationCenter");
+            public static readonly int PresentationScale = Shader.PropertyToID("_PresentationScale");
+            public static readonly int WhiteBlend = Shader.PropertyToID("_WhiteBlend");
+            public static readonly int GlowEmission = Shader.PropertyToID("_GlowEmission");
+            public static readonly int DissolveAmount = Shader.PropertyToID("_DissolveAmount");
+            public static readonly int DissolveDirection = Shader.PropertyToID("_DissolveDirection");
+            public static readonly int EdgeWidth = Shader.PropertyToID("_EdgeWidth");
+            public static readonly int EdgeEmission = Shader.PropertyToID("_EdgeEmission");
+            public static readonly int EdgeColor = Shader.PropertyToID("_EdgeColor");
+            public static readonly int ReferenceWorldToLocal = Shader.PropertyToID("_ReferenceWorldToLocal");
+            public static readonly int ReferenceCenter = Shader.PropertyToID("_ReferenceCenter");
+            public static readonly int ReferenceRadius = Shader.PropertyToID("_ReferenceRadius");
+            public static readonly int RecallBall = Shader.PropertyToID("_RecallBall");
+            public static readonly int RecallAxis = Shader.PropertyToID("_RecallAxis");
+            public static readonly int RecallWarp = Shader.PropertyToID("_RecallWarp");
+        }
 
-        [Header("Energy Motion")]
-        [SerializeField, Min(0f)] float energyScrollSpeed = 2.8f;
-        [SerializeField, Range(16, 128)] int noiseTextureSize = 64;
-        [SerializeField, Range(1f, 12f)] float noiseTiling = 4.5f;
-        [SerializeField, Range(0f, 0.35f)] float distortionAmount = 0.14f;
+        readonly List<BodyBinding> bodies = new List<BodyBinding>();
+        readonly Stack<BodyBinding> skinnedPool = new Stack<BodyBinding>();
+        readonly Stack<BodyBinding> staticPool = new Stack<BodyBinding>();
+        readonly List<Renderer> rendererBuffer = new List<Renderer>();
+        readonly List<Renderer> hiddenBallRenderers = new List<Renderer>();
+        readonly Dictionary<Material, Material> materialCache = new Dictionary<Material, Material>();
+        MaterialPropertyBlock properties;
+        PetSummonVfxInstance spawnInstance, recallInstance, activeInstance;
+        Material defaultBodyMaterial;
+        Mesh poseMesh;
+        Transform poolRoot, releaseBall;
+        SphereCollider ballCollider;
+        PetController presentationPet;
+        Animator presentationAnimator;
+        AnimatorCullingMode cullingBefore;
+        Vector3 bodyCenter, bodyHalfExtents, presentationCenter, spawnOrigin, haloHalfExtents;
+        PetRecallWarp recallWarp;
+        bool haloInitialized;
+        float bodyRadius, cullingRadius, presentationScale = 1, captureProgress;
+        float effectTime, dissolveAmount, whiteBlend, glowOpacity = 1;
+        bool spawning, originalVisible, petHidden;
+        int sequenceVersion;
 
-        Transform scaledPet;
-        Vector3 originalPetScale;
-        GameObject effectRoot;
-        Material effectMaterial;
-        Texture2D effectNoiseTexture;
+        public PetVFXProfile Profile => vfxProfile;
+        public PetVFXQuality Quality => quality;
+        public Vector3 PresentationCenter => presentationCenter;
+        public float PresentationScale => presentationScale;
+        public float CaptureProgress => captureProgress;
+        public PetSummonVfxInstance ActiveVfx => activeInstance;
+        public int CachedMaterialCount => materialCache.Count;
 
-        public IEnumerator PlaySummon(PetController pet, Transform beamSource, Vector3 spawnPoint,
-            Action releasePet)
+        public void ConfigureProfile(PetVFXProfile profile) { vfxProfile = profile; }
+        public void ConfigureQuality(PetVFXQuality preset) { quality = preset; }
+
+#if UNITY_EDITOR
+        public void PreviewAt(float seconds)
+        {
+            effectTime = seconds;
+            UpdateBodyBounds();
+            if (spawning) UpdateSpawn(); else UpdateRecall();
+        }
+#endif
+
+        void Awake() { if (Application.isPlaying) Warmup(); }
+
+        void Warmup()
+        {
+            properties ??= new MaterialPropertyBlock();
+            if (poolRoot == null) {
+                var go = new GameObject("PetSummon_VfxPool") {
+                    hideFlags = Application.isPlaying ? HideFlags.None : HideFlags.DontSave
+                };
+                poolRoot = go.transform;
+            }
+            if (spawnInstance == null) spawnInstance = CreateInstance(false);
+            if (recallInstance == null) recallInstance = CreateInstance(true);
+            if (poseMesh == null) poseMesh = new Mesh { name = "PetSummon_PoseBuffer", hideFlags = HideFlags.DontSave };
+        }
+
+        PetSummonVfxInstance CreateInstance(bool recall)
+        {
+            PetSummonVfxInstance prefab = vfxProfile != null
+                ? (recall ? vfxProfile.recallPrefab : vfxProfile.spawnPrefab) : null;
+            PetSummonVfxInstance instance;
+            if (prefab != null) instance = Instantiate(prefab, poolRoot);
+            else {
+                var go = new GameObject(recall ? "RecallVFX" : "SpawnVFX");
+                go.transform.SetParent(poolRoot, false);
+                instance = go.AddComponent<PetSummonVfxInstance>(); instance.BuildLayout(recall);
+            }
+            instance.gameObject.hideFlags = Application.isPlaying ? HideFlags.None : HideFlags.DontSave;
+            instance.Warmup(vfxProfile); instance.gameObject.SetActive(false);
+            return instance;
+        }
+
+        public IEnumerator PlaySummon(PetController pet, Vector3 spawnPoint, Transform ball, Action releasePet,
+            Vector3? groundPoint = null)
         {
             Cancel();
-            if (pet == null)
-            {
-                yield break;
-            }
-
-            scaledPet = pet.transform;
-            originalPetScale = scaledPet.localScale;
-            scaledPet.localScale = SqueezedScale(originalPetScale);
-
-            LineRenderer aura = null;
-            LineRenderer core = null;
-            Light releaseLight = null;
-            ParticleSystem particles = null;
-            CreateVisuals(spawnPoint, out aura, out core, out releaseLight, out particles);
-
-            Vector3 target = spawnPoint + Vector3.up * beamTargetHeight;
-            try
-            {
-                float elapsed = 0f;
-                while (elapsed < beamBuildDuration)
-                {
-                    elapsed += Time.deltaTime;
-                    float t = Mathf.Clamp01(elapsed / beamBuildDuration);
-                    float eased = Smooth01(t);
-                    Vector3 source = ResolveSourcePosition(beamSource, target);
-                    Vector3 currentTarget = Vector3.Lerp(source, target, eased);
-                    ScrollEnergy(Time.time, 1f);
-                    UpdateBeam(aura, source, currentTarget, eased, Time.time, 0f);
-                    UpdateBeam(core, source, currentTarget, eased, Time.time, 1.7f);
-                    SetLight(releaseLight, Mathf.Sin(t * Mathf.PI) * 1.8f);
-                    yield return null;
-                }
-
+            if (pet == null || ball == null) yield break;
+            int version = sequenceVersion;
+            try {
+                Warmup(); spawning = true; presentationPet = pet; releaseBall = ball;
+                ballCollider = ball.GetComponentInChildren<SphereCollider>(true);
+                spawnOrigin = ResolveBallCenter(ball, ballCollider);
                 releasePet?.Invoke();
-                particles?.Play(true);
-
-                elapsed = 0f;
-                while (elapsed < revealDuration)
-                {
-                    elapsed += Time.deltaTime;
-                    float t = Mathf.Clamp01(elapsed / revealDuration);
-                    float eased = EaseOutBack(t);
-                    if (scaledPet != null)
-                    {
-                        scaledPet.localScale = DistortedScale(originalPetScale,
-                            Mathf.LerpUnclamped(initialHorizontalScale, 1f, eased),
-                            Mathf.Lerp(initialVerticalScale, 1f, Smooth01(t)), t, 1f - t);
-                    }
-
-                    Vector3 source = ResolveSourcePosition(beamSource, target);
-                    float fade = 1f - Smooth01(t);
-                    ScrollEnergy(Time.time, 1f);
-                    UpdateBeam(aura, source, target, fade, Time.time, 0f);
-                    UpdateBeam(core, source, target, Mathf.Sqrt(fade), Time.time, 1.7f);
-                    SetLight(releaseLight, fade * 2.2f);
+                if (!pet.IsSummoned) yield break;
+                pet.SetSummonPresentationPosition(spawnPoint);
+                pet.StartSummonPresentationAnimation(presentationSpeed);
+                BeginBody(pet);
+                // A newly summoned Animator must evaluate its first real frame before sampling the skin.
+                // Keep both body renderers hidden during that frame so the pet cannot flash at its landing.
+                if (Application.isPlaying) {
                     yield return null;
+                    if (version != sequenceVersion || pet == null || ball == null) yield break;
                 }
-
-                if (scaledPet != null)
-                {
-                    scaledPet.localScale = originalPetScale;
+                UpdateBodyBounds();
+                presentationCenter = spawnOrigin; presentationScale = .04f;
+                activeInstance = spawnInstance;
+                activeInstance.Begin(false, vfxProfile, quality, spawnOrigin, bodyHalfExtents, presentationSpeed);
+                activeInstance.SetGroundPoint(groundPoint ?? spawnPoint);
+                HideBall(ball);
+                float elapsed = 0;
+                effectTime = 0;
+                float duration = Mathf.Max(.1f,vfxProfile != null ? vfxProfile.spawnDuration : .8f) / Mathf.Max(.1f,presentationSpeed);
+                UpdateSpawn();
+                while (elapsed < duration && version == sequenceVersion) {
+                    effectTime = .8f * Mathf.Clamp01(elapsed / duration);
+                    yield return null;
+                    if (version != sequenceVersion) yield break;
+                    elapsed += Time.deltaTime;
+                    if (pet == null || ball == null) yield break;
                 }
-
-                if (settleDuration > 0f)
-                {
-                    yield return new WaitForSeconds(settleDuration);
-                }
+                if (version != sequenceVersion || pet == null) yield break;
+                effectTime = .8f; UpdateSpawn(); RestoreBody(); ReturnVfx();
+                // VFX finishes independently; never stretch the flash or accelerate Cast Spell.
+                float animationDeadline = Time.time + Mathf.Max(3,pet.SummonPresentationAnimationDuration + .5f);
+                while (!pet.HasSummonPresentationAnimationFinished && Time.time < animationDeadline
+                    && version == sequenceVersion && pet.IsSummoned) yield return null;
+                if (version != sequenceVersion || !pet.IsSummoned) yield break;
+                if (!pet.HasSummonPresentationAnimationFinished)
+                    Debug.LogWarning("Pet summon animation exceeded its completion timeout.",pet);
+                if (!pet.CompleteSummonPresentation(spawnPoint)) pet.Withdraw();
             }
-            finally
-            {
-                if (scaledPet != null)
-                {
-                    scaledPet.localScale = originalPetScale;
-                }
-
-                CleanupVisuals();
-                scaledPet = null;
-            }
+            finally { if (version == sequenceVersion) RestoreAndReturn(); }
         }
 
-        public IEnumerator PlayRecall(PetController pet, Transform beamTarget, Action hidePet)
+        public IEnumerator PlayRecall(PetController pet, Transform ball, Action hidePet)
         {
             Cancel();
-            if (pet == null || beamTarget == null)
-            {
-                yield break;
-            }
-
-            scaledPet = pet.transform;
-            originalPetScale = scaledPet.localScale;
-
-            LineRenderer aura = null;
-            LineRenderer core = null;
-            Light recallLight = null;
-            ParticleSystem particles = null;
-            CreateVisuals(scaledPet.position, out aura, out core, out recallLight, out particles);
-            SetRecallGradient(aura, beamColor);
-            SetRecallGradient(core, coreColor);
-            particles?.Play(true);
-
-            try
-            {
-                float elapsed = 0f;
-                while (elapsed < recallBeamBuildDuration)
-                {
-                    elapsed += Time.deltaTime;
-                    float t = Mathf.Clamp01(elapsed / recallBeamBuildDuration);
-                    float eased = Smooth01(t);
-                    Vector3 source = ResolvePetCenter(pet);
-                    Vector3 target = beamTarget.position;
-                    Vector3 currentTarget = Vector3.Lerp(source, target, eased);
-                    ScrollEnergy(Time.time, -1f);
-                    UpdateBeam(aura, source, currentTarget, eased, Time.time, 0f);
-                    UpdateBeam(core, source, currentTarget, eased, Time.time, 1.7f);
-                    MoveAndSetLight(recallLight, currentTarget,
-                        Mathf.Sin(t * Mathf.PI * 0.5f) * 1.8f);
+            if (pet == null || ball == null) yield break;
+            int version = sequenceVersion;
+            try {
+                Warmup(); spawning = false; presentationPet = pet; releaseBall = ball;
+                ballCollider = ball.GetComponentInChildren<SphereCollider>(true);
+                pet.SetRecallPresentation(true);
+                BeginBody(pet); UpdateBodyBounds();
+                activeInstance = recallInstance;
+                activeInstance.Begin(true,vfxProfile,quality,bodyCenter,bodyHalfExtents,presentationSpeed);
+                float elapsed = 0;
+                effectTime = 0;
+                float duration = Mathf.Max(.1f,vfxProfile != null ? vfxProfile.recallDuration : .65f) / Mathf.Max(.1f,presentationSpeed);
+                UpdateRecall();
+                while (elapsed < duration && version == sequenceVersion) {
+                    effectTime = .65f * Mathf.Clamp01(elapsed / duration);
+                    if (effectTime >= .56f && !petHidden) { petHidden = true; hidePet?.Invoke(); }
                     yield return null;
-                }
-
-                elapsed = 0f;
-                while (elapsed < recallDuration)
-                {
+                    if (version != sequenceVersion) yield break;
                     elapsed += Time.deltaTime;
-                    float t = Mathf.Clamp01(elapsed / recallDuration);
-                    float eased = Smooth01(t);
-                    if (scaledPet != null)
-                    {
-                        scaledPet.localScale = DistortedScale(originalPetScale,
-                            Mathf.Lerp(1f, initialHorizontalScale, eased),
-                            Mathf.Lerp(1f, initialVerticalScale, eased), t, t);
-                    }
-
-                    Vector3 source = ResolvePetCenter(pet);
-                    Vector3 target = beamTarget.position;
-                    float pulse = 0.72f + Mathf.Sin(Time.time * 24f) * 0.18f;
-                    ScrollEnergy(Time.time, -1f);
-                    UpdateBeam(aura, source, target, pulse, Time.time, 0f);
-                    UpdateBeam(core, source, target, 1f, Time.time, 1.7f);
-                    MoveAndSetLight(recallLight, target, Mathf.Lerp(1.8f, 2.6f, eased));
-                    yield return null;
+                    if (pet == null || ball == null) yield break;
                 }
-
-                hidePet?.Invoke();
+                if (version != sequenceVersion) yield break;
+                if (!petHidden) { petHidden = true; hidePet?.Invoke(); }
             }
-            finally
-            {
-                if (scaledPet != null)
-                {
-                    scaledPet.localScale = originalPetScale;
+            finally { if (version == sequenceVersion) RestoreAndReturn(); }
+        }
+
+        void LateUpdate()
+        {
+            if (presentationPet == null || activeInstance == null) return;
+            UpdateBodyBounds();
+            if (spawning) UpdateSpawn(); else UpdateRecall();
+        }
+
+        void UpdateSpawn()
+        {
+            float growth = Smooth(Mathf.Clamp01(effectTime / .46f));
+            presentationScale = Mathf.Lerp(.04f,1,growth);
+            presentationCenter = Vector3.Lerp(spawnOrigin,bodyCenter,growth);
+            dissolveAmount = 1-Smooth(Mathf.InverseLerp(.04f,.20f,effectTime));
+            whiteBlend = (vfxProfile != null ? vfxProfile.whiteBlend : .75f)
+                * (1-Smooth(Mathf.InverseLerp(.46f,.72f,effectTime)));
+            glowOpacity = Mathf.Clamp01((.8f-effectTime)/.16f);
+            if (effectTime >= .72f) RestoreBody();
+            ApplyBody();
+            activeInstance?.UpdatePresentation(effectTime,presentationCenter,spawnOrigin,
+                bodyHalfExtents*presentationScale,haloHalfExtents*presentationScale,
+                presentationPet.transform.rotation,bodyCenter,bodyHalfExtents);
+        }
+
+        void UpdateRecall()
+        {
+            if (releaseBall == null) return;
+            Vector3 ball = ResolveBallCenter(releaseBall,ballCollider);
+            captureProgress = Smooth(Mathf.InverseLerp(.18f,.56f,effectTime));
+            recallWarp = PetRecallWarp.Create(bodyCenter,ball,bodyHalfExtents,presentationPet.transform.rotation,
+                effectTime,vfxProfile);
+            float bodyCapture = recallWarp.enabled
+                ? Smooth(Mathf.InverseLerp(.18f+recallWarp.delay,.56f,effectTime)) : captureProgress;
+            presentationScale = 1-bodyCapture;
+            presentationCenter = Vector3.Lerp(bodyCenter,ball,bodyCapture);
+            dissolveAmount = Smooth(Mathf.InverseLerp(.40f,.56f,effectTime));
+            whiteBlend = (vfxProfile != null ? vfxProfile.whiteBlend : .75f) * Mathf.Clamp01(effectTime/.08f);
+            glowOpacity = 1;
+            presentationPet?.SetRecallVisualCenter(presentationCenter);
+            ApplyBody();
+            activeInstance?.UpdatePresentation(effectTime,presentationCenter,ball,
+                bodyHalfExtents*presentationScale,haloHalfExtents*presentationScale,
+                presentationPet.transform.rotation,bodyCenter,bodyHalfExtents);
+        }
+
+        void BeginBody(PetController pet)
+        {
+            haloInitialized = false;
+            presentationAnimator = pet.animator != null ? pet.animator : pet.GetComponentInChildren<Animator>();
+            if (presentationAnimator != null) {
+                cullingBefore = presentationAnimator.cullingMode;
+                presentationAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
+                presentationAnimator.Update(0);
+            }
+            rendererBuffer.Clear(); pet.GetComponentsInChildren(true,rendererBuffer);
+            PetEvolutionVisualController visual = pet.GetComponentInChildren<PetEvolutionVisualController>(true);
+            for (int i=0;i<rendererBuffer.Count;i++) {
+                Renderer source = rendererBuffer[i];
+                if (source == null || !source.enabled || !source.gameObject.activeInHierarchy
+                    || source.name == "PetSummon_BodyGlow" || source.GetComponentInParent<AAMAP.MapIcon>(true) != null
+                    || source.GetComponentInParent<Canvas>(true) != null || source.GetComponentInParent<ParticleSystem>(true) != null
+                    || visual != null && !visual.IsCurrentVisualRenderer(source)) continue;
+                bool skinned = source is SkinnedMeshRenderer;
+                Mesh mesh = skinned ? ((SkinnedMeshRenderer)source).sharedMesh
+                    : source.GetComponent<MeshFilter>()?.sharedMesh;
+                if (mesh == null) continue;
+                Stack<BodyBinding> pool = skinned ? skinnedPool : staticPool;
+                BodyBinding binding = pool.Count > 0 ? pool.Pop() : NewBody(skinned);
+                binding.source = source; binding.enabledBefore = source.enabled;
+                binding.offscreenBefore = source is SkinnedMeshRenderer savedSkin && savedSkin.updateWhenOffscreen;
+                // Register before touching renderer state so a failed setup still returns the binding.
+                bodies.Add(binding);
+                binding.glow.transform.SetParent(source.transform,false);
+                binding.glow.transform.localPosition = Vector3.zero;
+                binding.glow.transform.localRotation = Quaternion.identity;
+                binding.glow.transform.localScale = Vector3.one;
+                binding.glow.gameObject.SetActive(true);
+                binding.glow.enabled = false;
+                if (skinned) {
+                    var original = (SkinnedMeshRenderer)source; var glow = (SkinnedMeshRenderer)binding.glow;
+                    original.updateWhenOffscreen = true;
+                    glow.sharedMesh = mesh; glow.bones = original.bones; glow.rootBone = original.rootBone;
+                    glow.quality = original.quality; glow.updateWhenOffscreen = true;
+                    binding.localBounds = original.localBounds;
+                    glow.localBounds = binding.localBounds;
+                } else {
+                    binding.glow.GetComponent<MeshFilter>().sharedMesh = mesh;
+                    binding.localBounds = binding.poseBounds = mesh.bounds;
+                    binding.poseVertices.Clear();
+                    if (mesh.isReadable) mesh.GetVertices(binding.poseVertices);
                 }
+                binding.sources.Clear(); source.GetSharedMaterials(binding.sources);
+                int materialCount = Mathf.Max(1,mesh.subMeshCount);
+                if (binding.materials == null || binding.materials.Length != materialCount) binding.materials = new Material[materialCount];
+                for (int m=0;m<materialCount;m++) binding.materials[m] = GetBodyMaterial(binding.sources.Count > 0
+                    ? binding.sources[Mathf.Min(m,binding.sources.Count-1)] : null);
+                binding.glow.sharedMaterials = binding.materials;
+                source.enabled = false;
+            }
+            if (bodies.Count == 0) throw new InvalidOperationException("Pet has no current body renderer for summon presentation.");
+        }
 
-                CleanupVisuals();
-                scaledPet = null;
+        void CapturePoseBounds()
+        {
+            for (int i=0;i<bodies.Count;i++) {
+                BodyBinding binding=bodies[i];
+                if (!(binding.source is SkinnedMeshRenderer skin)) continue;
+                // Compensate renderer scale here; its world matrix applies it once in UpdateBodyBounds.
+                skin.BakeMesh(poseMesh,true);
+                poseMesh.RecalculateBounds();
+                poseMesh.GetVertices(binding.poseVertices);
+                binding.poseBounds=poseMesh.bounds;
+                binding.localBounds.Encapsulate(binding.poseBounds);
+                ((SkinnedMeshRenderer)binding.glow).localBounds=binding.localBounds;
             }
         }
 
-        public void Cancel()
+        BodyBinding NewBody(bool skinned)
         {
-            if (scaledPet != null)
-            {
-                scaledPet.localScale = originalPetScale;
-                scaledPet = null;
-            }
-
-            CleanupVisuals();
-        }
-
-        void OnDisable()
-        {
-            Cancel();
-        }
-
-        void OnDestroy()
-        {
-            Cancel();
-            ReleaseCachedResources();
-        }
-
-        void CreateVisuals(Vector3 spawnPoint, out LineRenderer aura, out LineRenderer core,
-            out Light releaseLight, out ParticleSystem particles)
-        {
-            effectRoot = new GameObject("PetSummon_ReleaseFx");
-            effectRoot.transform.position = spawnPoint;
-            EnsureEffectResources();
-
-            aura = CreateLine("Aura", beamColor, beamWidth, effectMaterial);
-            core = CreateLine("Core", coreColor, beamWidth * 0.34f, effectMaterial);
-
-            releaseLight = effectRoot.AddComponent<Light>();
-            releaseLight.type = LightType.Point;
-            releaseLight.color = beamColor;
-            releaseLight.range = 3f;
-            releaseLight.intensity = 0f;
-            releaseLight.shadows = LightShadows.None;
-
-            particles = CreateParticles(effectMaterial);
-        }
-
-        LineRenderer CreateLine(string lineName, Color color, float width, Material material)
-        {
-            GameObject lineObject = new GameObject(lineName);
-            lineObject.transform.SetParent(effectRoot.transform, false);
-            LineRenderer line = lineObject.AddComponent<LineRenderer>();
-            line.useWorldSpace = true;
-            line.positionCount = 12;
-            line.startColor = color;
-            line.endColor = new Color(color.r, color.g, color.b, 0f);
-            line.widthMultiplier = width;
-            line.numCapVertices = 4;
-            line.numCornerVertices = 2;
-            line.textureMode = LineTextureMode.Tile;
-            line.alignment = LineAlignment.View;
-            line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            line.receiveShadows = false;
-            if (material != null)
-            {
-                line.sharedMaterial = material;
-            }
-
-            return line;
-        }
-
-        ParticleSystem CreateParticles(Material material)
-        {
-            GameObject particleObject = new GameObject("Burst");
-            particleObject.transform.SetParent(effectRoot.transform, false);
-            particleObject.transform.localPosition = Vector3.up * particleHeight;
-
-            ParticleSystem particles = particleObject.AddComponent<ParticleSystem>();
-            particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            ParticleSystem.MainModule main = particles.main;
-            main.loop = false;
-            main.playOnAwake = false;
-            main.duration = 0.7f;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.28f, 0.58f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(0.45f, 1.25f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.035f, 0.11f);
-            main.startColor = new ParticleSystem.MinMaxGradient(coreColor, beamColor);
-            main.maxParticles = Mathf.Max(8, burstParticleCount + 4);
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-
-            ParticleSystem.EmissionModule emission = particles.emission;
-            emission.rateOverTime = 0f;
-            if (burstParticleCount > 0)
-            {
-                emission.SetBursts(new[]
-                {
-                    new ParticleSystem.Burst(0f, (short)burstParticleCount)
-                });
-            }
-
-            ParticleSystem.ShapeModule shape = particles.shape;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius = 0.18f;
-
-            ParticleSystem.ColorOverLifetimeModule colorOverLifetime = particles.colorOverLifetime;
-            colorOverLifetime.enabled = true;
-            Gradient fade = new Gradient();
-            fade.SetKeys(
-                new[]
-                {
-                    new GradientColorKey(coreColor, 0f),
-                    new GradientColorKey(beamColor, 1f)
-                },
-                new[]
-                {
-                    new GradientAlphaKey(0f, 0f),
-                    new GradientAlphaKey(1f, 0.15f),
-                    new GradientAlphaKey(0f, 1f)
-                });
-            colorOverLifetime.color = fade;
-
-            ParticleSystemRenderer renderer = particles.GetComponent<ParticleSystemRenderer>();
-            renderer.renderMode = ParticleSystemRenderMode.Billboard;
-            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            renderer.receiveShadows = false;
-            if (material != null)
-            {
-                renderer.sharedMaterial = material;
-            }
-
-            return particles;
-        }
-
-        void EnsureEffectResources()
-        {
-            if (effectNoiseTexture == null)
-            {
-                effectNoiseTexture = CreateNoiseTexture();
-            }
-
-            if (effectMaterial == null)
-            {
-                effectMaterial = CreateEffectMaterial();
-            }
-        }
-
-        Material CreateEffectMaterial()
-        {
-            Shader shader = Shader.Find("Sprites/Default");
-            if (shader == null)
-            {
-                shader = Shader.Find("Universal Render Pipeline/Unlit");
-            }
-
-            if (shader == null)
-            {
-                return null;
-            }
-
-            Material material = new Material(shader)
-            {
-                name = "PetSummon_RuntimeFx",
-                color = coreColor,
-                renderQueue = 3000,
-                hideFlags = HideFlags.DontSave
+            var go = new GameObject("PetSummon_BodyGlow") {
+                hideFlags = Application.isPlaying ? HideFlags.None : HideFlags.DontSave
             };
-            if (material.HasProperty("_BaseColor"))
-            {
-                material.SetColor("_BaseColor", coreColor);
-            }
+            go.transform.SetParent(poolRoot,false);
+            Renderer renderer;
+            if (skinned) renderer = go.AddComponent<SkinnedMeshRenderer>();
+            else { go.AddComponent<MeshFilter>(); renderer = go.AddComponent<MeshRenderer>(); }
+            renderer.shadowCastingMode = ShadowCastingMode.Off; renderer.receiveShadows = false;
+            return new BodyBinding { glow = renderer };
+        }
 
-            if (effectNoiseTexture != null)
-            {
-                if (material.HasProperty("_MainTex"))
-                {
-                    material.SetTexture("_MainTex", effectNoiseTexture);
-                    material.SetTextureScale("_MainTex", new Vector2(noiseTiling, 1f));
+        Material GetBodyMaterial(Material source)
+        {
+            if (source != null && materialCache.TryGetValue(source,out Material existing)) return existing;
+            if (source == null && defaultBodyMaterial != null) return defaultBodyMaterial;
+            Shader shader = vfxProfile != null && vfxProfile.bodyShader != null ? vfxProfile.bodyShader
+                : bodyGlowShader != null ? bodyGlowShader : Shader.Find("Capstone/PetSummonBodyGlow");
+            if (shader == null) throw new InvalidOperationException("Pet materialize shader is missing.");
+            var material = new Material(shader) { name = "PetSummon_CachedBodyGlow", hideFlags = HideFlags.DontSave };
+            if (vfxProfile != null && vfxProfile.dissolveNoise != null)
+                material.SetTexture("_DissolveNoise",vfxProfile.dissolveNoise);
+            if (source != null) {
+                string texture = source.HasProperty("_BaseMap") ? "_BaseMap" : source.HasProperty("_MainTex") ? "_MainTex" : null;
+                if (texture != null) {
+                    material.SetTexture("_BaseMap",source.GetTexture(texture));
+                    material.SetTextureScale("_BaseMap",source.GetTextureScale(texture));
+                    material.SetTextureOffset("_BaseMap",source.GetTextureOffset(texture));
                 }
-
-                if (material.HasProperty("_BaseMap"))
-                {
-                    material.SetTexture("_BaseMap", effectNoiseTexture);
-                    material.SetTextureScale("_BaseMap", new Vector2(noiseTiling, 1f));
-                }
-            }
-
+                string tint = source.HasProperty("_BaseColor") ? "_BaseColor" : source.HasProperty("_Color") ? "_Color" : null;
+                if (tint != null) material.SetColor("_BaseColor",source.GetColor(tint));
+                materialCache.Add(source,material);
+            } else defaultBodyMaterial = material;
             return material;
         }
 
-        Texture2D CreateNoiseTexture()
+        void UpdateBodyBounds()
         {
-            int size = Mathf.Clamp(noiseTextureSize, 16, 128);
-            Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false, true)
-            {
-                name = "PetSummon_ProceduralNoise",
-                wrapMode = TextureWrapMode.Repeat,
-                filterMode = FilterMode.Bilinear,
-                hideFlags = HideFlags.DontSave
-            };
-
-            Color[] pixels = new Color[size * size];
-            for (int y = 0; y < size; y++)
-            {
-                float v = y / (float)size;
-                for (int x = 0; x < size; x++)
-                {
-                    float u = x / (float)size;
-                    float broad = TileablePerlin(u, v, 3f, 11.7f, 37.1f);
-                    float detail = TileablePerlin(u, v, 7f, 53.4f, 19.8f);
-                    float noise = Mathf.Clamp01(broad * 0.7f + detail * 0.3f);
-                    float softEdge = SoftEdge(u) * SoftEdge(v);
-                    float alpha = Mathf.SmoothStep(0.22f, 0.82f, noise) * softEdge;
-                    pixels[y * size + x] = new Color(1f, 1f, 1f, alpha);
+            if (presentationPet == null) return;
+            // Animation can move the skin's centre substantially during Cast Spell.
+            // Sample the current pose, rather than carrying the first pose through the whole sequence.
+            // The same mesh buffer is reused and only the current form is baked while VFX is active.
+            CapturePoseBounds();
+            Transform root = presentationPet.transform;
+            // This frame has the pet's orientation but no scale: renderer matrices already include all parent scales.
+            Matrix4x4 worldToFrame = Matrix4x4.TRS(root.position,root.rotation,Vector3.one).inverse;
+            bool poseFound = false, cullingFound = false;
+            Bounds posed = default, conservative = default;
+            for (int i=0;i<bodies.Count;i++) {
+                BodyBinding binding = bodies[i]; if (binding.source == null) continue;
+                Matrix4x4 matrix = worldToFrame*binding.source.transform.localToWorldMatrix;
+                if (binding.poseVertices.Count > 0) {
+                    for (int v=0;v<binding.poseVertices.Count;v++) {
+                        Vector3 point=matrix.MultiplyPoint3x4(binding.poseVertices[v]);
+                        if (!poseFound) { posed=new Bounds(point,Vector3.zero); poseFound=true; }
+                        else posed.Encapsulate(point);
+                    }
+                } else EncapsulateTransformedBounds(binding.poseBounds,matrix,ref posed,ref poseFound);
+                EncapsulateTransformedBounds(binding.localBounds,matrix,ref conservative,ref cullingFound);
+            }
+            if (!poseFound) return;
+            bodyCenter = root.position+root.rotation*posed.center;
+            bodyHalfExtents = Vector3.Max(posed.extents,Vector3.one*.001f);
+            // A box's half extents alone do not enclose its vertices in an ellipsoid.
+            // Fit the posed surface first; padding and the transient 10% cap apply to that fit.
+            float fitSquared=1;
+            for (int i=0;i<bodies.Count;i++) {
+                BodyBinding binding=bodies[i]; if (binding.source == null) continue;
+                Matrix4x4 matrix=worldToFrame*binding.source.transform.localToWorldMatrix;
+                for (int v=0;v<binding.poseVertices.Count;v++) {
+                    Vector3 offset=matrix.MultiplyPoint3x4(binding.poseVertices[v])-posed.center;
+                    Vector3 normalized=new Vector3(offset.x/bodyHalfExtents.x,offset.y/bodyHalfExtents.y,offset.z/bodyHalfExtents.z);
+                    fitSquared=Mathf.Max(fitSquared,normalized.sqrMagnitude);
                 }
+                if (binding.poseVertices.Count==0) fitSquared=Mathf.Max(fitSquared,3);
             }
-
-            texture.SetPixels(pixels);
-            texture.Apply(false, true);
-            return texture;
+            Vector3 fittedHalo=bodyHalfExtents*Mathf.Sqrt(fitSquared);
+            Vector3 targetHalo=fittedHalo*(1+Mathf.Clamp(vfxProfile != null ? vfxProfile.haloPadding : .05f,0,.1f));
+            haloHalfExtents=haloInitialized
+                ? PetRecallWarp.SmoothHalo(haloHalfExtents,targetHalo,fittedHalo,Application.isPlaying?Time.deltaTime:0)
+                : targetHalo;
+            haloInitialized=true;
+            bodyRadius = Mathf.Max(.001f,bodyHalfExtents.magnitude)
+                * (vfxProfile != null ? Mathf.Max(.1f,vfxProfile.effectScale) : 1);
+            // Imported skin bounds remain conservative for culling, never for the flash's visible size.
+            cullingRadius = Mathf.Max(bodyRadius,conservative.extents.magnitude
+                + Vector3.Distance(conservative.center,posed.center));
         }
 
-        static float TileablePerlin(float u, float v, float frequency, float offsetX, float offsetY)
+        static void EncapsulateTransformedBounds(Bounds bounds,Matrix4x4 matrix,ref Bounds total,ref bool found)
         {
-            float x = u * frequency;
-            float y = v * frequency;
-            float x0 = Mathf.PerlinNoise(x + offsetX, y + offsetY);
-            float x1 = Mathf.PerlinNoise(x - frequency + offsetX, y + offsetY);
-            float y0 = Mathf.PerlinNoise(x + offsetX, y - frequency + offsetY);
-            float xy = Mathf.PerlinNoise(x - frequency + offsetX, y - frequency + offsetY);
-            float blendX0 = Mathf.Lerp(x0, x1, u);
-            float blendX1 = Mathf.Lerp(y0, xy, u);
-            return Mathf.Lerp(blendX0, blendX1, v);
-        }
-
-        static float SoftEdge(float value)
-        {
-            return Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(value / 0.12f))
-                * Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((1f - value) / 0.12f));
-        }
-
-        void ScrollEnergy(float time, float direction)
-        {
-            if (effectMaterial == null)
-            {
-                return;
-            }
-
-            Vector2 offset = new Vector2(time * energyScrollSpeed * direction, 0f);
-            if (effectMaterial.HasProperty("_MainTex"))
-            {
-                effectMaterial.SetTextureOffset("_MainTex", offset);
-            }
-
-            if (effectMaterial.HasProperty("_BaseMap"))
-            {
-                effectMaterial.SetTextureOffset("_BaseMap", offset);
+            Vector3 min=bounds.min, max=bounds.max;
+            for (int corner=0;corner<8;corner++) {
+                Vector3 point=matrix.MultiplyPoint3x4(new Vector3((corner&1)==0?min.x:max.x,
+                    (corner&2)==0?min.y:max.y,(corner&4)==0?min.z:max.z));
+                if (!found) { total=new Bounds(point,Vector3.zero); found=true; } else total.Encapsulate(point);
             }
         }
 
-        void UpdateBeam(LineRenderer line, Vector3 start, Vector3 end, float intensity,
-            float time, float phase)
+        void ApplyBody()
         {
-            if (line == null)
-            {
-                return;
+            if (presentationPet == null) return;
+            Transform reference = presentationPet.transform;
+            float rootScale = Mathf.Max(.0001f,Mathf.Max(reference.lossyScale.x,Mathf.Max(reference.lossyScale.y,reference.lossyScale.z)));
+            Color edge = vfxProfile != null ? vfxProfile.primaryColor : new Color(.72f,1,1,1);
+            Matrix4x4 referenceMatrix=reference.worldToLocalMatrix;
+            Vector3 referenceCenter=referenceMatrix.MultiplyPoint3x4(bodyCenter);
+            float emission=(vfxProfile != null ? vfxProfile.bodyEmission : .12f) * (spawning ? whiteBlend/.75f : 1);
+            float edgeWidth=vfxProfile != null ? vfxProfile.edgeWidth : .035f;
+            float edgeEmission=vfxProfile != null ? vfxProfile.edgeEmission : 1.5f;
+            Bounds displayBounds=new Bounds(presentationCenter,Vector3.one*Mathf.Max(.005f,cullingRadius*2.2f*presentationScale));
+            if (!spawning && recallWarp.enabled) {
+                // A vertex can still be at the far side while the leading vertices reach the ball.
+                // Rotation never increases an offset's length, so this corridor contains every warped vertex.
+                displayBounds=new Bounds(bodyCenter,Vector3.one*cullingRadius*2.2f);
+                displayBounds.Encapsulate(recallWarp.ball+Vector3.one*cullingRadius);
+                displayBounds.Encapsulate(recallWarp.ball-Vector3.one*cullingRadius);
             }
-
-            intensity = Mathf.Clamp01(intensity);
-            line.enabled = intensity > 0.001f;
-            line.widthMultiplier = (line.name == "Core" ? beamWidth * 0.34f : beamWidth) * intensity;
-
-            Vector3 direction = end - start;
-            Vector3 side = Vector3.Cross(direction.normalized, Vector3.up);
-            if (side.sqrMagnitude < 0.001f)
-            {
-                side = Vector3.right;
-            }
-            else
-            {
-                side.Normalize();
-            }
-
-            int lastIndex = line.positionCount - 1;
-            for (int i = 0; i < line.positionCount; i++)
-            {
-                float t = lastIndex > 0 ? i / (float)lastIndex : 0f;
-                float envelope = Mathf.Sin(t * Mathf.PI);
-                float wave = Mathf.Sin(t * 15f + time * 18f + phase);
-                Vector3 point = Vector3.Lerp(start, end, t)
-                    + side * (wave * beamWobble * envelope * intensity);
-                line.SetPosition(i, point);
-            }
-        }
-
-        static Vector3 ResolveSourcePosition(Transform source, Vector3 fallback)
-        {
-            return source != null ? source.position : fallback + Vector3.up * 0.25f;
-        }
-
-        static void SetLight(Light releaseLight, float intensity)
-        {
-            if (releaseLight != null)
-            {
-                releaseLight.intensity = Mathf.Max(0f, intensity);
-            }
-        }
-
-        static void MoveAndSetLight(Light effectLight, Vector3 position, float intensity)
-        {
-            if (effectLight == null)
-            {
-                return;
-            }
-
-            effectLight.transform.position = position;
-            effectLight.intensity = Mathf.Max(0f, intensity);
-        }
-
-        Vector3 ResolvePetCenter(PetController pet)
-        {
-            if (pet != null)
-            {
-                return pet.transform.position + Vector3.up * particleHeight;
-            }
-
-            return effectRoot != null
-                ? effectRoot.transform.position + Vector3.up * particleHeight
-                : Vector3.up * particleHeight;
-        }
-
-        static void SetRecallGradient(LineRenderer line, Color color)
-        {
-            if (line == null)
-            {
-                return;
-            }
-
-            line.startColor = new Color(color.r, color.g, color.b, 0.12f);
-            line.endColor = color;
-        }
-
-        Vector3 SqueezedScale(Vector3 scale)
-        {
-            return new Vector3(
-                scale.x * initialHorizontalScale,
-                scale.y * initialVerticalScale,
-                scale.z * initialHorizontalScale);
-        }
-
-        Vector3 DistortedScale(Vector3 scale, float horizontal, float vertical, float progress,
-            float distortionWeight)
-        {
-            float flutter = Mathf.Sin(progress * Mathf.PI * 5f + Time.time * 8f)
-                * distortionAmount * Mathf.Clamp01(distortionWeight);
-            float x = Mathf.Max(0.01f, horizontal * (1f + flutter));
-            float z = Mathf.Max(0.01f, horizontal * (1f - flutter));
-            float stretch = 1f + Mathf.Abs(flutter) * 1.4f;
-            return new Vector3(scale.x * x, scale.y * Mathf.Max(0.01f, vertical * stretch),
-                scale.z * z);
-        }
-
-        void CleanupVisuals()
-        {
-            DestroyRuntimeObject(effectRoot);
-            effectRoot = null;
-        }
-
-        void ReleaseCachedResources()
-        {
-            DestroyRuntimeObject(effectMaterial);
-            DestroyRuntimeObject(effectNoiseTexture);
-            effectMaterial = null;
-            effectNoiseTexture = null;
-        }
-
-        static void DestroyRuntimeObject(UnityEngine.Object target)
-        {
-            if (target == null)
-            {
-                return;
-            }
-
-            if (Application.isPlaying)
-            {
-                Destroy(target);
-            }
-            else
-            {
-                DestroyImmediate(target);
+            for (int i=0;i<bodies.Count;i++) {
+                BodyBinding binding = bodies[i]; if (binding.glow == null || binding.source == null) continue;
+                Renderer glow = binding.glow;
+                glow.enabled = glowOpacity > .001f && !petHidden;
+                if (!glow.enabled) continue;
+                for (int m=0;m<binding.materials.Length;m++) {
+                    properties.Clear(); binding.source.GetPropertyBlock(properties,m);
+                    properties.SetColor(ShaderIds.GlowColor,new Color(1,1,1,glowOpacity));
+                    properties.SetVector(ShaderIds.BodyCenter,bodyCenter);
+                    properties.SetVector(ShaderIds.PresentationCenter,presentationCenter);
+                    properties.SetFloat(ShaderIds.PresentationScale,presentationScale);
+                    properties.SetFloat(ShaderIds.WhiteBlend,whiteBlend);
+                    properties.SetFloat(ShaderIds.GlowEmission,emission);
+                    properties.SetFloat(ShaderIds.DissolveAmount,dissolveAmount);
+                    properties.SetFloat(ShaderIds.DissolveDirection,spawning ? 0 : 1);
+                    properties.SetFloat(ShaderIds.EdgeWidth,edgeWidth);
+                    properties.SetFloat(ShaderIds.EdgeEmission,edgeEmission);
+                    properties.SetColor(ShaderIds.EdgeColor,edge);
+                    properties.SetMatrix(ShaderIds.ReferenceWorldToLocal,referenceMatrix);
+                    properties.SetVector(ShaderIds.ReferenceCenter,referenceCenter);
+                    properties.SetFloat(ShaderIds.ReferenceRadius,bodyRadius/rootScale);
+                    properties.SetVector(ShaderIds.RecallBall,recallWarp.ball);
+                    properties.SetVector(ShaderIds.RecallWarp,new Vector4(!spawning && recallWarp.enabled ? 1 : 0,
+                        effectTime,recallWarp.delay,recallWarp.twist));
+                    // The axis's W component carries the extent of the original pose along the pull direction.
+                    properties.SetVector(ShaderIds.RecallAxis,new Vector4(recallWarp.axis.x,recallWarp.axis.y,
+                        recallWarp.axis.z,recallWarp.axialExtent));
+                    glow.SetPropertyBlock(properties,m);
+                }
+                glow.bounds = displayBounds;
             }
         }
 
-        static float Smooth01(float value)
+        void RestoreBody()
         {
-            value = Mathf.Clamp01(value);
-            return value * value * (3f - 2f * value);
+            if (originalVisible) return;
+            for (int i=0;i<bodies.Count;i++) {
+                BodyBinding binding = bodies[i];
+                if (binding.source != null) binding.source.enabled = binding.enabledBefore
+                    && presentationPet != null && presentationPet.ShouldShowVisualRenderer(binding.source);
+            }
+            originalVisible = true;
         }
 
-        static float EaseOutBack(float value)
+        void HideBall(Transform ball)
         {
-            value = Mathf.Clamp01(value) - 1f;
-            const float overshoot = 1.35f;
-            return 1f + (overshoot + 1f) * value * value * value
-                + overshoot * value * value;
+            rendererBuffer.Clear(); ball.GetComponentsInChildren(true,rendererBuffer);
+            for (int i=0;i<rendererBuffer.Count;i++) {
+                Renderer renderer = rendererBuffer[i]; if (!renderer.enabled) continue;
+                hiddenBallRenderers.Add(renderer); renderer.enabled = false;
+            }
+        }
+
+        public static Vector3 ResolveBallCenter(Transform ball, SphereCollider collider)
+            => collider != null ? collider.transform.TransformPoint(collider.center) : ball.position;
+
+        public void Cancel() { sequenceVersion++; RestoreAndReturn(); }
+
+        void ReturnVfx()
+        {
+            if (activeInstance == null) return;
+            activeInstance.ResetPresentation(); activeInstance.gameObject.SetActive(false); activeInstance = null;
+        }
+
+        void RestoreAndReturn()
+        {
+            RestoreBody(); ReturnVfx();
+            for (int i=0;i<bodies.Count;i++) {
+                BodyBinding binding = bodies[i];
+                if (binding.source is SkinnedMeshRenderer original) original.updateWhenOffscreen = binding.offscreenBefore;
+                // The pet or its current model can be destroyed before the coroutine is cancelled.
+                if (binding.glow == null) { binding.source=null; binding.sources.Clear(); continue; }
+                binding.glow.enabled = false; binding.glow.gameObject.SetActive(false);
+                binding.glow.transform.SetParent(poolRoot,false); binding.glow.ResetBounds();
+                if (binding.glow is SkinnedMeshRenderer glow) {
+                    glow.sharedMesh = null; glow.bones = Array.Empty<Transform>(); glow.rootBone = null; skinnedPool.Push(binding);
+                } else { binding.glow.GetComponent<MeshFilter>().sharedMesh = null; staticPool.Push(binding); }
+                binding.source = null; binding.sources.Clear();
+            }
+            bodies.Clear(); rendererBuffer.Clear();
+            if (presentationAnimator != null) {
+                presentationAnimator.cullingMode = cullingBefore;
+            }
+            presentationAnimator = null;
+            for (int i=0;i<hiddenBallRenderers.Count;i++)
+                if (hiddenBallRenderers[i] != null) hiddenBallRenderers[i].enabled = true;
+            hiddenBallRenderers.Clear();
+            if (presentationPet != null) {
+                if (presentationPet.IsSummonPresentationPending) presentationPet.Withdraw();
+                presentationPet.SetRecallPresentation(false);
+            }
+            presentationPet = null; releaseBall = null; ballCollider = null;
+            bodyRadius = cullingRadius = captureProgress = dissolveAmount = effectTime = 0;
+            bodyHalfExtents = Vector3.zero;
+            presentationScale = glowOpacity = 1;
+            originalVisible = petHidden = spawning = false;
+        }
+
+        void OnDisable() { Cancel(); }
+        void OnDestroy()
+        {
+            Cancel();
+            foreach (Material material in materialCache.Values) DestroyResource(material);
+            materialCache.Clear(); DestroyResource(defaultBodyMaterial); DestroyResource(poseMesh);
+            if (poolRoot != null) DestroyResource(poolRoot.gameObject);
+        }
+
+        static void DestroyResource(UnityEngine.Object item) {
+            if (item == null) return;
+            if (Application.isPlaying) Destroy(item); else DestroyImmediate(item);
+        }
+        static float Smooth(float x) { x = Mathf.Clamp01(x); return x*x*(3-2*x); }
+    }
+
+    // CPU reference for the vertex deformation and its bounds/Editor checks.
+    // PetSummonBodyGlow uses the same equations; animation is evaluated before this presentation.
+    public struct PetRecallWarp
+    {
+        public Vector3 center, ball, axis;
+        public float time, delay, twist, axialExtent;
+        public bool enabled;
+
+        public static PetRecallWarp Create(Vector3 center,Vector3 ball,Vector3 extents,Quaternion rotation,
+            float time,PetVFXProfile profile)
+        {
+            Vector3 delta=ball-center;
+            float distance=delta.magnitude;
+            Vector3 axis=distance>.00001f?delta/distance:Vector3.forward;
+            float span=Mathf.Abs(Vector3.Dot(axis,rotation*Vector3.right))*extents.x
+                + Mathf.Abs(Vector3.Dot(axis,rotation*Vector3.up))*extents.y
+                + Mathf.Abs(Vector3.Dot(axis,rotation*Vector3.forward))*extents.z;
+            float proximity=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.02f,.5f,distance/Mathf.Max(.001f,span)));
+            return new PetRecallWarp {
+                center=center,ball=ball,axis=axis,time=time,axialExtent=Mathf.Max(.001f,span),
+                enabled=profile==null || profile.deformRecall,
+                delay=Mathf.Clamp(profile!=null?profile.recallPullDelay:.08f,0,.08f)*proximity,
+                twist=Mathf.Clamp(profile!=null?profile.recallTwistDegrees:60f,0,60)*Mathf.Deg2Rad*proximity
+            };
+        }
+
+        public Vector3 TransformPoint(Vector3 point)
+        {
+            Vector3 offset=point-center;
+            if (!enabled) {
+                float uniform=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.18f,.56f,time));
+                return Vector3.Lerp(center,ball,uniform)+offset*(1-uniform);
+            }
+            float axial=Vector3.Dot(offset,axis);
+            float near=Mathf.Clamp01(.5f+.5f*axial/axialExtent);
+            float pull=Mathf.SmoothStep(0,1,Mathf.InverseLerp(.18f+delay*(1-near),.56f,time));
+            Vector3 radial=offset-axis*axial;
+            float angle=twist*pull*(.35f+.65f*near);
+            radial=radial*Mathf.Cos(angle)+Vector3.Cross(axis,radial)*Mathf.Sin(angle);
+            return Vector3.Lerp(center,ball,pull)+axis*axial*(1-pull)+radial*((1-pull)*(1-pull));
+        }
+
+        public static Vector3 SmoothHalo(Vector3 current,Vector3 target,Vector3 model,float deltaTime)
+        {
+            float ease=1-Mathf.Exp(-Mathf.Max(0,deltaTime)/.08f);
+            return Vector3.Min(Vector3.Max(target,Vector3.Lerp(current,target,ease)),model*1.1f);
         }
     }
 }

@@ -226,6 +226,7 @@ namespace Capstone.Game.QuestSystem {
 
         ItemBase ResolveItem(QuestRewardDefinition reward) {
             if (inventory == null || reward == null) return null;
+            if (reward.ItemDefinition != null) return reward.ItemDefinition;
             string itemId = !string.IsNullOrWhiteSpace(reward.TargetId) ? reward.TargetId : reward.RewardId;
             return inventory.FindItemBase(itemId);
         }

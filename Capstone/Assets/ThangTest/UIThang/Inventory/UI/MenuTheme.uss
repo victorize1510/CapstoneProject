@@ -1,0 +1,17 @@
+/* Shared screen palette: Quest's warm outer canvas, opaque white content surfaces. */
+.menu-theme {
+    -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf");
+    --menu-header-height: 76px;
+    --menu-background: #f8f4eb;
+    --menu-surface: #ffffff;
+    --menu-title-size: 38px;
+    --menu-title-color: #174a30;
+    --menu-heading-accent: #54825b;
+    --menu-back-width: 146px;
+    --menu-back-height: 42px;
+    --menu-back-text: #31573d;
+    --menu-back-surface: #fffdf6;
+    --menu-back-border: #a9bd9c;
+    --menu-back-hover: #e4edda;
+    --menu-focus-border: #c6a34d;
+}

@@ -249,7 +249,15 @@ namespace Capstone.Game.HudSystem {
 
         public bool TryToggleSelectedPetFavorite(out bool favorite) {
             ResolveReferences();
-            PetController pet = GetSelectedPet();
+            return TryTogglePetFavorite(GetSelectedPet(), out favorite);
+        }
+
+        public bool TryTogglePetFavoriteAt(int slotIndex, out bool favorite) {
+            ResolveReferences();
+            return TryTogglePetFavorite(GetPetAt(slotIndex), out favorite);
+        }
+
+        bool TryTogglePetFavorite(PetController pet, out bool favorite) {
             if (pet == null) {
                 favorite = false;
                 return false;
@@ -266,6 +274,7 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
 
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(pet, "favorite")) { favorite = metadata.IsFavorite; return false; }
             PetCustomizationSaveData snapshot = metadata.CreateSaveData();
             favorite = metadata.ToggleFavorite();
             if (!saveController.SaveNow()) {
@@ -296,6 +305,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TrySwapPetSlots(int sourceIndex, int targetIndex) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "swap-party")) return false;
             ResolveReferences();
             if (petCommandInput == null || petCommandInput.petSlots == null) return false;
             if (sourceIndex < 0 || sourceIndex >= petCommandInput.petSlots.Length) return false;
@@ -323,8 +333,10 @@ namespace Capstone.Game.HudSystem {
 
         public void RequestSkill(int skillIndex) {
             ResolveReferences();
+            if (Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
+                || petCommandInput == null || !petCommandInput.CanUsePetSkills) return;
             PetController pet = GetSelectedPet();
-            if (pet == null) return;
+            if (pet == null || pet != petCommandInput.activePet) return;
 
             bool sentToReceiver = false;
             foreach (MonoBehaviour behaviour in GetPetBehaviours(pet)) {

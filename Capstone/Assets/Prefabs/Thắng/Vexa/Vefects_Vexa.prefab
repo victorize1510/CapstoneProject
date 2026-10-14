@@ -226,6 +226,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7156859736262027526}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &733134733134733137
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 733134733134733138}
+  m_Layer: 0
+  m_Name: BallSocket_PetSummon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &733134733134733138
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 733134733134733137}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.06, y: -0.02, z: -0.05}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3654529430879414648}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &788650771916813736
 GameObject:
   m_ObjectHideFlags: 0
@@ -2835,7 +2866,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 91222443b6439ca4aa39ef3dc2e961be, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BasicPlayerMovement
   animator: {fileID: 3273677307038072477}
   cameraTransform: {fileID: 0}
@@ -3027,37 +3058,6 @@ MonoBehaviour:
   isPickingUpParameter: IsPickingUp
   isThrowingParameter: IsThrowing
   idleTimerParameter: IdleTimer
---- !u!1 &733134733134733137
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 733134733134733138}
-  m_Layer: 0
-  m_Name: BallSocket_PetSummon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &733134733134733138
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 733134733134733137}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.06, y: -0.02, z: -0.05}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3654529430879414648}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &3046490218288388431
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3095,7 +3095,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0bdf51f824b06704cb30aafc343ea2d4, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.PetSummon.PetSummonHandSocket
   visualSwitcher: {fileID: 0}
   ballPrefab: {fileID: 67811545955297273, guid: 3af14d9d9cd3a5349b28963a15ffa405, type: 3}
@@ -3105,13 +3105,10 @@ MonoBehaviour:
     ballLocalPosition: {x: 0, y: 0, z: 0}
     ballLocalEulerAngles: {x: 0, y: 0, z: 0}
     ballLocalScale: 0.28
+  runtimeBoySocketLocalPosition: {x: -0.03, y: 0.08, z: 0.04}
+  runtimeVexaSocketLocalPosition: {x: -0.06, y: -0.02, z: -0.05}
   runtimeBallLocalScale: 0.26
-  visibleBallDiameter: 0.143
-  heldBallDownOffset: 0.035
-  heldBallInwardOffset: 0.04
-  boyExtraDownOffset: 0.02
-  vexaExtraDownOffset: 0.03
-  vexaExtraInwardOffset: 0.025
+  visibleBallDiameter: 0.2145
 --- !u!114 &733134733134733136
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3122,7 +3119,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c0f9a30dd87a4b04b1be9f98686b180d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.PetSummon.PetSummonDirector
   movement: {fileID: 2818233002663514387}
   visualSwitcher: {fileID: 0}
@@ -3130,8 +3127,9 @@ MonoBehaviour:
   releaseEffect: {fileID: 6051879431819106954}
   commandInput: {fileID: 0}
   aimCamera: {fileID: 0}
-  throwDistance: 3.5
-  minimumThrowDistance: 2.5
+  throwDistance: 5
+  minimumThrowDistance: 3.5
+  petSpawnAheadDistance: 0.7
   landingSearchRadius: 1.25
   groundProbeHeight: 2.5
   groundProbeDistance: 6
@@ -3144,16 +3142,13 @@ MonoBehaviour:
     m_Bits: 4294967295
   navMeshAreaMask: -1
   requireNavMesh: 0
-  releaseNormalizedTime: 0.45
+  releaseFrame: 32
   throwStartTimeout: 3
-  flightDuration: 0.58
+  throwApexHeight: 1.2
+  ballMotionSpeed: 1
   bounceDuration: 1.1
-  bounceHeight: 0.24
+  bounceHeight: 1.1
   bounceHorizontalDamping: 0.35
-  hoverRiseDuration: 0.22
-  hoverHeight: 0.45
-  hoverHoldDuration: 0.5
-  spinDegreesPerSecond: 540
   recallEffectNormalizedTime: 0.28
   pickupStartTimeout: 3
   pickupCompletionTimeout: 3
@@ -3167,26 +3162,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7e3b45fa1c6d4b82a58d7ef9346b12cd, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.PetSummon.PetSummonReleaseEffect
-  beamColor: {r: 0.2, g: 1, b: 0.58, a: 0.72}
-  coreColor: {r: 0.86, g: 1, b: 0.94, a: 1}
-  beamBuildDuration: 0.18
-  revealDuration: 0.48
-  recallBeamBuildDuration: 0.16
-  recallDuration: 0.46
-  settleDuration: 0.12
-  beamWidth: 0.16
-  beamWobble: 0.055
-  initialHorizontalScale: 0.12
-  initialVerticalScale: 0.04
-  beamTargetHeight: 0.06
-  particleHeight: 0.42
-  burstParticleCount: 26
-  energyScrollSpeed: 2.8
-  noiseTextureSize: 64
-  noiseTiling: 4.5
-  distortionAmount: 0.14
+  vfxProfile: {fileID: 11400000, guid: 15deeaf933d10a14cb21396142d35772, type: 2}
+  quality: 1
+  bodyGlowShader: {fileID: 4800000, guid: 46e1501f1e204ec39404029e38cdbb6a, type: 3}
+  presentationSpeed: 1
 --- !u!1 &9002973558079732276
 GameObject:
   m_ObjectHideFlags: 0

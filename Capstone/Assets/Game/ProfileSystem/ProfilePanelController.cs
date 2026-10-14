@@ -1,26 +1,30 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using Capstone.Game.HudSystem;
+using Capstone.Game.UISystem;
 
 namespace Capstone.Game.ProfileSystem {
     [DisallowMultipleComponent]
-    public sealed class ProfilePanelController : MonoBehaviour {
+    public sealed partial class ProfilePanelController : MonoBehaviour {
+        public Transform NavigationRoot => nameDialog != null && nameDialog.gameObject.activeSelf ? nameDialog : avatarDialog != null && avatarDialog.gameObject.activeSelf ? avatarDialog : root;
+        GameObject popupReturnFocus;
         const string RootName = "ProfilePanelRoot";
 
-        static readonly Color White = new Color(0.985f, 0.99f, 0.975f, 1f);
-        static readonly Color Forest = new Color(0.035f, 0.29f, 0.09f, 1f);
-        static readonly Color Accent = new Color(0.20f, 0.58f, 0.16f, 1f);
-        static readonly Color Pale = new Color(0.88f, 0.94f, 0.86f, 1f);
-        static readonly Color Border = new Color(0.35f, 0.55f, 0.34f, 0.72f);
+        static readonly Color White = MenuPalette.Surface;
+        static readonly Color Forest = new Color(0.09f, 0.29f, 0.19f, 1f);
+        static readonly Color Accent = new Color(0.32f, 0.51f, 0.36f, 1f);
+        static readonly Color Pale = new Color(0.88f, 0.93f, 0.85f, 1f);
+        static readonly Color Border = new Color(0.57f, 0.69f, 0.53f, 0.85f);
         static readonly Color Muted = new Color(0.30f, 0.40f, 0.31f, 1f);
 
         static Sprite solidSprite;
         static Sprite circleSprite;
-        static Font cachedFont;
 
         [Header("References")]
         [SerializeField] Canvas targetCanvas;
         [SerializeField] MonoBehaviour providerSource;
+        [SerializeField] MonoBehaviour teamProviderSource;
 
         [Header("Behaviour")]
         [SerializeField] bool buildOnAwake = true;
@@ -45,8 +49,6 @@ namespace Capstone.Game.ProfileSystem {
         Text storyProgressValue;
         Text bossesDefeatedValue;
         Text totalBattlesValue;
-        RectTransform badgeContainer;
-        Text achievementCompletionText;
         RectTransform nameDialog;
         InputField nameInput;
         Text nameError;
@@ -69,6 +71,8 @@ namespace Capstone.Game.ProfileSystem {
         void OnEnable() {
             ResolveProvider();
             SubscribeProvider();
+            ResolveTeamProvider();
+            SubscribeTeamProvider();
         }
 
         void Start() {
@@ -76,7 +80,9 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void OnDisable() {
+            Close();
             UnsubscribeProvider();
+            UnsubscribeTeamProvider();
         }
 
         public void Configure(Canvas canvas, MonoBehaviour profileProvider = null) {
@@ -108,13 +114,15 @@ namespace Capstone.Game.ProfileSystem {
             Stretch(root);
             Image rootImage = root.GetComponent<Image>();
             rootImage.sprite = SolidSprite;
-            rootImage.color = White;
+            rootImage.color = MenuPalette.Background;
             rootImage.raycastTarget = true;
 
-            BuildOuterFrame();
+            BuildDesignSurface();
             BuildHeader();
             BuildProfileSummary();
             BuildLowerPanels();
+            ResolveTeamProvider();
+            FitDesignSurface();
             BuildNameDialog();
             BuildAvatarDialog();
 
@@ -125,14 +133,18 @@ namespace Capstone.Game.ProfileSystem {
 
         public void Open() {
             openedExplicitly = true;
+            selectedTeamIndex = -1;
             if (root == null) RebuildPanel();
             if (root == null) return;
 
             root.SetAsLastSibling();
             root.gameObject.SetActive(true);
+            ResolveTeamProvider();
+            FitDesignSurface();
             HideNameDialog();
             HideAvatarDialog();
             Refresh();
+            Capstone.Game.UISystem.MenuKeyboardNavigation.FocusFirst(root);
         }
 
         public void Close() {
@@ -143,250 +155,24 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void RequestBack() {
-            if (avatarDialog != null && avatarDialog.gameObject.activeSelf) {
-                HideAvatarDialog();
-                return;
-            }
-
-            if (nameDialog != null && nameDialog.gameObject.activeSelf) {
-                HideNameDialog();
-                return;
-            }
-
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "RequestBack")) return;
+            if (TryClosePopup()) return;
             if (BackRequested != null) BackRequested.Invoke();
             else Close();
         }
 
-        void BuildOuterFrame() {
-            Outline outline = root.GetComponent<Outline>();
-            if (outline == null) outline = root.gameObject.AddComponent<Outline>();
-            outline.effectColor = Border;
-            outline.effectDistance = new Vector2(2f, -2f);
-            outline.useGraphicAlpha = true;
-
-            RectTransform bottomLeft = CreatePanel(root, "BottomLeftDecoration", Pale, false);
-            SetBottomLeft(bottomLeft, 28f, 24f, 110f, 5f);
-            RectTransform bottomRight = CreatePanel(root, "BottomRightDecoration", Pale, false);
-            SetBottomRight(bottomRight, 28f, 24f, 110f, 5f);
-        }
-
-        void BuildHeader() {
-            RectTransform header = CreatePanel(root, "ProfileHeader", White, true);
-            SetTopStretch(header, 8f, 8f, 8f, 88f);
-            AddOutline(header.gameObject, Border, 1f);
-
-            RectTransform separator = CreatePanel(header, "Separator", Pale, false);
-            SetBottomStretch(separator, 0f, 0f, 0f, 2f);
-
-            RectTransform emblem = CreatePanel(header, "Emblem", Accent, false);
-            SetTopLeft(emblem, 42f, 27f, 30f, 30f);
-            emblem.localRotation = Quaternion.Euler(0f, 0f, 45f);
-
-            Text title = CreateText(header, "Title", "PROFILE", 39, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(title.rectTransform, 92f, 11f, 350f, 66f);
-
-            Button back = CreateOutlinedButton(header, "BackButton", "<  QUAY LẠI", 18);
-            SetTopRight(back.GetComponent<RectTransform>(), 28f, 18f, 202f, 52f);
-            back.onClick.AddListener(RequestBack);
-        }
-
-        void BuildProfileSummary() {
-            RectTransform summary = CreatePanel(root, "ProfileSummary", White, true);
-            SetTopStretch(summary, 24f, 110f, 24f, 392f);
-            AddOutline(summary.gameObject, Border, 1f);
-
-            RectTransform avatarOuter = CreatePanel(summary, "AvatarOuter", Forest, false);
-            avatarOuter.GetComponent<Image>().sprite = CircleSprite;
-            SetTopLeft(avatarOuter, 138f, 24f, 274f, 274f);
-
-            RectTransform avatarInner = CreatePanel(avatarOuter, "AvatarMask", White, true);
-            avatarInner.GetComponent<Image>().sprite = CircleSprite;
-            SetInset(avatarInner, 4f);
-            Mask mask = avatarInner.gameObject.AddComponent<Mask>();
-            mask.showMaskGraphic = true;
-
-            avatarImage = CreatePanel(avatarInner, "Avatar", Color.clear, false).GetComponent<Image>();
-            Stretch(avatarImage.rectTransform);
-            avatarImage.preserveAspect = true;
-
-            avatarPlaceholder = CreateText(avatarInner, "AvatarPlaceholder", "AVATAR", 22, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            Stretch(avatarPlaceholder.rectTransform);
-
-            RectTransform avatarDiamond = CreatePanel(summary, "AvatarDiamond", new Color(0.75f, 0.94f, 0.95f, 1f), false);
-            SetTopLeft(avatarDiamond, 263f, 13f, 24f, 24f);
-            avatarDiamond.localRotation = Quaternion.Euler(0f, 0f, 45f);
-            AddOutline(avatarDiamond.gameObject, Forest, 1f);
-
-            RectTransform leafLeft = CreatePanel(summary, "AvatarLeafLeft", Pale, false);
-            SetTopLeft(leafLeft, 128f, 260f, 66f, 9f);
-            leafLeft.localRotation = Quaternion.Euler(0f, 0f, 32f);
-            RectTransform leafRight = CreatePanel(summary, "AvatarLeafRight", Pale, false);
-            SetTopLeft(leafRight, 356f, 260f, 66f, 9f);
-            leafRight.localRotation = Quaternion.Euler(0f, 0f, -32f);
-
-            changeAvatarButton = CreateOutlinedButton(summary, "ChangeAvatarButton", "CHANGE AVATAR", 17);
-            SetTopLeft(changeAvatarButton.GetComponent<RectTransform>(), 156f, 306f, 238f, 52f);
-            changeAvatarButton.onClick.AddListener(ChangeAvatar);
-
-            displayNameText = CreateText(summary, "DisplayName", string.Empty, 38, FontStyle.Normal, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(displayNameText.rectTransform, 500f, 54f, 520f, 58f);
-
-            RectTransform nameLine = CreatePanel(summary, "NameLine", Border, false);
-            SetTopLeft(nameLine, 500f, 124f, 520f, 1f);
-
-            Button changeName = CreateOutlinedButton(summary, "ChangeNameButton", "CHANGE NAME", 17);
-            SetTopLeft(changeName.GetComponent<RectTransform>(), 1032f, 57f, 220f, 52f);
-            changeName.onClick.AddListener(ShowNameDialog);
-
-            RectTransform levelBadge = CreatePanel(summary, "LevelBadge", White, false);
-            SetTopLeft(levelBadge, 500f, 160f, 110f, 110f);
-            AddOutline(levelBadge.gameObject, Border, 2f);
-            Text levelCaption = CreateText(levelBadge, "LevelCaption", "Lv.", 18, FontStyle.Normal, Forest, TextAnchor.UpperCenter);
-            SetTopStretch(levelCaption.rectTransform, 4f, 12f, 4f, 28f);
-            levelText = CreateText(levelBadge, "LevelValue", "-", 42, FontStyle.Normal, Accent, TextAnchor.MiddleCenter);
-            SetBottomStretch(levelText.rectTransform, 4f, 10f, 4f, 62f);
-
-            Text experienceCaption = CreateText(summary, "ExperienceCaption", "EXP", 18, FontStyle.Normal, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(experienceCaption.rectTransform, 648f, 168f, 100f, 32f);
-            experiencePercentText = CreateText(summary, "ExperiencePercent", "-", 18, FontStyle.Normal, Forest, TextAnchor.MiddleRight);
-            SetTopLeft(experiencePercentText.rectTransform, 1140f, 168f, 116f, 32f);
-
-            RectTransform experienceTrack = CreatePanel(summary, "ExperienceTrack", Pale, false);
-            SetTopLeft(experienceTrack, 648f, 210f, 608f, 18f);
-            experienceFill = CreatePanel(experienceTrack, "Fill", Accent, false).GetComponent<Image>();
-            experienceFill.type = Image.Type.Filled;
-            experienceFill.fillMethod = Image.FillMethod.Horizontal;
-            experienceFill.fillOrigin = 0;
-            experienceFill.fillAmount = 0f;
-            Stretch(experienceFill.rectTransform);
-
-            experienceValueText = CreateText(summary, "ExperienceValue", "- / -", 18, FontStyle.Normal, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(experienceValueText.rectTransform, 648f, 240f, 608f, 36f);
-
-            Text badgeTitle = CreateText(summary, "BadgeTitle", "HUY HIỆU", 17, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(badgeTitle.rectTransform, 1328f, 46f, 210f, 32f);
-            achievementCompletionText = CreateText(summary, "AchievementCompletion", "0%", 16, FontStyle.Normal, Muted, TextAnchor.MiddleRight);
-            SetTopLeft(achievementCompletionText.rectTransform, 1530f, 46f, 170f, 32f);
-            badgeContainer = CreatePanel(summary, "BadgeShowcase", new Color(Pale.r, Pale.g, Pale.b, 0.35f), false);
-            SetTopLeft(badgeContainer, 1328f, 88f, 372f, 190f);
-            AddOutline(badgeContainer.gameObject, Border, 1f);
-
-            RectTransform decoration = CreatePanel(summary, "SummaryDecoration", Pale, false);
-            SetTopStretch(decoration, 500f, 318f, 392f, 2f);
-        }
-
-        void BuildLowerPanels() {
-            RectTransform playerInfo = CreatePanel(root, "PlayerInfoPanel", White, true);
-            SetBottomLeft(playerInfo, 24f, 24f, 680f, 530f);
-            AddOutline(playerInfo.gameObject, Border, 1f);
-            BuildSectionHeader(playerInfo, "PLAYER INFO", "P");
-
-            playerIdValue = BuildInfoRow(playerInfo, "ID", "Player ID", 100f);
-            playTimeValue = BuildInfoRow(playerInfo, "T", "Play Time", 198f);
-            currentAreaValue = BuildInfoRow(playerInfo, "A", "Current Area", 296f);
-            dateStartedValue = BuildInfoRow(playerInfo, "D", "Play Start Date", 394f);
-
-            RectTransform stats = CreatePanel(root, "StatsOverviewPanel", White, true);
-            SetBottomStretch(stats, 720f, 24f, 24f, 530f);
-            AddOutline(stats.gameObject, Border, 1f);
-            BuildSectionHeader(stats, "STATS OVERVIEW", "S");
-
-            creaturesSeenValue = BuildStatCard(stats, "CreaturesSeen", "PAW", "Creatures Seen", 26f, 116f);
-            speciesCapturedValue = BuildStatCard(stats, "SpeciesCaptured", "PET", "Species Captured", 403f, 116f);
-            codexValue = BuildStatCard(stats, "Codex", "BOOK", "Codex", 780f, 116f);
-            storyProgressValue = BuildStatCard(stats, "StoryProgress", "STORY", "Story Progress", 26f, 318f);
-            bossesDefeatedValue = BuildStatCard(stats, "BossesDefeated", "BOSS", "Bosses Defeated", 403f, 318f);
-            totalBattlesValue = BuildStatCard(stats, "TotalBattles", "VS", "Total Battles", 780f, 318f);
-        }
-
-        void BuildSectionHeader(RectTransform panel, string title, string iconText) {
-            Text icon = CreateText(panel, "HeaderIcon", iconText, 13, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            SetTopLeft(icon.rectTransform, 26f, 20f, 62f, 38f);
-            Text heading = CreateText(panel, "HeaderTitle", title, 25, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(heading.rectTransform, 94f, 18f, 330f, 42f);
-            RectTransform divider = CreatePanel(panel, "HeaderDivider", Pale, false);
-            SetTopStretch(divider, 26f, 78f, 26f, 2f);
-        }
-
-        Text BuildInfoRow(RectTransform parent, string iconText, string labelText, float top) {
-            RectTransform iconBackground = CreatePanel(parent, labelText + "IconBackground", Accent, false);
-            SetTopLeft(iconBackground, 34f, top, 46f, 46f);
-            Text icon = CreateText(iconBackground, labelText + "Icon", iconText, 13, FontStyle.Bold, White, TextAnchor.MiddleCenter);
-            Stretch(icon.rectTransform);
-
-            Text label = CreateText(parent, labelText + "Label", labelText, 20, FontStyle.Normal, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(label.rectTransform, 102f, top, 235f, 46f);
-
-            Text value = CreateText(parent, labelText + "Value", string.Empty, 20, FontStyle.Normal, Forest, TextAnchor.MiddleRight);
-            SetTopStretch(value.rectTransform, 338f, top, 38f, 46f);
-
-            RectTransform line = CreatePanel(parent, labelText + "Line", new Color(Border.r, Border.g, Border.b, 0.45f), false);
-            SetTopStretch(line, 34f, top + 66f, 38f, 1f);
-            return value;
-        }
-
-        Text BuildStatCard(RectTransform parent, string name, string iconText, string labelText, float left, float top) {
-            RectTransform card = CreatePanel(parent, name + "Card", White, false);
-            SetTopLeft(card, left, top, 350f, 174f);
-            AddOutline(card.gameObject, new Color(Border.r, Border.g, Border.b, 0.45f), 1f);
-
-            RectTransform iconCircle = CreatePanel(card, "IconCircle", Pale, false);
-            iconCircle.GetComponent<Image>().sprite = CircleSprite;
-            SetTopLeft(iconCircle, 26f, 26f, 86f, 86f);
-            Text icon = CreateText(iconCircle, "Icon", iconText, 12, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            Stretch(icon.rectTransform);
-
-            Text value = CreateText(card, "Value", string.Empty, 34, FontStyle.Normal, Forest, TextAnchor.MiddleCenter);
-            SetTopStretch(value.rectTransform, 126f, 28f, 18f, 80f);
-            RectTransform line = CreatePanel(card, "ValueLine", new Color(Border.r, Border.g, Border.b, 0.42f), false);
-            SetTopStretch(line, 22f, 121f, 22f, 1f);
-            Text label = CreateText(card, "Label", labelText, 18, FontStyle.Normal, Forest, TextAnchor.MiddleCenter);
-            SetBottomStretch(label.rectTransform, 14f, 8f, 14f, 46f);
-            return value;
-        }
-
-        void BuildBadgeShowcase(AchievementSnapshot[] badges, float completion01) {
-            if (badgeContainer == null) return;
-            ClearChildren(badgeContainer);
-
-            if (achievementCompletionText != null) {
-                achievementCompletionText.text = Mathf.RoundToInt(Mathf.Clamp01(completion01) * 100f) + "%";
+        public bool TryClosePopup() {
+            if (avatarDialog != null && avatarDialog.gameObject.activeSelf) {
+                HideAvatarDialog();
+                return true;
             }
 
-            if (badges == null || badges.Length == 0) {
-                Text empty = CreateText(badgeContainer, "Empty", "Chưa có huy hiệu", 17, FontStyle.Italic, Muted, TextAnchor.MiddleCenter);
-                Stretch(empty.rectTransform);
-                return;
+            if (nameDialog != null && nameDialog.gameObject.activeSelf) {
+                HideNameDialog();
+                return true;
             }
 
-            int count = Mathf.Min(4, badges.Length);
-            const float slotWidth = 88f;
-            for (int i = 0; i < count; i++) {
-                AchievementSnapshot badge = badges[i];
-                RectTransform slot = CreatePanel(badgeContainer, "Badge_" + badge.AchievementId, Color.clear, false);
-                SetTopLeft(slot, 10f + i * slotWidth, 18f, 82f, 154f);
-
-                RectTransform iconFrame = CreatePanel(slot, "IconFrame", Pale, false);
-                iconFrame.GetComponent<Image>().sprite = CircleSprite;
-                SetTopLeft(iconFrame, 5f, 4f, 72f, 72f);
-                AddOutline(iconFrame.gameObject, Accent, 1f);
-
-                if (badge.Icon != null) {
-                    Image icon = CreatePanel(iconFrame, "Icon", Color.white, false).GetComponent<Image>();
-                    SetInset(icon.rectTransform, 9f);
-                    icon.sprite = badge.Icon;
-                    icon.preserveAspect = true;
-                } else {
-                    string initial = !string.IsNullOrWhiteSpace(badge.DisplayName)
-                        ? badge.DisplayName.Substring(0, 1).ToUpperInvariant()
-                        : "?";
-                    Text placeholder = CreateText(iconFrame, "Placeholder", initial, 25, FontStyle.Bold, Accent, TextAnchor.MiddleCenter);
-                    Stretch(placeholder.rectTransform);
-                }
-
-                Text title = CreateText(slot, "Title", badge.DisplayName, 13, FontStyle.Bold, Forest, TextAnchor.UpperCenter);
-                SetTopStretch(title.rectTransform, 0f, 88f, 0f, 58f);
-            }
+            return false;
         }
 
         void BuildNameDialog() {
@@ -397,19 +183,19 @@ namespace Capstone.Game.ProfileSystem {
             SetCenter(dialog, 0f, 0f, 570f, 278f);
             AddOutline(dialog.gameObject, Border, 2f);
 
-            Text title = CreateText(dialog, "Title", "CHANGE NAME", 27, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
+            Text title = CreateText(dialog, "Title", "ĐỔI TÊN", 27, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
             SetTopStretch(title.rectTransform, 30f, 22f, 30f, 48f);
 
             nameInput = CreateInputField(dialog, "NameInput", 30f, 86f, 510f, 58f);
             nameError = CreateText(dialog, "Error", string.Empty, 14, FontStyle.Normal, new Color(0.68f, 0.12f, 0.10f, 1f), TextAnchor.MiddleLeft);
             SetTopStretch(nameError.rectTransform, 32f, 150f, 32f, 30f);
 
-            Button cancel = CreateOutlinedButton(dialog, "CancelButton", "CANCEL", 16);
-            SetBottomRight(cancel.GetComponent<RectTransform>(), 164f, 24f, 150f, 48f);
-            cancel.onClick.AddListener(HideNameDialog);
+            Button cancel = CreateOutlinedButton(dialog, "CancelButton", "HỦY", 16);
+            SetBottomRight(cancel.GetComponent<RectTransform>(), 190f, 24f, 150f, 48f);
+            cancel.onClick.AddListener(() => { if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HideNameDialog")) HideNameDialog(); });
 
-            Button confirm = CreateOutlinedButton(dialog, "ConfirmButton", "CONFIRM", 16);
-            SetBottomRight(confirm.GetComponent<RectTransform>(), 0f, 24f, 150f, 48f);
+            Button confirm = CreateOutlinedButton(dialog, "ConfirmButton", "XÁC NHẬN", 16);
+            SetBottomRight(confirm.GetComponent<RectTransform>(), 24f, 24f, 150f, 48f);
             confirm.onClick.AddListener(ConfirmNameChange);
 
             HideNameDialog();
@@ -423,12 +209,12 @@ namespace Capstone.Game.ProfileSystem {
             SetCenter(dialog, 0f, 0f, 760f, 700f);
             AddOutline(dialog.gameObject, Border, 2f);
 
-            Text title = CreateText(dialog, "Title", "CHỌN AVATAR", 28, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
+            Text title = CreateText(dialog, "Title", "CHỌN ẢNH ĐẠI DIỆN", 28, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
             SetTopLeft(title.rectTransform, 28f, 18f, 560f, 52f);
 
             Button close = CreateOutlinedButton(dialog, "CloseButton", "×", 28);
             SetTopRight(close.GetComponent<RectTransform>(), 20f, 16f, 54f, 54f);
-            close.onClick.AddListener(HideAvatarDialog);
+            close.onClick.AddListener(() => { if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HideAvatarDialog")) HideAvatarDialog(); });
 
             RectTransform separator = CreatePanel(dialog, "Separator", Pale, false);
             SetTopStretch(separator, 24f, 80f, 24f, 2f);
@@ -458,7 +244,9 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void ShowNameDialog() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "ShowNameDialog")) return;
             if (nameDialog == null || nameInput == null) return;
+            popupReturnFocus = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
             PlayerProfileSnapshot snapshot = provider != null ? provider.GetSnapshot() : default;
             nameInput.text = snapshot.DisplayName ?? string.Empty;
             nameError.text = string.Empty;
@@ -468,19 +256,25 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void HideNameDialog() {
+            bool wasOpen = nameDialog != null && nameDialog.gameObject.activeSelf;
             if (nameDialog != null) nameDialog.gameObject.SetActive(false);
+            if (wasOpen) { Capstone.Game.UISystem.MenuKeyboardNavigation.Restore(popupReturnFocus); popupReturnFocus = null; }
         }
 
         void ShowAvatarDialog() {
             if (avatarDialog == null || avatarGrid == null || provider == null || !provider.CanChangeAvatar) return;
+            popupReturnFocus = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
             RebuildAvatarGrid();
             avatarDialog.gameObject.SetActive(true);
             avatarDialog.SetAsLastSibling();
             if (avatarScroll != null) avatarScroll.verticalNormalizedPosition = 1f;
+            Capstone.Game.UISystem.MenuKeyboardNavigation.Advance(avatarDialog, false);
         }
 
         void HideAvatarDialog() {
+            bool wasOpen = avatarDialog != null && avatarDialog.gameObject.activeSelf;
             if (avatarDialog != null) avatarDialog.gameObject.SetActive(false);
+            if (wasOpen) { Capstone.Game.UISystem.MenuKeyboardNavigation.Restore(popupReturnFocus); popupReturnFocus = null; }
         }
 
         void RebuildAvatarGrid() {
@@ -510,6 +304,7 @@ namespace Capstone.Game.ProfileSystem {
                 AddOutline(card.gameObject, selected ? Accent : Border, selected ? 3f : 1f);
 
                 Button button = card.gameObject.AddComponent<Button>();
+                button.targetGraphic = card.GetComponent<Image>();
                 ColorBlock colors = button.colors;
                 colors.normalColor = selected ? Pale : White;
                 colors.highlightedColor = new Color(0.87f, 0.95f, 0.84f, 1f);
@@ -523,7 +318,7 @@ namespace Capstone.Game.ProfileSystem {
                 portrait.sprite = sprite;
                 portrait.preserveAspect = true;
 
-                Text label = CreateText(card, "Label", "Avatar " + (visibleIndex + 1), 15, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
+                Text label = CreateText(card, "Label", "Ảnh " + (visibleIndex + 1), 15, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
                 SetBottomStretch(label.rectTransform, 10f, 7f, 10f, 30f);
 
                 if (selected) {
@@ -538,7 +333,7 @@ namespace Capstone.Game.ProfileSystem {
             }
 
             if (visibleIndex == 0) {
-                Text empty = CreateText(avatarGrid, "Empty", "Chưa có avatar trong Avatar Options.", 18, FontStyle.Italic, Muted, TextAnchor.MiddleCenter);
+                Text empty = CreateText(avatarGrid, "Empty", "Chưa có ảnh đại diện để chọn.", 18, FontStyle.Italic, Muted, TextAnchor.MiddleCenter);
                 SetTopStretch(empty.rectTransform, 20f, 180f, 20f, 60f);
             }
 
@@ -547,12 +342,14 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void SelectAvatar(int avatarIndex) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "SelectAvatar")) return;
             if (provider == null || !provider.TrySelectAvatar(avatarIndex)) return;
             HideAvatarDialog();
             Refresh();
         }
 
         void ConfirmNameChange() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "ConfirmNameChange")) return;
             if (provider == null || nameInput == null) return;
             if (provider.TrySetDisplayName(nameInput.text, out string error)) {
                 HideNameDialog();
@@ -563,6 +360,7 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void ChangeAvatar() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "ChangeAvatar")) return;
             ShowAvatarDialog();
         }
 
@@ -604,15 +402,17 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void SubscribeProvider() {
-            if (provider == null) return;
-            provider.ProfileChanged -= Refresh;
-            provider.ProfileChanged += Refresh;
+            if (provider == null || !isActiveAndEnabled) return;
+            provider.ProfileChanged -= HandleProfileChanged;
+            provider.ProfileChanged += HandleProfileChanged;
         }
 
         void UnsubscribeProvider() {
             if (provider == null) return;
-            provider.ProfileChanged -= Refresh;
+            provider.ProfileChanged -= HandleProfileChanged;
         }
+
+        void HandleProfileChanged() { if (IsOpen) Refresh(); }
 
         void Refresh() {
             if (provider == null) return;
@@ -655,6 +455,8 @@ namespace Capstone.Game.ProfileSystem {
             }
 
             if (changeAvatarButton != null) changeAvatarButton.interactable = provider.CanChangeAvatar;
+            if (avatarCameraButton != null) avatarCameraButton.interactable = provider.CanChangeAvatar;
+            if (avatarPlaceholder != null) avatarPlaceholder.text = string.IsNullOrWhiteSpace(snapshot.DisplayName) ? "?" : snapshot.DisplayName.Substring(0, 1).ToUpperInvariant();
             SetText(playerIdValue, snapshot.PlayerId);
             SetText(playTimeValue, FormatPlayTime(snapshot.PlayTimeSeconds));
             SetText(dateStartedValue, snapshot.DateStarted);
@@ -665,11 +467,11 @@ namespace Capstone.Game.ProfileSystem {
             SetText(storyProgressValue, FormatPercent(snapshot.StoryCompleted, snapshot.StoryTotal));
             SetText(bossesDefeatedValue, FormatOptionalCount(snapshot.BossesDefeated));
             SetText(totalBattlesValue, FormatOptionalCount(snapshot.TotalBattles));
-            BuildBadgeShowcase(snapshot.UnlockedBadges, snapshot.AchievementCompletion01);
+            RefreshTeam();
         }
 
         static string FormatOptionalCount(int value) {
-            return value >= 0 ? value.ToString() : "-";
+            return value >= 0 ? value.ToString() : Capstone.Game.UISystem.VietnameseUI.Unknown;
         }
 
         static string FormatPercent(int value, int total) {
@@ -695,12 +497,13 @@ namespace Capstone.Game.ProfileSystem {
             AddOutline(rect.gameObject, Border, 1f);
 
             InputField input = rect.gameObject.AddComponent<InputField>();
+            input.targetGraphic = rect.GetComponent<Image>();
             Text text = CreateText(rect, "Text", string.Empty, 18, FontStyle.Normal, Forest, TextAnchor.MiddleLeft);
             SetInset(text.rectTransform, 14f);
             text.supportRichText = false;
             input.textComponent = text;
 
-            Text placeholder = CreateText(rect, "Placeholder", "Enter player name", 18, FontStyle.Italic, new Color(Muted.r, Muted.g, Muted.b, 0.55f), TextAnchor.MiddleLeft);
+            Text placeholder = CreateText(rect, "Placeholder", "Nhập tên người chơi", 18, FontStyle.Italic, new Color(Muted.r, Muted.g, Muted.b, 0.55f), TextAnchor.MiddleLeft);
             SetInset(placeholder.rectTransform, 14f);
             input.placeholder = placeholder;
             input.characterLimit = 20;
@@ -711,16 +514,20 @@ namespace Capstone.Game.ProfileSystem {
             RectTransform rect = CreatePanel(parent, name, White, true);
             AddOutline(rect.gameObject, Border, 1f);
             Button button = rect.gameObject.AddComponent<Button>();
+            // Selectable.Reset assigns this only in the Editor, never on runtime AddComponent.
+            button.targetGraphic = rect.GetComponent<Image>();
             ColorBlock colors = button.colors;
-            colors.normalColor = White;
+            colors.normalColor = Color.white;
             colors.highlightedColor = Pale;
             colors.pressedColor = new Color(0.78f, 0.89f, 0.75f, 1f);
             colors.selectedColor = colors.highlightedColor;
             colors.disabledColor = new Color(0.90f, 0.92f, 0.89f, 0.58f);
             button.colors = colors;
 
-            Text text = CreateText(rect, "Text", label, fontSize, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            Stretch(text.rectTransform);
+            if (!string.IsNullOrEmpty(label)) {
+                Text text = CreateText(rect, "Text", label, fontSize, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
+                Stretch(text.rectTransform);
+            }
             return button;
         }
 
@@ -728,7 +535,8 @@ namespace Capstone.Game.ProfileSystem {
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Image));
             obj.transform.SetParent(parent, false);
             Image image = obj.GetComponent<Image>();
-            image.sprite = SolidSprite;
+            image.sprite = RoundedSprite;
+            image.type = Image.Type.Sliced;
             image.color = color;
             image.raycastTarget = raycastTarget;
             return obj.GetComponent<RectTransform>();
@@ -765,6 +573,7 @@ namespace Capstone.Game.ProfileSystem {
 
         static void DestroySafe(GameObject obj) {
             if (obj == null) return;
+            obj.SetActive(false);
             if (Application.isPlaying) Destroy(obj);
             else DestroyImmediate(obj);
         }
@@ -877,22 +686,22 @@ namespace Capstone.Game.ProfileSystem {
         static Sprite CircleSprite {
             get {
                 if (circleSprite != null) return circleSprite;
-                const int size = 128;
+                const int size = 512;
                 Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false) {
                     name = "ProfileCircleTexture",
                     hideFlags = HideFlags.HideAndDontSave,
-                    wrapMode = TextureWrapMode.Clamp
+                    wrapMode = TextureWrapMode.Clamp,
+                    filterMode = FilterMode.Bilinear
                 };
 
                 Color[] pixels = new Color[size * size];
                 float center = (size - 1) * 0.5f;
                 float radius = center - 1f;
-                float radiusSquared = radius * radius;
                 for (int y = 0; y < size; y++) {
                     for (int x = 0; x < size; x++) {
                         float dx = x - center;
                         float dy = y - center;
-                        pixels[y * size + x] = dx * dx + dy * dy <= radiusSquared ? Color.white : Color.clear;
+                        pixels[y * size + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(radius - Mathf.Sqrt(dx * dx + dy * dy) + 0.5f));
                     }
                 }
 
@@ -905,11 +714,6 @@ namespace Capstone.Game.ProfileSystem {
             }
         }
 
-        static Font DefaultFont {
-            get {
-                if (cachedFont == null) cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                return cachedFont;
-            }
-        }
+        static Font DefaultFont => Capstone.Game.UISystem.MenuTypography.Font;
     }
 }

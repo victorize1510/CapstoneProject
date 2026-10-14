@@ -1,0 +1,218 @@
+/* Owning panel rules. Shared colors come from MenuTheme.uss. */
+
+.keycap {
+    min-width: 30px;
+    height: 30px;
+    padding-left: 8px;
+    padding-right: 8px;
+    -unity-text-align: middle-center;
+    color: #f8edcd;
+    background-color: rgba(23, 42, 40, 0.88);
+    border-width: 1px;
+    border-color: #cdb67c;
+    border-radius: 6px;
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.unity-base-dropdown__container-outer {
+    min-width: 220px;
+    max-height: 250px;
+}
+
+.unity-base-dropdown__container-inner {
+    min-width: 218px;
+    max-height: 242px;
+}
+
+.unity-base-dropdown__container-inner .unity-scroll-view__horizontal-scroller {
+    display: none;
+}
+
+.unity-base-dropdown__container-inner .unity-scroll-view__vertical-scroller {
+    display: flex;
+}
+
+.unity-base-dropdown__item {
+    min-width: 214px;
+}
+
+.unity-base-dropdown__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.health-fill {
+    background-color: #4da335;
+}
+
+.experience-fill {
+    background-color: #3689ce;
+}
+
+.danger-pet-action {
+    color: #a5433c;
+    border-color: #cc9a91;
+}
+
+.menu-panel {
+    border-width: 2px;
+    border-color: #a88e58;
+    border-radius: 8px;
+    background-color: var(--menu-background, #f8f4eb);
+}
+
+.panel-title-row {
+    height: 56px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(246, 236, 211, 0.96);
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(161, 136, 83, 0.55);
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.panel-title {
+    flex-grow: 1;
+    color: #3b3325;
+    font-size: 23px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.header-meta {
+    width: 96px;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.meta-caption {
+    color: #746742;
+    font-size: 10px;
+}
+
+.meta-value {
+    color: #3b3325;
+    font-size: 18px;
+    -unity-font-style: bold;
+}
+
+.action-button {
+    height: 36px;
+    width: 90px;
+    min-width: 82px;
+    margin-left: 6px;
+    color: #f8edcd;
+    background-color: #53734f;
+    border-width: 1px;
+    border-color: #8fa96c;
+    border-radius: 7px;
+    font-size: 13px;
+    -unity-font-style: bold;
+}
+
+.action-button:hover {
+    background-color: #63865b;
+}
+
+.action-button:disabled {
+    color: #938874;
+    background-color: #d1c4a5;
+    border-color: #b8a270;
+}
+
+.primary-action {
+    background-color: #267154;
+    border-color: #78b884;
+}
+
+.blue-action {
+    background-color: #386d86;
+    border-color: #85b7ca;
+}
+
+.gold-action {
+    background-color: #8a6731;
+    border-color: #d1b56f;
+}
+
+.danger-action {
+    background-color: #7a4f39;
+    border-color: #c28a6c;
+}
+
+.back-action {
+    background-color: #4a4d47;
+    border-color: #9d9a84;
+}
+
+.is-active-panel {
+    opacity: 1;
+}
+
+.is-passive-panel {
+    opacity: 0.96;
+}
+
+.menu-search-clear {
+    width: 34px;
+    min-width: 34px;
+    height: 36px;
+    margin-right: 8px;
+    font-size: 22px;
+    background-color: #edf3e6;
+    color: #31573d;
+    border-color: #becfb4;
+}
+
+.menu-panel Button:focus,
+.pets-panel Button:focus,
+.box-panel Button:focus,
+.quest-panel Button:focus {
+    border-color: var(--menu-focus-border, #c6a34d);
+}
+
+.menu-detail-empty {
+    flex-grow: 1;
+    min-height: 100px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+    color: #5c7158;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.inventory-currency {
+    min-width: 156px;
+    height: 42px;
+    margin-right: 24px;
+    padding-top: 0;
+    padding-right: 16px;
+    padding-bottom: 0;
+    padding-left: 16px;
+    flex-direction: row;
+    align-items: center;
+    background-color: #fffdf6;
+    border-width: 1px;
+    border-color: #d5d4bd;
+    border-radius: 7px;
+}
+
+.inventory-currency-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 12px;
+    background-color: #c99331;
+    color: #fff9df;
+    border-radius: 15px;
+    -unity-text-align: middle-center;
+    -unity-font-style: bold;
+}
+
+.inventory-gold-value {
+    font-size: 21px;
+    -unity-font-style: bold;
+}

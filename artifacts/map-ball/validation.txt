@@ -1,0 +1,2 @@
+World Map UI validation passed: 20 checks; real map binding, viewport, buttons, grouped filters, normalized marker updates and camera actions.
+Director integration passed: idle/accepted/cancelled ball visibility, ball disappears after recall, authored Throw/Pickup, flight/bounce, three Cast Spell clips, queued switching and latest-request wins.

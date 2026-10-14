@@ -4,7 +4,8 @@ using UnityEngine;
 namespace Capstone.Game.HudSystem {
     public enum PetEvolutionTrigger {
         Level,
-        Item
+        Item,
+        LevelOrItem
     }
 
     [Serializable]
@@ -19,6 +20,7 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] string targetSpecies = string.Empty;
         [SerializeField] Sprite targetIcon = null;
         [SerializeField] PetElement targetElement = PetElement.Unknown;
+        [SerializeField] PetElement targetSecondaryElement = PetElement.Unknown;
         [SerializeField] PetRarity targetRarity = PetRarity.Unknown;
         [Tooltip("Optional model-only prefab. Assign a PetEvolutionVisualController before using this field.")]
         [SerializeField] GameObject targetVisualPrefab = null;
@@ -49,6 +51,7 @@ namespace Capstone.Game.HudSystem {
         public string TargetSpecies => targetSpecies?.Trim() ?? string.Empty;
         public Sprite TargetIcon => targetIcon;
         public PetElement TargetElement => targetElement;
+        public PetElement TargetSecondaryElement => targetSecondaryElement;
         public PetRarity TargetRarity => targetRarity;
         public GameObject TargetVisualPrefab => targetVisualPrefab;
         public PetEvolutionTrigger Trigger => trigger;

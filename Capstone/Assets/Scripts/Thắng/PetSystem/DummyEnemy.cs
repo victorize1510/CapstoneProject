@@ -13,8 +13,14 @@ public class DummyEnemy : MonoBehaviour
     public bool autoRevive = true;
     public float reviveDelay = 2.5f;
 
+    [Header("Targeting")]
+    [Tooltip("Prioritize this enemy during automatic lock selection. A Boss map marker also identifies a boss.")]
+    public bool isBoss;
+
     [Header("Progression")]
     [SerializeField, Min(0)] private int experienceReward = 50;
+    [SerializeField] private Capstone.Game.HudSystem.PetStatValues effortYield =
+        new Capstone.Game.HudSystem.PetStatValues(0, 1, 0, 0, 0, 0);
 
     [Header("Feedback")]
     public Color idleColor = Color.white;
@@ -54,6 +60,10 @@ public class DummyEnemy : MonoBehaviour
     {
         get { return Mathf.Max(0, experienceReward); }
     }
+
+    public bool IsBoss => isBoss || (mapMarker != null && mapMarker.MarkerType == MapMarkerType.Boss);
+
+    public Capstone.Game.HudSystem.PetStatValues EffortYield => effortYield.Clamped(0, 3);
 
     public Vector3 TargetPosition
     {
@@ -111,6 +121,7 @@ public class DummyEnemy : MonoBehaviour
         maxHealth = Mathf.Max(1f, maxHealth);
         reviveDelay = Mathf.Max(0f, reviveDelay);
         experienceReward = Mathf.Max(0, experienceReward);
+        effortYield = effortYield.Clamped(0, 3);
     }
 
     private void OnEnable()
@@ -260,6 +271,6 @@ public class DummyEnemy : MonoBehaviour
         }
 
         string id = string.IsNullOrWhiteSpace(baseName) ? gameObject.name : baseName;
-        mapMarker.ConfigureRuntime(MapMarkerType.Enemy, id, id, null, default, true, true);
+        mapMarker.ConfigureRuntime(IsBoss ? MapMarkerType.Boss : MapMarkerType.Enemy, id, id, null, default, true, true);
     }
 }

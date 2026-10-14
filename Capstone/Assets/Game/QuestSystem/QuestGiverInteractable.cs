@@ -8,6 +8,8 @@ namespace Capstone.Game.QuestSystem {
         [SerializeField] Transform player;
         [SerializeField] KeyCode interactKey = KeyCode.E;
         [SerializeField] float interactDistance = 2.5f;
+        [SerializeField, Range(1f, 180f)] float viewAngle = Capstone.Game.UISystem.WorldInteractionView.DefaultViewAngle;
+        [SerializeField] LayerMask obstructionLayers = Physics.DefaultRaycastLayers;
         [SerializeField] string displayName = "TestQuest";
         [SerializeField] string promptText = "[E] Nhan quest";
         [SerializeField] bool trackAfterAccept = true;
@@ -36,7 +38,7 @@ namespace Capstone.Game.QuestSystem {
         void Update() {
             ResolveReferences();
 
-            var near = IsPlayerNear();
+            var near = CanInteract();
             UpdatePrompt(near && (!accepted || !hidePromptAfterAccepted));
             FaceLabelsToCamera();
 
@@ -49,6 +51,7 @@ namespace Capstone.Game.QuestSystem {
         }
 
         void AcceptQuest() {
+            if (!CanInteract() || !Capstone.Game.UISystem.WorldInteractionView.TryConsumePress()) return;
             if (questManager == null || questDefinition == null) {
                 Debug.LogWarning($"{nameof(QuestGiverInteractable)} on {name} is missing QuestManager or QuestDefinition.");
                 return;
@@ -103,12 +106,9 @@ namespace Capstone.Game.QuestSystem {
             registeredDefinition = questDefinition;
         }
 
-        bool IsPlayerNear() {
-            if (player == null) return false;
-
-            var distance = Vector3.Distance(player.position, transform.position);
-            return distance <= Mathf.Max(0.1f, interactDistance);
-        }
+        bool CanInteract() => !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
+            && Capstone.Game.UISystem.WorldInteractionView.CanInteract(player, transform,
+                Mathf.Max(.1f, interactDistance), viewAngle, obstructionLayers);
 
         bool IsQuestAlreadyKnown() {
             if (questManager == null || questDefinition == null) return false;
@@ -152,6 +152,7 @@ namespace Capstone.Game.QuestSystem {
         }
 
         void UpdatePrompt(bool visible) {
+            visible &= Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible;
             if (promptLabel != null) {
                 promptLabel.gameObject.SetActive(visible);
             }

@@ -7,7 +7,6 @@ namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     public sealed class PetHudRuntimeStats : MonoBehaviour, IPetHudDataSource, IPetSkillRequestReceiver, IPetSkillLoadoutDataSource {
         const float PrototypeBaseHealth = 100f;
-        const float PrototypeHealthGrowth = 25f;
 
         [Header("Identity")]
         [SerializeField] string displayName = string.Empty;
@@ -44,12 +43,15 @@ namespace Capstone.Game.HudSystem {
         public event Action PersistentDataChanged;
 
         public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? gameObject.name : displayName;
-        public int Level => Mathf.Max(1, level);
+        public int Level => Mathf.Clamp(level, 1, PetStatCalculator.MaxLevel);
         public float Health => maxHealth > 0f ? Mathf.Clamp(health, 0f, maxHealth) : 0f;
         public float MaxHealth => Mathf.Max(0f, maxHealth);
         public float Energy => maxEnergy > 0f ? Mathf.Clamp(energy, 0f, maxEnergy) : 0f;
         public float MaxEnergy => Mathf.Max(0f, maxEnergy);
         public Sprite Icon => icon;
+        public void BindVisualAnimator(Animator nextAnimator) {
+            if (nextAnimator != null) animator = nextAnimator;
+        }
         public int EquippedSkillSlotCount => Mathf.Clamp(equippedSkillSlotCount, 2, 4);
 
         public event Action HudDataChanged;
@@ -62,9 +64,9 @@ namespace Capstone.Game.HudSystem {
 
         void Awake() {
             ResolveAnimationReferences();
-            NormalizePrototypeHealth();
             EnsureSkillList();
             EnsureLearnedSkillList();
+            GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
         }
 
         void Update() {
@@ -78,7 +80,7 @@ namespace Capstone.Game.HudSystem {
 
         void OnValidate() {
             ResolveAnimationReferences();
-            level = Mathf.Max(1, level);
+            level = Mathf.Clamp(level, 1, PetStatCalculator.MaxLevel);
             maxHealth = Mathf.Max(0f, maxHealth);
             maxEnergy = Mathf.Max(0f, maxEnergy);
             equippedSkillSlotCount = Mathf.Clamp(equippedSkillSlotCount, 2, 4);
@@ -205,8 +207,9 @@ namespace Capstone.Game.HudSystem {
 
         public void SetIdentity(string nextName, int nextLevel, Sprite nextIcon = null) {
             displayName = nextName ?? string.Empty;
-            level = Mathf.Max(1, nextLevel);
+            level = Mathf.Clamp(nextLevel, 1, PetStatCalculator.MaxLevel);
             if (nextIcon != null) icon = nextIcon;
+            GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
             HudDataChanged?.Invoke();
             PersistentDataChanged?.Invoke();
         }
@@ -293,10 +296,10 @@ namespace Capstone.Game.HudSystem {
             if (saveData == null || !saveData.captured) return;
             if (!CanRestoreSaveData(saveData, out string error)) throw new InvalidOperationException(error);
 
-            level = Mathf.Max(1, saveData.level);
+            level = Mathf.Clamp(saveData.level, 1, PetStatCalculator.MaxLevel);
             maxHealth = Mathf.Max(0f, saveData.maxHealth);
             health = maxHealth > 0f ? Mathf.Clamp(saveData.health, 0f, maxHealth) : 0f;
-            NormalizePrototypeHealth();
+            GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
             maxEnergy = Mathf.Max(0f, saveData.maxEnergy);
             energy = maxEnergy > 0f ? Mathf.Clamp(saveData.energy, 0f, maxEnergy) : 0f;
             equippedSkillSlotCount = Mathf.Clamp(saveData.equippedSkillSlotCount, 2, 4);
@@ -337,26 +340,18 @@ namespace Capstone.Game.HudSystem {
             HudDataChanged?.Invoke();
         }
 
-        void NormalizePrototypeHealth() {
-            int currentLevel = Mathf.Max(1, level);
-            float growthOnlyHealth = PrototypeHealthGrowth * Mathf.Max(0, currentLevel - 1);
-            bool missingHealth = maxHealth <= 0f;
-            bool matchesOldZeroBaseGrowth = growthOnlyHealth > 0f
-                && Mathf.Approximately(maxHealth, growthOnlyHealth)
-                && Mathf.Approximately(health, maxHealth);
-            if (!missingHealth && !matchesOldZeroBaseGrowth) return;
-
-            maxHealth = PrototypeBaseHealth + growthOnlyHealth;
-            health = maxHealth;
-        }
-
         public void RequestSkill(int skillIndex) {
+            ResolveAnimationReferences();
+            if (Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
+                || petController == null || !petController.isActiveAndEnabled || !petController.CanReceiveCommands) return;
+            var input = petController.owner != null ? petController.owner.GetComponent<PetCommandInput>() : null;
+            if (input != null && (input.activePet != petController || !input.CanUsePetSkills)) return;
             EnsureCooldownStorage();
             if (skillIndex < 0 || skillIndex >= skills.Count) return;
             if (skillIndex < cooldownRemaining.Count && cooldownRemaining[skillIndex] > 0.001f) return;
 
             SkillHudData skill = skills[skillIndex];
-            if (!skill.unlocked || !skill.usable) return;
+            if (!skill.unlocked || !skill.usable || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
             SkillRequested?.Invoke(skillIndex);
             PlaySkillAnimation(skill);
 
@@ -537,7 +532,7 @@ namespace Capstone.Game.HudSystem {
 
         void ResolveAnimationReferences() {
             if (!autoFindAnimationReferences) return;
-            if (petController == null) petController = GetComponent<PetController>();
+            if (petController == null) petController = GetComponentInParent<PetController>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
 
@@ -606,6 +601,8 @@ namespace Capstone.Game.HudSystem {
             skill.animationFade = Mathf.Max(0f, skill.animationFade);
             skill.windupSeconds = Mathf.Max(0f, skill.windupSeconds);
             skill.recoverySeconds = Mathf.Max(0f, skill.recoverySeconds);
+            skill.criticalRateBonus = Mathf.Clamp(skill.criticalRateBonus, 0f, 100f);
+            skill.criticalDamageBonus = Mathf.Clamp(skill.criticalDamageBonus, 0f, 100f);
 
             return skill;
         }

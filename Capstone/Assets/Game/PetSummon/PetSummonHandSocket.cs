@@ -37,8 +37,9 @@ namespace Capstone.Game.PetSummon
         [SerializeField] VisualBinding[] bindings = Array.Empty<VisualBinding>();
         [SerializeField] Vector3 runtimeBoySocketLocalPosition = new Vector3(-0.03f, 0.08f, 0.04f);
         [SerializeField] Vector3 runtimeVexaSocketLocalPosition = new Vector3(-0.06f, -0.02f, -0.05f);
+        [SerializeField] Vector3 runtimeGirlSocketLocalPosition = new Vector3(-0.0003f, 0.0008f, 0.0004f);
         [SerializeField, Min(0.001f)] float runtimeBallLocalScale = 0.26f;
-        [SerializeField, Min(0.05f)] float visibleBallDiameter = 0.143f;
+        [SerializeField, Min(0.05f)] float visibleBallDiameter = 0.2145f;
 
         GameObject heldBall;
 
@@ -109,6 +110,18 @@ namespace Capstone.Game.PetSummon
             LastFailureReason = $"Không tìm thấy xương bàn tay phải cho model '{activeName}'.";
             return false;
         }
+
+        // Landing checks need a launch origin before a ball becomes visible.
+        public bool TryGetLaunchPosition(out Vector3 position)
+        {
+            position = default;
+            if (heldBall != null) { position = heldBall.transform.position; return true; }
+            if (!TryGetActiveBinding(out VisualBinding binding)) return false;
+            position = binding.Socket.TransformPoint(binding.BallLocalPosition);
+            return true;
+        }
+
+        public float BallRadius => Mathf.Clamp(visibleBallDiameter * .5f, .04f, .3f);
 
         public bool ShowBallInActiveHand()
         {
@@ -191,6 +204,7 @@ namespace Capstone.Game.PetSummon
 
             if (Application.isPlaying)
             {
+                heldBall.SetActive(false);
                 Destroy(heldBall);
             }
             else
@@ -248,7 +262,8 @@ namespace Capstone.Game.PetSummon
                 socket.SetParent(hand, false);
                 socket.localPosition = string.Equals(visualName, "Boy", StringComparison.OrdinalIgnoreCase)
                     ? runtimeBoySocketLocalPosition
-                    : runtimeVexaSocketLocalPosition;
+                    : string.Equals(visualName, "GirlFinal", StringComparison.OrdinalIgnoreCase)
+                        ? runtimeGirlSocketLocalPosition : runtimeVexaSocketLocalPosition;
             }
 
             string bindingName = string.IsNullOrWhiteSpace(visualName) ? visualRoot.name : visualName;
@@ -278,7 +293,8 @@ namespace Capstone.Game.PetSummon
                 }
             }
 
-            string primaryName = string.Equals(visualName, "Boy", StringComparison.OrdinalIgnoreCase)
+            string primaryName = (string.Equals(visualName, "Boy", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(visualName, "GirlFinal", StringComparison.OrdinalIgnoreCase))
                 ? "RightHand"
                 : "Base HumanRPalm";
             Transform hand = FindDescendant(visualRoot, primaryName);

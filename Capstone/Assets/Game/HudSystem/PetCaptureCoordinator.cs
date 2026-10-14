@@ -52,6 +52,8 @@ namespace Capstone.Game.HudSystem {
             }
             metadata.AssignPersistentId(instanceId);
             if (string.IsNullOrWhiteSpace(metadata.DefinitionId)) metadata.AssignDefinitionId(speciesId);
+            metadata.RollGeneticsForNewCapture();
+            metadata.SyncRuntimeHealth(pet.GetComponentInChildren<PetHudRuntimeStats>(true));
 
             bool wasSummoned = pet.IsSummoned;
             PlayerProfileSaveData profileSnapshot = profileProvider.CreateSaveData();

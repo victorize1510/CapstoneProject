@@ -21,13 +21,17 @@ namespace Capstone.Game.QuestSystem.UI {
         readonly Dictionary<Button, Action> buttonCallbacks = new Dictionary<Button, Action>();
 
         VisualElement rootElement;
+        VisualElement panelElement;
+        MonsterInventoryController inventoryOwner;
         ScrollView questListScroll;
         VisualElement questListColumn;
         VisualElement questDetailColumn;
         Label questPageEmpty;
+        Label detailEmpty;
         VisualElement trackedQuestStrip;
         Label trackedQuestLabel;
         VisualElement detailContent;
+        ScrollView detailScroll;
         VisualElement descriptionSection;
         VisualElement objectivesSection;
         VisualElement rewardsSection;
@@ -89,18 +93,22 @@ namespace Capstone.Game.QuestSystem.UI {
         public QuestRuntimeState SelectedQuest => selectedQuest;
 
         public void SelectNextTab() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "SelectNextTab")) return;
             ShiftTab(1);
         }
 
         public void SelectPreviousTab() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "SelectPreviousTab")) return;
             ShiftTab(-1);
         }
 
         public void SelectNextQuest() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "SelectNextQuest")) return;
             ShiftSelectedQuest(1);
         }
 
         public void SelectPreviousQuest() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "SelectPreviousQuest")) return;
             ShiftSelectedQuest(-1);
         }
 
@@ -126,6 +134,7 @@ namespace Capstone.Game.QuestSystem.UI {
 
         void Update() {
             if (selectedQuest == null) return;
+            if (!IsPanelVisible) return;
             if (Time.unscaledTime < nextLiveValueRefreshTime) return;
 
             nextLiveValueRefreshTime = Time.unscaledTime + Mathf.Max(0.05f, liveValueRefreshInterval);
@@ -164,6 +173,7 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void ResolveReferences() {
+            if (inventoryOwner == null) inventoryOwner = GetComponent<MonsterInventoryController>();
             document = document != null ? document : GetComponent<UIDocument>();
             if (questManager == null && autoFindQuestManager) questManager = FindFirstObjectByType<QuestManager>();
             if (rewardService == null) rewardService = FindFirstObjectByType<QuestRewardService>(FindObjectsInactive.Include);
@@ -197,6 +207,7 @@ namespace Capstone.Game.QuestSystem.UI {
             if (document == null || document.rootVisualElement == null) return;
 
             rootElement = document.rootVisualElement;
+            panelElement = rootElement.Q<VisualElement>("quest-panel");
             questListScroll = rootElement.Q<ScrollView>("quest-list-scroll");
             questListColumn = rootElement.Q<VisualElement>("quest-list-column");
             questDetailColumn = rootElement.Q<VisualElement>("quest-detail-column");
@@ -204,6 +215,8 @@ namespace Capstone.Game.QuestSystem.UI {
             trackedQuestStrip = rootElement.Q<VisualElement>("quest-tracked-strip");
             trackedQuestLabel = rootElement.Q<Label>("tracked-quest-label");
             detailContent = rootElement.Q<VisualElement>("quest-detail-content");
+            detailScroll = rootElement.Q<ScrollView>("quest-detail-scroll");
+            detailEmpty = rootElement.Q<Label>("quest-detail-empty");
             descriptionSection = rootElement.Q<VisualElement>("quest-description-section");
             objectivesSection = rootElement.Q<VisualElement>("quest-objectives-section");
             rewardsSection = rootElement.Q<VisualElement>("quest-rewards-section");
@@ -274,8 +287,9 @@ namespace Capstone.Game.QuestSystem.UI {
         void RegisterButton(Button button, Action callback) {
             if (button == null || callback == null || buttonCallbacks.ContainsKey(button)) return;
 
-            button.clicked += callback;
-            buttonCallbacks.Add(button, callback);
+            Action guarded = Capstone.Game.UISystem.PlayerActionGate.Guard(this, "button:" + button.name, callback);
+            button.clicked += guarded;
+            buttonCallbacks.Add(button, guarded);
         }
 
         void SubscribeToQuestManager() {
@@ -317,6 +331,7 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void HandleQuestsChanged() {
+            if (!IsPanelVisible) { suppressNextTrackedQuestRefresh = false; return; }
             if (suppressNextTrackedQuestRefresh) {
                 suppressNextTrackedQuestRefresh = false;
                 RefreshTrackingVisuals();
@@ -325,6 +340,9 @@ namespace Capstone.Game.QuestSystem.UI {
 
             RefreshAll();
         }
+
+        bool IsPanelVisible => panelElement != null && panelElement.resolvedStyle.display != DisplayStyle.None
+            && (inventoryOwner == null || inventoryOwner.IsOpen);
 
         void SelectTab(QuestPanelTab tab) {
             currentTab = tab;
@@ -597,6 +615,8 @@ namespace Capstone.Game.QuestSystem.UI {
                 return;
             }
 
+            SetVisible(detailEmpty, false);
+            SetVisible(detailScroll, true);
             SetVisible(detailContent, true);
 
             var definition = selectedQuest.Definition;
@@ -612,7 +632,7 @@ namespace Capstone.Game.QuestSystem.UI {
             }
             if (detailTitle != null) detailTitle.text = definition.Title;
             if (typePill != null) typePill.text = FormatType(definition.QuestType);
-            if (levelPill != null) levelPill.text = "Lv. " + definition.RecommendedLevel;
+            if (levelPill != null) levelPill.text = "Cấp " + definition.RecommendedLevel;
 
             bool hasDescription = !string.IsNullOrWhiteSpace(definition.Description);
             SetVisible(descriptionSection, hasDescription);
@@ -622,7 +642,7 @@ namespace Capstone.Game.QuestSystem.UI {
             SetVisible(giverRow, hasGiver);
             if (giverValue != null) giverValue.text = hasGiver ? definition.QuestGiverName : string.Empty;
             SetVisible(recommendedLevelRow, true);
-            if (recommendedLevelValue != null) recommendedLevelValue.text = "Lv. " + definition.RecommendedLevel;
+            if (recommendedLevelValue != null) recommendedLevelValue.text = "Cấp " + definition.RecommendedLevel;
 
             RefreshObjectives();
             RefreshProgress();
@@ -634,6 +654,9 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void SetEmptyDetail() {
+            if (detailEmpty != null) detailEmpty.text = filteredQuests.Count == 0 ? "Nhóm này chưa có nhiệm vụ." : "Chọn nhiệm vụ để xem chi tiết.";
+            SetVisible(detailEmpty, true);
+            SetVisible(detailScroll, false);
             SetVisible(detailContent, false);
             if (detailTitle != null) detailTitle.text = string.Empty;
             if (typePill != null) typePill.text = string.Empty;
@@ -886,6 +909,7 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void ToggleTrackSelectedQuest() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "ToggleTrackSelectedQuest")) return;
             if (questManager == null || selectedQuest == null) return;
 
             suppressNextTrackedQuestRefresh = true;
@@ -923,7 +947,7 @@ namespace Capstone.Game.QuestSystem.UI {
 
         void CloseQuestMenu() {
             var inventoryController = GetComponent<MonsterInventoryController>();
-            if (inventoryController != null) inventoryController.Close();
+            if (inventoryController != null) inventoryController.RequestClose();
         }
 
         void UpdateTabButtons() {

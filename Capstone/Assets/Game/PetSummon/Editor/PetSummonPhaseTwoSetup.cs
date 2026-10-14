@@ -7,7 +7,7 @@ namespace Capstone.Game.PetSummon.Editor
     [InitializeOnLoad]
     public static class PetSummonPhaseTwoSetup
     {
-        const string PlayerPrefabPath = "Assets/Prefabs/Thắng/Player_GenderSwitch.prefab";
+        const string PlayerPrefabPath = "Assets/Prefabs/Thắng/Player.prefab";
         const string LegacyVexaPrefabPath = "Assets/Prefabs/Thắng/Vexa/Vefects_Vexa.prefab";
         const string BallPrefabPath = "Assets/Game/PetSummon/Prefabs/BallGreenClose.prefab";
         static bool attemptedThisDomain;

@@ -16,7 +16,8 @@ namespace Capstone.Game.HudSystem {
         Electric,
         Ice,
         Light,
-        Dark
+        Dark,
+        Dragon
     }
 
     public enum PetRarity {
@@ -38,6 +39,7 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] string species = string.Empty;
         [SerializeField] string gender = string.Empty;
         [SerializeField] PetElement element = PetElement.Unknown;
+        [SerializeField] PetElement secondaryElement = PetElement.Unknown;
         [SerializeField] PetRarity rarity = PetRarity.Unknown;
 
         [Header("Player Customization")]
@@ -46,16 +48,8 @@ namespace Capstone.Game.HudSystem {
         [SerializeField, HideInInspector] bool released;
 
         [Header("Progress")]
-        [SerializeField, Min(1)] int maxLevel = 60;
         [SerializeField, Min(0)] int experience;
         [SerializeField, Min(0)] int experienceToNextLevel;
-        [SerializeField, Min(0)] int attack;
-        [SerializeField, Min(0)] int defense;
-        [SerializeField, Min(0)] int speed;
-        [SerializeField, Min(0)] int magicAttack;
-        [SerializeField, Min(0)] int magicDefense;
-        [SerializeField, Range(0f, 100f)] float criticalRate = 5f;
-        [SerializeField, Min(0f)] float criticalDamagePercent = 10f;
         [SerializeField] long obtainedOrder;
 
         [Header("Pet Details")]
@@ -63,6 +57,13 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] string captureLocation = string.Empty;
         [SerializeField] string trainerName = string.Empty;
         [SerializeField] string personality = string.Empty;
+
+        [Header("Battle Genetics")]
+        [SerializeField] bool geneticsInitialized;
+        [SerializeField] bool captureGeneticsRolled;
+        [SerializeField] PetStatValues individualValues;
+        [SerializeField] PetStatValues effortValues;
+        [SerializeField] string nature = "Serious";
 
         [Header("Codex")]
         [SerializeField] bool codexRegistered;
@@ -97,34 +98,47 @@ namespace Capstone.Game.HudSystem {
         public string Species => species;
         public string Gender => gender;
         public PetElement Element => element;
+        public PetElement SecondaryElement => secondaryElement;
+        public bool HasElement(PetElement value) => value != PetElement.Unknown
+            && (element == value || secondaryElement == value);
         public PetRarity Rarity => rarity;
         public string Nickname => nickname ?? string.Empty;
         public bool IsFavorite => favorite;
         public bool IsReleased => released;
-        public int MaxLevel => Mathf.Max(1, maxLevel);
+        public int MaxLevel => PetStatCalculator.MaxLevel;
         public int Experience => Mathf.Max(0, experience);
         public int ExperienceToNextLevel => Mathf.Max(0, experienceToNextLevel);
-        public int Attack => Mathf.Max(0, attack);
-        public int Defense => Mathf.Max(0, defense);
-        public int Speed => Mathf.Max(0, speed);
-        public int MagicAttack => Mathf.Max(0, magicAttack);
-        public int MagicDefense => Mathf.Max(0, magicDefense);
-        public float CriticalRate => IsDragonDuskPrototype()
-            ? 10f
-            : criticalRate > 0f ? Mathf.Clamp(criticalRate, 0f, 100f) : 5f;
-        public float CriticalDamagePercent => IsDragonDuskPrototype()
-            ? 25f
-            : criticalDamagePercent > 0f ? criticalDamagePercent : 10f;
+        public int HpStat => CurrentStats.Hp;
+        public int Attack => CurrentStats.Attack;
+        public int Defense => CurrentStats.Defense;
+        public int Speed => CurrentStats.Speed;
+        public int MagicAttack => CurrentStats.MagicAttack;
+        public int MagicDefense => CurrentStats.MagicDefense;
+        public float CriticalRate => CurrentStats.CriticalRate;
+        public float CriticalDamagePercent => CurrentStats.CriticalDamage;
+        public PetStatSnapshot CurrentStats {
+            get {
+                PetHudRuntimeStats runtime = GetComponentInChildren<PetHudRuntimeStats>(true);
+                return GetStatsAtLevel(runtime != null ? runtime.Level : 1);
+            }
+        }
         public long ObtainedOrder => obtainedOrder;
         public string CaptureDate => captureDate ?? string.Empty;
         public string CaptureLocation => captureLocation ?? string.Empty;
         public string TrainerName => trainerName ?? string.Empty;
         public string Personality => personality ?? string.Empty;
+        public PetStatValues IndividualValues { get { EnsureLegacyGenetics(); return individualValues; } }
+        public PetStatValues EffortValues { get { EnsureLegacyGenetics(); return effortValues; } }
+        public string Nature { get { EnsureLegacyGenetics(); return nature; } }
+        public int BaseStatTotal => PetStatCalculator.GetBaseStatTotal(this);
         public bool CodexRegistered => codexRegistered;
         public string CodexNumber => codexNumber ?? string.Empty;
         public string CodexDescription => codexDescription ?? string.Empty;
         public string CurrentFormId => string.IsNullOrWhiteSpace(currentFormId) ? "base" : currentFormId.Trim();
         public int EvolutionStage => Mathf.Max(0, evolutionStage);
+        public string FormCode => string.Equals(DefinitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)
+            ? EvolutionStage switch { 0 => "01", 1 => "02", 2 => "03", _ => "--" }
+            : CodexNumber;
         public IReadOnlyList<PetEvolutionRule> EvolutionRules => evolutionRules;
         public IReadOnlyList<PetResourceInvestment> ResourceInvestments => resourceInvestments;
         public bool HasNextEvolution => TryGetNextEvolutionRule(out _);
@@ -136,7 +150,7 @@ namespace Capstone.Game.HudSystem {
             : null;
         public bool NextEvolutionDiscovered => nextEvolutionDiscovered;
         public int EvolutionLevelRequirement => TryGetNextEvolutionRule(out PetEvolutionRule rule)
-            && rule.Trigger == PetEvolutionTrigger.Level
+            && rule.Trigger != PetEvolutionTrigger.Item
                 ? rule.RequiredLevel
                 : Mathf.Max(0, evolutionLevelRequirement);
         public int EvolutionFriendshipRequirement => Mathf.Max(0, evolutionFriendshipRequirement);
@@ -146,6 +160,20 @@ namespace Capstone.Game.HudSystem {
 
         void Awake() {
             EnsurePersistentId();
+            if (string.IsNullOrWhiteSpace(definitionId) && !string.IsNullOrWhiteSpace(species))
+                definitionId = species.Trim();
+        }
+
+        public PetStatSnapshot GetStatsAtLevel(int level) => PetStatCalculator.Calculate(this, level);
+
+        public void SyncRuntimeHealth(PetHudRuntimeStats runtime) {
+            if (runtime == null) return;
+            float nextMax = GetStatsAtLevel(runtime.Level).MaxHealth;
+            if (Mathf.Approximately(runtime.MaxHealth, nextMax)) return;
+            float nextHealth = runtime.MaxHealth > 0f
+                ? nextMax * runtime.Health / runtime.MaxHealth
+                : 0f;
+            runtime.SetStatus(nextHealth, nextMax, runtime.Energy, runtime.MaxEnergy);
         }
 
         public void AssignPersistentId(string value) {
@@ -155,6 +183,58 @@ namespace Capstone.Game.HudSystem {
 
         public void AssignDefinitionId(string value) {
             definitionId = value?.Trim() ?? string.Empty;
+        }
+
+        public void RollGeneticsForNewCapture() {
+            if (captureGeneticsRolled) return;
+            individualValues = new PetStatValues(
+                UnityEngine.Random.Range(0, 32), UnityEngine.Random.Range(0, 32),
+                UnityEngine.Random.Range(0, 32), UnityEngine.Random.Range(0, 32),
+                UnityEngine.Random.Range(0, 32), UnityEngine.Random.Range(0, 32));
+            effortValues = default;
+            nature = PetNature.RandomName;
+            geneticsInitialized = true;
+            captureGeneticsRolled = true;
+            Changed?.Invoke();
+        }
+
+        public bool GrantEffortValues(PetStatValues reward) {
+            EnsureLegacyGenetics();
+            int remaining = PetStatCalculator.MaximumEffortTotal - effortValues.Total;
+            if (remaining <= 0) return false;
+            bool changed = false;
+            for (int axis = 0; axis < 6 && remaining > 0; axis++) {
+                var stat = (PetCoreStat)axis;
+                int available = PetStatCalculator.MaximumEffortPerStat - effortValues.Get(stat);
+                int gain = Mathf.Min(Mathf.Max(0, reward.Get(stat)), available, remaining);
+                if (gain <= 0) continue;
+                effortValues.Set(stat, effortValues.Get(stat) + gain);
+                remaining -= gain;
+                changed = true;
+            }
+            if (!changed) return false;
+            SyncRuntimeHealth(GetComponentInChildren<PetHudRuntimeStats>(true));
+            Changed?.Invoke();
+            return true;
+        }
+
+        void EnsureLegacyGenetics() {
+            if (geneticsInitialized) return;
+            string id = PetId;
+            for (int axis = 0; axis < 6; axis++) {
+                uint hash = 2166136261u;
+                unchecked {
+                    for (int i = 0; i < id.Length; i++) hash = (hash ^ id[i]) * 16777619u;
+                    hash = (hash ^ (uint)(axis + 1)) * 16777619u;
+                    hash ^= hash >> 16;
+                    hash *= 0x7feb352du;
+                    hash ^= hash >> 15;
+                    individualValues.Set((PetCoreStat)axis, (int)(hash & 31u));
+                }
+            }
+            effortValues = default;
+            nature = "Serious";
+            geneticsInitialized = true;
         }
 
         public string ResolveDisplayName(string fallback) {
@@ -225,30 +305,6 @@ namespace Capstone.Game.HudSystem {
             Changed?.Invoke();
         }
 
-        public void SetStats(int nextAttack, int nextDefense, int nextSpeed) {
-            SetStats(nextAttack, nextDefense, nextSpeed, MagicAttack, MagicDefense);
-        }
-
-        public void SetStats(
-            int nextAttack,
-            int nextDefense,
-            int nextSpeed,
-            int nextMagicAttack,
-            int nextMagicDefense) {
-            attack = Mathf.Max(0, nextAttack);
-            defense = Mathf.Max(0, nextDefense);
-            speed = Mathf.Max(0, nextSpeed);
-            magicAttack = Mathf.Max(0, nextMagicAttack);
-            magicDefense = Mathf.Max(0, nextMagicDefense);
-            Changed?.Invoke();
-        }
-
-        public void SetCriticalStats(float nextCriticalRate, float nextCriticalDamagePercent) {
-            criticalRate = Mathf.Clamp(nextCriticalRate, 0f, 100f);
-            criticalDamagePercent = Mathf.Max(0f, nextCriticalDamagePercent);
-            Changed?.Invoke();
-        }
-
         public bool TryGetNextEvolutionRule(out PetEvolutionRule rule) {
             if (evolutionRules != null) {
                 for (int i = 0; i < evolutionRules.Count; i++) {
@@ -285,8 +341,10 @@ namespace Capstone.Game.HudSystem {
 
             evolutionStage = rule.TargetStage;
             currentFormId = rule.TargetFormId;
+            if (string.Equals(DefinitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) codexNumber = FormCode;
             if (!string.IsNullOrWhiteSpace(rule.TargetSpecies)) species = rule.TargetSpecies;
             if (rule.TargetElement != PetElement.Unknown) element = rule.TargetElement;
+            if (rule.TargetSecondaryElement != PetElement.Unknown) secondaryElement = rule.TargetSecondaryElement;
             if (rule.TargetRarity != PetRarity.Unknown) rarity = rule.TargetRarity;
             nextEvolutionDiscovered = false;
             Changed?.Invoke();
@@ -311,10 +369,21 @@ namespace Capstone.Game.HudSystem {
 
         public void RestoreEvolutionPresentation(PetHudRuntimeStats runtimeStats) {
             PetEvolutionRule applied = FindAppliedEvolutionRule();
-            if (applied == null) return;
+            PetController pet = GetComponentInParent<PetController>();
+            PetEvolutionVisualController visualController = pet != null
+                ? pet.GetComponentInChildren<PetEvolutionVisualController>(true)
+                : null;
+            if (applied == null) {
+                // The base form must also be restored. With Scene Reload disabled, a
+                // previous play session can leave Dusk's meshes disabled.
+                if (EvolutionStage == 0) visualController?.RestoreForm(0);
+                return;
+            }
+            if (string.Equals(DefinitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) codexNumber = FormCode;
 
             if (!string.IsNullOrWhiteSpace(applied.TargetSpecies)) species = applied.TargetSpecies;
             if (applied.TargetElement != PetElement.Unknown) element = applied.TargetElement;
+            if (applied.TargetSecondaryElement != PetElement.Unknown) secondaryElement = applied.TargetSecondaryElement;
             if (applied.TargetRarity != PetRarity.Unknown) rarity = applied.TargetRarity;
             if (runtimeStats != null) {
                 string baseName = string.IsNullOrWhiteSpace(applied.TargetDisplayName)
@@ -323,39 +392,43 @@ namespace Capstone.Game.HudSystem {
                 runtimeStats.SetIdentity(baseName, runtimeStats.Level, applied.TargetIcon ?? runtimeStats.Icon);
             }
 
-            PetController pet = GetComponentInParent<PetController>();
-            PetEvolutionVisualController visualController = pet != null
-                ? pet.GetComponentInChildren<PetEvolutionVisualController>(true)
-                : null;
             if (visualController != null && applied.TargetVisualPrefab != null) {
                 visualController.TryApply(applied.TargetVisualPrefab, out _);
             }
         }
 
         public PetCustomizationSaveData CreateSaveData() {
+            EnsureLegacyGenetics();
+            PetStatSnapshot stats = CurrentStats;
             return new PetCustomizationSaveData {
                 nickname = Nickname,
                 favorite = IsFavorite,
                 experience = Experience,
                 experienceToNextLevel = ExperienceToNextLevel,
-                attack = Attack,
-                defense = Defense,
-                speed = Speed,
-                magicAttack = MagicAttack,
-                magicDefense = MagicDefense,
-                criticalRate = CriticalRate,
-                criticalDamagePercent = CriticalDamagePercent,
+                hpStat = stats.Hp,
+                attack = stats.Attack,
+                defense = stats.Defense,
+                speed = stats.Speed,
+                magicAttack = stats.MagicAttack,
+                magicDefense = stats.MagicDefense,
+                criticalRate = stats.CriticalRate,
+                criticalDamagePercent = stats.CriticalDamage,
                 obtainedOrder = ObtainedOrder,
                 captureDate = CaptureDate,
                 captureLocation = CaptureLocation,
                 trainerName = TrainerName,
                 personality = Personality,
+                hasGenetics = true,
+                individualValues = individualValues,
+                effortValues = effortValues,
+                nature = Nature,
                 codexRegistered = CodexRegistered,
                 codexNumber = CodexNumber,
                 codexDescription = CodexDescription,
                 nextEvolutionDiscovered = NextEvolutionDiscovered,
                 currentFormId = CurrentFormId,
                 evolutionStage = EvolutionStage,
+                secondaryElement = secondaryElement,
                 resourceInvestments = CreateInvestmentSaveData(),
                 promptedEvolutionIds = promptedEvolutionIds != null
                     ? new List<string>(promptedEvolutionIds)
@@ -371,24 +444,30 @@ namespace Capstone.Game.HudSystem {
             released = false;
             experience = Mathf.Max(0, saveData.experience);
             experienceToNextLevel = Mathf.Max(0, saveData.experienceToNextLevel);
-            attack = Mathf.Max(0, saveData.attack);
-            defense = Mathf.Max(0, saveData.defense);
-            speed = Mathf.Max(0, saveData.speed);
-            magicAttack = Mathf.Max(0, saveData.magicAttack);
-            magicDefense = Mathf.Max(0, saveData.magicDefense);
-            criticalRate = Mathf.Clamp(saveData.criticalRate, 0f, 100f);
-            criticalDamagePercent = Mathf.Max(0f, saveData.criticalDamagePercent);
             obtainedOrder = saveData.obtainedOrder;
             captureDate = saveData.captureDate ?? string.Empty;
             captureLocation = saveData.captureLocation ?? string.Empty;
             trainerName = saveData.trainerName ?? string.Empty;
             personality = saveData.personality ?? string.Empty;
+            if (saveData.hasGenetics) {
+                individualValues = saveData.individualValues.Clamped(0, PetStatCalculator.MaximumIndividualValue);
+                effortValues = ClampEffortValues(saveData.effortValues);
+                nature = PetNature.Normalize(saveData.nature);
+                geneticsInitialized = true;
+            }
+            else {
+                geneticsInitialized = false;
+                EnsureLegacyGenetics();
+            }
+            captureGeneticsRolled = true;
             codexRegistered = saveData.codexRegistered;
             codexNumber = saveData.codexNumber ?? string.Empty;
             codexDescription = saveData.codexDescription ?? string.Empty;
             nextEvolutionDiscovered = saveData.nextEvolutionDiscovered;
             currentFormId = string.IsNullOrWhiteSpace(saveData.currentFormId) ? "base" : saveData.currentFormId.Trim();
             evolutionStage = Mathf.Max(0, saveData.evolutionStage);
+            secondaryElement = saveData.secondaryElement != PetElement.Unknown
+                ? saveData.secondaryElement : secondaryElement;
             resourceInvestments = RestoreInvestmentSaveData(saveData.resourceInvestments);
             promptedEvolutionIds = saveData.promptedEvolutionIds != null
                 ? new List<string>(saveData.promptedEvolutionIds)
@@ -399,22 +478,32 @@ namespace Capstone.Game.HudSystem {
 
         void OnValidate() {
             nickname = NormalizeStoredNickname(nickname);
-            maxLevel = Mathf.Max(1, maxLevel);
             experience = Mathf.Max(0, experience);
             experienceToNextLevel = Mathf.Max(0, experienceToNextLevel);
-            attack = Mathf.Max(0, attack);
-            defense = Mathf.Max(0, defense);
-            speed = Mathf.Max(0, speed);
-            magicAttack = Mathf.Max(0, magicAttack);
-            magicDefense = Mathf.Max(0, magicDefense);
-            criticalRate = Mathf.Clamp(criticalRate, 0f, 100f);
-            criticalDamagePercent = Mathf.Max(0f, criticalDamagePercent);
             evolutionLevelRequirement = Mathf.Max(0, evolutionLevelRequirement);
             evolutionFriendshipRequirement = Mathf.Max(0, evolutionFriendshipRequirement);
             evolutionStage = Mathf.Max(0, evolutionStage);
             promptedEvolutionIds ??= new List<string>();
             evolutionRules ??= new List<PetEvolutionRule>();
             resourceInvestments ??= new List<PetResourceInvestment>();
+            if (geneticsInitialized) {
+                individualValues = individualValues.Clamped(0, PetStatCalculator.MaximumIndividualValue);
+                effortValues = ClampEffortValues(effortValues);
+                nature = PetNature.Normalize(nature);
+            }
+        }
+
+        static PetStatValues ClampEffortValues(PetStatValues values) {
+            values = values.Clamped(0, PetStatCalculator.MaximumEffortPerStat);
+            PetStatValues result = default;
+            int remaining = PetStatCalculator.MaximumEffortTotal;
+            for (int axis = 0; axis < 6; axis++) {
+                var stat = (PetCoreStat)axis;
+                int amount = Mathf.Min(values.Get(stat), remaining);
+                result.Set(stat, amount);
+                remaining -= amount;
+            }
+            return result;
         }
 
         List<PetResourceInvestmentSaveData> CreateInvestmentSaveData() {
@@ -484,16 +573,6 @@ namespace Capstone.Game.HudSystem {
             return normalized.Length <= MaxNicknameLength
                 ? normalized
                 : normalized.Substring(0, MaxNicknameLength).Trim();
-        }
-
-        bool IsDragonDuskPrototype() {
-            if (string.Equals(species?.Trim(), "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) return true;
-            if (string.Equals(definitionId?.Trim(), "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) return true;
-
-            string objectName = gameObject != null
-                ? gameObject.name.Replace("(Clone)", string.Empty).Trim()
-                : string.Empty;
-            return objectName.StartsWith("Dragon Dusk", StringComparison.OrdinalIgnoreCase);
         }
 
         string EnsurePersistentId() {

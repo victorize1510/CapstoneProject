@@ -5,6 +5,8 @@ using GDS.Core.Events;
 using UnityEngine;
 
 namespace Capstone.Game.HudSystem {
+    public enum PetEvolutionMethod { Level, Item }
+
     [DisallowMultipleComponent]
     public sealed class PetEvolutionService : MonoBehaviour {
         MonsterInventoryAdapter inventory;
@@ -16,10 +18,11 @@ namespace Capstone.Game.HudSystem {
             inventory = targetInventory != null ? targetInventory : inventory;
         }
 
-        public PetEvolutionPreview CreatePreview(PetController pet) {
+        public PetEvolutionPreview CreatePreview(PetController pet, PetEvolutionMethod method = PetEvolutionMethod.Level,
+            string requestedItemId = null) {
             var preview = new PetEvolutionPreview { Pet = pet };
             if (pet == null) {
-                preview.DisabledReason = "Chưa chọn pet để tiến hóa.";
+                preview.DisabledReason = "Chưa chọn thú để tiến hóa.";
                 return preview;
             }
 
@@ -27,7 +30,7 @@ namespace Capstone.Game.HudSystem {
             preview.Metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
             if (preview.Metadata == null) preview.Metadata = pet.gameObject.AddComponent<PetCollectionMetadata>();
             if (preview.RuntimeStats == null) {
-                preview.DisabledReason = "Pet chưa có PetHudRuntimeStats.";
+                preview.DisabledReason = "Thú chưa có PetHudRuntimeStats.";
                 return preview;
             }
 
@@ -36,7 +39,7 @@ namespace Capstone.Game.HudSystem {
             preview.CurrentName = preview.Metadata.ResolveDisplayName(preview.RuntimeStats.DisplayName);
             preview.CurrentIcon = preview.RuntimeStats.Icon;
             if (!preview.Metadata.TryGetNextEvolutionRule(out PetEvolutionRule rule)) {
-                preview.DisabledReason = "Pet đã đạt dạng tiến hóa cuối.";
+                preview.DisabledReason = "Thú đã đạt dạng tiến hóa cuối.";
                 return preview;
             }
 
@@ -52,27 +55,37 @@ namespace Capstone.Game.HudSystem {
             preview.RequiredItemId = rule.RequiredItemId;
             preview.RequiredItemQuantity = rule.RequiredItemQuantity;
 
-            if (rule.Trigger == PetEvolutionTrigger.Level) {
-                preview.RequirementMet = preview.CurrentLevel >= rule.RequiredLevel;
-                if (!preview.RequirementMet) {
-                    preview.DisabledReason = $"Cần đạt Lv. {rule.RequiredLevel}. Hiện tại Lv. {preview.CurrentLevel}.";
-                }
-            }
-            else {
+            bool levelAllowed = rule.Trigger != PetEvolutionTrigger.Item;
+            bool itemAllowed = rule.Trigger != PetEvolutionTrigger.Level;
+            if (method == PetEvolutionMethod.Item && itemAllowed) {
                 preview.Item = FindItem(rule.RequiredItemId);
                 preview.OwnedItemQuantity = preview.Item?.Quantity ?? 0;
-                preview.RequirementMet = !string.IsNullOrWhiteSpace(rule.RequiredItemId)
-                    && preview.Item != null
+            }
+            preview.UsesItem = method == PetEvolutionMethod.Item;
+            if (method == PetEvolutionMethod.Level) {
+                preview.RequirementMet = levelAllowed && preview.CurrentLevel >= rule.RequiredLevel;
+                if (!levelAllowed) preview.DisabledReason = "Dạng này chỉ tiến hóa bằng vật phẩm trong Túi đồ.";
+                else if (!preview.RequirementMet) preview.DisabledReason = $"Cần đạt Lv. {rule.RequiredLevel}.";
+            } else if (!itemAllowed || string.IsNullOrWhiteSpace(rule.RequiredItemId)
+                || !string.Equals(requestedItemId, rule.RequiredItemId, StringComparison.OrdinalIgnoreCase)) {
+                preview.DisabledReason = "Vật phẩm không phù hợp với dạng tiến hóa này.";
+            } else {
+                preview.RequirementMet = preview.Item != null
                     && preview.OwnedItemQuantity >= rule.RequiredItemQuantity;
-                if (string.IsNullOrWhiteSpace(rule.RequiredItemId)) {
-                    preview.DisabledReason = "Rule tiến hóa chưa khai báo Item ID.";
-                }
-                else if (preview.Item == null) {
-                    preview.DisabledReason = $"Chưa có {rule.RequiredItemId} trong Bag.";
-                }
-                else if (!preview.RequirementMet) {
+                if (preview.Item == null) preview.DisabledReason = $"Chưa có {rule.RequiredItemId} trong Bag.";
+                else if (!preview.RequirementMet)
                     preview.DisabledReason = $"Cần thêm {rule.RequiredItemQuantity - preview.OwnedItemQuantity} {rule.RequiredItemId}.";
-                }
+            }
+
+            Capstone.Game.PetSummon.PetSummonDirector director =
+                FindFirstObjectByType<Capstone.Game.PetSummon.PetSummonDirector>();
+            if (director != null && director.IsSequenceRunning) {
+                preview.DisabledReason = "Hãy đợi thao tác gọi/thu thú hoàn tất.";
+                preview.RequirementMet = false;
+            }
+            if (pet.IsSummonPresentationPending) {
+                preview.DisabledReason = "Hãy đợi thú xuất hiện hoàn tất.";
+                preview.RequirementMet = false;
             }
 
             if (preview.RequirementMet && saveController == null) {
@@ -80,14 +93,20 @@ namespace Capstone.Game.HudSystem {
             }
 
             preview.CanEvolve = preview.RequirementMet && saveController != null;
-            preview.ShouldAutoPrompt = rule.Trigger == PetEvolutionTrigger.Level
-                && preview.CanEvolve
+            preview.ShouldAutoPrompt = method == PetEvolutionMethod.Level && preview.CanEvolve
                 && !preview.Metadata.WasEvolutionPrompted(rule.EvolutionId);
             return preview;
         }
 
-        public bool TryEvolve(PetController pet, out string message) {
-            PetEvolutionPreview preview = CreatePreview(pet);
+        public bool TryEvolve(PetController pet, out string message,
+            PetEvolutionMethod method = PetEvolutionMethod.Level, string requestedItemId = null) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryBegin(this, "evolve", out var operation)) { message = string.Empty; return false; }
+            using (operation) return TryEvolveCore(pet, out message, method, requestedItemId);
+        }
+
+        bool TryEvolveCore(PetController pet, out string message,
+            PetEvolutionMethod method = PetEvolutionMethod.Level, string requestedItemId = null) {
+            PetEvolutionPreview preview = CreatePreview(pet, method, requestedItemId);
             if (!preview.CanEvolve || preview.Rule == null) {
                 message = preview.DisabledReason;
                 return false;
@@ -101,42 +120,17 @@ namespace Capstone.Game.HudSystem {
             PetCustomizationSaveData metadataSnapshot = preview.Metadata.CreateSaveData();
             PetRuntimeStatsSaveData statsSnapshot = preview.RuntimeStats.CreateSaveData();
 
-            bool consumedEvolutionItem = preview.Rule.Trigger == PetEvolutionTrigger.Item;
-            if (consumedEvolutionItem) {
-                Result removeResult = inventory.RemoveItem(preview.Item.ItemBase, preview.Rule.RequiredItemQuantity);
-                if (removeResult is Fail) {
-                    message = $"Không thể dùng {preview.Rule.RequiredItemId}. Hãy kiểm tra lại Bag.";
-                    return false;
-                }
-            }
+            bool consumedEvolutionItem = preview.UsesItem;
 
             PetHudRuntimeStats stats = preview.RuntimeStats;
             float healthRatio = stats.MaxHealth > 0f ? Mathf.Clamp01(stats.Health / stats.MaxHealth) : 1f;
-            float newMaxHealth = Mathf.Max(1f, stats.MaxHealth * preview.Rule.MaxHealthMultiplier);
-            float newHealth = newMaxHealth * healthRatio;
-
             if (!preview.Metadata.ApplyEvolution(preview.Rule)) {
-                if (consumedEvolutionItem) {
-                    inventory.AddItem(preview.Item.ItemBase, preview.Rule.RequiredItemQuantity);
-                }
                 message = "Không thể áp dụng dạng tiến hóa đã chọn.";
                 return false;
             }
 
-            preview.Metadata.SetStats(
-                preview.Metadata.Attack + preview.Rule.AttackBonus,
-                preview.Metadata.Defense + preview.Rule.DefenseBonus,
-                preview.Metadata.Speed + preview.Rule.SpeedBonus,
-                preview.Metadata.MagicAttack + preview.Rule.MagicAttackBonus,
-                preview.Metadata.MagicDefense + preview.Rule.MagicDefenseBonus);
-
-            if (consumedEvolutionItem) {
-                preview.Metadata.RecordResourceInvestment(
-                    preview.Item.ItemBase,
-                    preview.Item.ItemId,
-                    preview.Item.Name,
-                    preview.Rule.RequiredItemQuantity);
-            }
+            float newMaxHealth = preview.Metadata.GetStatsAtLevel(stats.Level).MaxHealth;
+            float newHealth = newMaxHealth * healthRatio;
 
             string nextBaseName = string.IsNullOrWhiteSpace(preview.Rule.TargetDisplayName)
                 ? stats.DisplayName
@@ -144,20 +138,40 @@ namespace Capstone.Game.HudSystem {
             stats.SetIdentity(nextBaseName, stats.Level, preview.Rule.TargetIcon ?? stats.Icon);
             stats.SetStatus(newHealth, newMaxHealth, stats.Energy, stats.MaxEnergy);
 
+            PetEvolutionVisualController visualController = pet.GetComponentInChildren<PetEvolutionVisualController>(true);
+            string visualError = string.Empty;
+            if (preview.Rule.TargetVisualPrefab == null || visualController == null
+                || !visualController.TryApply(preview.Rule.TargetVisualPrefab, out visualError)) {
+                preview.Metadata.RestoreFromSaveData(metadataSnapshot);
+                stats.RestoreFromSaveData(statsSnapshot);
+                message = preview.Rule.TargetVisualPrefab == null
+                    ? "Chưa gán model cho dạng tiến hóa."
+                    : visualController == null ? "Thú thiếu PetEvolutionVisualController." : visualError;
+                return false;
+            }
+
+            if (consumedEvolutionItem) {
+                Result removeResult = inventory.RemoveItem(preview.Item.ItemBase, preview.Rule.RequiredItemQuantity);
+                if (removeResult is Fail) {
+                    preview.Metadata.RestoreFromSaveData(metadataSnapshot);
+                    stats.RestoreFromSaveData(statsSnapshot);
+                    visualController.RestoreForm(metadataSnapshot.evolutionStage);
+                    message = $"Không thể dùng {preview.Rule.RequiredItemId}. Hãy kiểm tra lại Túi đồ.";
+                    return false;
+                }
+                preview.Metadata.RecordResourceInvestment(preview.Item.ItemBase, preview.Item.ItemId,
+                    preview.Item.Name, preview.Rule.RequiredItemQuantity);
+            }
+
             if (saveController == null || !saveController.SaveNow()) {
                 preview.Metadata.RestoreFromSaveData(metadataSnapshot);
                 stats.RestoreFromSaveData(statsSnapshot);
+                visualController.RestoreForm(metadataSnapshot.evolutionStage);
                 if (consumedEvolutionItem) {
                     inventory.AddItem(preview.Item.ItemBase, preview.Rule.RequiredItemQuantity);
                 }
                 message = "Không thể lưu lần tiến hóa. Mọi thay đổi đã được hoàn tác.";
                 return false;
-            }
-
-            PetEvolutionVisualController visualController = pet.GetComponentInChildren<PetEvolutionVisualController>(true);
-            if (preview.Rule.TargetVisualPrefab != null && visualController != null
-                && !visualController.TryApply(preview.Rule.TargetVisualPrefab, out string visualError)) {
-                Debug.LogWarning(visualError, pet);
             }
 
             PetEvolved?.Invoke(pet);
@@ -219,5 +233,6 @@ namespace Capstone.Game.HudSystem {
         public string RequiredItemId = string.Empty;
         public int RequiredItemQuantity;
         public int OwnedItemQuantity;
+        public bool UsesItem;
     }
 }

@@ -7,6 +7,7 @@ namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
     public sealed class PetLevelUpPanelController : MonoBehaviour {
+        bool confirmationRunning;
         [SerializeField] UIDocument document = null;
         [SerializeField] MonoBehaviour petHudProvider = null;
         [SerializeField] MonsterInventoryAdapter inventory = null;
@@ -93,13 +94,18 @@ namespace Capstone.Game.HudSystem {
             transientFeedback = string.Empty;
             overlay.style.display = DisplayStyle.Flex;
             Refresh();
-            dialog?.Focus();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(overlay);
+        }
+
+        void RequestClose() {
+            if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "close")) Close();
         }
 
         public void Close() {
             transientFeedback = string.Empty;
             targetPet = null;
             if (overlay != null) overlay.style.display = DisplayStyle.None;
+            Capstone.Game.UISystem.PanelFocusUtility.Close(overlay);
         }
 
         public void Refresh() {
@@ -115,7 +121,7 @@ namespace Capstone.Game.HudSystem {
 
             if (confirmButton != null) {
                 confirmButton.text = preview.IsMaxLevel ? "MAX LEVEL" : "LEVEL UP";
-                confirmButton.SetEnabled(preview.CanLevelUp);
+                confirmButton.SetEnabled(!confirmationRunning && (preview.CanLevelUp));
             }
             if (feedback != null) {
                 feedback.text = !string.IsNullOrWhiteSpace(transientFeedback)
@@ -184,7 +190,7 @@ namespace Capstone.Game.HudSystem {
 
         void RegisterControls() {
             if (controlsRegistered || overlay == null) return;
-            if (closeButton != null) closeButton.clicked += Close;
+            if (closeButton != null) closeButton.clicked += RequestClose;
             if (confirmButton != null) confirmButton.clicked += ConfirmLevelUp;
             if (evolutionButton != null) evolutionButton.clicked += OpenEvolutionPanel;
             controlsRegistered = true;
@@ -192,7 +198,7 @@ namespace Capstone.Game.HudSystem {
 
         void UnregisterControls() {
             if (!controlsRegistered) return;
-            if (closeButton != null) closeButton.clicked -= Close;
+            if (closeButton != null) closeButton.clicked -= RequestClose;
             if (confirmButton != null) confirmButton.clicked -= ConfirmLevelUp;
             if (evolutionButton != null) evolutionButton.clicked -= OpenEvolutionPanel;
             controlsRegistered = false;
@@ -230,6 +236,14 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ConfirmLevelUp() {
+            if (confirmationRunning || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "confirm")) return;
+            confirmationRunning = true;
+            confirmButton?.SetEnabled(false);
+            try { ConfirmLevelUpCore(); }
+            finally { confirmationRunning = false; if (IsOpen) Refresh(); }
+        }
+
+        void ConfirmLevelUpCore() {
             if (levelUpService == null) return;
             bool success = levelUpService.TryLevelUp(targetPet, out string message);
             if (success) CommandProvider?.NotifyHudDataChanged();
@@ -239,13 +253,14 @@ namespace Capstone.Game.HudSystem {
         }
 
         void OpenEvolutionPanel() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "OpenEvolutionPanel")) return;
             MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
             if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
             controller?.OpenPetEvolutionPanel(targetPet);
         }
 
         void RefreshSummary(PetLevelUpPreview preview) {
-            string baseName = preview.RuntimeStats != null ? preview.RuntimeStats.DisplayName : "Chọn một pet";
+            string baseName = preview.RuntimeStats != null ? preview.RuntimeStats.DisplayName : "Chọn một thú";
             string displayName = preview.Metadata != null ? preview.Metadata.ResolveDisplayName(baseName) : baseName;
             if (petName != null) petName.text = displayName;
             if (species != null) species.text = preview.Metadata != null ? DisplayOrDash(preview.Metadata.Species) : "-";
@@ -253,9 +268,9 @@ namespace Capstone.Game.HudSystem {
             if (rarity != null) rarity.text = preview.Metadata != null ? FormatRarity(preview.Metadata.Rarity) : "-";
             SetPortrait(portrait, portraitFallback, preview.RuntimeStats?.Icon, displayName);
 
-            if (currentLevel != null) currentLevel.text = preview.IsValid ? $"Lv. {preview.CurrentLevel}" : "Lv. -";
+            if (currentLevel != null) currentLevel.text = preview.IsValid ? $"Cấp {preview.CurrentLevel}" : "Cấp -";
             if (nextLevel != null) {
-                nextLevel.text = preview.IsValid ? $"Lv. {preview.NextLevel}" : "Lv. -";
+                nextLevel.text = preview.IsValid ? $"Cấp {preview.NextLevel}" : "Cấp -";
                 nextLevel.style.display = preview.IsMaxLevel ? DisplayStyle.None : DisplayStyle.Flex;
             }
             if (maxLabel != null) maxLabel.style.display = preview.IsMaxLevel ? DisplayStyle.Flex : DisplayStyle.None;
@@ -290,8 +305,8 @@ namespace Capstone.Game.HudSystem {
                 SetPortrait(newSkillIcon, newSkillIconFallback, null, "-");
                 if (newSkillName != null) newSkillName.text = "Không có kỹ năng mới";
                 if (newSkillDescription != null) newSkillDescription.text = preview.IsMaxLevel
-                    ? "Pet đã đạt cấp tối đa."
-                    : $"Không mở kỹ năng ở Lv. {preview.NextLevel}.";
+                    ? "Thú đã đạt cấp tối đa."
+                    : $"Không mở kỹ năng ở Cấp {preview.NextLevel}.";
                 if (newSkillUnlock != null) newSkillUnlock.text = string.Empty;
                 return;
             }
@@ -305,7 +320,7 @@ namespace Capstone.Game.HudSystem {
                     ? FormatElement(skill.element)
                     : skill.description;
             }
-            if (newSkillUnlock != null) newSkillUnlock.text = $"Sẽ học ở Lv. {preview.NextLevel}";
+            if (newSkillUnlock != null) newSkillUnlock.text = $"Sẽ học ở Cấp {preview.NextLevel}";
         }
 
         void RefreshEvolution(PetLevelUpPreview preview) {
@@ -332,17 +347,18 @@ namespace Capstone.Game.HudSystem {
             if (evolutionState != null) evolutionState.text = evolution.CanEvolve
                 ? $"Đã sẵn sàng tiến hóa thành {nextName}"
                 : $"Dạng tiếp theo: {nextName}";
-            if (evolutionLevel != null) evolutionLevel.text = evolution.Rule.Trigger == PetEvolutionTrigger.Level
-                ? $"Cấp yêu cầu: Lv. {evolution.RequiredLevel} • Hiện tại Lv. {evolution.CurrentLevel}"
-                : "Tiến hóa bằng vật phẩm, không khóa theo level";
+            bool levelEvolution = evolution.Rule.Trigger != PetEvolutionTrigger.Item;
+            if (evolutionLevel != null) evolutionLevel.text = levelEvolution
+                ? $"Cấp {evolution.CurrentLevel}/{evolution.RequiredLevel}"
+                : "Dạng này dùng vật phẩm trong Túi đồ";
             if (evolutionFriendship != null) evolutionFriendship.text = evolution.Rule.Trigger == PetEvolutionTrigger.Item
-                ? $"{evolution.RequiredItemId}: {evolution.OwnedItemQuantity} / {evolution.RequiredItemQuantity}"
+                ? "Mở Túi đồ để chọn thú và xác nhận vật phẩm."
                 : evolution.CanEvolve
                     ? "Đã đạt điều kiện. Có thể tiến hóa bất cứ lúc nào."
                     : evolution.DisabledReason;
             if (evolutionButton != null) {
                 evolutionButton.style.display = DisplayStyle.Flex;
-                evolutionButton.SetEnabled(evolution.CanEvolve);
+                evolutionButton.SetEnabled(levelEvolution);
             }
         }
 
@@ -387,12 +403,8 @@ namespace Capstone.Game.HudSystem {
             return string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
         }
 
-        static string FormatElement(PetElement value) {
-            return value == PetElement.Unknown ? "-" : value.ToString();
-        }
+        static string FormatElement(PetElement value) => Capstone.Game.UISystem.VietnameseUI.Element(value);
 
-        static string FormatRarity(PetRarity value) {
-            return value == PetRarity.Unknown ? "-" : value.ToString();
-        }
+        static string FormatRarity(PetRarity value) => Capstone.Game.UISystem.VietnameseUI.Rarity(value);
     }
 }

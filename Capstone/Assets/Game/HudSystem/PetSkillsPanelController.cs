@@ -19,6 +19,7 @@ namespace Capstone.Game.HudSystem {
         readonly Dictionary<PetElement, Button> filterButtons = new Dictionary<PetElement, Button>();
         readonly HashSet<PetElement> selectedElements = new HashSet<PetElement>();
         readonly Dictionary<Button, Action> buttonCallbacks = new Dictionary<Button, Action>();
+        readonly Dictionary<Button, EventCallback<PointerEnterEvent>> equippedTooltipCallbacks = new Dictionary<Button, EventCallback<PointerEnterEvent>>();
 
         VisualElement overlay;
         VisualElement dialog;
@@ -80,12 +81,13 @@ namespace Capstone.Game.HudSystem {
             selectedElements.Clear();
             overlay.style.display = DisplayStyle.Flex;
             Refresh();
-            dialog?.Focus();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(overlay);
         }
 
         public void Close() {
             HideTooltip();
             if (overlay != null) overlay.style.display = DisplayStyle.None;
+            Capstone.Game.UISystem.PanelFocusUtility.Close(overlay);
         }
 
         public void Refresh() {
@@ -189,14 +191,23 @@ namespace Capstone.Game.HudSystem {
                 int slotIndex = i;
                 Button slot = equippedSlots[i];
                 RegisterButton(slot, () => EquipSelectedInto(slotIndex));
-                slot.RegisterCallback<PointerEnterEvent>(_ => ShowEquippedTooltip(slotIndex));
-                slot.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
+                EventCallback<PointerEnterEvent> callback = _ => ShowEquippedTooltip(slotIndex);
+                equippedTooltipCallbacks.Add(slot, callback);
+                slot.RegisterCallback(callback);
+                slot.RegisterCallback<PointerLeaveEvent>(HandleTooltipLeave);
             }
 
             controlsRegistered = true;
         }
 
+        void HandleTooltipLeave(PointerLeaveEvent _) => HideTooltip();
+
         void UnregisterControls() {
+            foreach (var pair in equippedTooltipCallbacks) {
+                pair.Key.UnregisterCallback(pair.Value);
+                pair.Key.UnregisterCallback<PointerLeaveEvent>(HandleTooltipLeave);
+            }
+            equippedTooltipCallbacks.Clear();
             foreach (KeyValuePair<Button, Action> pair in buttonCallbacks) pair.Key.clicked -= pair.Value;
             buttonCallbacks.Clear();
             controlsRegistered = false;
@@ -204,8 +215,9 @@ namespace Capstone.Game.HudSystem {
 
         void RegisterButton(Button button, Action callback) {
             if (button == null || callback == null || buttonCallbacks.ContainsKey(button)) return;
-            button.clicked += callback;
-            buttonCallbacks.Add(button, callback);
+            Action guarded = Capstone.Game.UISystem.PlayerActionGate.Guard(this, "button:" + button.name, callback);
+            button.clicked += guarded;
+            buttonCallbacks.Add(button, guarded);
         }
 
         void SubscribeProvider() {
@@ -228,9 +240,9 @@ namespace Capstone.Game.HudSystem {
         void SetPetSummary(PetStatusHudData status) {
             string displayName = status.hasPet && !string.IsNullOrWhiteSpace(status.displayName)
                 ? status.displayName.Trim()
-                : "Chọn một pet";
+                : "Chọn một thú";
             if (petName != null) petName.text = displayName;
-            if (petLevel != null) petLevel.text = status.hasPet && status.level > 0 ? $"Lv. {status.level}" : "Lv. -";
+            if (petLevel != null) petLevel.text = status.hasPet && status.level > 0 ? $"Cấp {status.level}" : "Cấp -";
             if (petElement != null) petElement.text = FormatElement(selectedPetElement);
             SetPortrait(petPortrait, petPortraitFallback, status.icon, displayName);
         }
@@ -246,8 +258,8 @@ namespace Capstone.Game.HudSystem {
                 slot.EnableInClassList("is-empty", !available);
                 slot.userData = i;
 
-                SetText(slot, "skills-equipped-name", available ? SafeName(skill.displayName) : "EMPTY");
-                SetText(slot, "skills-equipped-meta", available ? FormatCooldown(skill) : "Chọn skill rồi chọn ô");
+                SetText(slot, "skills-equipped-name", available ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Trống");
+                SetText(slot, "skills-equipped-meta", available ? FormatCooldown(skill) : "Chọn kỹ năng rồi chọn ô");
                 VisualElement icon = slot.Q<VisualElement>(className: "skills-equipped-icon");
                 Label fallback = icon?.Q<Label>(className: "skills-icon-fallback");
                 SetPortrait(icon, fallback, available ? skill.icon : null, available ? skill.displayName : "+");
@@ -289,12 +301,12 @@ namespace Capstone.Game.HudSystem {
 
             var copy = new VisualElement();
             copy.AddToClassList("skills-learned-copy");
-            copy.Add(CreateLabel(SafeName(skill.displayName), "skills-learned-name"));
+            copy.Add(CreateLabel(SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)), "skills-learned-name"));
             copy.Add(CreateLabel(FormatElement(EffectiveElement(skill)), "skills-learned-element"));
             copy.Add(CreateLabel(FormatCooldown(skill), "skills-learned-meta"));
             card.Add(copy);
 
-            card.clicked += () => SelectLearnedSkill(learnedIndex);
+            card.clicked += Capstone.Game.UISystem.PlayerActionGate.Guard(this, "learned:" + learnedIndex, () => SelectLearnedSkill(learnedIndex));
             card.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(card, skill));
             card.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
             return card;
@@ -309,14 +321,14 @@ namespace Capstone.Game.HudSystem {
 
             if (helperLabel != null) {
                 helperLabel.text = selectedLearnedIndex >= 0
-                    ? $"Đã chọn {SafeName(learnedSnapshot[selectedLearnedIndex].displayName)}. Chọn một trong {activeEquippedSlotCount} slot để thay."
-                    : "Chọn skill đã học, sau đó chọn slot cần thay.";
+                    ? $"Đã chọn {SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(learnedSnapshot[selectedLearnedIndex].displayName))}. Chọn một trong {activeEquippedSlotCount} ô để thay."
+                    : "Chọn kỹ năng đã học, sau đó chọn ô cần thay.";
             }
         }
 
         void EquipSelectedInto(int equippedSlotIndex) {
             if (selectedLearnedIndex < 0) {
-                if (helperLabel != null) helperLabel.text = "Hãy chọn một Learned Skill trước.";
+                if (helperLabel != null) helperLabel.text = "Hãy chọn một Learned kỹ năng trước.";
                 return;
             }
 
@@ -325,20 +337,20 @@ namespace Capstone.Game.HudSystem {
 
         void TryEquip(int learnedSkillIndex, int equippedSlotIndex) {
             if (LoadoutProvider == null) {
-                if (helperLabel != null) helperLabel.text = "Provider hiện tại chỉ cho xem skill, chưa hỗ trợ thay loadout.";
+                if (helperLabel != null) helperLabel.text = "Provider hiện tại chỉ cho xem kỹ năng, chưa hỗ trợ thay loadout.";
                 return;
             }
 
             string skillName = learnedSkillIndex >= 0 && learnedSkillIndex < learnedSnapshot.Count
-                ? SafeName(learnedSnapshot[learnedSkillIndex].displayName)
-                : "Skill";
+                ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(learnedSnapshot[learnedSkillIndex].displayName))
+                : "Kỹ năng";
             if (!LoadoutProvider.TryEquipLearnedSkill(learnedSkillIndex, equippedSlotIndex)) {
-                if (helperLabel != null) helperLabel.text = "Không thể thay skill vào slot này.";
+                if (helperLabel != null) helperLabel.text = "Không thể thay kỹ năng vào ô này.";
                 return;
             }
 
             selectedLearnedIndex = -1;
-            if (helperLabel != null) helperLabel.text = $"Đã trang bị {skillName} vào slot {equippedSlotIndex + 1}.";
+            if (helperLabel != null) helperLabel.text = $"Đã trang bị {skillName} vào ô {equippedSlotIndex + 1}.";
             Refresh();
         }
 
@@ -378,7 +390,7 @@ namespace Capstone.Game.HudSystem {
 
         void ShowTooltip(VisualElement anchor, SkillHudData skill) {
             if (tooltip == null || overlay == null || anchor == null) return;
-            if (tooltipName != null) tooltipName.text = SafeName(skill.displayName);
+            if (tooltipName != null) tooltipName.text = SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName));
             if (tooltipElement != null) tooltipElement.text = FormatElement(EffectiveElement(skill));
             if (tooltipLevel != null) tooltipLevel.text = Mathf.Max(1, skill.skillLevel).ToString();
             if (tooltipCooldown != null) tooltipCooldown.text = skill.cooldownSeconds > 0f ? $"{skill.cooldownSeconds:0.#} giây" : "-";
@@ -424,7 +436,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         static string SafeName(string value) {
-            return string.IsNullOrWhiteSpace(value) ? "Skill" : value.Trim();
+            return string.IsNullOrWhiteSpace(value) ? "Kỹ năng" : value.Trim();
         }
 
         static string FirstLetter(string value) {
@@ -432,22 +444,9 @@ namespace Capstone.Game.HudSystem {
         }
 
         static string FormatCooldown(SkillHudData skill) {
-            return skill.cooldownSeconds > 0f ? $"CD {skill.cooldownSeconds:0.#}s" : "CD -";
+            return skill.cooldownSeconds > 0f ? $"Hồi chiêu: {skill.cooldownSeconds:0.#} giây" : "Hồi chiêu: —";
         }
 
-        static string FormatElement(PetElement element) {
-            switch (element) {
-                case PetElement.Nature: return "Hệ Thảo";
-                case PetElement.Fire: return "Hệ Lửa";
-                case PetElement.Water: return "Hệ Nước";
-                case PetElement.Wind: return "Hệ Gió";
-                case PetElement.Earth: return "Hệ Đất";
-                case PetElement.Electric: return "Hệ Điện";
-                case PetElement.Ice: return "Hệ Băng";
-                case PetElement.Light: return "Hệ Ánh sáng";
-                case PetElement.Dark: return "Hệ Bóng tối";
-                default: return "Hệ -";
-            }
-        }
+        static string FormatElement(PetElement element) => Capstone.Game.UISystem.VietnameseUI.Element(element);
     }
 }

@@ -14,6 +14,8 @@ namespace Capstone.Game.UISystem {
         [SerializeField] PanelTarget targetPanel = PanelTarget.Box;
         [SerializeField] KeyCode interactKey = KeyCode.E;
         [SerializeField, Min(0.1f)] float interactDistance = 2.75f;
+        [SerializeField, Range(1f, 180f)] float viewAngle = WorldInteractionView.DefaultViewAngle;
+        [SerializeField] LayerMask obstructionLayers = Physics.DefaultRaycastLayers;
         [SerializeField] Transform player = null;
         [SerializeField] GameMenuController menuController = null;
 
@@ -23,6 +25,8 @@ namespace Capstone.Game.UISystem {
 
         TextMesh promptLabel;
         Camera mainCamera;
+        Capstone.Game.ShopSystem.ShopSource shopSource;
+        public KeyCode InteractKey => interactKey;
 
         void Awake() {
             ResolveReferences();
@@ -38,7 +42,7 @@ namespace Capstone.Game.UISystem {
         void Update() {
             ResolveReferences();
 
-            bool canInteract = !InventoryInputController.GameplayInputBlocked && IsPlayerNear();
+            bool canInteract = CanInteract();
             SetPromptVisible(canInteract);
             FacePromptToCamera();
 
@@ -48,11 +52,17 @@ namespace Capstone.Game.UISystem {
         }
 
         void OpenTargetPanel() {
-            if (menuController == null) return;
+            if (menuController == null || !CanInteract() || !WorldInteractionView.TryConsumePress()) return;
 
             SetPromptVisible(false);
             if (targetPanel == PanelTarget.Box) menuController.OpenBoxFromWorld();
-            else menuController.OpenShopFromWorld();
+            else {
+                if (shopSource == null) {
+                    shopSource = GetComponent<Capstone.Game.ShopSystem.ShopSource>();
+                    if (shopSource == null) shopSource = gameObject.AddComponent<Capstone.Game.ShopSystem.ShopSource>();
+                }
+                menuController.OpenShopFromWorld(shopSource);
+            }
         }
 
         void ResolveReferences() {
@@ -69,13 +79,8 @@ namespace Capstone.Game.UISystem {
             if (playerObject != null) player = playerObject.transform;
         }
 
-        bool IsPlayerNear() {
-            if (player == null) return false;
-
-            Vector3 delta = player.position - transform.position;
-            delta.y = 0f;
-            return delta.sqrMagnitude <= interactDistance * interactDistance;
-        }
+        bool CanInteract() => !InventoryInputController.GameplayInputBlocked && menuController != null
+            && WorldInteractionView.CanInteract(player, transform, interactDistance, viewAngle, obstructionLayers);
 
         void EnsurePrompt() {
             if (promptLabel != null) return;
@@ -85,7 +90,7 @@ namespace Capstone.Game.UISystem {
             promptObject.transform.localPosition = promptOffset;
 
             promptLabel = promptObject.AddComponent<TextMesh>();
-            promptLabel.text = targetPanel == PanelTarget.Box ? "[E] Mở Box" : "[E] Mở Shop";
+            promptLabel.text = targetPanel == PanelTarget.Box ? "[E] Mở kho thú" : "[E] Mở cửa hàng";
             promptLabel.anchor = TextAnchor.MiddleCenter;
             promptLabel.alignment = TextAlignment.Center;
             promptLabel.characterSize = 0.075f;
@@ -117,6 +122,7 @@ namespace Capstone.Game.UISystem {
         }
 
         void SetPromptVisible(bool visible) {
+            visible &= Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible;
             if (promptLabel != null && promptLabel.gameObject.activeSelf != visible) {
                 promptLabel.gameObject.SetActive(visible);
             }

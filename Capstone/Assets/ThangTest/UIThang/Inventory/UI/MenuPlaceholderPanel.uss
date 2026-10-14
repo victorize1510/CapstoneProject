@@ -1,0 +1,37 @@
+/* MenuPlaceholderPanel owns its layout, typography and interaction states. Runtime controllers own data and visibility. */
+
+.menu-placeholder-panel {
+    position: absolute;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    flex-grow: 1;
+    min-width: 0;
+    min-height: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: #efe2c4;
+    border-width: 2px;
+    border-color: #a88e58;
+    border-radius: 10px;
+}
+
+.menu-placeholder-title {
+    color: #267154;
+    font-size: 42px;
+    -unity-font-style: bold;
+    margin-bottom: 18px;
+}
+
+.menu-placeholder-body {
+    width: 64%;
+    color: #3f3728;
+    font-size: 20px;
+    white-space: normal;
+    -unity-text-align: middle-center;
+}
+

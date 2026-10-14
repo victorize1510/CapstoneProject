@@ -1,0 +1,66 @@
+/* Quick item modal; command ownership and binding belong to GameplayHudQuickItemsView. */
+.quick-assignment-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(15, 31, 20, 0.55);
+}
+.quick-assignment-card {
+    width: 380px;
+    max-width: 90%;
+    padding: 24px;
+    background-color: var(--menu-surface, #ffffff);
+    border-color: #a9bd9c;
+    border-width: 1px;
+    border-radius: 10px;
+    color: #31573d;
+}
+.quick-assignment-title {
+    font-size: 23px;
+    -unity-font-style: bold;
+    color: #174a30;
+}
+.quick-assignment-item {
+    font-size: 18px;
+    white-space: normal;
+    margin-bottom: 12px;
+    color: #31573d;
+}
+.quick-assignment-card Button {
+    background-color: #ffffff;
+    color: #174a30;
+    border-color: #a9bd9c;
+    border-width: 1px;
+    border-radius: 5px;
+    height: 34px;
+}
+.quick-assignment-card Button:hover {
+    background-color: #eaf2e4;
+}
+.quick-assignment-card Button:focus {
+    border-color: #b79347;
+}
+.quick-assignment-card .quick-assignment-choice {
+    background-color: #477c51;
+    height: 48px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: #ffffff;
+}
+.quick-assignment-card .quick-assignment-choice:hover {
+    background-color: #356741;
+}
+#quick-assignment-hint {
+    white-space: normal;
+    color: #68765f;
+    margin-bottom: 12px;
+}
+.quick-assignment-feedback {
+    white-space: normal;
+    color: #935c3d;
+}

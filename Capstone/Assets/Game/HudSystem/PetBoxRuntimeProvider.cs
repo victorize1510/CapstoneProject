@@ -159,6 +159,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TrySwapPartySlots(int sourceIndex, int targetIndex, out string error) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "swap-party")) { error = string.Empty; return false; }
             PetCommandInput input = ResolveInput();
             if (!TryGetPartyArray(input, out PetController[] party, out error)) return false;
             if (!IsPartyIndex(sourceIndex) || !IsPartyIndex(targetIndex)) return Fail("Slot Party không hợp lệ.", out error);
@@ -175,6 +176,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TrySwapStoredPets(int sourceIndex, int targetIndex, out string error) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "swap-box")) { error = string.Empty; return false; }
             Initialize();
             if (!IsBoxIndex(sourceIndex) || !IsBoxIndex(targetIndex)) {
                 return Fail("Vị trí pet trong Box không hợp lệ.", out error);
@@ -190,6 +192,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TryMovePartyToBox(int partyIndex, out string error) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "move-to-box")) { error = string.Empty; return false; }
             Initialize();
             PetCommandInput input = ResolveInput();
             if (!TryGetPartyArray(input, out PetController[] party, out error)) return false;
@@ -219,6 +222,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TryMoveBoxToParty(int boxIndex, int partyIndex, out string error) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "move-to-party")) { error = string.Empty; return false; }
             Initialize();
             PetCommandInput input = ResolveInput();
             if (!TryGetPartyArray(input, out PetController[] party, out error)) return false;
@@ -244,6 +248,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TrySwapPartyWithBox(int partyIndex, int boxIndex, out string error) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "swap-party-box")) { error = string.Empty; return false; }
             Initialize();
             PetCommandInput input = ResolveInput();
             if (!TryGetPartyArray(input, out PetController[] party, out error)) return false;
@@ -278,6 +283,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public bool TryPurchaseCapacity(out string error) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "purchase-capacity")) { error = string.Empty; return false; }
             Initialize();
             ResolveServices();
             if (currencyWallet == null) return Fail("Không tìm thấy ví Gold.", out error);

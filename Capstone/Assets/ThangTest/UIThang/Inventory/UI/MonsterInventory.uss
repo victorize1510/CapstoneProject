@@ -1,0 +1,200 @@
+/* Composed document only: screen routing, template stacking and Bag evolution confirmation. */
+
+.inventory-root {
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(8, 19, 22, 0.62);
+    color: #2f2a20;
+}
+
+.menu-backdrop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(12, 22, 24, 0.38);
+}
+
+.quest-inventory-shell {
+    position: absolute;
+    left: 16px;
+    top: 0;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
+    height: auto;
+    max-width: none;
+    min-width: 0;
+    min-height: 0;
+    flex-direction: row;
+    margin-top: 0;
+}
+
+.inventory-root .panel-template-host {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.inventory-root.ui-builder-preview .quest-inventory-shell .quest-panel {
+    display: none;
+}
+
+.inventory-root.ui-builder-preview .quest-inventory-shell .inventory-panel {
+    display: flex;
+}
+
+.inventory-root .panel-template-host .pets-panel,
+.inventory-root .panel-template-host .box-panel,
+.inventory-root .panel-template-host .menu-placeholder-panel,
+.inventory-root .panel-template-host .skills-modal-overlay,
+.inventory-root .panel-template-host .pet-details-overlay,
+.inventory-root .panel-template-host .level-up-modal-overlay,
+.inventory-root .panel-template-host .heal-modal-overlay,
+.inventory-root .panel-template-host .evolution-modal-overlay,
+.inventory-root .panel-template-host .release-modal-overlay {
+    display: none;
+}
+
+.bag-evolution-confirm-overlay {
+    display: none;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(9, 24, 20, 0.75);
+}
+
+.bag-evolution-confirm-card {
+    width: 520px;
+    padding: 24px;
+    background-color: rgb(247, 250, 239);
+    border-width: 2px;
+    border-color: rgb(116, 156, 94);
+    border-radius: 8px;
+}
+
+.bag-evolution-confirm-title {
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: rgb(38, 105, 42);
+}
+
+.bag-evolution-confirm-text {
+    margin-top: 16px;
+    font-size: 17px;
+    color: rgb(30, 76, 37);
+}
+
+.bag-evolution-confirm-feedback {
+    margin-top: 12px;
+    font-size: 14px;
+    color: rgb(150, 55, 48);
+}
+
+.bag-evolution-confirm-actions {
+    margin-top: 20px;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.bag-evolution-confirm-actions Button {
+    margin-left: 12px;
+    width: 120px;
+    height: 36px;
+}
+
+.inventory-root.ui-builder-preview {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.inventory-root.ui-builder-preview .bottom-hint {
+    display: none;
+}
+
+.bottom-hint {
+    position: absolute;
+    display: none;
+    bottom: 14px;
+    height: 44px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(24, 42, 38, 0.88);
+    border-width: 1px;
+    border-color: rgba(207, 183, 118, 0.7);
+    border-radius: 8px;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.bottom-keycap {
+    min-width: 48px;
+    height: 34px;
+}
+
+.hint-divider {
+    color: #f8edcd;
+    margin-left: 12px;
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.hint-text {
+    color: #f8edcd;
+    font-size: 17px;
+    margin-left: 14px;
+}
+
+.quest-inventory-shell.journal-mode {
+    max-width: none;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.quest-inventory-shell.journal-mode .quest-panel {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-basis: 100%;
+    max-width: none;
+    min-width: 0;
+    margin-right: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-radius: 0;
+}
+
+.quest-inventory-shell.bag-mode .inventory-panel {
+    flex-basis: 100%;
+    max-width: none;
+}
+
+.quest-inventory-shell.bag-mode,
+.inventory-root.ui-builder-preview .quest-inventory-shell {
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.quest-inventory-shell.bag-mode .inventory-panel,
+.quest-inventory-shell.journal-mode .quest-panel {
+    display: flex;
+}
+
+.quest-inventory-shell.bag-mode .quest-panel,
+.quest-inventory-shell.journal-mode .inventory-panel {
+    display: none;
+}
