@@ -1,0 +1,2195 @@
+[
+  {
+    "id": "shell",
+    "width": 768,
+    "height": 844,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        749,
+        3
+      ],
+      [
+        765,
+        19
+      ],
+      [
+        765,
+        825
+      ],
+      [
+        749,
+        841
+      ],
+      [
+        19,
+        841
+      ],
+      [
+        3,
+        825
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.024739583333333332,
+        0.0035545023696682463
+      ],
+      [
+        0.9752604166666666,
+        0.0035545023696682463
+      ],
+      [
+        0.99609375,
+        0.022511848341232227
+      ],
+      [
+        0.99609375,
+        0.9774881516587678
+      ],
+      [
+        0.9752604166666666,
+        0.9964454976303317
+      ],
+      [
+        0.024739583333333332,
+        0.9964454976303317
+      ],
+      [
+        0.00390625,
+        0.9774881516587678
+      ],
+      [
+        0.00390625,
+        0.022511848341232227
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M23,7L745,7L761,23L761,821L745,837L23,837L7,821L7,23Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/shell__fill.svg",
+        "png": "Assets/Components/shell__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/shell__border.svg",
+        "png": "Assets/Components/shell__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/shell__mask.svg",
+        "png": "Assets/Components/shell__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/shell__hover.svg",
+        "png": "Assets/Components/shell__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/shell__pressed.svg",
+        "png": "Assets/Components/shell__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/shell__focus.svg",
+        "png": "Assets/Components/shell__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/shell__selected.svg",
+        "png": "Assets/Components/shell__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/shell__disabled.svg",
+        "png": "Assets/Components/shell__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "profile_panel",
+    "width": 720,
+    "height": 142,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        701,
+        3
+      ],
+      [
+        717,
+        19
+      ],
+      [
+        717,
+        123
+      ],
+      [
+        701,
+        139
+      ],
+      [
+        19,
+        139
+      ],
+      [
+        3,
+        123
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.02638888888888889,
+        0.02112676056338028
+      ],
+      [
+        0.9736111111111111,
+        0.02112676056338028
+      ],
+      [
+        0.9958333333333333,
+        0.13380281690140844
+      ],
+      [
+        0.9958333333333333,
+        0.8661971830985915
+      ],
+      [
+        0.9736111111111111,
+        0.9788732394366197
+      ],
+      [
+        0.02638888888888889,
+        0.9788732394366197
+      ],
+      [
+        0.004166666666666667,
+        0.8661971830985915
+      ],
+      [
+        0.004166666666666667,
+        0.13380281690140844
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M23,7L697,7L713,23L713,119L697,135L23,135L7,119L7,23Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/profile_panel__fill.svg",
+        "png": "Assets/Components/profile_panel__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/profile_panel__border.svg",
+        "png": "Assets/Components/profile_panel__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/profile_panel__mask.svg",
+        "png": "Assets/Components/profile_panel__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/profile_panel__hover.svg",
+        "png": "Assets/Components/profile_panel__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/profile_panel__pressed.svg",
+        "png": "Assets/Components/profile_panel__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/profile_panel__focus.svg",
+        "png": "Assets/Components/profile_panel__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/profile_panel__selected.svg",
+        "png": "Assets/Components/profile_panel__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/profile_panel__disabled.svg",
+        "png": "Assets/Components/profile_panel__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "content_panel",
+    "width": 728,
+    "height": 169,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        709,
+        3
+      ],
+      [
+        725,
+        19
+      ],
+      [
+        725,
+        150
+      ],
+      [
+        709,
+        166
+      ],
+      [
+        19,
+        166
+      ],
+      [
+        3,
+        150
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.0260989010989011,
+        0.01775147928994083
+      ],
+      [
+        0.9739010989010989,
+        0.01775147928994083
+      ],
+      [
+        0.9958791208791209,
+        0.11242603550295859
+      ],
+      [
+        0.9958791208791209,
+        0.8875739644970414
+      ],
+      [
+        0.9739010989010989,
+        0.9822485207100592
+      ],
+      [
+        0.0260989010989011,
+        0.9822485207100592
+      ],
+      [
+        0.004120879120879121,
+        0.8875739644970414
+      ],
+      [
+        0.004120879120879121,
+        0.11242603550295859
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M23,7L705,7L721,23L721,146L705,162L23,162L7,146L7,23Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/content_panel__fill.svg",
+        "png": "Assets/Components/content_panel__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/content_panel__border.svg",
+        "png": "Assets/Components/content_panel__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/content_panel__mask.svg",
+        "png": "Assets/Components/content_panel__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/content_panel__hover.svg",
+        "png": "Assets/Components/content_panel__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/content_panel__pressed.svg",
+        "png": "Assets/Components/content_panel__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/content_panel__focus.svg",
+        "png": "Assets/Components/content_panel__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/content_panel__selected.svg",
+        "png": "Assets/Components/content_panel__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/content_panel__disabled.svg",
+        "png": "Assets/Components/content_panel__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "menu_card",
+    "width": 352,
+    "height": 260,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        333,
+        3
+      ],
+      [
+        349,
+        19
+      ],
+      [
+        349,
+        241
+      ],
+      [
+        333,
+        257
+      ],
+      [
+        19,
+        257
+      ],
+      [
+        3,
+        241
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.05397727272727273,
+        0.011538461538461539
+      ],
+      [
+        0.9460227272727273,
+        0.011538461538461539
+      ],
+      [
+        0.9914772727272727,
+        0.07307692307692308
+      ],
+      [
+        0.9914772727272727,
+        0.926923076923077
+      ],
+      [
+        0.9460227272727273,
+        0.9884615384615385
+      ],
+      [
+        0.05397727272727273,
+        0.9884615384615385
+      ],
+      [
+        0.008522727272727272,
+        0.926923076923077
+      ],
+      [
+        0.008522727272727272,
+        0.07307692307692308
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M23,7L329,7L345,23L345,237L329,253L23,253L7,237L7,23Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/menu_card__fill.svg",
+        "png": "Assets/Components/menu_card__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/menu_card__border.svg",
+        "png": "Assets/Components/menu_card__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/menu_card__mask.svg",
+        "png": "Assets/Components/menu_card__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/menu_card__hover.svg",
+        "png": "Assets/Components/menu_card__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/menu_card__pressed.svg",
+        "png": "Assets/Components/menu_card__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/menu_card__focus.svg",
+        "png": "Assets/Components/menu_card__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/menu_card__selected.svg",
+        "png": "Assets/Components/menu_card__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/menu_card__disabled.svg",
+        "png": "Assets/Components/menu_card__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "menu_secondary",
+    "width": 352,
+    "height": 98,
+    "shape": "parallel",
+    "polygon": [
+      [
+        21,
+        3
+      ],
+      [
+        349,
+        3
+      ],
+      [
+        331,
+        95
+      ],
+      [
+        3,
+        95
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.05965909090909091,
+        0.030612244897959183
+      ],
+      [
+        0.9914772727272727,
+        0.030612244897959183
+      ],
+      [
+        0.9403409090909091,
+        0.9693877551020408
+      ],
+      [
+        0.008522727272727272,
+        0.9693877551020408
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M25,7L345,7L327,91L7,91Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/menu_secondary__fill.svg",
+        "png": "Assets/Components/menu_secondary__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/menu_secondary__border.svg",
+        "png": "Assets/Components/menu_secondary__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/menu_secondary__mask.svg",
+        "png": "Assets/Components/menu_secondary__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/menu_secondary__hover.svg",
+        "png": "Assets/Components/menu_secondary__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/menu_secondary__pressed.svg",
+        "png": "Assets/Components/menu_secondary__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/menu_secondary__focus.svg",
+        "png": "Assets/Components/menu_secondary__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/menu_secondary__selected.svg",
+        "png": "Assets/Components/menu_secondary__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/menu_secondary__disabled.svg",
+        "png": "Assets/Components/menu_secondary__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "button_primary",
+    "width": 352,
+    "height": 68,
+    "shape": "parallel",
+    "polygon": [
+      [
+        21,
+        3
+      ],
+      [
+        349,
+        3
+      ],
+      [
+        331,
+        65
+      ],
+      [
+        3,
+        65
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.05965909090909091,
+        0.04411764705882353
+      ],
+      [
+        0.9914772727272727,
+        0.04411764705882353
+      ],
+      [
+        0.9403409090909091,
+        0.9558823529411765
+      ],
+      [
+        0.008522727272727272,
+        0.9558823529411765
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M25,7L345,7L327,61L7,61Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/button_primary__fill.svg",
+        "png": "Assets/Components/button_primary__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/button_primary__border.svg",
+        "png": "Assets/Components/button_primary__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/button_primary__mask.svg",
+        "png": "Assets/Components/button_primary__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/button_primary__hover.svg",
+        "png": "Assets/Components/button_primary__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/button_primary__pressed.svg",
+        "png": "Assets/Components/button_primary__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/button_primary__focus.svg",
+        "png": "Assets/Components/button_primary__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/button_primary__selected.svg",
+        "png": "Assets/Components/button_primary__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/button_primary__disabled.svg",
+        "png": "Assets/Components/button_primary__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "button_secondary",
+    "width": 352,
+    "height": 68,
+    "shape": "parallel",
+    "polygon": [
+      [
+        21,
+        3
+      ],
+      [
+        349,
+        3
+      ],
+      [
+        331,
+        65
+      ],
+      [
+        3,
+        65
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.05965909090909091,
+        0.04411764705882353
+      ],
+      [
+        0.9914772727272727,
+        0.04411764705882353
+      ],
+      [
+        0.9403409090909091,
+        0.9558823529411765
+      ],
+      [
+        0.008522727272727272,
+        0.9558823529411765
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M25,7L345,7L327,61L7,61Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/button_secondary__fill.svg",
+        "png": "Assets/Components/button_secondary__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/button_secondary__border.svg",
+        "png": "Assets/Components/button_secondary__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/button_secondary__mask.svg",
+        "png": "Assets/Components/button_secondary__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/button_secondary__hover.svg",
+        "png": "Assets/Components/button_secondary__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/button_secondary__pressed.svg",
+        "png": "Assets/Components/button_secondary__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/button_secondary__focus.svg",
+        "png": "Assets/Components/button_secondary__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/button_secondary__selected.svg",
+        "png": "Assets/Components/button_secondary__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/button_secondary__disabled.svg",
+        "png": "Assets/Components/button_secondary__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "button_quiet",
+    "width": 352,
+    "height": 68,
+    "shape": "parallel",
+    "polygon": [
+      [
+        21,
+        3
+      ],
+      [
+        349,
+        3
+      ],
+      [
+        331,
+        65
+      ],
+      [
+        3,
+        65
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.05965909090909091,
+        0.04411764705882353
+      ],
+      [
+        0.9914772727272727,
+        0.04411764705882353
+      ],
+      [
+        0.9403409090909091,
+        0.9558823529411765
+      ],
+      [
+        0.008522727272727272,
+        0.9558823529411765
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M25,7L345,7L327,61L7,61Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/button_quiet__fill.svg",
+        "png": "Assets/Components/button_quiet__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/button_quiet__border.svg",
+        "png": "Assets/Components/button_quiet__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/button_quiet__mask.svg",
+        "png": "Assets/Components/button_quiet__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/button_quiet__hover.svg",
+        "png": "Assets/Components/button_quiet__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/button_quiet__pressed.svg",
+        "png": "Assets/Components/button_quiet__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/button_quiet__focus.svg",
+        "png": "Assets/Components/button_quiet__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/button_quiet__selected.svg",
+        "png": "Assets/Components/button_quiet__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/button_quiet__disabled.svg",
+        "png": "Assets/Components/button_quiet__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "tab",
+    "width": 240,
+    "height": 52,
+    "shape": "tab",
+    "polygon": [
+      [
+        15,
+        3
+      ],
+      [
+        225,
+        3
+      ],
+      [
+        237,
+        49
+      ],
+      [
+        3,
+        49
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.0625,
+        0.057692307692307696
+      ],
+      [
+        0.9375,
+        0.057692307692307696
+      ],
+      [
+        0.9875,
+        0.9423076923076923
+      ],
+      [
+        0.0125,
+        0.9423076923076923
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M19,7L221,7L233,45L7,45Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/tab__fill.svg",
+        "png": "Assets/Components/tab__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/tab__border.svg",
+        "png": "Assets/Components/tab__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/tab__mask.svg",
+        "png": "Assets/Components/tab__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/tab__hover.svg",
+        "png": "Assets/Components/tab__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/tab__pressed.svg",
+        "png": "Assets/Components/tab__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/tab__focus.svg",
+        "png": "Assets/Components/tab__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/tab__selected.svg",
+        "png": "Assets/Components/tab__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/tab__disabled.svg",
+        "png": "Assets/Components/tab__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "icon_button",
+    "width": 44,
+    "height": 44,
+    "shape": "diamond",
+    "polygon": [
+      [
+        22,
+        3
+      ],
+      [
+        41,
+        22
+      ],
+      [
+        22,
+        41
+      ],
+      [
+        3,
+        22
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.5,
+        0.06818181818181818
+      ],
+      [
+        0.9318181818181818,
+        0.5
+      ],
+      [
+        0.5,
+        0.9318181818181818
+      ],
+      [
+        0.06818181818181818,
+        0.5
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M22,7L37,22L22,37L7,22Z",
+    "contentInset": 12,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/icon_button__fill.svg",
+        "png": "Assets/Components/icon_button__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/icon_button__border.svg",
+        "png": "Assets/Components/icon_button__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/icon_button__mask.svg",
+        "png": "Assets/Components/icon_button__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/icon_button__hover.svg",
+        "png": "Assets/Components/icon_button__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/icon_button__pressed.svg",
+        "png": "Assets/Components/icon_button__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/icon_button__focus.svg",
+        "png": "Assets/Components/icon_button__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/icon_button__selected.svg",
+        "png": "Assets/Components/icon_button__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/icon_button__disabled.svg",
+        "png": "Assets/Components/icon_button__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "portrait_slot",
+    "width": 208,
+    "height": 132,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        189,
+        3
+      ],
+      [
+        205,
+        19
+      ],
+      [
+        205,
+        113
+      ],
+      [
+        189,
+        129
+      ],
+      [
+        19,
+        129
+      ],
+      [
+        3,
+        113
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.09134615384615384,
+        0.022727272727272728
+      ],
+      [
+        0.9086538461538461,
+        0.022727272727272728
+      ],
+      [
+        0.9855769230769231,
+        0.14393939393939395
+      ],
+      [
+        0.9855769230769231,
+        0.8560606060606061
+      ],
+      [
+        0.9086538461538461,
+        0.9772727272727273
+      ],
+      [
+        0.09134615384615384,
+        0.9772727272727273
+      ],
+      [
+        0.014423076923076924,
+        0.8560606060606061
+      ],
+      [
+        0.014423076923076924,
+        0.14393939393939395
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M23,7L185,7L201,23L201,109L185,125L23,125L7,109L7,23Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/portrait_slot__fill.svg",
+        "png": "Assets/Components/portrait_slot__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/portrait_slot__border.svg",
+        "png": "Assets/Components/portrait_slot__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/portrait_slot__mask.svg",
+        "png": "Assets/Components/portrait_slot__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/portrait_slot__hover.svg",
+        "png": "Assets/Components/portrait_slot__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/portrait_slot__pressed.svg",
+        "png": "Assets/Components/portrait_slot__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/portrait_slot__focus.svg",
+        "png": "Assets/Components/portrait_slot__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/portrait_slot__selected.svg",
+        "png": "Assets/Components/portrait_slot__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/portrait_slot__disabled.svg",
+        "png": "Assets/Components/portrait_slot__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "skill_slot",
+    "width": 72,
+    "height": 72,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        53,
+        3
+      ],
+      [
+        69,
+        19
+      ],
+      [
+        69,
+        53
+      ],
+      [
+        53,
+        69
+      ],
+      [
+        19,
+        69
+      ],
+      [
+        3,
+        53
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.2638888888888889,
+        0.041666666666666664
+      ],
+      [
+        0.7361111111111112,
+        0.041666666666666664
+      ],
+      [
+        0.9583333333333334,
+        0.2638888888888889
+      ],
+      [
+        0.9583333333333334,
+        0.7361111111111112
+      ],
+      [
+        0.7361111111111112,
+        0.9583333333333334
+      ],
+      [
+        0.2638888888888889,
+        0.9583333333333334
+      ],
+      [
+        0.041666666666666664,
+        0.7361111111111112
+      ],
+      [
+        0.041666666666666664,
+        0.2638888888888889
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M21.5,7L50.5,7L65,21.5L65,50.5L50.5,65L21.5,65L7,50.5L7,21.5Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/skill_slot__fill.svg",
+        "png": "Assets/Components/skill_slot__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/skill_slot__border.svg",
+        "png": "Assets/Components/skill_slot__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/skill_slot__mask.svg",
+        "png": "Assets/Components/skill_slot__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/skill_slot__hover.svg",
+        "png": "Assets/Components/skill_slot__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/skill_slot__pressed.svg",
+        "png": "Assets/Components/skill_slot__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/skill_slot__focus.svg",
+        "png": "Assets/Components/skill_slot__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/skill_slot__selected.svg",
+        "png": "Assets/Components/skill_slot__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/skill_slot__disabled.svg",
+        "png": "Assets/Components/skill_slot__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "input",
+    "width": 592,
+    "height": 56,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        573,
+        3
+      ],
+      [
+        589,
+        19
+      ],
+      [
+        589,
+        37
+      ],
+      [
+        573,
+        53
+      ],
+      [
+        19,
+        53
+      ],
+      [
+        3,
+        37
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.03209459459459459,
+        0.05357142857142857
+      ],
+      [
+        0.9679054054054054,
+        0.05357142857142857
+      ],
+      [
+        0.9949324324324325,
+        0.3392857142857143
+      ],
+      [
+        0.9949324324324325,
+        0.6607142857142857
+      ],
+      [
+        0.9679054054054054,
+        0.9464285714285714
+      ],
+      [
+        0.03209459459459459,
+        0.9464285714285714
+      ],
+      [
+        0.005067567567567568,
+        0.6607142857142857
+      ],
+      [
+        0.005067567567567568,
+        0.3392857142857143
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M21,7L571,7L585,21L585,35L571,49L21,49L7,35L7,21Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/input__fill.svg",
+        "png": "Assets/Components/input__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/input__border.svg",
+        "png": "Assets/Components/input__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/input__mask.svg",
+        "png": "Assets/Components/input__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/input__hover.svg",
+        "png": "Assets/Components/input__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/input__pressed.svg",
+        "png": "Assets/Components/input__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/input__focus.svg",
+        "png": "Assets/Components/input__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/input__selected.svg",
+        "png": "Assets/Components/input__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/input__disabled.svg",
+        "png": "Assets/Components/input__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "popup",
+    "width": 1080,
+    "height": 740,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        1061,
+        3
+      ],
+      [
+        1077,
+        19
+      ],
+      [
+        1077,
+        721
+      ],
+      [
+        1061,
+        737
+      ],
+      [
+        19,
+        737
+      ],
+      [
+        3,
+        721
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.017592592592592594,
+        0.004054054054054054
+      ],
+      [
+        0.9824074074074074,
+        0.004054054054054054
+      ],
+      [
+        0.9972222222222222,
+        0.025675675675675677
+      ],
+      [
+        0.9972222222222222,
+        0.9743243243243244
+      ],
+      [
+        0.9824074074074074,
+        0.995945945945946
+      ],
+      [
+        0.017592592592592594,
+        0.995945945945946
+      ],
+      [
+        0.002777777777777778,
+        0.9743243243243244
+      ],
+      [
+        0.002777777777777778,
+        0.025675675675675677
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M23,7L1057,7L1073,23L1073,717L1057,733L23,733L7,717L7,23Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/popup__fill.svg",
+        "png": "Assets/Components/popup__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/popup__border.svg",
+        "png": "Assets/Components/popup__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/popup__mask.svg",
+        "png": "Assets/Components/popup__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/popup__hover.svg",
+        "png": "Assets/Components/popup__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/popup__pressed.svg",
+        "png": "Assets/Components/popup__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/popup__focus.svg",
+        "png": "Assets/Components/popup__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/popup__selected.svg",
+        "png": "Assets/Components/popup__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/popup__disabled.svg",
+        "png": "Assets/Components/popup__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "header",
+    "width": 616,
+    "height": 64,
+    "shape": "tab",
+    "polygon": [
+      [
+        15,
+        3
+      ],
+      [
+        601,
+        3
+      ],
+      [
+        613,
+        61
+      ],
+      [
+        3,
+        61
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.024350649350649352,
+        0.046875
+      ],
+      [
+        0.9756493506493507,
+        0.046875
+      ],
+      [
+        0.9951298701298701,
+        0.953125
+      ],
+      [
+        0.00487012987012987,
+        0.953125
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M19,7L597,7L609,57L7,57Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/header__fill.svg",
+        "png": "Assets/Components/header__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/header__border.svg",
+        "png": "Assets/Components/header__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/header__mask.svg",
+        "png": "Assets/Components/header__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/header__hover.svg",
+        "png": "Assets/Components/header__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/header__pressed.svg",
+        "png": "Assets/Components/header__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/header__focus.svg",
+        "png": "Assets/Components/header__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/header__selected.svg",
+        "png": "Assets/Components/header__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/header__disabled.svg",
+        "png": "Assets/Components/header__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "bar_track",
+    "width": 320,
+    "height": 14,
+    "shape": "parallel",
+    "polygon": [
+      [
+        5.666666666666666,
+        3
+      ],
+      [
+        317,
+        3
+      ],
+      [
+        314.3333333333333,
+        11
+      ],
+      [
+        3,
+        11
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.017708333333333333,
+        0.21428571428571427
+      ],
+      [
+        0.990625,
+        0.21428571428571427
+      ],
+      [
+        0.9822916666666666,
+        0.7857142857142857
+      ],
+      [
+        0.009375,
+        0.7857142857142857
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 3,
+    "focusPath": "M5.666666666666666,3L317,3L314.3333333333333,11L3,11Z",
+    "contentInset": 3,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/bar_track__fill.svg",
+        "png": "Assets/Components/bar_track__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/bar_track__border.svg",
+        "png": "Assets/Components/bar_track__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/bar_track__mask.svg",
+        "png": "Assets/Components/bar_track__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/bar_track__hover.svg",
+        "png": "Assets/Components/bar_track__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/bar_track__pressed.svg",
+        "png": "Assets/Components/bar_track__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/bar_track__focus.svg",
+        "png": "Assets/Components/bar_track__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/bar_track__selected.svg",
+        "png": "Assets/Components/bar_track__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/bar_track__disabled.svg",
+        "png": "Assets/Components/bar_track__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "bar_hp",
+    "width": 320,
+    "height": 14,
+    "shape": "parallel",
+    "polygon": [
+      [
+        5.666666666666666,
+        3
+      ],
+      [
+        317,
+        3
+      ],
+      [
+        314.3333333333333,
+        11
+      ],
+      [
+        3,
+        11
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.017708333333333333,
+        0.21428571428571427
+      ],
+      [
+        0.990625,
+        0.21428571428571427
+      ],
+      [
+        0.9822916666666666,
+        0.7857142857142857
+      ],
+      [
+        0.009375,
+        0.7857142857142857
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 3,
+    "focusPath": "M5.666666666666666,3L317,3L314.3333333333333,11L3,11Z",
+    "contentInset": 3,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/bar_hp__fill.svg",
+        "png": "Assets/Components/bar_hp__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/bar_hp__border.svg",
+        "png": "Assets/Components/bar_hp__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/bar_hp__mask.svg",
+        "png": "Assets/Components/bar_hp__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/bar_hp__hover.svg",
+        "png": "Assets/Components/bar_hp__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/bar_hp__pressed.svg",
+        "png": "Assets/Components/bar_hp__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/bar_hp__focus.svg",
+        "png": "Assets/Components/bar_hp__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/bar_hp__selected.svg",
+        "png": "Assets/Components/bar_hp__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/bar_hp__disabled.svg",
+        "png": "Assets/Components/bar_hp__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "bar_exp",
+    "width": 320,
+    "height": 14,
+    "shape": "parallel",
+    "polygon": [
+      [
+        5.666666666666666,
+        3
+      ],
+      [
+        317,
+        3
+      ],
+      [
+        314.3333333333333,
+        11
+      ],
+      [
+        3,
+        11
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.017708333333333333,
+        0.21428571428571427
+      ],
+      [
+        0.990625,
+        0.21428571428571427
+      ],
+      [
+        0.9822916666666666,
+        0.7857142857142857
+      ],
+      [
+        0.009375,
+        0.7857142857142857
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 3,
+    "focusPath": "M5.666666666666666,3L317,3L314.3333333333333,11L3,11Z",
+    "contentInset": 3,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/bar_exp__fill.svg",
+        "png": "Assets/Components/bar_exp__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/bar_exp__border.svg",
+        "png": "Assets/Components/bar_exp__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/bar_exp__mask.svg",
+        "png": "Assets/Components/bar_exp__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/bar_exp__hover.svg",
+        "png": "Assets/Components/bar_exp__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/bar_exp__pressed.svg",
+        "png": "Assets/Components/bar_exp__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/bar_exp__focus.svg",
+        "png": "Assets/Components/bar_exp__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/bar_exp__selected.svg",
+        "png": "Assets/Components/bar_exp__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/bar_exp__disabled.svg",
+        "png": "Assets/Components/bar_exp__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "bar_stat",
+    "width": 320,
+    "height": 14,
+    "shape": "parallel",
+    "polygon": [
+      [
+        5.666666666666666,
+        3
+      ],
+      [
+        317,
+        3
+      ],
+      [
+        314.3333333333333,
+        11
+      ],
+      [
+        3,
+        11
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.017708333333333333,
+        0.21428571428571427
+      ],
+      [
+        0.990625,
+        0.21428571428571427
+      ],
+      [
+        0.9822916666666666,
+        0.7857142857142857
+      ],
+      [
+        0.009375,
+        0.7857142857142857
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 3,
+    "focusPath": "M5.666666666666666,3L317,3L314.3333333333333,11L3,11Z",
+    "contentInset": 3,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/bar_stat__fill.svg",
+        "png": "Assets/Components/bar_stat__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/bar_stat__border.svg",
+        "png": "Assets/Components/bar_stat__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/bar_stat__mask.svg",
+        "png": "Assets/Components/bar_stat__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/bar_stat__hover.svg",
+        "png": "Assets/Components/bar_stat__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/bar_stat__pressed.svg",
+        "png": "Assets/Components/bar_stat__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/bar_stat__focus.svg",
+        "png": "Assets/Components/bar_stat__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/bar_stat__selected.svg",
+        "png": "Assets/Components/bar_stat__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/bar_stat__disabled.svg",
+        "png": "Assets/Components/bar_stat__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "roster_dock",
+    "width": 1568,
+    "height": 162,
+    "shape": "panel",
+    "polygon": [
+      [
+        19,
+        3
+      ],
+      [
+        1549,
+        3
+      ],
+      [
+        1565,
+        19
+      ],
+      [
+        1565,
+        143
+      ],
+      [
+        1549,
+        159
+      ],
+      [
+        19,
+        159
+      ],
+      [
+        3,
+        143
+      ],
+      [
+        3,
+        19
+      ]
+    ],
+    "polygonNormalized": [
+      [
+        0.01211734693877551,
+        0.018518518518518517
+      ],
+      [
+        0.9878826530612245,
+        0.018518518518518517
+      ],
+      [
+        0.9980867346938775,
+        0.11728395061728394
+      ],
+      [
+        0.9980867346938775,
+        0.8827160493827161
+      ],
+      [
+        0.9878826530612245,
+        0.9814814814814815
+      ],
+      [
+        0.01211734693877551,
+        0.9814814814814815
+      ],
+      [
+        0.001913265306122449,
+        0.8827160493827161
+      ],
+      [
+        0.001913265306122449,
+        0.11728395061728394
+      ]
+    ],
+    "alphaOutsidePolygon": {
+      "fillAndMask": true,
+      "borderStrokeEnvelope": 2,
+      "antialiasTolerance": 1
+    },
+    "focusInset": 7,
+    "focusPath": "M23,7L1545,7L1561,23L1561,139L1545,155L23,155L7,139L7,23Z",
+    "contentInset": 20,
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/roster_dock__fill.svg",
+        "png": "Assets/Components/roster_dock__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/roster_dock__border.svg",
+        "png": "Assets/Components/roster_dock__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/roster_dock__mask.svg",
+        "png": "Assets/Components/roster_dock__mask.png"
+      },
+      "hover": {
+        "svg": "Assets/Components/roster_dock__hover.svg",
+        "png": "Assets/Components/roster_dock__hover.png"
+      },
+      "pressed": {
+        "svg": "Assets/Components/roster_dock__pressed.svg",
+        "png": "Assets/Components/roster_dock__pressed.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/roster_dock__focus.svg",
+        "png": "Assets/Components/roster_dock__focus.png"
+      },
+      "selected": {
+        "svg": "Assets/Components/roster_dock__selected.svg",
+        "png": "Assets/Components/roster_dock__selected.png"
+      },
+      "disabled": {
+        "svg": "Assets/Components/roster_dock__disabled.svg",
+        "png": "Assets/Components/roster_dock__disabled.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null,
+      "reason": "Preserve the slanted side angle. Do not stretch the whole bitmap or invent slice borders."
+    },
+    "textBaked": false
+  },
+  {
+    "id": "inspector_join_0",
+    "width": 768,
+    "height": 620,
+    "activeTab": 0,
+    "bodyTop": 52,
+    "bodyHeight": 568,
+    "path": "M19,52L16,52L28,3L244,3L256,52L749,52L765,68L765,601L749,617L19,617L3,601L3,68Z",
+    "polygonNormalized": null,
+    "sharedContinuousFill": true,
+    "focusRole": "inset cap of selected tab, no bottom baseline",
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/inspector_join_0__fill.svg",
+        "png": "Assets/Components/inspector_join_0__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/inspector_join_0__border.svg",
+        "png": "Assets/Components/inspector_join_0__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/inspector_join_0__mask.svg",
+        "png": "Assets/Components/inspector_join_0__mask.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/inspector_join_0__focus.svg",
+        "png": "Assets/Components/inspector_join_0__focus.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null
+    },
+    "textBaked": false
+  },
+  {
+    "id": "inspector_join_1",
+    "width": 768,
+    "height": 620,
+    "activeTab": 1,
+    "bodyTop": 52,
+    "bodyHeight": 568,
+    "path": "M19,52L264,52L276,3L492,3L504,52L749,52L765,68L765,601L749,617L19,617L3,601L3,68Z",
+    "polygonNormalized": null,
+    "sharedContinuousFill": true,
+    "focusRole": "inset cap of selected tab, no bottom baseline",
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/inspector_join_1__fill.svg",
+        "png": "Assets/Components/inspector_join_1__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/inspector_join_1__border.svg",
+        "png": "Assets/Components/inspector_join_1__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/inspector_join_1__mask.svg",
+        "png": "Assets/Components/inspector_join_1__mask.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/inspector_join_1__focus.svg",
+        "png": "Assets/Components/inspector_join_1__focus.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null
+    },
+    "textBaked": false
+  },
+  {
+    "id": "inspector_join_2",
+    "width": 768,
+    "height": 620,
+    "activeTab": 2,
+    "bodyTop": 52,
+    "bodyHeight": 568,
+    "path": "M19,52L512,52L524,3L740,3L752,52L749,52L765,68L765,601L749,617L19,617L3,601L3,68Z",
+    "polygonNormalized": null,
+    "sharedContinuousFill": true,
+    "focusRole": "inset cap of selected tab, no bottom baseline",
+    "stateLayers": {
+      "fill": {
+        "svg": "Assets/Components/inspector_join_2__fill.svg",
+        "png": "Assets/Components/inspector_join_2__fill.png"
+      },
+      "border": {
+        "svg": "Assets/Components/inspector_join_2__border.svg",
+        "png": "Assets/Components/inspector_join_2__border.png"
+      },
+      "mask": {
+        "svg": "Assets/Components/inspector_join_2__mask.svg",
+        "png": "Assets/Components/inspector_join_2__mask.png"
+      },
+      "focus": {
+        "svg": "Assets/Components/inspector_join_2__focus.svg",
+        "png": "Assets/Components/inspector_join_2__focus.png"
+      }
+    },
+    "stretch": {
+      "mode": "regenerate-at-target-size",
+      "nineSlice": null
+    },
+    "textBaked": false
+  }
+]

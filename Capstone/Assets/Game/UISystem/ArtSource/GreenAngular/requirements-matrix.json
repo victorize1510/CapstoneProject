@@ -1,0 +1,186 @@
+[
+  {
+    "id": "palette",
+    "request": "Emerald/sage/bronze + lavender/HP/EXP",
+    "spec": "Specs/palette.json",
+    "visual": "Boards/01_Components_States.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "angles",
+    "request": "Parallelogram buttons, trapezoid tabs, rhombus icon buttons",
+    "spec": "Specs/component-manifest.json",
+    "visual": "Boards/01_Components_States.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "no-fill-leak",
+    "request": "Fill/mask shared polygon; state contour and true alpha corners",
+    "spec": "Specs/03_Geometry_Integration.md",
+    "visual": "Boards/02_Geometry_Tab_Join.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "menu-bold",
+    "request": "Four secondary labels bold25, consistent alignment",
+    "spec": "Screens/01_Menu.svg",
+    "visual": "Screens/01_Menu.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "menu-etching",
+    "request": "Four right etchings at16% behind text, low contrast",
+    "spec": "Assets/Art/etching_profile.svg",
+    "visual": "Screens/01_Menu.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "menu-no-rename",
+    "request": "Remove player pencil on menu, preserve pet rename",
+    "spec": "Prompts/02_Unity_Menu.md",
+    "visual": "Screens/01_Menu.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "menu-footer",
+    "request": "Settings/back both352×68, only Tab",
+    "spec": "Specs/layout-grid.json",
+    "visual": "Screens/01_Menu.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "no-box-menu",
+    "request": "NPC BOX remains outside Menu",
+    "spec": "00_DOC_TRUOC.md",
+    "visual": "Screens/01_Menu.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "joined-tabs",
+    "request": "Three active positions share union silhouette and seam-free fill",
+    "spec": "Specs/component-manifest.json",
+    "visual": "Boards/02_Geometry_Tab_Join.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "focus-shape",
+    "request": "Inset focus contour; selected and focus simultaneously visible",
+    "spec": "Assets/Components/tab__focus.svg",
+    "visual": "Boards/01_Components_States.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "details",
+    "request": "Metadata/stat/advanced/skills, read-only scroll content",
+    "spec": "Specs/04_Data_States.md",
+    "visual": "Screens/05_Thong_Tin_Thu.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "levelup",
+    "request": "Before-after stats, EXP/HP, skill/evolution and resource footer",
+    "spec": "Specs/layout-grid.json",
+    "visual": "Screens/06_Tang_Cap.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "heal",
+    "request": "Before-after/item quantity/gated confirm; energy conditional",
+    "spec": "Specs/04_Data_States.md",
+    "visual": "Screens/07_Hoi_Phuc.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "rename",
+    "request": "Counter16, wrapped helper, balanced actions; no literal backslash-n",
+    "spec": "Specs/04_Data_States.md",
+    "visual": "Screens/08_Doi_Ten_Thu.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "empty-box",
+    "request": "U+1F43E double paw plus original circle,50px/font22/opacity.68",
+    "spec": "Specs/04_Data_States.md",
+    "visual": "Assets/Art/box_empty_reference.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "pet-art",
+    "request": "User supplies large2D and separate slot avatars; no auto3D",
+    "spec": "Specs/04_Data_States.md",
+    "visual": "Screens/02_Tong_Quan.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "pet-status",
+    "request": "Viewed slot2, summoned slot1, favorite independent",
+    "spec": "Specs/layout-grid.json",
+    "visual": "Boards/01_Components_States.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "eight-stats",
+    "request": "HP ATK SP.ATK DEF SP.DEF SPD CRIRate CRIDMG",
+    "spec": "Specs/04_Data_States.md",
+    "visual": "Screens/02_Tong_Quan.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "edge-states",
+    "request": "Long name, missing art/data/resources, HP full, invalid/empty/filter",
+    "spec": "Specs/04_Data_States.md",
+    "visual": "Boards/01_Components_States.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "reusable-assets",
+    "request": "Separate fill border mask focus selected; no baked data",
+    "spec": "Specs/asset-manifest.json",
+    "visual": "Boards/01_Components_States.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "mockups",
+    "request": "8 complete1600×900 screens, previews1920/1366",
+    "spec": "Specs/screen-manifest.json",
+    "visual": "GALLERY.png",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "unity-boundary",
+    "request": "uGUI Menu, UI Toolkit Companion; no project edits this delivery",
+    "spec": "Prompts/01_Unity_Full.md",
+    "visual": "Specs/project-status-before.txt",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  },
+  {
+    "id": "runtime-verification",
+    "request": "Future Unity captures/diff + standalone OR real Profiler evidence",
+    "spec": "Prompts/01_Unity_Full.md",
+    "visual": "Specs/05_QA_and_Handoff.md",
+    "designStatus": "provided",
+    "runtimeStatus": "not executed; design-only delivery"
+  }
+]

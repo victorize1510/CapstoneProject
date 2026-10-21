@@ -243,6 +243,9 @@ namespace Capstone.Game.ProfileSystem {
             HideAvatarDialog();
         }
 
+        // Reuse the existing rename modal from the Trainer summary; no new save/edit flow.
+        public void EditDisplayName() { if (IsOpen) ShowNameDialog(); }
+
         void ShowNameDialog() {
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "ShowNameDialog")) return;
             if (nameDialog == null || nameInput == null) return;

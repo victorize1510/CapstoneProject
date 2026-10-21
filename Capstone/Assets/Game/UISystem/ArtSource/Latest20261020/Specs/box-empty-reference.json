@@ -1,0 +1,19 @@
+{
+  "observedReadOnly": true,
+  "source": "Assets/Game/HudSystem/PetBoxPanelController.cs / CreateEmptySlotContent",
+  "stylesheet": "Assets/ThangTest/UIThang/Inventory/UI/BoxPanel.uss / .box-empty-slot-icon",
+  "glyph": "🐾",
+  "width": 50,
+  "height": 50,
+  "radius": 25,
+  "fontSize": 22,
+  "color": "#829794",
+  "background": "#E4EDEA",
+  "referenceAsset": {
+    "svg": "Icons/box-empty-preserved-style.svg",
+    "png": "Icons/box-empty-preserved-style.png",
+    "width": 50,
+    "height": 50
+  },
+  "note": "Existing game implementation uses a Label and round background, not a new replacement pet sprite. Reuse that component/style in Unity."
+}

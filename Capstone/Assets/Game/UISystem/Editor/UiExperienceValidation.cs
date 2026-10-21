@@ -54,11 +54,11 @@ namespace Capstone.Game.UISystem.Editor {
                 menu.HandleShortcut(KeyCode.Tab);
                 Check(menu.IsMenuOpen,"same key edge delivered twice in one frame executes once");
                 var menuRoot=Field<RectTransform>(menu,"root");
-                foreach(var text in menuRoot.GetComponentsInChildren<UnityEngine.UI.Text>(true)) Check(text.font==font,"Trainer font: "+text.name);
+                foreach(var text in menuRoot.GetComponentsInChildren<UnityEngine.UI.Text>(true)) Check(text.font==font || text.font==TrainerMenuArt.Serif,"Trainer uses its scoped serif or shared small-text font: "+text.name);
                 var menuBack=menuRoot.Find("TrainerMenuPanel/MenuContent/MenuFooter/BackButton");
                 // Footer names can evolve; find the button by its stable component name.
                 if(menuBack==null) foreach(var button in menuRoot.GetComponentsInChildren<UnityEngine.UI.Button>(true)) if(button.name=="BackButton") { menuBack=button.transform; break; }
-                Check(menuBack.GetComponentInChildren<UnityEngine.UI.Text>().text==VietnameseUI.Back,"Trainer Back uses common caption");
+                Check(menuBack.Find("Label").GetComponent<UnityEngine.UI.Text>().text=="Trở lại" && menuBack.Find("TabKeycap/Key").GetComponent<UnityEngine.UI.Text>().text=="Tab","Trainer Back uses v3 caption and the sole Tab keycap");
                 await Capture("TrainerMenu"); await Task.Delay(200); menu.HandleShortcut(KeyCode.Tab);
                 Check(!menu.IsMenuOpen && !InventoryInputController.GameplayInputBlocked,"second Tab closes Menu and restores gameplay");
                 var doc=inventory.GetComponent<UITK.UIDocument>(); var root=doc.rootVisualElement;

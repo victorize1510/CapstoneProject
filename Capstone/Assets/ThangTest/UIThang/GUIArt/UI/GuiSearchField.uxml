@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="gui-search">
+        <ui:VisualElement class="gui-icon gui-icon--search" picking-mode="Ignore" />
+        <ui:TextField name="search-input" class="gui-field" />
+        <ui:Button name="search-clear" tooltip="Xóa tìm kiếm" class="gui-button gui-button--icon">
+            <ui:VisualElement class="gui-icon gui-icon--close" picking-mode="Ignore" />
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>

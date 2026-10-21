@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="gui-surface gui-popup">
+        <ui:Label name="confirmation-title" class="gui-heading" />
+        <ui:Label name="confirmation-message" class="gui-caption" />
+        <ui:VisualElement class="gui-popup-actions">
+            <ui:Button name="confirmation-cancel" text="Hủy" class="gui-button" />
+            <ui:Button name="confirmation-accept" text="Xác nhận" class="gui-button gui-button--primary" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

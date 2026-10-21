@@ -1,0 +1,259 @@
+/* Green Angular 2026-10-18. Polygon rendering/picking comes from GreenAngularElements.cs.
+   These controls never use a rectangular background/focus or nine-sliced angular bitmap. */
+.pets-panel.companion-panel { left:0;right:0;top:0;bottom:0;width:auto;height:auto;padding:0;margin:0;border-width:0;background-color:rgba(36,91,75,0.22);background-image:none;color:#202B45; }
+.companion-design {position:absolute;width:1600px;height:900px;transform-origin:0 0;color:#202B45;}
+.companion-design Label {color:#202B45;font-size:16px;white-space:nowrap;-unity-text-align:middle-left;padding:0;margin:0;}
+.companion-design .unity-button,.companion-design .unity-button:hover,.companion-design .unity-button:active,.companion-design .unity-button:focus,.companion-design .unity-button:disabled {background-color:transparent;background-image:none;border-width:0;border-radius:0;opacity:1;}
+/* Geometry belongs to base rules; pseudo states must not override subclass spacing. */
+.companion-design .unity-button {margin:0;}
+.companion-design .companion-header{position:absolute;left:28px;top:24px;width:1538px;height:68px;flex-direction:row;align-items:center;}
+.companion-design .companion-emblem{position:absolute;left:2px;top:-11px;width:90px;height:90px;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#CCAD83;}
+.companion-design .companion-title {position:absolute;left:99px;top:0;width:560px;height:68px;font-size:30px;-unity-font-style:bold;background-color:transparent;}
+.companion-design .companion-button{height:48px;flex-direction:row;align-items:center;justify-content:center;padding:0;}
+.companion-design .companion-button Label{font-size:21px;-unity-font-style:bold;color:#EDE9E1;-unity-text-align:middle-center;}
+.companion-design .companion-button:disabled Label{color:#202B45;}
+.companion-design .companion-icon{width:24px;height:24px;flex-shrink:0;margin-right:8px;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#202B45;}
+.companion-design .companion-button .companion-icon{-unity-background-image-tint-color:#EDE9E1;}
+.companion-design .companion-button:disabled .companion-icon{-unity-background-image-tint-color:#202B45;}
+.companion-design .companion-back{position:absolute;left:1380px;top:10px;width:158px;height:46px;}
+.companion-design .companion-hero{position:absolute;left:32px;top:112px;width:740px;height:594px;overflow:visible;}
+.companion-design .companion-sanctuary{position:absolute;left:240px;top:150px;width:216px;height:216px;opacity:.60;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#CCAD83;}
+.companion-design .companion-large-portrait{position:absolute;left:0;top:0;right:0;bottom:0;background-color:transparent;background-image:none;}
+.companion-design .companion-missing-art{position:absolute;left:80px;right:80px;top:344px;height:66px;white-space:normal;-unity-text-align:middle-center;font-size:21px;color:#EDE9E1;}
+.companion-design .companion-mode{position:absolute;left:22px;top:532px;flex-direction:row;height:44px;}
+.companion-design .companion-mode .companion-button{width:88px;height:44px;margin-right:6px;}
+.companion-design .companion-mode .companion-button.is-selected Label{color:#202B45;}
+.companion-design .companion-mode .is-selected .companion-icon{-unity-background-image-tint-color:#202B45;}
+.companion-design .companion-tabs{position:absolute;left:816px;top:90px;width:736px;height:52px;flex-direction:row;}
+.companion-design .companion-tab{width:240px;height:52px;margin-right:8px;}
+.companion-design .companion-tab Label{font-size:21px;}
+.companion-design .companion-tab.is-selected Label{color:#202B45;}
+.companion-design .companion-tab.is-selected .companion-icon{-unity-background-image-tint-color:#202B45;}
+.companion-design .companion-inspector{position:absolute;left:800px;top:142px;width:768px;height:568px;padding:16px 24px 0;background-color:transparent;background-image:none;border-width:0;}
+.companion-design .companion-shell-border,.companion-design .companion-corner{display:none;}
+.companion-design .companion-summary{height:93px;flex-shrink:0;border-bottom-width:1px;border-bottom-color:#8996B0;}
+.companion-design .companion-name-row{height:44px;flex-direction:row;align-items:center;}
+.companion-design .companion-name{font-size:30px;-unity-font-style:bold;width:344px;max-width:344px;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;}
+.companion-design .companion-icon-button {width:44px;height:44px;margin-left:6px;flex-shrink:0;}
+.companion-design .companion-icon-button .companion-icon{width:20px;height:20px;margin:0;-unity-background-image-tint-color:#EDE9E1;}
+.companion-design .companion-summoned{font-size:15px;margin-left:auto;color:#202B45;}
+.companion-design .companion-meta{height:32px;flex-direction:row;align-items:center;}
+.companion-design .companion-meta Label{font-size:15px;margin-right:12px;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;}
+.companion-design .companion-hidden{display:none;}
+.companion-design .companion-tab-body{position:absolute;left:24px;right:24px;top:106px;bottom:0;min-height:0;}
+.companion-design .companion-resource-row{height:36px;flex-direction:row;align-items:center;}
+.companion-design .companion-resource-name{width:38px;font-size:16px;}
+.companion-design .companion-resource-value{width:112px;font-size:16px;-unity-text-align:middle-right;}
+.companion-design .companion-resource-row .companion-icon{width:24px;height:24px;}
+.companion-design .companion-bar-track{height:14px;flex-grow:1;margin-right:12px;overflow:visible;background-color:transparent;background-image:none;border-width:0;}
+.companion-design .companion-bar-fill{height:100%;width:0;background-color:transparent;border-radius:0;}
+.companion-design .companion-content{background-image:none;background-color:transparent;border-width:0;}
+.companion-design .companion-stats{position:absolute;left:-4px;top:82px;width:728px;height:169px;flex-direction:row;padding:12px 20px;}
+.companion-design .companion-stat-column{width:50%;padding-right:0;}
+.companion-design .companion-stat-row{height:35px;flex-direction:row;align-items:center;}
+.companion-design .companion-stat-row .companion-icon{width:21px;height:21px;margin-right:9px;}
+.companion-design .companion-stat-name{width:85px;font-size:15px;flex-shrink:0;}
+.companion-design .companion-stat-track{height:10px;flex-grow:1;background-color:transparent;border-radius:0;overflow:visible;}
+.companion-design .companion-stat-fill{height:100%;width:0;background-color:transparent;border-radius:0;}
+.companion-design .companion-stat-value{width:55px;font-size:16px;-unity-text-align:middle-right;}
+.companion-design .companion-skill-summary{position:absolute;left:-4px;top:262px;width:728px;height:98px;flex-direction:row;align-items:center;padding:10px 18px;}
+.companion-design .companion-section-label{font-size:20px;margin-right:12px;}
+.pets-panel.companion-panel .pets-skills-row {height:76px;flex-direction:row;align-items:center;flex-grow:1;justify-content:space-evenly;margin:0 10px;min-height:0;}
+.pets-panel.companion-panel .pet-skill-card {width:66px;height:66px;min-width:0;min-height:0;flex-grow:0;flex-shrink:0;margin:0;padding:7px;background-color:transparent;background-image:none;border-width:0;border-radius:0;}
+.pets-panel.companion-panel .pet-skill-icon {width:48px;height:48px;margin:0;background-color:transparent;border-radius:0;}
+.companion-design .companion-skill-art{-unity-background-scale-mode:scale-to-fit;align-items:center;justify-content:center;-unity-background-image-tint-color:white;}
+.companion-design .companion-skill-fallback {width:28px;height:28px;margin:0;padding:0;color:transparent;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#EDE9E1;}
+.pets-panel.companion-panel .pet-skill-text {display:none;}
+.companion-design .companion-small-button{height:46px;width:160px;}
+.companion-design .companion-small-button Label{font-size:18px;}
+.companion-design .companion-small-button .companion-icon{width:20px;height:20px;}
+.companion-design .companion-actions{position:absolute;left:0;top:374px;width:716px;height:48px;flex-direction:row;}
+.companion-design .companion-actions .companion-button{flex-grow:1;flex-basis:0;margin-right:8px;}
+.companion-design .companion-actions .companion-button Label{font-size:19px;}
+.companion-design .companion-details-link{position:absolute;right:0;top:426px;width:166px;height:32px;}
+.companion-design .companion-details-link Label{font-size:15px;color:#39455E;}
+.companion-design .companion-details-link .companion-icon{width:19px;height:19px;-unity-background-image-tint-color:#39455E;}
+.companion-design .companion-dock{position:absolute;left:16px;top:726px;width:1568px;height:162px;background-image:none;background-color:transparent;}
+.companion-design .companion-party-title{position:absolute;left:30px;top:-29px;height:29px;font-size:14px;-unity-font-style:bold;color:#EDE9E1;}
+.pets-panel.companion-panel .pets-party-row {position:absolute;left:18px;top:15px;width:1332px;height:132px;flex-direction:row;padding:0;margin:0;}
+.pets-panel.companion-panel .pet-party-card {position:relative;width:208px;height:132px;min-height:0;min-width:0;flex-basis:auto;flex-grow:0;flex-shrink:0;margin:0 14px 0 0;padding:0;border-width:0;border-radius:0;background-color:transparent;background-image:none;overflow:visible;}
+.pets-panel.companion-panel .pet-party-card:hover,.pets-panel.companion-panel .pet-party-card:focus,.pets-panel.companion-panel .pet-party-card.is-selected,.pets-panel.companion-panel .pet-party-card.is-swap-source {background-color:transparent;background-image:none;border-width:0;}
+.pets-panel.companion-panel .pet-card-content {position:absolute;left:5px;right:5px;top:5px;bottom:5px;padding:0;margin:0;}
+.pets-panel.companion-panel .pet-card-portrait {position:absolute;left:0;right:0;top:0;height:96px;min-height:0;width:auto;padding:0;margin:0;background-color:transparent;background-image:none;}
+.pets-panel.companion-panel .pet-card-top {position:absolute;left:8px;right:8px;top:8px;height:26px;}
+.pets-panel.companion-panel .pet-card-element-icons {display:none;}
+.pets-panel.companion-panel .pet-card-slot-number {width:23px;height:23px;font-size:12px;color:#EDE9E1;background-color:#3C4772;-unity-text-align:middle-center;border-width:0;border-radius:0;}
+.pets-panel.companion-panel .pet-card-favorite {position:absolute;right:0;top:0;width:24px;height:24px;min-width:0;min-height:0;padding:0;margin:0;background-color:transparent;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#CCAD83;}
+.pets-panel.companion-panel .pet-card-level {position:absolute;right:8px;bottom:4px;font-size:13px;background-color:transparent;color:#202B45;padding:0;}
+.pets-panel.companion-panel .pet-card-info {position:absolute;left:6px;right:6px;bottom:3px;height:20px;min-height:0;padding:0;margin:0;}
+.pets-panel.companion-panel .pet-card-name-row {display:none;}
+.pets-panel.companion-panel .pet-card-bar-row {position:absolute;left:0;top:3px;width:128px;height:14px;margin:0;}
+.pets-panel.companion-panel .pet-card-bar-track {height:10px;background-color:transparent;border-radius:0;margin:0;}
+.pets-panel.companion-panel .pet-card-bar-label {width:20px;font-size:10px;}
+.pets-panel.companion-panel .pet-card-hp-fill {height:100%;background-color:transparent;}
+.pets-panel.companion-panel .pet-card-hp-value {position:absolute;right:0;bottom:0;width:68px;height:20px;font-size:11px;color:#202B45;-unity-text-align:middle-right;}
+.pets-panel.companion-panel .pet-card-portrait-fallback {display:none;background-image:none;}
+.companion-design .companion-active-badge{position:absolute;left:42px;top:12px;width:20px;height:20px;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#CCAD83;}
+.companion-design .companion-swap{position:absolute;left:1367px;top:38px;width:178px;height:76px;flex-direction:row;}
+.companion-design .companion-swap Label{font-size:20px;}
+.companion-design .companion-feedback{position:absolute;left:30px;right:30px;bottom:-11px;height:12px;font-size:11px;}
+.companion-design .box-empty-slot-content {position:absolute;left:79px;top:30px;width:50px;align-items:center;opacity:.68;}
+.companion-design .box-empty-slot-icon {width:50px;height:50px;font-size:22px;color:rgb(130,151,148);background-color:rgb(228,237,234);border-radius:25px;-unity-text-align:middle-center;}
+.companion-design .box-empty-slot-text {font-size:12px;color:#557078;margin-top:2px;-unity-text-align:middle-center;}
+.companion-design .companion-growth{top:109px;}
+.companion-design .companion-growth-module{position:relative;height:130px;min-height:130px;padding:12px 16px 8px 108px;margin:0 0 13px 0;}
+.companion-design .companion-growth-heading{height:35px;flex-direction:row;align-items:center;}
+.companion-design .companion-growth-heading>.companion-icon{position:absolute;left:-86px;top:20px;width:46px;height:46px;}
+.companion-design .companion-growth-heading>.companion-small-button{position:absolute;right:0;top:28px;}
+.companion-design .companion-growth-heading .companion-section-label{font-size:23px;}
+.companion-design .companion-growth-copy{flex-direction:row;align-items:center;height:36px;max-width:400px;}
+.companion-design .companion-growth-icon{width:28px;height:28px;margin-right:8px;-unity-background-scale-mode:scale-to-fit;}
+.companion-design .companion-growth-text{font-size:14px;white-space:normal;flex-shrink:1;}
+.companion-design .companion-growth-reason{max-width:420px;font-size:13px;white-space:normal;}
+/* Same equipped/learned controls, reparented by the existing skills controller. */
+.pets-panel.companion-panel .companion-embedded-skills {position:relative;width:720px;height:100%;min-height:0;max-height:none;min-width:0;max-width:none;margin:0;padding:0;border-width:0;background-color:transparent;background-image:none;}
+.companion-design .companion-embedded-skills .skills-modal-header,.companion-design .companion-embedded-skills .skills-pet-summary,.companion-design .companion-embedded-skills .skills-hover-hint{display:none;}
+.companion-design .companion-embedded-skills .skills-section-header{height:28px;margin:0;}
+.companion-design .companion-embedded-skills .skills-section-title,.companion-design .companion-embedded-skills .skills-learned-title{font-size:16px;color:#39455E;}
+.companion-design .companion-embedded-skills .skills-equipped-row{position:absolute;left:0;top:28px;width:720px;height:108px;min-height:0;flex-direction:row;margin:0;}
+.companion-design .companion-embedded-skills .skills-equipped-slot{position:relative;width:174px;height:108px;min-height:0;min-width:0;flex-shrink:0;margin:0 8px 0 0;padding:8px;background-color:transparent;border-width:0;border-radius:0;}
+.companion-design .companion-embedded-skills .skills-equipped-icon{position:absolute;left:10px;top:10px;width:55px;height:55px;min-width:0;min-height:0;margin:0;}
+.companion-design .companion-embedded-skills .skills-equipped-name{position:absolute;left:76px;right:10px;top:18px;height:40px;font-size:14px;white-space:normal;overflow:hidden;text-overflow:ellipsis;}
+.companion-design .companion-embedded-skills .skills-equipped-meta{position:absolute;left:12px;right:8px;bottom:10px;font-size:12px;color:#39455E;}
+.companion-design .companion-embedded-skills .skills-slot-number{position:absolute;left:8px;top:6px;font-size:12px;color:#EDE9E1;}
+.companion-design .companion-embedded-skills .skills-helper-label{position:absolute;left:0;right:0;top:138px;height:22px;white-space:normal;font-size:12px;color:#39455E;}
+.companion-design .companion-embedded-skills .skills-learned-header-row{position:absolute;left:0;top:162px;right:0;height:24px;}
+.companion-design .companion-embedded-skills .skills-filter-row{position:absolute;left:0;top:184px;width:402px;height:26px;display:flex;flex-direction:row;flex-wrap:nowrap;overflow:hidden;}
+.companion-design .companion-embedded-skills .skills-filter-button{min-width:26px;height:24px;font-size:10px;margin:0 2px 0 0;padding:2px;}
+.companion-design .companion-embedded-skills .skills-learned-scroll{position:absolute;left:0;top:212px;width:402px;height:211px;min-height:0;margin:0;padding:6px;}
+.companion-design .companion-embedded-skills .skills-learned-grid{flex-direction:row;flex-wrap:wrap;}
+.companion-design .companion-embedded-skills .skills-learned-card{width:185px;height:92px;min-width:0;min-height:0;margin:0 7px 7px 0;padding:8px;flex-direction:row;align-items:center;border-width:0;border-radius:0;background-color:transparent;}
+.companion-design .companion-embedded-skills .skills-learned-icon{width:56px;height:56px;min-width:0;min-height:0;margin-right:8px;}
+.companion-design .companion-embedded-skills .skills-learned-copy{flex-grow:1;min-width:0;}
+.companion-design .companion-embedded-skills .skills-learned-copy Label{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.companion-design .companion-embedded-skills .skills-empty-label{font-size:14px;color:#39455E;white-space:normal;}
+.companion-design .companion-inline-detail{position:absolute;left:414px;top:184px;width:302px;height:239px;bottom:auto;padding:14px 16px;border-width:0;border-radius:0;background-color:transparent;}
+.companion-design .companion-inline-detail Label{font-size:14px;color:#202B45;white-space:normal;}
+.companion-design .companion-inline-detail .skills-tooltip-name{font-size:21px;-unity-font-style:bold;}
+.companion-design .companion-inline-detail .skills-tooltip-row{flex-direction:row;justify-content:space-between;min-height:25px;}
+.companion-design .companion-inline-detail .skills-tooltip-key{font-size:13px;color:#39455E;}
+.companion-design .companion-inline-detail .skills-tooltip-description{font-size:14px;white-space:normal;}
+
+.pets-panel.companion-panel .pet-skill-card {flex-basis:auto;}
+
+.companion-design .companion-embedded-skills .skills-filter-button { min-width:60px; width:auto; height:44px; font-size:13px; margin:0 4px 0 0; padding:6px; }
+.companion-design .companion-embedded-skills .skills-learned-scroll { top:232px; height:191px; }
+
+.companion-design .companion-stat-column {padding-right:12px;}
+.companion-design .companion-embedded-skills .skills-filter-button .angular-button-caption {font-size:13px;color:#202B45;}
+
+.companion-design .companion-large-portrait {right:-52px;}
+
+.companion-design .companion-growth-module {width:716px;align-self:flex-start;}
+.companion-design .companion-embedded-skills .skills-learned-grid {width:388px;padding:0;flex-direction:row;flex-wrap:wrap;}
+.companion-design .companion-embedded-skills .skills-learned-scroll .unity-scroll-view__vertical-scroller {position:absolute;right:0;top:0;bottom:0;width:6px;}
+.companion-design .companion-embedded-skills .skills-filter-button {min-width:86px;}
+
+.companion-design .companion-embedded-skills .skills-learned-card {height:82px;}
+
+.companion-design .companion-active-badge {left:34px;top:8px;width:28px;height:28px;}
+
+.companion-design #green-title-ribbon {opacity:.9;}
+/* LATEST 20/10/2026 — current package geometry and dimensions; no gameplay ownership. */
+.pets-panel.companion-panel {background-color:rgba(32,43,69,.14);}
+.companion-design .companion-hero {width:648px;height:600px;}
+.companion-design .companion-sanctuary {display:none;}
+.companion-design .companion-large-portrait {right:-32px;}
+.companion-design .companion-missing-art {left:32px;right:20px;top:508px;height:36px;font-size:16px;-unity-text-align:middle-left;}
+.companion-design .companion-mode {top:556px;}
+.companion-design .companion-tabs {left:720px;top:96px;width:832px;height:68px;}
+.companion-design .companion-tab {width:272px;margin-right:8px;}
+.companion-design .companion-inspector {left:704px;top:148px;width:864px;height:568px;}
+.companion-design .companion-name {width:344px;max-width:344px;}
+.companion-design .companion-summoned {background-color:#A596BB;padding:2px 12px;}
+.companion-design .companion-stats {left:0;top:82px;width:812px;height:172px;padding:12px 16px;}
+.companion-design .companion-stat-name {width:100px;font-size:15px;}
+.companion-design .companion-skill-summary {left:0;top:266px;width:812px;height:104px;}
+.companion-design .companion-small-button {width:260px;height:52px;}
+.companion-design .companion-actions {top:378px;width:812px;height:52px;}
+.companion-design .companion-details-link {top:430px;}
+.companion-design .companion-dock {left:24px;top:736px;width:1552px;height:140px;}
+.pets-panel.companion-panel .pets-party-row {left:16px;top:14px;width:1332px;height:112px;}
+.pets-panel.companion-panel .pet-party-card {width:210px;height:112px;margin-right:12px;}
+.pets-panel.companion-panel .pet-card-portrait {height:80px;}
+.companion-design .companion-swap {left:1360px;top:32px;width:178px;height:76px;}
+.companion-design .box-empty-slot-content {left:80px;top:15px;}
+.companion-design .companion-growth {top:103px;}
+.companion-design .companion-growth-module {width:812px;height:132px;min-height:132px;}
+.companion-design .companion-growth-heading>.companion-small-button {width:178px;height:52px;}
+.companion-design .companion-growth-copy {max-width:490px;}
+.companion-design .companion-growth-reason {max-width:490px;}
+.pets-panel.companion-panel .pet-skill-card {width:66px;height:66px;padding:0;}
+.pets-panel.companion-panel .pet-skill-icon {width:66px;height:66px;}
+.pets-panel.companion-panel .companion-embedded-skills {width:812px;}
+.companion-design .companion-embedded-skills .skills-equipped-row {top:24px;width:812px;height:112px;}
+.companion-design .companion-embedded-skills .skills-equipped-slot {width:197px;height:112px;}
+.companion-design .companion-embedded-skills .skills-equipped-icon {width:56px;height:56px;}
+.companion-design .companion-embedded-skills .skills-helper-label {top:136px;}
+.companion-design .companion-embedded-skills .skills-learned-header-row {display:none;}
+.companion-design .companion-embedded-skills .skills-filter-button {height:32px;font-size:12px;}
+.companion-design .companion-embedded-skills .skills-learned-scroll {left:0;top:180px;width:468px;height:229px;padding:4px;}
+.companion-design .companion-embedded-skills .skills-learned-grid {width:460px;}
+.companion-design .companion-embedded-skills .skills-learned-card {width:222px;height:100px;}
+.companion-design .companion-inline-detail {left:488px;top:180px;width:324px;height:229px;}
+.companion-design .companion-icon.ci-hp {-unity-background-image-tint-color:#C47D8B;}
+.companion-design .companion-icon.ci-upgrade {-unity-background-image-tint-color:#76A6C3;}
+.companion-design .companion-emblem {-unity-background-image-tint-color:white;}
+.companion-design .companion-embedded-skills .skills-helper-label {display:none;}
+.pets-panel.companion-panel .pet-card-level {left:auto;right:8px;bottom:0;top:auto;width:62px;height:20px;-unity-text-align:middle-right;}
+.companion-design .companion-embedded-skills .skills-equipped-name {-unity-font-style:bold;}
+.companion-design .companion-embedded-skills .skills-learned-name {-unity-font-style:bold;}
+.pets-panel.companion-panel .pet-card-hp-value {display:none;}
+.pets-panel.companion-panel .pet-card-level {color:#202B45;font-size:12px;}
+.companion-design .companion-mode .companion-button {margin-right:8px;}
+
+/* Interaction R3: fixed rail, stable typography, full-bleed dock. */
+.companion-design .companion-tabs {left:720px;top:108px;width:832px;height:48px;}
+.companion-design .companion-tab {width:272px;min-width:272px;height:48px;min-height:48px;top:0;margin-right:8px;padding:0;border-width:0;}
+.companion-design .companion-tab Label,.companion-design .companion-tab:hover Label,.companion-design .companion-tab:focus Label,.companion-design .companion-tab:active Label {font-size:21px;-unity-font-style:bold;padding:0;margin:0;}
+.companion-design .companion-stat-name {font-size:16px;}
+.companion-design .companion-meta Label {font-size:16px;}
+.companion-design .companion-growth-copy {font-size:18px;white-space:normal;}
+.companion-design .companion-growth-reason {font-size:16px;white-space:normal;}
+.companion-design .companion-growth-title {font-size:24px;-unity-font-style:bold;}
+.companion-design .companion-name {font-size:32px;-unity-font-style:bold;}
+.companion-design .companion-embedded-skills .skills-equipped-name {font-size:18px;white-space:normal;height:46px;top:12px;}
+.companion-design .companion-embedded-skills .skills-equipped-meta {font-size:16px;bottom:8px;}
+.companion-design .companion-embedded-skills .skills-learned-name {font-size:18px;white-space:normal;max-height:44px;}
+.companion-design .companion-embedded-skills .skills-learned-element,.companion-design .companion-embedded-skills .skills-learned-meta {font-size:16px;}
+.companion-design .companion-inline-detail .skills-tooltip-name {font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.companion-design .companion-inline-detail .skills-tooltip-description {font-size:16px;max-height:42px;overflow:hidden;text-overflow:ellipsis;}
+.companion-design .companion-inline-detail .skills-tooltip-row {min-height:24px;}
+.companion-design .companion-inline-detail .skills-tooltip-key {font-size:16px;}
+.companion-design .r3-equip-preview {position:absolute;left:16px;right:16px;bottom:58px;height:24px;font-size:16px;-unity-font-style:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.companion-design #r3-equip-confirm {position:absolute;left:16px;right:16px;bottom:12px;height:44px;font-size:20px;color:#EDE9E1;-unity-font-style:bold;}
+.companion-design #r3-equip-confirm:disabled {color:#202B45;}
+.pets-panel.companion-panel .pet-card-content {position:absolute;left:0;right:0;top:0;bottom:0;padding:0;margin:0;}
+.pets-panel.companion-panel .pet-card-portrait {position:absolute;left:0;top:0;width:210px;height:112px;flex-grow:0;flex-shrink:0;}
+.pets-panel.companion-panel .pet-card-info {position:absolute;left:4px;right:4px;top:auto;bottom:4px;height:26px;padding:0;background-color:transparent;}
+.pets-panel.companion-panel .pet-card-name-row {display:none;}
+.pets-panel.companion-panel .pet-card-bar-row {position:absolute;left:5px;right:67px;top:5px;height:18px;background-color:rgba(32,43,69,.84);padding:0 3px;}
+.pets-panel.companion-panel .pet-card-bar-label {font-size:14px;color:#EDE9E1;-unity-font-style:bold;width:23px;}
+.pets-panel.companion-panel .pet-card-level {position:absolute;right:3px;bottom:3px;top:auto;width:60px;height:18px;font-size:14px;-unity-font-style:bold;color:#EDE9E1;background-color:rgba(32,43,69,.84);padding-right:3px;}
+.pets-panel.companion-panel .pet-card-bar-track {height:6px;}
+.pets-panel.companion-panel .pet-card-top {left:10px;right:10px;top:9px;}
+.companion-design .r3-swap-actions {position:absolute;left:1360px;top:20px;width:178px;height:100px;}
+.companion-design .r3-swap-actions .companion-button {height:44px;min-height:44px;width:178px;margin-bottom:8px;font-size:20px;-unity-font-style:bold;color:#EDE9E1;}
+.companion-design .r3-swap-marker {position:absolute;left:72px;right:38px;top:8px;height:24px;font-size:15px;padding-left:23px;-unity-font-style:bold;background-color:rgba(32,43,69,.90);-unity-text-align:middle-left;}
+.companion-design #r3-swap-arrow {position:absolute;left:3px;top:4px;width:16px;height:16px;-unity-background-scale-mode:scale-to-fit;}
+.companion-design .companion-inline-detail .skills-tooltip-row {min-height:20px;height:20px;}
+.companion-design .companion-inline-detail .skills-tooltip-name {height:30px;}
+.companion-design .companion-inline-detail .skills-tooltip-description {height:36px;max-height:36px;}
+.companion-design .companion-stat-name,.companion-design .companion-stat-value,.companion-design .companion-resource-name,.companion-design .companion-resource-value {font-size:18px;}
+.companion-design .companion-small-button Label {font-size:20px;}
+.companion-design .companion-inline-detail #r3-equip-confirm .angular-button-caption {font-size:20px;-unity-font-style:bold;color:#EDE9E1;}
+.companion-design .companion-inline-detail #r3-equip-confirm:disabled .angular-button-caption {color:#202B45;}
+.companion-design .companion-stat-value,.companion-design .companion-resource-value {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.companion-design #r3-skill-description-scroll {height:36px;max-height:36px;min-height:36px;margin:0;padding:0;}
+.companion-design #r3-skill-description-scroll .skills-tooltip-description {height:auto;max-height:none;overflow:visible;white-space:normal;}
+.companion-design #r3-skill-description-scroll .unity-scroll-view__vertical-scroller {width:6px;}

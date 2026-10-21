@@ -821,6 +821,8 @@ namespace Capstone.Game.Inventory {
                 return true;
             }
 
+            if (IsPetsSectionOpen && petPartyPanelController?.TryCancelInteraction() == true) return true;
+
             return false;
         }
 

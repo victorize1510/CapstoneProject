@@ -1,0 +1,24 @@
+{
+  "version": "2026-10-20-latest-consolidated",
+  "scope": "Menu + Companion, 8 concept mockups; no Unity implementation",
+  "entry": "00_DOC_TRUOC.md",
+  "authoritativeBrief": "01_BAN_CHOT_THIET_KE.md",
+  "kickoff": "02_GUI_CHO_CHAT_UNITY.txt",
+  "unityPrompt": "Prompts/00_Prompt_Unity_Tong_Hop.md",
+  "gallery": "GALLERY.png",
+  "screens": [
+    "Screens/01_Menu.png",
+    "Screens/02_Tong_Quan.png",
+    "Screens/03_Ky_Nang.png",
+    "Screens/04_Phat_Trien.png",
+    "Screens/05_Thong_Tin_Thu.png",
+    "Screens/06_Tang_Cap.png",
+    "Screens/07_Hoi_Phuc.png",
+    "Screens/08_Doi_Ten_Thu.png"
+  ],
+  "assetManifest": "Specs/asset-manifest.json",
+  "layout": "Specs/layout-grid.json",
+  "history": "Reference/",
+  "engineModified": false,
+  "engineTested": false
+}

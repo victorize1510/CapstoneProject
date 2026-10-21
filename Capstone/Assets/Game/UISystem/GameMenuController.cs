@@ -27,16 +27,6 @@ namespace Capstone.Game.UISystem {
     public sealed class GameMenuController : MonoBehaviour {
         const string RootName = "GameMenuRoot";
 
-        static readonly Color Paper = MenuPalette.Surface;
-        static readonly Color Forest = new Color(0.075f, 0.28f, 0.13f, 1f);
-        static readonly Color AccentGreen = new Color(0.25f, 0.55f, 0.24f, 1f);
-        static readonly Color PaleGreen = new Color(0.88f, 0.94f, 0.83f, 1f);
-        static readonly Color BorderGreen = new Color(0.35f, 0.53f, 0.25f, 0.95f);
-        static readonly Color MutedGreen = new Color(0.30f, 0.39f, 0.30f, 1f);
-
-        static Sprite solidSprite;
-        static Sprite roundedSprite;
-
         [Header("References")]
         [SerializeField] Canvas targetCanvas = null;
         [SerializeField] MonsterInventoryController inventory = null;
@@ -63,20 +53,14 @@ namespace Capstone.Game.UISystem {
 
         RectTransform root;
         RectTransform panel;
-        RectTransform menuContent;
+        TrainerMenuView trainerView;
+        readonly TrainerMenuPresentation menuPresentation = new TrainerMenuPresentation();
+
+        [Header("Trainer Menu artwork (optional 2D sprite)")]
+        [SerializeField] Sprite trainerPetArtwork = null;
         RectTransform placeholderPanel;
         Text placeholderTitle;
         Text placeholderBody;
-        Text descriptionText;
-        Image trainerAvatarImage;
-        Text trainerAvatarPlaceholder;
-        Text trainerNameText;
-        Text trainerLevelText;
-        Image trainerExperienceFill;
-        Text trainerExperienceValueText;
-        Text trainerAreaValueText;
-        Text trainerPlayTimeValueText;
-        Text trainerPartyValueText;
         IPlayerProfileProvider profileProvider;
         bool cursorStateSaved;
         bool previousCursorVisible;
@@ -220,16 +204,9 @@ namespace Capstone.Game.UISystem {
             ClearChildren(root);
 
             BuildDimmer(root);
-            panel = CreateRoundedPanel(root, "TrainerMenuPanel", MenuPalette.Background, true);
-            SetMenuPanelBounds(panel);
-            AddOutline(panel.gameObject, BorderGreen, 2f);
-            menuContent = CreatePanel(panel, "MenuContent", Color.clear, false);
-            menuContent.anchorMin = menuContent.anchorMax = menuContent.pivot = new Vector2(0.5f, 0.5f);
-            menuContent.anchoredPosition = Vector2.zero;
-            menuContent.sizeDelta = new Vector2(620f, 1080f);
-            BuildHeader(menuContent);
-            BuildMenuGrid(menuContent);
-            BuildFooter(menuContent);
+            trainerView = new TrainerMenuView(root, trainerPetArtwork, HandleTrainerAction);
+            panel = trainerView.NavigationRoot;
+            trainerReturnFocus = null;
             RefreshMenuLayout();
             BuildFeaturePlaceholder(root);
             root.gameObject.SetActive(false);
@@ -255,6 +232,7 @@ namespace Capstone.Game.UISystem {
             SetInputMode(GameInputMode.Menu);
             if (trainerReturnFocus != null && trainerReturnFocus.activeInHierarchy)
                 MenuKeyboardNavigation.Restore(trainerReturnFocus);
+            else if (trainerView.DefaultFocus != null) MenuKeyboardNavigation.Restore(trainerView.DefaultFocus);
             else MenuKeyboardNavigation.FocusFirst(panel);
         }
 
@@ -281,17 +259,22 @@ namespace Capstone.Game.UISystem {
         }
 
         void RefreshMenuLayout() {
-            if (panel == null || menuContent == null) return;
-            // Preserve the design's proportions inside a panel spanning 35% of the viewport.
-            float scale = Mathf.Min(panel.rect.width / 620f, panel.rect.height / 1080f);
-            if (scale > 0f && !Mathf.Approximately(menuContent.localScale.x, scale))
-                menuContent.localScale = Vector3.one * scale;
+            if (root != null) trainerView?.Fit(root.rect.size);
         }
 
-        static void SetMenuPanelBounds(RectTransform rect) {
-            rect.anchorMin = new Vector2(.65f, 0f);
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
+        void HandleTrainerAction(string id) {
+            if (!PlayerActionGate.TryAccept(this, "button:" + id)) return;
+            switch (id) {
+                case "Pets": OpenPetsDirect(); break;
+                case "Inventory": OpenInventoryDirect(); break;
+                case "Profile": OpenProfileDirect(); break;
+                case "EditName": OpenProfileDirect(); profile?.EditDisplayName(); break;
+                case "Quest": OpenQuestDirect(); break;
+                case "Map": OpenMapDirect(); break;
+                case "Codex": OpenCodexDirect(); break;
+                case "Settings": OpenSettings(UiReturnTarget.Menu); break;
+                case "Back": if (PlayerActionGate.TryAccept(this, "menu-visibility")) CloseMenu(); break;
+            }
         }
 
         public void ToggleMenu() {
@@ -743,7 +726,8 @@ namespace Capstone.Game.UISystem {
         }
 
         void SetInputMode(GameInputMode mode) {
-            bool showMinimap = mode == GameInputMode.Gameplay || IsMenuOpen;
+            menuPresentation.SetMenuVisible(IsMenuOpen);
+            bool showMinimap = mode == GameInputMode.Gameplay;
             if (inputModeApplied && CurrentMode == mode && minimapPresentationApplied == showMinimap) return;
             inputModeApplied = true;
             minimapPresentationApplied = showMinimap;
@@ -777,153 +761,8 @@ namespace Capstone.Game.UISystem {
         }
 
         void BuildDimmer(RectTransform parent) {
-            RectTransform dimmer = CreatePanel(parent, "Dimmer", new Color(0.01f, 0.035f, 0.02f, 0.38f), true);
+            RectTransform dimmer = CreatePanel(parent, "Dimmer", new Color(0.88f, 0.94f, 0.94f, 0.04f), true);
             Stretch(dimmer);
-        }
-
-        void BuildHeader(RectTransform parent) {
-            RectTransform summary = CreatePanel(parent, "TrainerSummary", Color.clear, false);
-            SetTopStretch(summary, 18f, 12f, 18f, 216f);
-
-            RectTransform avatarFrame = CreateRoundedPanel(summary, "AvatarFrame", Paper, false);
-            SetTopLeft(avatarFrame, 16f, 20f, 100f, 100f);
-            AddOutline(avatarFrame.gameObject, BorderGreen, 1f);
-
-            trainerAvatarImage = CreatePanel(avatarFrame, "Avatar", PaleGreen, false).GetComponent<Image>();
-            SetTopLeft(trainerAvatarImage.rectTransform, 4f, 4f, 92f, 92f);
-            trainerAvatarImage.preserveAspect = true;
-            trainerAvatarPlaceholder = CreateText(avatarFrame, "AvatarPlaceholder", "BẠN", 15, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            Stretch(trainerAvatarPlaceholder.rectTransform);
-
-            Text title = CreateText(summary, "Title", "HUẤN LUYỆN VIÊN", 30, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(title.rectTransform, 138f, 10f, 420f, 44f);
-
-            trainerNameText = CreateText(summary, "PlayerName", "Người huấn luyện", 22, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(trainerNameText.rectTransform, 140f, 50f, 410f, 34f);
-
-            RectTransform levelBadge = CreateRoundedPanel(summary, "LevelBadge", Forest, false);
-            SetTopLeft(levelBadge, 138f, 88f, 88f, 40f);
-            AddOutline(levelBadge.gameObject, AccentGreen, 1f);
-            trainerLevelText = CreateText(levelBadge, "Cấp độ", "Lv. -", 17, FontStyle.Bold, Paper, TextAnchor.MiddleCenter);
-            Stretch(trainerLevelText.rectTransform);
-
-            Text experienceCaption = CreateText(summary, "ExperienceCaption", "EXP", 13, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(experienceCaption.rectTransform, 242f, 83f, 58f, 24f);
-            trainerExperienceValueText = CreateText(summary, "ExperienceValue", "- / -", 13, FontStyle.Normal, Forest, TextAnchor.MiddleRight);
-            SetTopLeft(trainerExperienceValueText.rectTransform, 382f, 83f, 174f, 24f);
-
-            RectTransform experienceTrack = CreateRoundedPanel(summary, "ExperienceTrack", new Color(0.90f, 0.92f, 0.84f, 1f), false);
-            SetTopLeft(experienceTrack, 242f, 111f, 314f, 17f);
-            AddOutline(experienceTrack.gameObject, new Color(BorderGreen.r, BorderGreen.g, BorderGreen.b, 0.75f), 1f);
-            trainerExperienceFill = CreatePanel(experienceTrack, "Fill", AccentGreen, false).GetComponent<Image>();
-            trainerExperienceFill.type = Image.Type.Filled;
-            trainerExperienceFill.fillMethod = Image.FillMethod.Horizontal;
-            trainerExperienceFill.fillOrigin = 0;
-            trainerExperienceFill.fillAmount = 0f;
-            SetInset(trainerExperienceFill.rectTransform, 2f);
-
-            RectTransform separator = CreatePanel(summary, "SummarySeparator", new Color(BorderGreen.r, BorderGreen.g, BorderGreen.b, 0.55f), false);
-            SetTopStretch(separator, 8f, 143f, 8f, 1f);
-
-            trainerAreaValueText = BuildQuickInfo(summary, "Area", "A", "Khu vực", 16f);
-            trainerPlayTimeValueText = BuildQuickInfo(summary, "PlayTime", "T", "Thời gian chơi", 208f);
-            trainerPartyValueText = BuildQuickInfo(summary, "Party", "THÚ", "Đội thú", 400f);
-
-            RectTransform dividerOne = CreatePanel(summary, "QuickDividerOne", new Color(BorderGreen.r, BorderGreen.g, BorderGreen.b, 0.38f), false);
-            SetTopLeft(dividerOne, 198f, 154f, 1f, 48f);
-            RectTransform dividerTwo = CreatePanel(summary, "QuickDividerTwo", new Color(BorderGreen.r, BorderGreen.g, BorderGreen.b, 0.38f), false);
-            SetTopLeft(dividerTwo, 390f, 154f, 1f, 48f);
-        }
-
-        Text BuildQuickInfo(RectTransform parent, string name, string iconText, string labelText, float left) {
-            RectTransform iconBox = CreateRoundedPanel(parent, name + "Icon", PaleGreen, false);
-            SetTopLeft(iconBox, left, 157f, 36f, 40f);
-            Text icon = CreateText(iconBox, "Label", iconText, iconText.Length > 1 ? 10 : 16, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            Stretch(icon.rectTransform);
-
-            Text label = CreateText(parent, name + "Label", labelText, 13, FontStyle.Normal, MutedGreen, TextAnchor.MiddleLeft);
-            SetTopLeft(label.rectTransform, left + 46f, 151f, 136f, 23f);
-            Text value = CreateText(parent, name + "Value", "-", 16, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(value.rectTransform, left + 46f, 175f, 136f, 29f);
-            return value;
-        }
-
-        void BuildMenuGrid(RectTransform parent) {
-            RectTransform grid = CreatePanel(parent, "MenuGrid", Color.clear, false);
-            SetTopStretch(grid, 18f, 238f, 18f, 732f);
-
-            GridLayoutGroup layout = grid.gameObject.AddComponent<GridLayoutGroup>();
-            layout.padding = new RectOffset(6, 6, 6, 6);
-            layout.spacing = new Vector2(12f, 40f);
-            layout.cellSize = new Vector2(280f, 205f);
-            layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            layout.constraintCount = 2;
-
-            AddMenuButton(grid, "Profile", "Thông tin người chơi", true, OpenProfileDirect);
-            AddMenuButton(grid, "Pets", "Quản lý đội thú", true, OpenPetsDirect);
-            AddMenuButton(grid, "Inventory", "Mở túi đồ", true, OpenInventoryDirect);
-            AddMenuButton(grid, "Quest", "Theo dõi nhiệm vụ", true, OpenQuestDirect);
-            AddMenuButton(grid, "Map", "Xem bản đồ", true, OpenMapDirect);
-            AddMenuButton(grid, "Codex", "Tra cứu sinh vật", true, OpenCodexDirect);
-        }
-
-        void AddMenuButton(RectTransform parent, string title, string description, bool enabled, UnityEngine.Events.UnityAction action) {
-            Button button = CreateTrainerButton(parent, title + "Button", Paper);
-            button.interactable = enabled;
-            if (enabled && action != null) button.onClick.AddListener(() => { if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "button:" + title)) action(); });
-            AddOutline(button.gameObject, new Color(BorderGreen.r, BorderGreen.g, BorderGreen.b, 0.82f), 1f);
-
-            RectTransform iconBox = CreateRoundedPanel(button.transform, "Icon", PaleGreen, false);
-            SetTopLeft(iconBox, 16f, 60f, 78f, 84f);
-            AddOutline(iconBox.gameObject, new Color(BorderGreen.r, BorderGreen.g, BorderGreen.b, 0.55f), 1f);
-            Text icon = CreateText(iconBox, "Label", GetMenuIcon(title), GetMenuIcon(title).Length > 3 ? 12 : 16, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            Stretch(icon.rectTransform);
-
-            Text label = CreateText(button.transform, "Label", VietnameseUI.Screen(title), 28, FontStyle.Bold, enabled ? Forest : MutedGreen, TextAnchor.MiddleLeft);
-            label.resizeTextForBestFit = true;
-            label.resizeTextMinSize = 17;
-            label.resizeTextMaxSize = 28;
-            SetTopLeft(label.rectTransform, 108f, 30f, 158f, 74f);
-
-            Text sub = CreateText(button.transform, "Description", description, 14, FontStyle.Normal, MutedGreen, TextAnchor.UpperLeft);
-            SetTopLeft(sub.rectTransform, 108f, 108f, 158f, 52f);
-
-            AddButtonHint(button, VietnameseUI.Screen(title) + " — " + description);
-        }
-
-        void BuildFooter(RectTransform parent) {
-            RectTransform footer = CreatePanel(parent, "Footer", Color.clear, false);
-            SetBottomStretch(footer, 18f, 12f, 18f, 86f);
-
-            RectTransform divider = CreatePanel(footer, "FooterDivider", new Color(BorderGreen.r, BorderGreen.g, BorderGreen.b, 0.5f), false);
-            SetTopStretch(divider, 6f, 0f, 6f, 1f);
-
-            descriptionText = CreateText(footer, "Description", "Chọn một mục trong menu.", 16, FontStyle.Normal, MutedGreen, TextAnchor.MiddleCenter);
-            SetTopStretch(descriptionText.rectTransform, 102f, 20f, 176f, 52f);
-
-            Button settings = CreateTrainerButton(footer, "SettingsButton", Paper);
-            SetTopLeft(settings.GetComponent<RectTransform>(), 6f, 20f, 52f, 52f);
-            AddOutline(settings.gameObject, BorderGreen, 1f);
-            Text settingsIcon = CreateText(settings.transform, "Icon", "CĐ", 13, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-            Stretch(settingsIcon.rectTransform);
-            settings.onClick.AddListener(() => OpenSettings(UiReturnTarget.Menu));
-            AddButtonHint(settings, "Cài đặt");
-
-            RectTransform settingsTooltip = CreateRoundedPanel(footer, "SettingsTooltip", Forest, false);
-            SetTopLeft(settingsTooltip, 64f, 29f, 92f, 32f);
-            Text settingsTooltipText = CreateText(settingsTooltip, "Label", "Cài đặt", 14, FontStyle.Bold, Paper, TextAnchor.MiddleCenter);
-            Stretch(settingsTooltipText.rectTransform);
-            settingsTooltip.gameObject.SetActive(false);
-            AddHoverVisibility(settings, settingsTooltip.gameObject);
-
-            Button back = CreateTrainerButton(footer, "BackButton", Paper);
-            SetTopRight(back.GetComponent<RectTransform>(), 6f, 20f, MenuTypography.BackWidth, MenuTypography.BackHeight);
-            AddOutline(back.gameObject, AccentGreen, 1f);
-            Text backLabel = CreateText(back.transform, "Label", "←  TRỞ LẠI", 19, FontStyle.Bold, Paper, TextAnchor.MiddleCenter);
-            Stretch(backLabel.rectTransform);
-            MenuTypography.StyleBack(back);
-            back.onClick.AddListener(() => { if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "menu-visibility")) CloseMenu(); });
-            AddButtonHint(back, "Trở về trò chơi");
         }
 
         void BuildFeaturePlaceholder(RectTransform parent) {
@@ -965,7 +804,6 @@ namespace Capstone.Game.UISystem {
                 placeholderBody.text = "Tính năng này chưa sẵn sàng. Hãy quay lại sau.";
             }
 
-            if (descriptionText != null) descriptionText.text = "Tính năng đang được hoàn thiện.";
             placeholderPanel.SetAsLastSibling();
             placeholderPanel.gameObject.SetActive(true);
             SetInputMode(GameInputMode.Menu);
@@ -1089,89 +927,7 @@ namespace Capstone.Game.UISystem {
             PlayerProfileSnapshot snapshot = profileProvider != null
                 ? profileProvider.GetSnapshot()
                 : default;
-            if (trainerNameText != null) {
-                trainerNameText.text = string.IsNullOrWhiteSpace(snapshot.DisplayName)
-                    ? "Người huấn luyện"
-                    : snapshot.DisplayName;
-            }
-            if (trainerLevelText != null) {
-                trainerLevelText.text = snapshot.Level > 0 ? "Lv. " + snapshot.Level : "Lv. -";
-            }
-
-            float experience01 = snapshot.RequiredExperience > 0
-                ? Mathf.Clamp01((float)snapshot.CurrentExperience / snapshot.RequiredExperience)
-                : 0f;
-            if (trainerExperienceFill != null) trainerExperienceFill.fillAmount = experience01;
-            if (trainerExperienceValueText != null) {
-                trainerExperienceValueText.text = snapshot.RequiredExperience > 0
-                    ? snapshot.CurrentExperience.ToString("N0") + " / " + snapshot.RequiredExperience.ToString("N0")
-                    : "- / -";
-            }
-
-            if (trainerAvatarImage != null) {
-                trainerAvatarImage.sprite = snapshot.Avatar;
-                trainerAvatarImage.color = snapshot.Avatar != null ? Color.white : PaleGreen;
-            }
-            if (trainerAvatarPlaceholder != null) trainerAvatarPlaceholder.gameObject.SetActive(snapshot.Avatar == null);
-
-            if (trainerAreaValueText != null) {
-                trainerAreaValueText.text = string.IsNullOrWhiteSpace(snapshot.CurrentArea) ? "Chưa rõ khu vực" : snapshot.CurrentArea;
-            }
-            if (trainerPlayTimeValueText != null) trainerPlayTimeValueText.text = FormatCompactPlayTime(snapshot.PlayTimeSeconds);
-            if (trainerPartyValueText != null) trainerPartyValueText.text = (petRoster != null ? petRoster.PartyCount : 0) + " / 6";
-        }
-
-        static string FormatCompactPlayTime(double seconds) {
-            TimeSpan duration = TimeSpan.FromSeconds(Math.Max(0d, seconds));
-            int hours = Mathf.Max(0, Mathf.FloorToInt((float)duration.TotalHours));
-            return hours.ToString("00") + ":" + duration.Minutes.ToString("00") + ":" + duration.Seconds.ToString("00");
-        }
-
-        void AddButtonHint(Button button, string hint) {
-            if (button == null) return;
-            EventTrigger trigger = button.GetComponent<EventTrigger>();
-            if (trigger == null) trigger = button.gameObject.AddComponent<EventTrigger>();
-            if (trigger.triggers == null) trigger.triggers = new List<EventTrigger.Entry>();
-
-            var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            enter.callback.AddListener(_ => SetMenuDescription(hint));
-            trigger.triggers.Add(enter);
-
-            var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-            exit.callback.AddListener(_ => SetMenuDescription("Chọn một mục trong menu."));
-            trigger.triggers.Add(exit);
-        }
-
-        static void AddHoverVisibility(Button button, GameObject target) {
-            if (button == null || target == null) return;
-            EventTrigger trigger = button.GetComponent<EventTrigger>();
-            if (trigger == null) trigger = button.gameObject.AddComponent<EventTrigger>();
-            if (trigger.triggers == null) trigger.triggers = new List<EventTrigger.Entry>();
-
-            var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
-            enter.callback.AddListener(_ => target.SetActive(true));
-            trigger.triggers.Add(enter);
-
-            var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
-            exit.callback.AddListener(_ => target.SetActive(false));
-            trigger.triggers.Add(exit);
-        }
-
-        void SetMenuDescription(string value) {
-            if (descriptionText != null) descriptionText.text = value;
-        }
-
-        static string GetMenuIcon(string title) {
-            switch (title) {
-                case "Profile": return "HS";
-                case "Pets": return "THÚ";
-                case "Inventory": return "TÚI";
-                case "Quest": return "NV";
-                case "Settings": return "CĐ";
-                case "Map": return "BĐ";
-                case "Codex": return "CN";
-                default: return title.Substring(0, 1);
-            }
+            trainerView?.Bind(snapshot, profileProvider != null, petRoster != null ? (int?)petRoster.PartyCount : null);
         }
 
         static void ConfigureCanvas(Canvas canvas) {
@@ -1205,18 +961,9 @@ namespace Capstone.Game.UISystem {
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Image));
             obj.transform.SetParent(parent, false);
             Image image = obj.GetComponent<Image>();
-            image.sprite = SolidSprite;
             image.color = color;
             image.raycastTarget = raycastTarget;
             return obj.GetComponent<RectTransform>();
-        }
-
-        static RectTransform CreateRoundedPanel(Transform parent, string name, Color color, bool raycastTarget) {
-            RectTransform rect = CreatePanel(parent, name, color, raycastTarget);
-            Image image = rect.GetComponent<Image>();
-            image.sprite = RoundedSprite;
-            image.type = Image.Type.Sliced;
-            return rect;
         }
 
         static Button CreateButton(Transform parent, string name, string label, bool raycastTarget) {
@@ -1229,28 +976,6 @@ namespace Capstone.Game.UISystem {
                 Stretch(text.rectTransform);
             }
 
-            return button;
-        }
-
-        static Button CreateTrainerButton(Transform parent, string name, Color baseColor) {
-            RectTransform rect = CreateRoundedPanel(parent, name, baseColor, true);
-            Button button = rect.gameObject.AddComponent<Button>();
-            Image image = rect.GetComponent<Image>();
-            button.targetGraphic = image;
-
-            bool dark = baseColor.grayscale < 0.45f;
-            ColorBlock colors = button.colors;
-            colors.normalColor = baseColor;
-            colors.highlightedColor = dark
-                ? new Color(0.12f, 0.39f, 0.18f, baseColor.a)
-                : PaleGreen;
-            colors.pressedColor = dark
-                ? new Color(0.05f, 0.22f, 0.10f, baseColor.a)
-                : new Color(0.80f, 0.89f, 0.75f, baseColor.a);
-            colors.selectedColor = colors.highlightedColor;
-            colors.disabledColor = new Color(0.82f, 0.84f, 0.78f, 0.75f);
-            colors.fadeDuration = 0.09f;
-            button.colors = colors;
             return button;
         }
 
@@ -1283,15 +1008,6 @@ namespace Capstone.Game.UISystem {
             button.colors = colors;
         }
 
-        static void AddOutline(GameObject target, Color color, float distance) {
-            if (target == null) return;
-            Outline outline = target.GetComponent<Outline>();
-            if (outline == null) outline = target.AddComponent<Outline>();
-            outline.effectColor = color;
-            outline.effectDistance = new Vector2(distance, -distance);
-            outline.useGraphicAlpha = true;
-        }
-
         static void ClearChildren(Transform parent) {
             if (parent == null) return;
             for (int i = parent.childCount - 1; i >= 0; i--) DestroySafe(parent.GetChild(i).gameObject);
@@ -1312,15 +1028,6 @@ namespace Capstone.Game.UISystem {
             rect.localScale = Vector3.one;
         }
 
-        static void SetTopLeft(RectTransform rect, float x, float y, float width, float height) {
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(x, -y);
-            rect.sizeDelta = new Vector2(width, height);
-            rect.localScale = Vector3.one;
-        }
-
         static void SetTopRight(RectTransform rect, float x, float y, float width, float height) {
             rect.anchorMin = new Vector2(1f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
@@ -1336,24 +1043,6 @@ namespace Capstone.Game.UISystem {
             rect.pivot = new Vector2(0.5f, 1f);
             rect.offsetMin = new Vector2(left, -top - height);
             rect.offsetMax = new Vector2(-right, -top);
-            rect.localScale = Vector3.one;
-        }
-
-        static void SetBottomStretch(RectTransform rect, float left, float bottom, float right, float height) {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.offsetMin = new Vector2(left, bottom);
-            rect.offsetMax = new Vector2(-right, bottom + height);
-            rect.localScale = Vector3.one;
-        }
-
-        static void SetInset(RectTransform rect, float inset) {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.pivot = new Vector2(0.5f, 0.5f);
-            rect.offsetMin = new Vector2(inset, inset);
-            rect.offsetMax = new Vector2(-inset, -inset);
             rect.localScale = Vector3.one;
         }
 
@@ -1377,67 +1066,6 @@ namespace Capstone.Game.UISystem {
 
         static bool Pressed(KeyCode key) {
             return key != KeyCode.None && Input.GetKeyDown(key);
-        }
-
-        static Sprite SolidSprite {
-            get {
-                if (solidSprite != null) return solidSprite;
-
-                Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false) {
-                    hideFlags = HideFlags.HideAndDontSave,
-                    filterMode = FilterMode.Point,
-                    wrapMode = TextureWrapMode.Clamp
-                };
-                texture.SetPixel(0, 0, Color.white);
-                texture.Apply();
-                solidSprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
-                solidSprite.hideFlags = HideFlags.HideAndDontSave;
-                return solidSprite;
-            }
-        }
-
-        static Sprite RoundedSprite {
-            get {
-                if (roundedSprite != null) return roundedSprite;
-                roundedSprite = CreateRoundedSprite();
-                return roundedSprite;
-            }
-        }
-
-        static Sprite CreateRoundedSprite() {
-            const int size = 64;
-            const float radius = 12f;
-            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) {
-                name = "GameMenuRounded",
-                hideFlags = HideFlags.HideAndDontSave,
-                filterMode = FilterMode.Bilinear,
-                wrapMode = TextureWrapMode.Clamp
-            };
-
-            float center = (size - 1f) * 0.5f;
-            float straight = center - radius;
-            for (int y = 0; y < size; y++) {
-                for (int x = 0; x < size; x++) {
-                    float dx = Mathf.Max(Mathf.Abs(x - center) - straight, 0f);
-                    float dy = Mathf.Max(Mathf.Abs(y - center) - straight, 0f);
-                    float distance = Mathf.Sqrt(dx * dx + dy * dy);
-                    float alpha = Mathf.Clamp01(radius + 0.5f - distance);
-                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
-                }
-            }
-
-            texture.Apply();
-            Sprite sprite = Sprite.Create(
-                texture,
-                new Rect(0f, 0f, size, size),
-                new Vector2(0.5f, 0.5f),
-                size,
-                0,
-                SpriteMeshType.FullRect,
-                new Vector4(14f, 14f, 14f, 14f));
-            sprite.name = "GameMenuRounded";
-            sprite.hideFlags = HideFlags.HideAndDontSave;
-            return sprite;
         }
 
         static Font DefaultFont => MenuTypography.Font;

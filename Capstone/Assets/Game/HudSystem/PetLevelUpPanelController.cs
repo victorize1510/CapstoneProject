@@ -120,7 +120,7 @@ namespace Capstone.Game.HudSystem {
             RefreshItem(preview);
 
             if (confirmButton != null) {
-                confirmButton.text = preview.IsMaxLevel ? "MAX LEVEL" : "LEVEL UP";
+                confirmButton.text = preview.IsMaxLevel ? "ĐẠT CẤP TỐI ĐA" : "TĂNG CẤP";
                 confirmButton.SetEnabled(!confirmationRunning && (preview.CanLevelUp));
             }
             if (feedback != null) {
@@ -387,11 +387,11 @@ namespace Capstone.Game.HudSystem {
         static void SetPortrait(VisualElement target, Label fallback, Sprite sprite, string fallbackText) {
             if (target == null) return;
             if (sprite != null) {
-                target.style.backgroundImage = new StyleBackground(sprite);
+                Capstone.Game.UISystem.AngularSurface.SetArt(target,sprite);
                 if (fallback != null) fallback.style.display = DisplayStyle.None;
             }
             else {
-                target.style.backgroundImage = StyleKeyword.None;
+                Capstone.Game.UISystem.AngularSurface.SetArt(target,(Sprite)null);
                 if (fallback != null) {
                     fallback.text = string.IsNullOrWhiteSpace(fallbackText) ? "?" : fallbackText.Substring(0, 1).ToUpperInvariant();
                     fallback.style.display = DisplayStyle.Flex;

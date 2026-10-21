@@ -1,0 +1,66 @@
+[
+  {
+    "id": "01_Menu",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/01_Menu.png",
+    "svg": "Screens/01_Menu.svg",
+    "status": "design mockup, not Unity capture"
+  },
+  {
+    "id": "02_Tong_Quan",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/02_Tong_Quan.png",
+    "svg": "Screens/02_Tong_Quan.svg",
+    "status": "design mockup, not Unity capture"
+  },
+  {
+    "id": "03_Ky_Nang",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/03_Ky_Nang.png",
+    "svg": "Screens/03_Ky_Nang.svg",
+    "status": "design mockup, not Unity capture"
+  },
+  {
+    "id": "04_Phat_Trien",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/04_Phat_Trien.png",
+    "svg": "Screens/04_Phat_Trien.svg",
+    "status": "design mockup, not Unity capture"
+  },
+  {
+    "id": "05_Thong_Tin_Thu",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/05_Thong_Tin_Thu.png",
+    "svg": "Screens/05_Thong_Tin_Thu.svg",
+    "status": "design mockup, not Unity capture"
+  },
+  {
+    "id": "06_Tang_Cap",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/06_Tang_Cap.png",
+    "svg": "Screens/06_Tang_Cap.svg",
+    "status": "design mockup, not Unity capture"
+  },
+  {
+    "id": "07_Hoi_Phuc",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/07_Hoi_Phuc.png",
+    "svg": "Screens/07_Hoi_Phuc.svg",
+    "status": "design mockup, not Unity capture"
+  },
+  {
+    "id": "08_Doi_Ten_Thu",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/08_Doi_Ten_Thu.png",
+    "svg": "Screens/08_Doi_Ten_Thu.svg",
+    "status": "design mockup, not Unity capture"
+  }
+]

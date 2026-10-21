@@ -8,7 +8,7 @@ namespace Capstone.Game.UISystem {
         Outline border;
         Color normal;
         public void Configure(Outline outline, Color normalColor) { border = outline; normal = normalColor; }
-        public void OnSelect(BaseEventData _) { if (border != null) border.effectColor = new Color(.776f,.639f,.302f); }
+        public void OnSelect(BaseEventData _) { if (border != null) border.effectColor = GuiKitPalette.Gold; }
         public void OnDeselect(BaseEventData _) => Restore();
         void OnDisable() => Restore();
         void Restore() { if (border != null) border.effectColor = normal; }

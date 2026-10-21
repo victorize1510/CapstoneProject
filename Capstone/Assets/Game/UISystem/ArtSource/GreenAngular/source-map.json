@@ -1,0 +1,51 @@
+{
+  "observedDate": "2026-10-18",
+  "note": "Read-only reference; hashes describe observed source, not changed files.",
+  "files": [
+    {
+      "path": "Capstone/Assets/Game/UISystem/TrainerMenuView.cs",
+      "sha256": "ddf1f7c8bf9a254aae718590d1fe62ec0cb7380fb8ddaf9bb8f49026a63e3e25"
+    },
+    {
+      "path": "Capstone/Assets/Game/HudSystem/PetPartyPanelController.Companion.cs",
+      "sha256": "ce75220f6bdf954eae9be381cddac515492e65e52406c2215939fcc7830fb6fa"
+    },
+    {
+      "path": "Capstone/Assets/ThangTest/UIThang/Inventory/UI/PetsPanel.uxml",
+      "sha256": "dc1af44c7f10a811c2b9516002928be0153b490501fa0e8345adce4bb63ce785"
+    },
+    {
+      "path": "Capstone/Assets/ThangTest/UIThang/Inventory/UI/CompanionPanel.uss",
+      "sha256": "f842b22877fe1ae8f3f8cbf0f15f8bcea0c9f1d891a839554e4749421906ce5c"
+    },
+    {
+      "path": "Capstone/Assets/ThangTest/UIThang/GUIArt/Resources/UI/Companion/CompanionModals.uss",
+      "sha256": "6b7bfbe150fe4875d9b51973dbebb8aedf6496ac07b8bd27232b685ce0f45b93"
+    },
+    {
+      "path": "Capstone/Assets/Game/HudSystem/PetBoxPanelController.cs",
+      "sha256": "63b385b5abae8c6ef831483fe063cdfb6c29e6be5f40c8b571a259917c189fd7"
+    },
+    {
+      "path": "Capstone/Assets/ThangTest/UIThang/Inventory/UI/BoxPanel.uss",
+      "sha256": "5bba259613ba299a6aa7ba92ded8d41a951064a10a2d01b7ab13db31e6edd191"
+    }
+  ],
+  "architecture": {
+    "menu": "uGUI",
+    "companion": "UI Toolkit",
+    "popupSkin": "companion-context scoped, currently partial",
+    "publicApiChanges": "none in design delivery"
+  },
+  "boxEmpty": {
+    "glyph": "🐾",
+    "codepoint": "U+1F43E",
+    "controller": "PetBoxPanelController.CreateEmptySlotContent",
+    "uss": ".box-empty-slot-icon",
+    "diameter": 50,
+    "fontSize": 22,
+    "color": "#829794",
+    "background": "#E4EDEA",
+    "opacity": 0.68
+  }
+}

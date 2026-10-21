@@ -1,0 +1,81 @@
+{
+  "date": "2026-10-20",
+  "items": [
+    {
+      "requirement": "8 màn /16preview",
+      "evidence": "Specs/screen-manifest.json"
+    },
+    {
+      "requirement": "Chất liệu mới, không dùng sage cũ",
+      "evidence": "Assets/Art/steel-enamel-r2.png"
+    },
+    {
+      "requirement": "Địa hình / phù văn / vùng đọc",
+      "evidence": "Tools/panel-motifs.cjs"
+    },
+    {
+      "requirement": "Menu header116 / card232 / phụ120",
+      "evidence": "Specs/layout-grid.json"
+    },
+    {
+      "requirement": "6cảnh đúng tỷ lệ",
+      "evidence": "Specs/imagegen-prompts.json"
+    },
+    {
+      "requirement": "Chevron riêng44px/24px",
+      "evidence": "Icons/chevron-nav.png"
+    },
+    {
+      "requirement": "Glyph đặc / phù hiệu có relief",
+      "evidence": "Icons/badge-profile.png"
+    },
+    {
+      "requirement": "Độ xiên12°, cut18/12/8",
+      "evidence": "Tools/geometry.cjs"
+    },
+    {
+      "requirement": "Chung đường bao / union cả3tab",
+      "evidence": "Frames/inspector-0__mask.svg"
+    },
+    {
+      "requirement": "Viền phải/dưới đầu taper",
+      "evidence": "Tools/edge-stripes.cjs"
+    },
+    {
+      "requirement": "6trạng thái / focus theo shape",
+      "evidence": "Boards/02_Icons_States.png"
+    },
+    {
+      "requirement": "Tình huống dữ liệu",
+      "evidence": "Boards/04_EdgeCases.png"
+    },
+    {
+      "requirement": "Giữ sprite/BOX/skill vuông vát 8 cạnh/2D",
+      "evidence": "Specs/asset-manifest.json"
+    },
+    {
+      "requirement": "Không Unity/runtime giả",
+      "evidence": "Prompts/01_Unity_Overall.md"
+    },
+    {
+      "requirement": "Nền nút, caption, popup có họa tiết theo vai trò",
+      "evidence": "Boards/05_Surface_Refinement.png"
+    },
+    {
+      "requirement": "Nhãn CRIT RATE / CRIT DMG",
+      "evidence": "Screens/02_Tong_Quan.svg"
+    },
+    {
+      "requirement": "Avatar cố định không icon, tab liền panel, skill tám cạnh",
+      "evidence": "Boards/06_Avatar_Tab_Skill.png"
+    },
+    {
+      "requirement": "Bản chốt thống nhất của gói mới nhất",
+      "evidence": "01_BAN_CHOT_THIET_KE.md"
+    },
+    {
+      "requirement": "Một prompt Unity tổng hợp hiện hành",
+      "evidence": "Prompts/00_Prompt_Unity_Tong_Hop.md"
+    }
+  ]
+}

@@ -1166,12 +1166,20 @@
 }
 
 .pets-tooltip-title {
-    font-size: 17px;
+    font-size: 16px;
+    white-space: normal;
+    overflow: hidden;
+    flex-shrink: 0;
+    min-width: 0;
 }
 
 .pets-tooltip-body {
-    font-size: 14px;
+    font-size: 16px;
+    white-space: normal;
+    overflow: hidden;
+    min-width: 0;
 }
+.pets-tooltip {overflow:hidden;}
 
 .pets-rename-title {
     font-size: 34px;

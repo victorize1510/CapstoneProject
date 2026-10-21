@@ -17,6 +17,7 @@ namespace Capstone.Game.HudSystem {
         float nextBake;
         float viewportAspect = 1f;
         public Texture Texture => texture;
+        public Color BackgroundColor { get; set; } = Color.white;
 
         public void SetViewportSize(float width, float height) {
             if (width <= 0 || height <= 0) return;
@@ -53,7 +54,7 @@ namespace Capstone.Game.HudSystem {
             camera = cameraObject.GetComponent<Camera>(); camera.targetTexture = texture;
             ResizeTexture();
             camera.orthographic = true; camera.cullingMask = 1 << 31;
-            camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = Color.white;
+            camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = BackgroundColor;
             camera.nearClipPlane = .01f; camera.farClipPlane = 200;
             RenderPipelineManager.endCameraRendering += OnRendered;
             var visual = pet.GetComponentInChildren<PetEvolutionVisualController>(true);

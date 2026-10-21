@@ -125,9 +125,9 @@ namespace Capstone.Game.HudSystem.Editor {
                 Check(Mathf.Approximately(root.Find("ActivePetInfo/PetName").GetComponent<Text>().color.a, 1f)
                     && Mathf.Approximately(root.Find("ActivePetInfo/HPBar/Fill").GetComponent<Image>().color.a, 1f), "text and HP content remain opaque");
                 Check(Mathf.Approximately(((RectTransform)source.Find("MiniMap")).rect.width, 350f), "saved minimap size stays unchanged");
-                var menu = NewObject(scene, "Menu validation").AddComponent<RectTransform>();
-                menu.SetParent(canvasRect, false);
-                InvokeStatic(typeof(GameMenuController), "SetMenuPanelBounds", menu);
+                var menuRoot = NewObject(scene, "Menu validation").AddComponent<RectTransform>();
+                menuRoot.SetParent(canvasRect, false); GuiKitControls.Stretch(menuRoot);
+                var menu = new TrainerMenuView(menuRoot, null, _ => { });
                 var cameraObj = NewObject(scene, "Preview camera", typeof(Camera));
                 var camera = cameraObj.GetComponent<Camera>(); camera.orthographic = true;
                 camera.clearFlags = CameraClearFlags.SolidColor; camera.backgroundColor = new Color(.16f, .22f, .2f);
@@ -138,12 +138,12 @@ namespace Capstone.Game.HudSystem.Editor {
                 foreach (Vector2Int size in new[] { new Vector2Int(1920, 1080), new Vector2Int(1366, 768) }) {
                     float scale = Mathf.Sqrt((size.x / 1920f) * (size.y / 1080f));
                     canvasRect.sizeDelta = new Vector2(size.x / scale, size.y / scale); canvasRect.localScale = Vector3.one * scale;
-                    Canvas.ForceUpdateCanvases();
+                    Canvas.ForceUpdateCanvases(); menu.Fit(canvasRect.rect.size);
                     Rect status = Bounds(root.Find("ActivePetInfo") as RectTransform, root);
                     Rect row = Bounds(root.Find("PartyCarousel") as RectTransform, root);
                     Check(Mathf.Abs(status.width - 442) < .01f && Mathf.Abs(status.xMin - row.xMin) < .01f
                         && Mathf.Abs(status.xMax - row.xMax) < .01f, size + ": pet row matches both status edges");
-                    Check(Mathf.Abs(menu.rect.width / canvasRect.rect.width - .35f) < .001f, size + ": menu occupies 35% width");
+                    Check(menu.NavigationRoot.anchoredPosition.x >= TrainerMenuView.DesignWidth * .5f, size + ": Menu v3 leaves the left world visible");
                     camera.orthographicSize = size.y * .5f; camera.aspect = (float)size.x / size.y;
                     var rt = new RenderTexture(size.x, size.y, 24); rt.Create(); camera.targetTexture = rt;
                     var previous = RenderTexture.active; var texture = new Texture2D(size.x, size.y, TextureFormat.RGB24, false);

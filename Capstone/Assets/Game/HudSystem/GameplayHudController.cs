@@ -55,6 +55,7 @@ namespace Capstone.Game.HudSystem {
         public PetPartyCarouselView Carousel => carousel;
         public bool PetSkillsAvailable => commandInput != null && commandInput.CanUsePetSkills;
         public bool HasMinimap => minimapPanel != null;
+        public Transform PresentationRoot => root;
         public KeyCode GetSkillHotkey(int index) => SkillKey(index);
         public void SetMinimapVisible(bool visible) {
             if (minimapView != null) minimapView.gameObject.SetActive(visible);

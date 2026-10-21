@@ -42,7 +42,7 @@ namespace Capstone.Game.UISystem.Editor {
                 await Capture("TrainerMenu");
                 Check(menu.IsMenuOpen && menu.AllowsCameraTracking && InventoryInputController.GameplayInputBlocked, "Trainer Menu keeps tracking while blocking gameplay");
                 var panel = Field<RectTransform>(menu,"panel");
-                Check(Mathf.Approximately(panel.anchorMin.x,.65f) && Mathf.Approximately(panel.anchorMax.x,1), "Trainer Menu spans 35% width");
+                Check(panel.parent.name == "TrainerMenuDesign" && panel.anchoredPosition.x >= TrainerMenuView.DesignWidth * .5f, "Trainer Menu v3 keeps the left world view clear");
                 menu.OpenProfileDirect(); await Settle();
                 await Capture("Profile");
                 Check(profile.IsOpen && !menu.IsMenuOpen && !menu.AllowsCameraTracking, "Profile replaces Menu and blocks camera input");

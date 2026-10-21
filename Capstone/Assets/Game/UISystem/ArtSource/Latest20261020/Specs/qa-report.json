@@ -1,0 +1,2214 @@
+{
+  "date": "2026-10-20",
+  "version": "Menu + Companion / latest consolidated 2026-10-20",
+  "passed": true,
+  "statLabels": {
+    "rate": "CRIT RATE",
+    "damage": "CRIT DMG"
+  },
+  "counts": {
+    "screens": 8,
+    "previews": 16,
+    "componentFamilies": 21,
+    "icons": 35,
+    "AIAssets": 7,
+    "boards": 6,
+    "checks": 308
+  },
+  "checks": [
+    {
+      "id": "eight-main-mockups",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "seven-new-AI-rasters",
+      "passed": true,
+      "detail": [
+        {
+          "key": "material",
+          "nativeSize": [
+            1254,
+            1254
+          ]
+        },
+        {
+          "key": "profile",
+          "nativeSize": [
+            2172,
+            724
+          ]
+        },
+        {
+          "key": "quest",
+          "nativeSize": [
+            2172,
+            724
+          ]
+        },
+        {
+          "key": "map",
+          "nativeSize": [
+            2172,
+            724
+          ]
+        },
+        {
+          "key": "book",
+          "nativeSize": [
+            2172,
+            724
+          ]
+        },
+        {
+          "key": "bag",
+          "nativeSize": [
+            1881,
+            836
+          ]
+        },
+        {
+          "key": "stage",
+          "nativeSize": [
+            1672,
+            941
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shell-dimensions",
+      "passed": true,
+      "detail": [
+        824,
+        844
+      ]
+    },
+    {
+      "id": "shell-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "shell-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "shell-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "shell-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "shell-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "shell-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 10
+    },
+    {
+      "id": "shell-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "inspector-0-dimensions",
+      "passed": true,
+      "detail": [
+        864,
+        620
+      ]
+    },
+    {
+      "id": "inspector-0-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "inspector-0-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "inspector-0-no-crossing-outer",
+      "passed": true,
+      "detail": 18
+    },
+    {
+      "id": "inspector-0-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "inspector-0-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "inspector-0-open-seam-no-baseline",
+      "passed": true,
+      "detail": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "inspector-0-continuous-tab-fill",
+      "passed": true,
+      "detail": [
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245
+      ]
+    },
+    {
+      "id": "inspector-0-name-safe",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "inspector-0-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 7
+    },
+    {
+      "id": "inspector-0-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "inspector-1-dimensions",
+      "passed": true,
+      "detail": [
+        864,
+        620
+      ]
+    },
+    {
+      "id": "inspector-1-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "inspector-1-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "inspector-1-no-crossing-outer",
+      "passed": true,
+      "detail": 18
+    },
+    {
+      "id": "inspector-1-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "inspector-1-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "inspector-1-open-seam-no-baseline",
+      "passed": true,
+      "detail": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "inspector-1-continuous-tab-fill",
+      "passed": true,
+      "detail": [
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245
+      ]
+    },
+    {
+      "id": "inspector-1-name-safe",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "inspector-1-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 7
+    },
+    {
+      "id": "inspector-1-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "inspector-2-dimensions",
+      "passed": true,
+      "detail": [
+        864,
+        620
+      ]
+    },
+    {
+      "id": "inspector-2-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "inspector-2-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "inspector-2-no-crossing-outer",
+      "passed": true,
+      "detail": 18
+    },
+    {
+      "id": "inspector-2-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "inspector-2-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "inspector-2-open-seam-no-baseline",
+      "passed": true,
+      "detail": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "inspector-2-continuous-tab-fill",
+      "passed": true,
+      "detail": [
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245,
+        245
+      ]
+    },
+    {
+      "id": "inspector-2-name-safe",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "inspector-2-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 7
+    },
+    {
+      "id": "inspector-2-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "content-dimensions",
+      "passed": true,
+      "detail": [
+        812,
+        172
+      ]
+    },
+    {
+      "id": "content-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "content-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "content-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "content-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "content-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "skills-panel-dimensions",
+      "passed": true,
+      "detail": [
+        812,
+        104
+      ]
+    },
+    {
+      "id": "skills-panel-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "skills-panel-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "skills-panel-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "skills-panel-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "skills-panel-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "major-card-dimensions",
+      "passed": true,
+      "detail": [
+        380,
+        232
+      ]
+    },
+    {
+      "id": "major-card-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "major-card-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "major-card-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "major-card-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "major-card-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "major-card-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 7.5
+    },
+    {
+      "id": "major-card-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "nav-dimensions",
+      "passed": true,
+      "detail": [
+        380,
+        120
+      ]
+    },
+    {
+      "id": "nav-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "nav-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "nav-no-crossing-outer",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "nav-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "nav-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "nav-12-degree-side",
+      "passed": true,
+      "detail": 11.999976903687251
+    },
+    {
+      "id": "nav-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "nav-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "footer-action-dimensions",
+      "passed": true,
+      "detail": [
+        380,
+        80
+      ]
+    },
+    {
+      "id": "footer-action-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "footer-action-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "footer-action-no-crossing-outer",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "footer-action-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "footer-action-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "footer-action-12-degree-side",
+      "passed": true,
+      "detail": 12.000010694466951
+    },
+    {
+      "id": "footer-action-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "footer-action-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "action-dimensions",
+      "passed": true,
+      "detail": [
+        260,
+        52
+      ]
+    },
+    {
+      "id": "action-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "action-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "action-no-crossing-outer",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "action-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "action-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "action-12-degree-side",
+      "passed": true,
+      "detail": 11.999997811026862
+    },
+    {
+      "id": "action-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "action-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "input-dimensions",
+      "passed": true,
+      "detail": [
+        656,
+        56
+      ]
+    },
+    {
+      "id": "input-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "input-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "input-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "input-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "input-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "pet-slot-dimensions",
+      "passed": true,
+      "detail": [
+        210,
+        112
+      ]
+    },
+    {
+      "id": "pet-slot-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "pet-slot-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "pet-slot-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "pet-slot-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "pet-slot-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "skill-slot-dimensions",
+      "passed": true,
+      "detail": [
+        72,
+        72
+      ]
+    },
+    {
+      "id": "skill-slot-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "skill-slot-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "skill-slot-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "skill-slot-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "skill-slot-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "player-info-dimensions",
+      "passed": true,
+      "detail": [
+        776,
+        116
+      ]
+    },
+    {
+      "id": "player-info-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "player-info-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "player-info-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "player-info-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "player-info-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "player-info-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 7.5
+    },
+    {
+      "id": "player-info-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "dock-dimensions",
+      "passed": true,
+      "detail": [
+        1552,
+        140
+      ]
+    },
+    {
+      "id": "dock-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "dock-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "dock-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "dock-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "dock-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "dock-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 7.5
+    },
+    {
+      "id": "dock-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "header-dimensions",
+      "passed": true,
+      "detail": [
+        644,
+        64
+      ]
+    },
+    {
+      "id": "header-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "header-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "header-no-crossing-outer",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "header-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "header-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "header-12-degree-side",
+      "passed": true,
+      "detail": 12.000018357891937
+    },
+    {
+      "id": "header-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "header-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "icon-button-dimensions",
+      "passed": true,
+      "detail": [
+        42,
+        42
+      ]
+    },
+    {
+      "id": "icon-button-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "icon-button-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "icon-button-no-crossing-outer",
+      "passed": true,
+      "detail": 4
+    },
+    {
+      "id": "icon-button-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "icon-button-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "popup-info-dimensions",
+      "passed": true,
+      "detail": [
+        1104,
+        740
+      ]
+    },
+    {
+      "id": "popup-info-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "popup-info-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "popup-info-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "popup-info-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "popup-info-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "popup-info-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 10
+    },
+    {
+      "id": "popup-info-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "popup-upgrade-dimensions",
+      "passed": true,
+      "detail": [
+        1000,
+        696
+      ]
+    },
+    {
+      "id": "popup-upgrade-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "popup-upgrade-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "popup-upgrade-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "popup-upgrade-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "popup-upgrade-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "popup-upgrade-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 10
+    },
+    {
+      "id": "popup-upgrade-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "popup-heal-dimensions",
+      "passed": true,
+      "detail": [
+        704,
+        564
+      ]
+    },
+    {
+      "id": "popup-heal-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "popup-heal-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "popup-heal-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "popup-heal-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "popup-heal-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "popup-heal-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 10
+    },
+    {
+      "id": "popup-heal-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "popup-rename-dimensions",
+      "passed": true,
+      "detail": [
+        704,
+        424
+      ]
+    },
+    {
+      "id": "popup-rename-alpha-outside-mask",
+      "passed": true,
+      "detail": {
+        "framePixels": 0,
+        "surfacePixels": 0
+      }
+    },
+    {
+      "id": "popup-rename-frame-center-transparent",
+      "passed": true,
+      "detail": "border only"
+    },
+    {
+      "id": "popup-rename-no-crossing-outer",
+      "passed": true,
+      "detail": 8
+    },
+    {
+      "id": "popup-rename-native-frame-no-bitmap-caps",
+      "passed": true,
+      "detail": "SVG geometry only"
+    },
+    {
+      "id": "popup-rename-new-material",
+      "passed": true,
+      "detail": "new raster material"
+    },
+    {
+      "id": "popup-rename-second-edge-right-bottom-only",
+      "passed": true,
+      "detail": 10
+    },
+    {
+      "id": "popup-rename-tapered-secondary-edge",
+      "passed": true,
+      "detail": "variable-width filled ribbons, not capped strokes"
+    },
+    {
+      "id": "Screens/01_Menu.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/01_Menu.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/01_Menu.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "01_Menu-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 18,
+        "allowedKnownFields": []
+      }
+    },
+    {
+      "id": "01_Menu-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "01_Menu-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "01_Menu-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "01_Menu-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "Screens/02_Tong_Quan.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/02_Tong_Quan.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/02_Tong_Quan.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "02_Tong_Quan-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 57,
+        "allowedKnownFields": []
+      }
+    },
+    {
+      "id": "02_Tong_Quan-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "02_Tong_Quan-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "02_Tong_Quan-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "02_Tong_Quan-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "Screens/03_Ky_Nang.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/03_Ky_Nang.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/03_Ky_Nang.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "03_Ky_Nang-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 63,
+        "allowedKnownFields": []
+      }
+    },
+    {
+      "id": "03_Ky_Nang-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "03_Ky_Nang-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "03_Ky_Nang-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "03_Ky_Nang-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "Screens/04_Phat_Trien.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/04_Phat_Trien.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/04_Phat_Trien.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "04_Phat_Trien-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 46,
+        "allowedKnownFields": []
+      }
+    },
+    {
+      "id": "04_Phat_Trien-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "04_Phat_Trien-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "04_Phat_Trien-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "04_Phat_Trien-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "Screens/05_Thong_Tin_Thu.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/05_Thong_Tin_Thu.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/05_Thong_Tin_Thu.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "05_Thong_Tin_Thu-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 105,
+        "allowedKnownFields": [
+          "HP",
+          "EXP"
+        ]
+      }
+    },
+    {
+      "id": "05_Thong_Tin_Thu-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "05_Thong_Tin_Thu-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "05_Thong_Tin_Thu-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "05_Thong_Tin_Thu-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "Screens/06_Tang_Cap.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/06_Tang_Cap.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/06_Tang_Cap.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "06_Tang_Cap-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 105,
+        "allowedKnownFields": []
+      }
+    },
+    {
+      "id": "06_Tang_Cap-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "06_Tang_Cap-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "06_Tang_Cap-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "06_Tang_Cap-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "Screens/07_Hoi_Phuc.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/07_Hoi_Phuc.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/07_Hoi_Phuc.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "07_Hoi_Phuc-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 71,
+        "allowedKnownFields": []
+      }
+    },
+    {
+      "id": "07_Hoi_Phuc-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "07_Hoi_Phuc-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "07_Hoi_Phuc-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "07_Hoi_Phuc-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "Screens/08_Doi_Ten_Thu.png-size",
+      "passed": true,
+      "detail": [
+        1600,
+        900
+      ]
+    },
+    {
+      "id": "Preview/1920/08_Doi_Ten_Thu.png-size",
+      "passed": true,
+      "detail": [
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": "Preview/1366/08_Doi_Ten_Thu.png-size",
+      "passed": true,
+      "detail": [
+        1366,
+        768
+      ]
+    },
+    {
+      "id": "08_Doi_Ten_Thu-existing-labels-and-known-field-additions",
+      "passed": true,
+      "detail": {
+        "count": 66,
+        "allowedKnownFields": []
+      }
+    },
+    {
+      "id": "08_Doi_Ten_Thu-pattern-present",
+      "passed": true,
+      "detail": "sparse motif layer"
+    },
+    {
+      "id": "08_Doi_Ten_Thu-filled-icons",
+      "passed": true,
+      "detail": "new filled icon library"
+    },
+    {
+      "id": "08_Doi_Ten_Thu-no-CRI-shorthand",
+      "passed": true,
+      "detail": "CRIT RATE / CRIT DMG"
+    },
+    {
+      "id": "08_Doi_Ten_Thu-no-avatar-upscale-to-hero",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "menu-profile-layout",
+      "passed": true,
+      "detail": {
+        "x": 768,
+        "y": 52,
+        "width": 776,
+        "height": 116
+      }
+    },
+    {
+      "id": "menu-pet-card-layout",
+      "passed": true,
+      "detail": {
+        "x": 768,
+        "y": 184,
+        "width": 380,
+        "height": 232
+      }
+    },
+    {
+      "id": "menu-bag-card-layout",
+      "passed": true,
+      "detail": {
+        "x": 1164,
+        "y": 184,
+        "width": 380,
+        "height": 232
+      }
+    },
+    {
+      "id": "menu-profile-button-layout",
+      "passed": true,
+      "detail": {
+        "x": 768,
+        "y": 432,
+        "width": 380,
+        "height": 120
+      }
+    },
+    {
+      "id": "menu-quest-button-layout",
+      "passed": true,
+      "detail": {
+        "x": 1164,
+        "y": 432,
+        "width": 380,
+        "height": 120
+      }
+    },
+    {
+      "id": "menu-map-button-layout",
+      "passed": true,
+      "detail": {
+        "x": 768,
+        "y": 568,
+        "width": 380,
+        "height": 120
+      }
+    },
+    {
+      "id": "menu-codex-button-layout",
+      "passed": true,
+      "detail": {
+        "x": 1164,
+        "y": 568,
+        "width": 380,
+        "height": 120
+      }
+    },
+    {
+      "id": "menu-status-layout",
+      "passed": true,
+      "detail": {
+        "x": 768,
+        "y": 704,
+        "width": 776,
+        "height": 48
+      }
+    },
+    {
+      "id": "menu-settings-layout",
+      "passed": true,
+      "detail": {
+        "x": 768,
+        "y": 768,
+        "width": 380,
+        "height": 80
+      }
+    },
+    {
+      "id": "menu-back-layout",
+      "passed": true,
+      "detail": {
+        "x": 1164,
+        "y": 768,
+        "width": 380,
+        "height": 80
+      }
+    },
+    {
+      "id": "pet-card-solid-chevron-visible",
+      "passed": true,
+      "detail": {
+        "lightPixels": 104,
+        "box": [
+          1115,
+          372,
+          16,
+          24
+        ]
+      }
+    },
+    {
+      "id": "bag-card-solid-chevron-visible",
+      "passed": true,
+      "detail": {
+        "lightPixels": 104,
+        "box": [
+          1511,
+          372,
+          16,
+          24
+        ]
+      }
+    },
+    {
+      "id": "profile-button-solid-chevron-visible",
+      "passed": true,
+      "detail": {
+        "lightPixels": 91,
+        "box": [
+          1115,
+          480,
+          16,
+          24
+        ]
+      }
+    },
+    {
+      "id": "profile-button-artwork-visible-variation",
+      "passed": true,
+      "detail": {
+        "lumaStd": 56.34,
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        }
+      }
+    },
+    {
+      "id": "quest-button-solid-chevron-visible",
+      "passed": true,
+      "detail": {
+        "lightPixels": 91,
+        "box": [
+          1511,
+          480,
+          16,
+          24
+        ]
+      }
+    },
+    {
+      "id": "quest-button-artwork-visible-variation",
+      "passed": true,
+      "detail": {
+        "lumaStd": 53.99,
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        }
+      }
+    },
+    {
+      "id": "map-button-solid-chevron-visible",
+      "passed": true,
+      "detail": {
+        "lightPixels": 91,
+        "box": [
+          1115,
+          616,
+          16,
+          24
+        ]
+      }
+    },
+    {
+      "id": "map-button-artwork-visible-variation",
+      "passed": true,
+      "detail": {
+        "lumaStd": 43.46,
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        }
+      }
+    },
+    {
+      "id": "codex-button-solid-chevron-visible",
+      "passed": true,
+      "detail": {
+        "lightPixels": 91,
+        "box": [
+          1511,
+          616,
+          16,
+          24
+        ]
+      }
+    },
+    {
+      "id": "codex-button-artwork-visible-variation",
+      "passed": true,
+      "detail": {
+        "lumaStd": 50.21,
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        }
+      }
+    },
+    {
+      "id": "avatar-window-is-transparent",
+      "passed": true,
+      "detail": {
+        "overlappingPixels": 0
+      }
+    },
+    {
+      "id": "avatar-display-only",
+      "passed": true,
+      "detail": [
+        12,
+        12,
+        64,
+        64
+      ]
+    },
+    {
+      "id": "skill-square-with-eight-sides",
+      "passed": true,
+      "detail": [
+        [
+          12.36,
+          3
+        ],
+        [
+          59.64,
+          3
+        ],
+        [
+          69,
+          12.36
+        ],
+        [
+          69,
+          59.64
+        ],
+        [
+          59.64,
+          69
+        ],
+        [
+          12.36,
+          69
+        ],
+        [
+          3,
+          59.64
+        ],
+        [
+          3,
+          12.36
+        ]
+      ]
+    },
+    {
+      "id": "inspector-0-all-tab-root-0",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-0-all-tab-root-1",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-0-all-tab-root-2",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-1-all-tab-root-0",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-1-all-tab-root-1",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-1-all-tab-root-2",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-2-all-tab-root-0",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-2-all-tab-root-1",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "inspector-2-all-tab-root-2",
+      "passed": true,
+      "detail": {
+        "continuous": true,
+        "noBaseline": true
+      }
+    },
+    {
+      "id": "skill-state-normal-mask",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "skill-state-hover-mask",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "skill-state-pressed-mask",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "skill-state-focus-mask",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "skill-state-selected+focus-mask",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "skill-state-disabled-mask",
+      "passed": true,
+      "detail": 0
+    },
+    {
+      "id": "six-distinct-interaction-states",
+      "passed": true,
+      "detail": [
+        "normal",
+        "hover",
+        "pressed",
+        "focus",
+        "selected+focus",
+        "disabled"
+      ]
+    },
+    {
+      "id": "info-scrollbar-clear-of-secondary-rim",
+      "passed": true,
+      "detail": {
+        "scrollbar": {
+          "id": "scrollbar",
+          "x": 1331.5,
+          "y": 290,
+          "width": 3,
+          "height": 489,
+          "role": "scroll-body"
+        },
+        "innerRimX": 1339
+      }
+    },
+    {
+      "id": "original-box-glyph-and-round-background",
+      "passed": true,
+      "detail": {
+        "observedReadOnly": true,
+        "source": "Assets/Game/HudSystem/PetBoxPanelController.cs / CreateEmptySlotContent",
+        "stylesheet": "Assets/ThangTest/UIThang/Inventory/UI/BoxPanel.uss / .box-empty-slot-icon",
+        "glyph": "🐾",
+        "width": 50,
+        "height": 50,
+        "radius": 25,
+        "fontSize": 22,
+        "color": "#829794",
+        "background": "#E4EDEA",
+        "referenceAsset": {
+          "svg": "Icons/box-empty-preserved-style.svg",
+          "png": "Icons/box-empty-preserved-style.png",
+          "width": 50,
+          "height": 50
+        },
+        "note": "Existing game implementation uses a Label and round background, not a new replacement pet sprite. Reuse that component/style in Unity."
+      }
+    },
+    {
+      "id": "portable-reference-bag",
+      "passed": true,
+      "detail": "Assets/Art/backpack.png"
+    },
+    {
+      "id": "six-navigation-state-overlays",
+      "passed": true,
+      "detail": [
+        "normal",
+        "hover",
+        "pressed",
+        "focus",
+        "selected+focus",
+        "disabled"
+      ]
+    },
+    {
+      "id": "preserved-item-heal-potion.png",
+      "passed": true,
+      "detail": "ce5e7853290d09dec8f95fcf0381ab4cf3038421d21af97a6c38eb26a414a0eb"
+    },
+    {
+      "id": "preserved-pet-avatar-original.png",
+      "passed": true,
+      "detail": "795d93204ec65f5d71470909a67208fdfd6cb6d6d65e058f099af8fe6dcf26b0"
+    },
+    {
+      "id": "preserved-skill-bite-arrow.png",
+      "passed": true,
+      "detail": "22c678c92936cf7291a59a288c37a01f9f1f6ed0d173996a9bf416b0dbf7e733"
+    },
+    {
+      "id": "preserved-skill-blast-axe.png",
+      "passed": true,
+      "detail": "cf3b20c09c6ea1152c2e9de1a878a555050f51a8bb03ec56d11a393ac2b97668"
+    },
+    {
+      "id": "portable-svg-html-links",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "id": "requirement-8 màn /16preview",
+      "passed": true,
+      "detail": "Specs/screen-manifest.json"
+    },
+    {
+      "id": "requirement-Chất liệu mới, không dùng sage cũ",
+      "passed": true,
+      "detail": "Assets/Art/steel-enamel-r2.png"
+    },
+    {
+      "id": "requirement-Địa hình / phù văn / vùng đọc",
+      "passed": true,
+      "detail": "Tools/panel-motifs.cjs"
+    },
+    {
+      "id": "requirement-Menu header116 / card232 / phụ120",
+      "passed": true,
+      "detail": "Specs/layout-grid.json"
+    },
+    {
+      "id": "requirement-6cảnh đúng tỷ lệ",
+      "passed": true,
+      "detail": "Specs/imagegen-prompts.json"
+    },
+    {
+      "id": "requirement-Chevron riêng44px/24px",
+      "passed": true,
+      "detail": "Icons/chevron-nav.png"
+    },
+    {
+      "id": "requirement-Glyph đặc / phù hiệu có relief",
+      "passed": true,
+      "detail": "Icons/badge-profile.png"
+    },
+    {
+      "id": "requirement-Độ xiên12°, cut18/12/8",
+      "passed": true,
+      "detail": "Tools/geometry.cjs"
+    },
+    {
+      "id": "requirement-Chung đường bao / union cả3tab",
+      "passed": true,
+      "detail": "Frames/inspector-0__mask.svg"
+    },
+    {
+      "id": "requirement-Viền phải/dưới đầu taper",
+      "passed": true,
+      "detail": "Tools/edge-stripes.cjs"
+    },
+    {
+      "id": "requirement-6trạng thái / focus theo shape",
+      "passed": true,
+      "detail": "Boards/02_Icons_States.png"
+    },
+    {
+      "id": "requirement-Tình huống dữ liệu",
+      "passed": true,
+      "detail": "Boards/04_EdgeCases.png"
+    },
+    {
+      "id": "requirement-Giữ sprite/BOX/skill vuông vát 8 cạnh/2D",
+      "passed": true,
+      "detail": "Specs/asset-manifest.json"
+    },
+    {
+      "id": "requirement-Không Unity/runtime giả",
+      "passed": true,
+      "detail": "Prompts/01_Unity_Overall.md"
+    },
+    {
+      "id": "requirement-Nền nút, caption, popup có họa tiết theo vai trò",
+      "passed": true,
+      "detail": "Boards/05_Surface_Refinement.png"
+    },
+    {
+      "id": "requirement-Nhãn CRIT RATE / CRIT DMG",
+      "passed": true,
+      "detail": "Screens/02_Tong_Quan.svg"
+    },
+    {
+      "id": "requirement-Avatar cố định không icon, tab liền panel, skill tám cạnh",
+      "passed": true,
+      "detail": "Boards/06_Avatar_Tab_Skill.png"
+    },
+    {
+      "id": "requirement-Bản chốt thống nhất của gói mới nhất",
+      "passed": true,
+      "detail": "01_BAN_CHOT_THIET_KE.md"
+    },
+    {
+      "id": "requirement-Một prompt Unity tổng hợp hiện hành",
+      "passed": true,
+      "detail": "Prompts/00_Prompt_Unity_Tong_Hop.md"
+    },
+    {
+      "id": "board-01_Material_Art",
+      "passed": true,
+      "detail": "01_Material_Art"
+    },
+    {
+      "id": "board-02_Icons_States",
+      "passed": true,
+      "detail": "02_Icons_States"
+    },
+    {
+      "id": "board-03_Geometry_Alpha",
+      "passed": true,
+      "detail": "03_Geometry_Alpha"
+    },
+    {
+      "id": "board-04_EdgeCases",
+      "passed": true,
+      "detail": "04_EdgeCases"
+    },
+    {
+      "id": "board-05_Surface_Refinement",
+      "passed": true,
+      "detail": "05_Surface_Refinement"
+    },
+    {
+      "id": "board-06_Avatar_Tab_Skill",
+      "passed": true,
+      "detail": "06_Avatar_Tab_Skill"
+    }
+  ],
+  "visualReview": {
+    "pilot": "Menu and Overview reviewed at1600x900 before extension",
+    "record": "Specs/visual-review.md",
+    "reviewedFinal": [
+      "GALLERY.png",
+      "Preview/1366/01_Menu.png",
+      "Preview/1366/03_Ky_Nang.png",
+      "Screens/08_Doi_Ten_Thu.png",
+      "Boards/01_Material_Art.png",
+      "Boards/02_Icons_States.png",
+      "Boards/06_Avatar_Tab_Skill.png"
+    ],
+    "scope": "visual design and raster/geometry only, not runtime responsiveness or performance"
+  },
+  "engine": {
+    "UnityModified": false,
+    "runtime": "not-run",
+    "standalone": "not-run",
+    "Profiler": "not-run"
+  }
+}

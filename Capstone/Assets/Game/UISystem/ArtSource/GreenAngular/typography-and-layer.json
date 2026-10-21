@@ -1,0 +1,85 @@
+{
+  "canvas": {
+    "width": 1600,
+    "height": 900
+  },
+  "fonts": {
+    "heading": [
+      "Noto Serif",
+      "existing project serif with Vietnamese support"
+    ],
+    "body": [
+      "existing MenuTypography font",
+      "Segoe UI/Arial reference fallback"
+    ],
+    "note": "Windows fonts are not distributed. Verify actual project font/AA in Unity."
+  },
+  "roles": {
+    "screenTitle": {
+      "size": 30,
+      "weight": 650
+    },
+    "petName": {
+      "size": 30,
+      "weight": 700,
+      "maxWidth": 344,
+      "ellipsis": true,
+      "tooltipFullText": true
+    },
+    "menuPlayerName": {
+      "size": 32,
+      "weight": 700,
+      "maxWidth": 420,
+      "ellipsis": true
+    },
+    "menuSecondaryLabel": {
+      "size": 25,
+      "weight": 700
+    },
+    "button": {
+      "size": 21,
+      "weight": 650
+    },
+    "body": {
+      "size": 16,
+      "weight": 400
+    },
+    "metadata": {
+      "size": 14,
+      "weight": 400
+    }
+  },
+  "spacing": {
+    "grid": 8,
+    "mainGap": 16,
+    "panelPadding": 24,
+    "contentInset": 20,
+    "minimumInteractiveTarget": 44
+  },
+  "layers": [
+    "fill",
+    "clipped artwork",
+    "etching (menu .16)",
+    "border",
+    "selected outer gold",
+    "hover / pressed",
+    "focus inset light",
+    "icons / text"
+  ],
+  "interaction": {
+    "visualContour": "same family as hit polygon",
+    "focusSelected": "outer gold selected + inner light focus",
+    "selectedTabFocus": "cap only, no bottom line",
+    "disabled": "no input, ink text, one clear reason"
+  },
+  "portraits": {
+    "defaultMode": "2D",
+    "userSupplied": true,
+    "slotAndLargeAreSeparate": true,
+    "largeOverflowRightMax": 52,
+    "alphaFadeMask": "Assets/Art/portrait_alpha_fade_mask.png",
+    "guard": "behind inspector and text; never cover action"
+  },
+  "geometry": "Specs/component-manifest.json",
+  "layout": "Specs/layout-grid.json"
+}

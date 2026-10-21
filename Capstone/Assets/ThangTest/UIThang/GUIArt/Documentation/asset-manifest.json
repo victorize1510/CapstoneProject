@@ -1,0 +1,1074 @@
+{
+  "version": 1,
+  "tokens": {
+    "background": "#f8f4eb",
+    "surface": "#ffffff",
+    "title": "#174a30",
+    "accent": "#54825b",
+    "text": "#31573d",
+    "muted": "#657568",
+    "border": "#a9bd9c",
+    "gold": "#c6a34d",
+    "hover": "#e4edda",
+    "pressed": "#cbdcc5",
+    "danger": "#a5433c",
+    "disabled": "#edf0eb",
+    "headerHeight": 76,
+    "titleSize": 38,
+    "backWidth": 146,
+    "backHeight": 42,
+    "bodySize": 17,
+    "captionSize": 14,
+    "controlHeight": 42,
+    "radius": 8,
+    "iconSize": 24,
+    "spacing": [
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "assets": [
+    {
+      "id": "back",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/back.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/back.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 880,
+      "antialiasedPixels": 302,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "forward",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/forward.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/forward.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 880,
+      "antialiasedPixels": 302,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "close",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/close.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/close.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 792,
+      "antialiasedPixels": 452,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "search",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/search.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/search.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1180,
+      "antialiasedPixels": 590,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "filter",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/filter.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/filter.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1564,
+      "antialiasedPixels": 343,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "grid",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/grid.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/grid.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2640,
+      "antialiasedPixels": 320,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "list",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/list.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/list.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1440,
+      "antialiasedPixels": 228,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "star",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/star.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/star.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1584,
+      "antialiasedPixels": 745,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "chevron_down",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/chevron_down.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/chevron_down.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 422,
+      "antialiasedPixels": 248,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "chevron_up",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/chevron_up.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/chevron_up.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 422,
+      "antialiasedPixels": 248,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "plus",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/plus.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/plus.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 860,
+      "antialiasedPixels": 40,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "minus",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/minus.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/minus.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 448,
+      "antialiasedPixels": 20,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "check",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/check.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/check.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 534,
+      "antialiasedPixels": 308,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "profile",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/profile.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/profile.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1686,
+      "antialiasedPixels": 590,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "paw",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/paw.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/paw.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2406,
+      "antialiasedPixels": 1172,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "box",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/box.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/box.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2526,
+      "antialiasedPixels": 773,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "bag",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/bag.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/bag.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2412,
+      "antialiasedPixels": 372,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "quest",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/quest.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/quest.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2451,
+      "antialiasedPixels": 411,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "map",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/map.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/map.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2618,
+      "antialiasedPixels": 460,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "book",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/book.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/book.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2310,
+      "antialiasedPixels": 442,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "settings",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/settings.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/settings.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2391,
+      "antialiasedPixels": 1143,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "coin",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/coin.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/coin.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 3274,
+      "antialiasedPixels": 1400,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "heart",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/heart.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/heart.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1450,
+      "antialiasedPixels": 757,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "mana",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/mana.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/mana.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1428,
+      "antialiasedPixels": 730,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "stats",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/stats.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/stats.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2638,
+      "antialiasedPixels": 110,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "rename",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/rename.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/rename.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1400,
+      "antialiasedPixels": 710,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "trash",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/trash.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/trash.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2358,
+      "antialiasedPixels": 372,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "info",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/info.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/info.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1688,
+      "antialiasedPixels": 757,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "lock",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/lock.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/lock.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1936,
+      "antialiasedPixels": 306,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "sort",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/sort.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/sort.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1608,
+      "antialiasedPixels": 198,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "compass",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/compass.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/compass.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2114,
+      "antialiasedPixels": 1031,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "camera",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/camera.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/camera.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2569,
+      "antialiasedPixels": 447,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "leaf",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/leaf.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/leaf.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2057,
+      "antialiasedPixels": 856,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "volume",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/volume.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/volume.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1868,
+      "antialiasedPixels": 570,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "mouse",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/mouse.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/mouse.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1748,
+      "antialiasedPixels": 394,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "keyboard",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/keyboard.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/keyboard.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 2488,
+      "antialiasedPixels": 292,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "refresh",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/refresh.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/refresh.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1516,
+      "antialiasedPixels": 558,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "exit",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/exit.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/exit.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1578,
+      "antialiasedPixels": 220,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "warning",
+      "kind": "Icons",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Icons/warning.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Icons/warning.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 1810,
+      "antialiasedPixels": 577,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "panel",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/panel.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/panel.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 14732,
+      "antialiasedPixels": 84,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "button_primary",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/button_primary.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/button_primary.png",
+      "width": 128,
+      "height": 64,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 6924,
+      "antialiasedPixels": 84,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "button_secondary",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/button_secondary.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/button_secondary.png",
+      "width": 128,
+      "height": 64,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 6924,
+      "antialiasedPixels": 84,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "button_danger",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/button_danger.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/button_danger.png",
+      "width": 128,
+      "height": 64,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 6924,
+      "antialiasedPixels": 84,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "icon_button",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/icon_button.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/icon_button.png",
+      "width": 64,
+      "height": 64,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 3212,
+      "antialiasedPixels": 84,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "slot",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/slot.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/slot.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 14732,
+      "antialiasedPixels": 84,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "slot_selected",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/slot_selected.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/slot_selected.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 14732,
+      "antialiasedPixels": 84,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "focus",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/focus.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/focus.png",
+      "width": 128,
+      "height": 64,
+      "slice": [
+        16,
+        16,
+        16,
+        16
+      ],
+      "alpha": true,
+      "opaquePixels": 600,
+      "antialiasedPixels": 144,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "avatar_ring",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/avatar_ring.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/avatar_ring.png",
+      "width": 128,
+      "height": 128,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 733,
+      "antialiasedPixels": 1610,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "progress_track",
+      "kind": "Frames",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Frames/progress_track.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Frames/progress_track.png",
+      "width": 128,
+      "height": 24,
+      "slice": [
+        12,
+        10,
+        12,
+        10
+      ],
+      "alpha": true,
+      "opaquePixels": 2372,
+      "antialiasedPixels": 320,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "corner_leaf",
+      "kind": "Decor",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Decor/corner_leaf.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Decor/corner_leaf.png",
+      "width": 64,
+      "height": 64,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 763,
+      "antialiasedPixels": 369,
+      "edgePixels": 0,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "separator",
+      "kind": "Decor",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Decor/separator.svg",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Decor/separator.png",
+      "width": 128,
+      "height": 16,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": true,
+      "opaquePixels": 60,
+      "antialiasedPixels": 232,
+      "edgePixels": 4,
+      "license": "Original project artwork",
+      "revision": 1
+    },
+    {
+      "id": "menu_canvas",
+      "kind": "Backgrounds",
+      "source": "D:/Download/ProjectVTC/Asset Capstone/ẢnhGUi/GUI_Source/Backgrounds/menu_canvas_master.png",
+      "runtime": "Assets/ThangTest/UIThang/GUIArt/Resources/UI/GuiKit/Backgrounds/menu_canvas.png",
+      "width": 1672,
+      "height": 941,
+      "slice": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "alpha": false,
+      "edgePixels": 0,
+      "license": "Generated for this project with built-in imagegen",
+      "revision": 1
+    }
+  ]
+}

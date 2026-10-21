@@ -21,6 +21,13 @@ namespace Capstone.Game.HudSystem {
         readonly List<IPetHudDataSource> subscribedSources = new List<IPetHudDataSource>(6);
         readonly List<PetCollectionMetadata> subscribedMetadata = new List<PetCollectionMetadata>(6);
 
+        sealed class PetSources {
+            public int Frame=-1;public bool InChildren;
+            public readonly List<MonoBehaviour> Components=new List<MonoBehaviour>(16);
+            public IPetHudDataSource Hud;public IPetSkillLoadoutDataSource Loadout;
+        }
+        readonly Dictionary<PetController,PetSources> sourceCache=new Dictionary<PetController,PetSources>();
+        readonly List<MonoBehaviour> emptyBehaviours=new List<MonoBehaviour>(0);
         PetController lastActivePet;
         float nextChangeCheckAt;
         bool cooldownHudDirty;
@@ -38,7 +45,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void OnDisable() {
-            UnsubscribePetData();
+            UnsubscribePetData();sourceCache.Clear();
         }
 
         void Update() {
@@ -67,9 +74,10 @@ namespace Capstone.Game.HudSystem {
             HudDataChanged?.Invoke();
         }
 
-        public PetStatusHudData GetSelectedPetStatus() {
+        public PetStatusHudData GetSelectedPetStatus() => StatusFor(GetSelectedPetController());
+
+        internal PetStatusHudData StatusFor(PetController pet) {
             ResolveReferences();
-            PetController pet = GetSelectedPet();
             if (pet == null) {
                 return new PetStatusHudData {
                     hasPet = false,
@@ -153,6 +161,12 @@ namespace Capstone.Game.HudSystem {
             return slotIndex >= 0 && slotIndex < 6 ? GetPetAt(slotIndex) : null;
         }
 
+
+        internal bool ContainsPet(PetController pet) { if(pet==null)return false;for(int i=0;i<6;i++)if(GetPetControllerAt(i)==pet)return true;return false; }
+        internal IReadOnlyList<SkillHudData> SkillsFor(PetController pet) => pet!=null ? FindDataSource(pet)?.GetSkills() ?? Array.Empty<SkillHudData>() : Array.Empty<SkillHudData>();
+        internal IReadOnlyList<SkillHudData> LearnedFor(PetController pet) => pet!=null ? FindSkillLoadoutSource(pet)?.GetLearnedSkills() ?? SkillsFor(pet) : Array.Empty<SkillHudData>();
+        internal bool FavoriteFor(PetController pet,out bool favorite) { ResolveReferences();if(!ContainsPet(pet)){favorite=false;return false;}return TryTogglePetFavorite(pet,out favorite); }
+
         public void NotifyHudDataChanged() {
             HudDataChanged?.Invoke();
         }
@@ -175,9 +189,14 @@ namespace Capstone.Game.HudSystem {
             return learnedSkills;
         }
 
-        public bool TryEquipLearnedSkill(int learnedSkillIndex, int equippedSlotIndex) {
+        public bool TryEquipLearnedSkill(int learnedSkillIndex, int equippedSlotIndex) => EquipFor(GetSelectedPetController(), learnedSkillIndex, equippedSlotIndex, false);
+
+        internal bool EquipFor(PetController pet, int learnedSkillIndex, int equippedSlotIndex, bool explicitPreview=true) {
+            if (explicitPreview && (!ContainsPet(pet) || equippedSlotIndex < 0 || equippedSlotIndex >= SlotCountFor(pet))) return false;
+            var freshLearned=LearnedFor(pet); var freshEquipped=SkillsFor(pet);
+            if(learnedSkillIndex<0 || learnedSkillIndex>=freshLearned.Count || !freshLearned[learnedSkillIndex].unlocked) return false;
+            if(explicitPreview && equippedSlotIndex>=0 && equippedSlotIndex<freshEquipped.Count && freshEquipped[equippedSlotIndex].skillId==freshLearned[learnedSkillIndex].skillId) return false;
             ResolveReferences();
-            PetController pet = GetSelectedPet();
             if (pet == null) return false;
 
             PetHudRuntimeStats runtimeStats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
@@ -196,18 +215,20 @@ namespace Capstone.Game.HudSystem {
             return true;
         }
 
-        public PetElement GetSelectedPetElement() {
+        public PetElement GetSelectedPetElement() => ElementFor(GetSelectedPetController());
+
+        internal PetElement ElementFor(PetController pet) {
             ResolveReferences();
-            PetController pet = GetSelectedPet();
             if (pet == null) return PetElement.Unknown;
 
             PetCollectionMetadata metadata = FindMetadata(pet, true);
             return metadata != null ? metadata.Element : PetElement.Unknown;
         }
 
-        public int GetEquippedSkillSlotCount() {
+        public int GetEquippedSkillSlotCount() => SlotCountFor(GetSelectedPetController());
+
+        internal int SlotCountFor(PetController pet) {
             ResolveReferences();
-            PetController pet = GetSelectedPet();
             if (pet == null) return 0;
 
             IPetSkillLoadoutDataSource loadout = FindSkillLoadoutSource(pet);
@@ -218,9 +239,10 @@ namespace Capstone.Game.HudSystem {
             return Mathf.Clamp(skillCount > 0 ? skillCount : 4, 2, 4);
         }
 
-        public bool TryRenameSelectedPet(string nickname, out string error) {
+        public bool TryRenameSelectedPet(string nickname, out string error) => RenameFor(GetSelectedPetController(), nickname, out error);
+
+        internal bool RenameFor(PetController pet, string nickname, out string error) {
             ResolveReferences();
-            PetController pet = GetSelectedPet();
             if (pet == null) {
                 error = "Chưa chọn pet để đổi tên.";
                 return false;
@@ -392,20 +414,21 @@ namespace Capstone.Game.HudSystem {
             return petCommandInput.petSlots[slotIndex];
         }
 
-        IPetHudDataSource FindDataSource(PetController pet) {
-            foreach (MonoBehaviour behaviour in GetPetBehaviours(pet)) {
-                if (behaviour is IPetHudDataSource source) return source;
-            }
-
-            return null;
+        PetSources SourcesFor(PetController pet){
+            if(pet==null)return null;
+            if(!sourceCache.TryGetValue(pet,out var entry)){entry=new PetSources();sourceCache.Add(pet,entry);}
+            if(entry.Frame==Time.frameCount&&entry.InChildren==searchDataInChildren)return entry;
+            entry.Frame=Time.frameCount;entry.InChildren=searchDataInChildren;entry.Components.Clear();
+            if(searchDataInChildren)pet.GetComponentsInChildren<MonoBehaviour>(true,entry.Components);else pet.GetComponents<MonoBehaviour>(entry.Components);
+            entry.Hud=null;entry.Loadout=null;
+            foreach(var behaviour in entry.Components){if(behaviour==null)continue;if(entry.Hud==null&&behaviour is IPetHudDataSource hud)entry.Hud=hud;if(entry.Loadout==null&&behaviour is IPetSkillLoadoutDataSource loadout)entry.Loadout=loadout;}
+            return entry;
         }
-
-        IPetSkillLoadoutDataSource FindSkillLoadoutSource(PetController pet) {
-            foreach (MonoBehaviour behaviour in GetPetBehaviours(pet)) {
-                if (behaviour is IPetSkillLoadoutDataSource source) return source;
-            }
-
-            return null;
+        IPetHudDataSource FindDataSource(PetController pet){
+            var entry=SourcesFor(pet);if(entry!=null&&(entry.Hud==null||(entry.Hud is MonoBehaviour owner&&owner==null))){entry.Frame=-1;entry=SourcesFor(pet);}return entry?.Hud;
+        }
+        IPetSkillLoadoutDataSource FindSkillLoadoutSource(PetController pet){
+            var entry=SourcesFor(pet);if(entry!=null&&(entry.Loadout==null||(entry.Loadout is MonoBehaviour owner&&owner==null))){entry.Frame=-1;entry=SourcesFor(pet);}return entry?.Loadout;
         }
 
         static PetCollectionMetadata FindMetadata(PetController pet, bool createIfMissing = false) {
@@ -415,17 +438,7 @@ namespace Capstone.Game.HudSystem {
             return metadata;
         }
 
-        IEnumerable<MonoBehaviour> GetPetBehaviours(PetController pet) {
-            if (pet == null) yield break;
-
-            MonoBehaviour[] behaviours = searchDataInChildren
-                ? pet.GetComponentsInChildren<MonoBehaviour>(true)
-                : pet.GetComponents<MonoBehaviour>();
-
-            foreach (MonoBehaviour behaviour in behaviours) {
-                if (behaviour != null) yield return behaviour;
-            }
-        }
+        List<MonoBehaviour> GetPetBehaviours(PetController pet)=>SourcesFor(pet)?.Components??emptyBehaviours;
 
         bool PartyChanged() {
             if (petCommandInput == null) return lastActivePet != null;
@@ -439,7 +452,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void RememberCurrentParty() {
-            UnsubscribePetData();
+            UnsubscribePetData();sourceCache.Clear();
             if (petCommandInput == null) {
                 lastActivePet = null;
                 Array.Clear(lastSlots, 0, lastSlots.Length);

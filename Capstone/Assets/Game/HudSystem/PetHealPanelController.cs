@@ -17,6 +17,7 @@ namespace Capstone.Game.HudSystem {
         VisualElement overlay;
         VisualElement dialog;
         Button closeButton;
+        Button cancelButton;
         Button confirmButton;
         VisualElement portrait;
         Label portraitFallback;
@@ -116,7 +117,7 @@ namespace Capstone.Game.HudSystem {
             RefreshItem(preview);
 
             if (confirmButton != null) {
-                confirmButton.text = preview.IsFullResource ? preview.ResourceName + " ĐÃ ĐẦY" : "HỒI PHỤC";
+                confirmButton.text = "HỒI PHỤC";
                 confirmButton.SetEnabled(!confirmationRunning && (preview.CanHeal));
             }
             if (feedback != null) {
@@ -147,6 +148,7 @@ namespace Capstone.Game.HudSystem {
             overlay = root.Q<VisualElement>("heal-modal-overlay");
             dialog = root.Q<VisualElement>("heal-modal-dialog");
             closeButton = root.Q<Button>("heal-close-button");
+            cancelButton = root.Q<Button>("heal-cancel-button");
             confirmButton = root.Q<Button>("heal-confirm-button");
             portrait = root.Q<VisualElement>("heal-pet-portrait");
             portraitFallback = root.Q<Label>("heal-pet-portrait-fallback");
@@ -173,6 +175,7 @@ namespace Capstone.Game.HudSystem {
         void RegisterControls() {
             if (controlsRegistered || overlay == null) return;
             if (closeButton != null) closeButton.clicked += RequestClose;
+            if (cancelButton != null) cancelButton.clicked += RequestClose;
             if (confirmButton != null) confirmButton.clicked += ConfirmHeal;
             controlsRegistered = true;
         }
@@ -180,6 +183,7 @@ namespace Capstone.Game.HudSystem {
         void UnregisterControls() {
             if (!controlsRegistered) return;
             if (closeButton != null) closeButton.clicked -= RequestClose;
+            if (cancelButton != null) cancelButton.clicked -= RequestClose;
             if (confirmButton != null) confirmButton.clicked -= ConfirmHeal;
             controlsRegistered = false;
         }
@@ -262,7 +266,7 @@ namespace Capstone.Game.HudSystem {
             }
             if (healedAmount != null) {
                 healedAmount.text = preview.IsFullResource
-                    ? preview.ResourceName + " ĐÃ ĐẦY"
+                    ? string.Empty
                     : $"+{Mathf.RoundToInt(preview.ActualRestoreAmount):N0} {preview.ResourceName}";
                 healedAmount.EnableInClassList("is-full", preview.IsFullResource);
             }
@@ -289,11 +293,11 @@ namespace Capstone.Game.HudSystem {
         static void SetPortrait(VisualElement target, Label fallback, Sprite sprite, string fallbackText) {
             if (target == null) return;
             if (sprite != null) {
-                target.style.backgroundImage = new StyleBackground(sprite);
+                Capstone.Game.UISystem.AngularSurface.SetArt(target,sprite);
                 if (fallback != null) fallback.style.display = DisplayStyle.None;
             }
             else {
-                target.style.backgroundImage = StyleKeyword.None;
+                Capstone.Game.UISystem.AngularSurface.SetArt(target,(Sprite)null);
                 if (fallback != null) {
                     string value = string.IsNullOrWhiteSpace(fallbackText) ? "?" : fallbackText.Trim();
                     fallback.text = value.Substring(0, 1).ToUpperInvariant();

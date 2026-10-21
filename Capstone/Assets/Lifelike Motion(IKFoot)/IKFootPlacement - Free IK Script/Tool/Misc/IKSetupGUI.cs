@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 namespace LifelikeMotion.IKFootPlacement
 {
     using UnityEngine;
@@ -105,3 +106,4 @@ namespace LifelikeMotion.IKFootPlacement
     }
 
 }
+#endif

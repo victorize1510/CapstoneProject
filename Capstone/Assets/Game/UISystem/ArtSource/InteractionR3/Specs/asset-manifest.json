@@ -1,0 +1,2913 @@
+{
+  "version": "Interaction R3 / 2026-10-20",
+  "statLabels": {
+    "crit_rate": "CRIT RATE",
+    "crit_damage": "CRIT DMG"
+  },
+  "surfacePatternRoles": {
+    "shell": {
+      "engraving": 0.19,
+      "material": 0.13
+    },
+    "header": {
+      "engraving": 0.18,
+      "material": 0.12
+    },
+    "content": {
+      "engraving": 0.105,
+      "material": 0.1
+    },
+    "button": {
+      "engraving": 0.27,
+      "material": 0.14
+    }
+  },
+  "canvas": [
+    1600,
+    900
+  ],
+  "source": {
+    "geometry": "Tools/geometry.cjs",
+    "frame": "Tools/integrated-frame.cjs",
+    "secondaryEdge": "Tools/edge-stripes.cjs",
+    "motif": "Tools/panel-motifs.cjs",
+    "icons": "Tools/game-icons.cjs",
+    "identity": "Tools/identity-components.cjs"
+  },
+  "color": {
+    "primary": "#3C4772",
+    "shell": "#525F79",
+    "panel": "#AEB8CD",
+    "raised": "#C1C3D3",
+    "ink": "#202B45",
+    "muted": "#39455E",
+    "gold": "#CCAD83",
+    "lavender": "#A596BB",
+    "hp": "#C47D8B",
+    "exp": "#76A6C3",
+    "light": "#EDE9E1",
+    "edge": "#8996B0",
+    "disabled": "#9298AA"
+  },
+  "components": [
+    {
+      "id": "shell",
+      "width": 824,
+      "height": 844,
+      "type": "panel",
+      "color": "#525F79",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          803,
+          3
+        ],
+        [
+          821,
+          21
+        ],
+        [
+          821,
+          823
+        ],
+        [
+          803,
+          841
+        ],
+        [
+          21,
+          841
+        ],
+        [
+          3,
+          823
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "path": "M21,3L803,3L821,21L821,823L803,841L21,841L3,823L3,21Z",
+      "frame": {
+        "svg": "Frames/shell.svg",
+        "png": "Frames/shell.png",
+        "width": 824,
+        "height": 844
+      },
+      "mask": {
+        "svg": "Frames/shell__mask.svg",
+        "png": "Frames/shell__mask.png",
+        "width": 824,
+        "height": 844
+      },
+      "surface": {
+        "svg": "Assets/Panels/shell.svg",
+        "png": "Assets/Panels/shell.png",
+        "width": 824,
+        "height": 844
+      },
+      "safeInset": 24,
+      "corner": 18,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M821,21L811,25.142L811,818.858L798.858,831L25.142,831L21,841",
+        "inset": 10,
+        "points": [
+          [
+            821,
+            21
+          ],
+          [
+            811,
+            25.142135623730894
+          ],
+          [
+            811,
+            818.8578643762692
+          ],
+          [
+            798.8578643762692,
+            831
+          ],
+          [
+            25.142135623730894,
+            831
+          ],
+          [
+            21,
+            841
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            821,
+            21
+          ],
+          [
+            21,
+            841
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "inspector-fixed",
+      "width": 864,
+      "height": 620,
+      "type": "panel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          843,
+          3
+        ],
+        [
+          861,
+          21
+        ],
+        [
+          861,
+          599
+        ],
+        [
+          843,
+          617
+        ],
+        [
+          21,
+          617
+        ],
+        [
+          3,
+          599
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "path": "M21,3L843,3L861,21L861,599L843,617L21,617L3,599L3,21Z",
+      "frame": {
+        "svg": "Frames/inspector-fixed.svg",
+        "png": "Frames/inspector-fixed.png",
+        "width": 864,
+        "height": 620
+      },
+      "mask": {
+        "svg": "Frames/inspector-fixed__mask.svg",
+        "png": "Frames/inspector-fixed__mask.png",
+        "width": 864,
+        "height": 620
+      },
+      "surface": {
+        "svg": "Assets/Panels/inspector-fixed.svg",
+        "png": "Assets/Panels/inspector-fixed.png",
+        "width": 864,
+        "height": 620
+      },
+      "safeInset": 20,
+      "corner": 18,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M861,21L851,25.142L851,594.858L838.858,607L25.142,607L21,617",
+        "inset": 10,
+        "points": [
+          [
+            861,
+            21
+          ],
+          [
+            851,
+            25.142135623730894
+          ],
+          [
+            851,
+            594.8578643762692
+          ],
+          [
+            838.8578643762692,
+            607
+          ],
+          [
+            25.142135623730894,
+            607
+          ],
+          [
+            21,
+            617
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            861,
+            21
+          ],
+          [
+            21,
+            617
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon",
+      "navigation": {
+        "rail": [
+          16,
+          12,
+          832,
+          48
+        ],
+        "items": [
+          {
+            "id": 0,
+            "rect": [
+              16,
+              12,
+              272,
+              48
+            ],
+            "polygon": [
+              [
+                27.9274,
+                15
+              ],
+              [
+                285,
+                15
+              ],
+              [
+                276.0726,
+                57
+              ],
+              [
+                19,
+                57
+              ]
+            ]
+          },
+          {
+            "id": 1,
+            "rect": [
+              296,
+              12,
+              272,
+              48
+            ],
+            "polygon": [
+              [
+                307.9274,
+                15
+              ],
+              [
+                565,
+                15
+              ],
+              [
+                556.0726,
+                57
+              ],
+              [
+                299,
+                57
+              ]
+            ]
+          },
+          {
+            "id": 2,
+            "rect": [
+              576,
+              12,
+              272,
+              48
+            ],
+            "polygon": [
+              [
+                587.9274,
+                15
+              ],
+              [
+                845,
+                15
+              ],
+              [
+                836.0726,
+                57
+              ],
+              [
+                579,
+                57
+              ]
+            ]
+          }
+        ],
+        "selectedDecoration": "Assets/Interaction/navigation-selected.svg",
+        "caption": "Liberation Sans21Bold, fixed metrics, one rendered caption"
+      }
+    },
+    {
+      "id": "content",
+      "width": 812,
+      "height": 172,
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          797,
+          3
+        ],
+        [
+          809,
+          15
+        ],
+        [
+          809,
+          157
+        ],
+        [
+          797,
+          169
+        ],
+        [
+          15,
+          169
+        ],
+        [
+          3,
+          157
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "path": "M15,3L797,3L809,15L809,157L797,169L15,169L3,157L3,15Z",
+      "frame": {
+        "svg": "Frames/content.svg",
+        "png": "Frames/content.png",
+        "width": 812,
+        "height": 172
+      },
+      "mask": {
+        "svg": "Frames/content__mask.svg",
+        "png": "Frames/content__mask.png",
+        "width": 812,
+        "height": 172
+      },
+      "surface": {
+        "svg": "Assets/Panels/content.svg",
+        "png": "Assets/Panels/content.png",
+        "width": 812,
+        "height": 172
+      },
+      "safeInset": 20,
+      "corner": 12,
+      "skew": null,
+      "secondaryEdge": null,
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "skills-panel",
+      "width": 812,
+      "height": 104,
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          797,
+          3
+        ],
+        [
+          809,
+          15
+        ],
+        [
+          809,
+          89
+        ],
+        [
+          797,
+          101
+        ],
+        [
+          15,
+          101
+        ],
+        [
+          3,
+          89
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "path": "M15,3L797,3L809,15L809,89L797,101L15,101L3,89L3,15Z",
+      "frame": {
+        "svg": "Frames/skills-panel.svg",
+        "png": "Frames/skills-panel.png",
+        "width": 812,
+        "height": 104
+      },
+      "mask": {
+        "svg": "Frames/skills-panel__mask.svg",
+        "png": "Frames/skills-panel__mask.png",
+        "width": 812,
+        "height": 104
+      },
+      "surface": {
+        "svg": "Assets/Panels/skills-panel.svg",
+        "png": "Assets/Panels/skills-panel.png",
+        "width": 812,
+        "height": 104
+      },
+      "safeInset": 20,
+      "corner": 12,
+      "skew": null,
+      "secondaryEdge": null,
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "major-card",
+      "width": 380,
+      "height": 232,
+      "type": "panel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          365,
+          3
+        ],
+        [
+          377,
+          15
+        ],
+        [
+          377,
+          217
+        ],
+        [
+          365,
+          229
+        ],
+        [
+          15,
+          229
+        ],
+        [
+          3,
+          217
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "path": "M15,3L365,3L377,15L377,217L365,229L15,229L3,217L3,15Z",
+      "frame": {
+        "svg": "Frames/major-card.svg",
+        "png": "Frames/major-card.png",
+        "width": 380,
+        "height": 232
+      },
+      "mask": {
+        "svg": "Frames/major-card__mask.svg",
+        "png": "Frames/major-card__mask.png",
+        "width": 380,
+        "height": 232
+      },
+      "surface": {
+        "svg": "Assets/Panels/major-card.svg",
+        "png": "Assets/Panels/major-card.png",
+        "width": 380,
+        "height": 232
+      },
+      "safeInset": 20,
+      "corner": 12,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M377,15L369.5,18.107L369.5,213.893L361.893,221.5L18.107,221.5L15,229",
+        "inset": 7.5,
+        "points": [
+          [
+            377,
+            15
+          ],
+          [
+            369.5,
+            18.1066017177982
+          ],
+          [
+            369.5,
+            213.89339828220182
+          ],
+          [
+            361.8933982822018,
+            221.5
+          ],
+          [
+            18.1066017177982,
+            221.5
+          ],
+          [
+            15,
+            229
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            377,
+            15
+          ],
+          [
+            15,
+            229
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "nav",
+      "width": 380,
+      "height": 120,
+      "type": "parallel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          27.2314,
+          3
+        ],
+        [
+          377,
+          3
+        ],
+        [
+          352.7686,
+          117
+        ],
+        [
+          3,
+          117
+        ]
+      ],
+      "path": "M27.2314,3L377,3L352.7686,117L3,117Z",
+      "frame": {
+        "svg": "Frames/nav.svg",
+        "png": "Frames/nav.png",
+        "width": 380,
+        "height": 120
+      },
+      "mask": {
+        "svg": "Frames/nav__mask.svg",
+        "png": "Frames/nav__mask.png",
+        "width": 380,
+        "height": 120
+      },
+      "surface": {
+        "svg": "Assets/Panels/nav.svg",
+        "png": "Assets/Panels/nav.png",
+        "width": 380,
+        "height": 120
+      },
+      "safeInset": 12,
+      "corner": null,
+      "skew": 12,
+      "secondaryEdge": {
+        "path": "M377,3L372.06,7L349.529,113L7.94,113L3,117",
+        "inset": 4,
+        "points": [
+          [
+            377,
+            3
+          ],
+          [
+            372.06041340952476,
+            7
+          ],
+          [
+            349.52946253233176,
+            113
+          ],
+          [
+            7.939586590475255,
+            113
+          ],
+          [
+            3,
+            117
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            377,
+            3
+          ],
+          [
+            3,
+            117
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "footer-action",
+      "width": 380,
+      "height": 80,
+      "type": "parallel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          18.7292,
+          3
+        ],
+        [
+          377,
+          3
+        ],
+        [
+          361.2708,
+          77
+        ],
+        [
+          3,
+          77
+        ]
+      ],
+      "path": "M18.7292,3L377,3L361.2708,77L3,77Z",
+      "frame": {
+        "svg": "Frames/footer-action.svg",
+        "png": "Frames/footer-action.png",
+        "width": 380,
+        "height": 80
+      },
+      "mask": {
+        "svg": "Frames/footer-action__mask.svg",
+        "png": "Frames/footer-action__mask.png",
+        "width": 380,
+        "height": 80
+      },
+      "surface": {
+        "svg": "Assets/Panels/footer-action.svg",
+        "png": "Assets/Panels/footer-action.png",
+        "width": 380,
+        "height": 80
+      },
+      "safeInset": 12,
+      "corner": null,
+      "skew": 12,
+      "secondaryEdge": {
+        "path": "M377,3L372.06,7L358.032,73L7.94,73L3,77",
+        "inset": 4,
+        "points": [
+          [
+            377,
+            3
+          ],
+          [
+            372.06041043126953,
+            7
+          ],
+          [
+            358.03166448532363,
+            73
+          ],
+          [
+            7.939589568730467,
+            73
+          ],
+          [
+            3,
+            77
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            377,
+            3
+          ],
+          [
+            3,
+            77
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "action",
+      "width": 260,
+      "height": 52,
+      "type": "parallel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          12.7776,
+          3
+        ],
+        [
+          257,
+          3
+        ],
+        [
+          247.2224,
+          49
+        ],
+        [
+          3,
+          49
+        ]
+      ],
+      "path": "M12.7776,3L257,3L247.2224,49L3,49Z",
+      "frame": {
+        "svg": "Frames/action.svg",
+        "png": "Frames/action.png",
+        "width": 260,
+        "height": 52
+      },
+      "mask": {
+        "svg": "Frames/action__mask.svg",
+        "png": "Frames/action__mask.png",
+        "width": 260,
+        "height": 52
+      },
+      "surface": {
+        "svg": "Assets/Panels/action.svg",
+        "png": "Assets/Panels/action.png",
+        "width": 260,
+        "height": 52
+      },
+      "safeInset": 12,
+      "corner": null,
+      "skew": 12,
+      "secondaryEdge": {
+        "path": "M257,3L252.06,7L243.983,45L7.94,45L3,49",
+        "inset": 4,
+        "points": [
+          [
+            257,
+            3
+          ],
+          [
+            252.06041156679174,
+            7
+          ],
+          [
+            243.98326374070479,
+            45
+          ],
+          [
+            7.939588433208244,
+            45
+          ],
+          [
+            3,
+            49
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            257,
+            3
+          ],
+          [
+            3,
+            49
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "input",
+      "width": 656,
+      "height": 56,
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          11,
+          3
+        ],
+        [
+          645,
+          3
+        ],
+        [
+          653,
+          11
+        ],
+        [
+          653,
+          45
+        ],
+        [
+          645,
+          53
+        ],
+        [
+          11,
+          53
+        ],
+        [
+          3,
+          45
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "path": "M11,3L645,3L653,11L653,45L645,53L11,53L3,45L3,11Z",
+      "frame": {
+        "svg": "Frames/input.svg",
+        "png": "Frames/input.png",
+        "width": 656,
+        "height": 56
+      },
+      "mask": {
+        "svg": "Frames/input__mask.svg",
+        "png": "Frames/input__mask.png",
+        "width": 656,
+        "height": 56
+      },
+      "surface": {
+        "svg": "Assets/Panels/input.svg",
+        "png": "Assets/Panels/input.png",
+        "width": 656,
+        "height": 56
+      },
+      "safeInset": 20,
+      "corner": 8,
+      "skew": null,
+      "secondaryEdge": null,
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "pet-slot",
+      "width": 210,
+      "height": 112,
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          195,
+          3
+        ],
+        [
+          207,
+          15
+        ],
+        [
+          207,
+          97
+        ],
+        [
+          195,
+          109
+        ],
+        [
+          15,
+          109
+        ],
+        [
+          3,
+          97
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "path": "M15,3L195,3L207,15L207,97L195,109L15,109L3,97L3,15Z",
+      "frame": {
+        "svg": "Frames/pet-slot.svg",
+        "png": "Frames/pet-slot.png",
+        "width": 210,
+        "height": 112
+      },
+      "mask": {
+        "svg": "Frames/pet-slot__mask.svg",
+        "png": "Frames/pet-slot__mask.png",
+        "width": 210,
+        "height": 112
+      },
+      "surface": {
+        "svg": "Assets/Panels/pet-slot.svg",
+        "png": "Assets/Panels/pet-slot.png",
+        "width": 210,
+        "height": 112
+      },
+      "safeInset": 20,
+      "corner": 12,
+      "skew": null,
+      "secondaryEdge": null,
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "skill-slot",
+      "width": 72,
+      "height": 72,
+      "type": "skill-oct",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          12.36,
+          3
+        ],
+        [
+          59.64,
+          3
+        ],
+        [
+          69,
+          12.36
+        ],
+        [
+          69,
+          59.64
+        ],
+        [
+          59.64,
+          69
+        ],
+        [
+          12.36,
+          69
+        ],
+        [
+          3,
+          59.64
+        ],
+        [
+          3,
+          12.36
+        ]
+      ],
+      "path": "M12.36,3L59.64,3L69,12.36L69,59.64L59.64,69L12.36,69L3,59.64L3,12.36Z",
+      "frame": {
+        "svg": "Frames/skill-slot.svg",
+        "png": "Frames/skill-slot.png",
+        "width": 72,
+        "height": 72
+      },
+      "mask": {
+        "svg": "Frames/skill-slot__mask.svg",
+        "png": "Frames/skill-slot__mask.png",
+        "width": 72,
+        "height": 72
+      },
+      "surface": {
+        "svg": "Assets/Panels/skill-slot.svg",
+        "png": "Assets/Panels/skill-slot.png",
+        "width": 72,
+        "height": 72
+      },
+      "safeInset": 10,
+      "corner": 9.36,
+      "skew": null,
+      "secondaryEdge": null,
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "player-info",
+      "width": 776,
+      "height": 116,
+      "type": "panel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          761,
+          3
+        ],
+        [
+          773,
+          15
+        ],
+        [
+          773,
+          101
+        ],
+        [
+          761,
+          113
+        ],
+        [
+          15,
+          113
+        ],
+        [
+          3,
+          101
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "path": "M15,3L761,3L773,15L773,101L761,113L15,113L3,101L3,15Z",
+      "frame": {
+        "svg": "Frames/player-info.svg",
+        "png": "Frames/player-info.png",
+        "width": 776,
+        "height": 116
+      },
+      "mask": {
+        "svg": "Frames/player-info__mask.svg",
+        "png": "Frames/player-info__mask.png",
+        "width": 776,
+        "height": 116
+      },
+      "surface": {
+        "svg": "Assets/Panels/player-info.svg",
+        "png": "Assets/Panels/player-info.png",
+        "width": 776,
+        "height": 116
+      },
+      "safeInset": 12,
+      "corner": 12,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M773,15L765.5,18.107L765.5,97.893L757.893,105.5L18.107,105.5L15,113",
+        "inset": 7.5,
+        "points": [
+          [
+            773,
+            15
+          ],
+          [
+            765.5,
+            18.1066017177982
+          ],
+          [
+            765.5,
+            97.8933982822018
+          ],
+          [
+            757.8933982822018,
+            105.5
+          ],
+          [
+            18.106601717798213,
+            105.5
+          ],
+          [
+            15,
+            113
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            773,
+            15
+          ],
+          [
+            15,
+            113
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "dock",
+      "width": 1552,
+      "height": 140,
+      "type": "panel",
+      "color": "#525F79",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          1537,
+          3
+        ],
+        [
+          1549,
+          15
+        ],
+        [
+          1549,
+          125
+        ],
+        [
+          1537,
+          137
+        ],
+        [
+          15,
+          137
+        ],
+        [
+          3,
+          125
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "path": "M15,3L1537,3L1549,15L1549,125L1537,137L15,137L3,125L3,15Z",
+      "frame": {
+        "svg": "Frames/dock.svg",
+        "png": "Frames/dock.png",
+        "width": 1552,
+        "height": 140
+      },
+      "mask": {
+        "svg": "Frames/dock__mask.svg",
+        "png": "Frames/dock__mask.png",
+        "width": 1552,
+        "height": 140
+      },
+      "surface": {
+        "svg": "Assets/Panels/dock.svg",
+        "png": "Assets/Panels/dock.png",
+        "width": 1552,
+        "height": 140
+      },
+      "safeInset": 20,
+      "corner": 12,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M1549,15L1541.5,18.107L1541.5,121.893L1533.893,129.5L18.107,129.5L15,137",
+        "inset": 7.5,
+        "points": [
+          [
+            1549,
+            15
+          ],
+          [
+            1541.5,
+            18.1066017177982
+          ],
+          [
+            1541.5,
+            121.8933982822018
+          ],
+          [
+            1533.8933982822018,
+            129.5
+          ],
+          [
+            18.1066017177982,
+            129.5
+          ],
+          [
+            15,
+            137
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            1549,
+            15
+          ],
+          [
+            15,
+            137
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "header",
+      "width": 644,
+      "height": 64,
+      "type": "parallel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          15.3283,
+          3
+        ],
+        [
+          641,
+          3
+        ],
+        [
+          628.6717,
+          61
+        ],
+        [
+          3,
+          61
+        ]
+      ],
+      "path": "M15.3283,3L641,3L628.6717,61L3,61Z",
+      "frame": {
+        "svg": "Frames/header.svg",
+        "png": "Frames/header.png",
+        "width": 644,
+        "height": 64
+      },
+      "mask": {
+        "svg": "Frames/header__mask.svg",
+        "png": "Frames/header__mask.png",
+        "width": 644,
+        "height": 64
+      },
+      "surface": {
+        "svg": "Assets/Panels/header.svg",
+        "png": "Assets/Panels/header.png",
+        "width": 644,
+        "height": 64
+      },
+      "safeInset": 12,
+      "corner": null,
+      "skew": 12,
+      "secondaryEdge": {
+        "path": "M641,3L636.06,7L625.433,57L7.94,57L3,61",
+        "inset": 4,
+        "points": [
+          [
+            641,
+            3
+          ],
+          [
+            636.0604097558295,
+            7
+          ],
+          [
+            625.4325649282432,
+            57
+          ],
+          [
+            7.939590244170509,
+            57
+          ],
+          [
+            3,
+            61
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            641,
+            3
+          ],
+          [
+            3,
+            61
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "icon-button",
+      "width": 42,
+      "height": 42,
+      "type": "diamond",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          39,
+          21
+        ],
+        [
+          21,
+          39
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "path": "M21,3L39,21L21,39L3,21Z",
+      "frame": {
+        "svg": "Frames/icon-button.svg",
+        "png": "Frames/icon-button.png",
+        "width": 42,
+        "height": 42
+      },
+      "mask": {
+        "svg": "Frames/icon-button__mask.svg",
+        "png": "Frames/icon-button__mask.png",
+        "width": 42,
+        "height": 42
+      },
+      "surface": {
+        "svg": "Assets/Panels/icon-button.svg",
+        "png": "Assets/Panels/icon-button.png",
+        "width": 42,
+        "height": 42
+      },
+      "safeInset": 20,
+      "corner": null,
+      "skew": null,
+      "secondaryEdge": null,
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "popup-info",
+      "width": 1104,
+      "height": 740,
+      "type": "panel",
+      "color": "#525F79",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          1083,
+          3
+        ],
+        [
+          1101,
+          21
+        ],
+        [
+          1101,
+          719
+        ],
+        [
+          1083,
+          737
+        ],
+        [
+          21,
+          737
+        ],
+        [
+          3,
+          719
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "path": "M21,3L1083,3L1101,21L1101,719L1083,737L21,737L3,719L3,21Z",
+      "frame": {
+        "svg": "Frames/popup-info.svg",
+        "png": "Frames/popup-info.png",
+        "width": 1104,
+        "height": 740
+      },
+      "mask": {
+        "svg": "Frames/popup-info__mask.svg",
+        "png": "Frames/popup-info__mask.png",
+        "width": 1104,
+        "height": 740
+      },
+      "surface": {
+        "svg": "Assets/Panels/popup-info.svg",
+        "png": "Assets/Panels/popup-info.png",
+        "width": 1104,
+        "height": 740
+      },
+      "safeInset": 20,
+      "corner": 18,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M1101,21L1091,25.142L1091,714.858L1078.858,727L25.142,727L21,737",
+        "inset": 10,
+        "points": [
+          [
+            1101,
+            21
+          ],
+          [
+            1091,
+            25.142135623731008
+          ],
+          [
+            1091,
+            714.857864376269
+          ],
+          [
+            1078.857864376269,
+            727
+          ],
+          [
+            25.142135623730894,
+            727
+          ],
+          [
+            21,
+            737
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            1101,
+            21
+          ],
+          [
+            21,
+            737
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "popup-upgrade",
+      "width": 1000,
+      "height": 696,
+      "type": "panel",
+      "color": "#525F79",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          979,
+          3
+        ],
+        [
+          997,
+          21
+        ],
+        [
+          997,
+          675
+        ],
+        [
+          979,
+          693
+        ],
+        [
+          21,
+          693
+        ],
+        [
+          3,
+          675
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "path": "M21,3L979,3L997,21L997,675L979,693L21,693L3,675L3,21Z",
+      "frame": {
+        "svg": "Frames/popup-upgrade.svg",
+        "png": "Frames/popup-upgrade.png",
+        "width": 1000,
+        "height": 696
+      },
+      "mask": {
+        "svg": "Frames/popup-upgrade__mask.svg",
+        "png": "Frames/popup-upgrade__mask.png",
+        "width": 1000,
+        "height": 696
+      },
+      "surface": {
+        "svg": "Assets/Panels/popup-upgrade.svg",
+        "png": "Assets/Panels/popup-upgrade.png",
+        "width": 1000,
+        "height": 696
+      },
+      "safeInset": 20,
+      "corner": 18,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M997,21L987,25.142L987,670.858L974.858,683L25.142,683L21,693",
+        "inset": 10,
+        "points": [
+          [
+            997,
+            21
+          ],
+          [
+            987,
+            25.142135623730894
+          ],
+          [
+            987,
+            670.8578643762692
+          ],
+          [
+            974.8578643762692,
+            683
+          ],
+          [
+            25.142135623730894,
+            683
+          ],
+          [
+            21,
+            693
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            997,
+            21
+          ],
+          [
+            21,
+            693
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "popup-heal",
+      "width": 704,
+      "height": 564,
+      "type": "panel",
+      "color": "#525F79",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          683,
+          3
+        ],
+        [
+          701,
+          21
+        ],
+        [
+          701,
+          543
+        ],
+        [
+          683,
+          561
+        ],
+        [
+          21,
+          561
+        ],
+        [
+          3,
+          543
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "path": "M21,3L683,3L701,21L701,543L683,561L21,561L3,543L3,21Z",
+      "frame": {
+        "svg": "Frames/popup-heal.svg",
+        "png": "Frames/popup-heal.png",
+        "width": 704,
+        "height": 564
+      },
+      "mask": {
+        "svg": "Frames/popup-heal__mask.svg",
+        "png": "Frames/popup-heal__mask.png",
+        "width": 704,
+        "height": 564
+      },
+      "surface": {
+        "svg": "Assets/Panels/popup-heal.svg",
+        "png": "Assets/Panels/popup-heal.png",
+        "width": 704,
+        "height": 564
+      },
+      "safeInset": 20,
+      "corner": 18,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M701,21L691,25.142L691,538.858L678.858,551L25.142,551L21,561",
+        "inset": 10,
+        "points": [
+          [
+            701,
+            21
+          ],
+          [
+            691,
+            25.142135623730894
+          ],
+          [
+            691,
+            538.8578643762692
+          ],
+          [
+            678.8578643762692,
+            551
+          ],
+          [
+            25.142135623730894,
+            551
+          ],
+          [
+            21,
+            561
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            701,
+            21
+          ],
+          [
+            21,
+            561
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    },
+    {
+      "id": "popup-rename",
+      "width": 704,
+      "height": 424,
+      "type": "panel",
+      "color": "#525F79",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          683,
+          3
+        ],
+        [
+          701,
+          21
+        ],
+        [
+          701,
+          403
+        ],
+        [
+          683,
+          421
+        ],
+        [
+          21,
+          421
+        ],
+        [
+          3,
+          403
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "path": "M21,3L683,3L701,21L701,403L683,421L21,421L3,403L3,21Z",
+      "frame": {
+        "svg": "Frames/popup-rename.svg",
+        "png": "Frames/popup-rename.png",
+        "width": 704,
+        "height": 424
+      },
+      "mask": {
+        "svg": "Frames/popup-rename__mask.svg",
+        "png": "Frames/popup-rename__mask.png",
+        "width": 704,
+        "height": 424
+      },
+      "surface": {
+        "svg": "Assets/Panels/popup-rename.svg",
+        "png": "Assets/Panels/popup-rename.png",
+        "width": 704,
+        "height": 424
+      },
+      "safeInset": 20,
+      "corner": 18,
+      "skew": null,
+      "secondaryEdge": {
+        "path": "M701,21L691,25.142L691,398.858L678.858,411L25.142,411L21,421",
+        "inset": 10,
+        "points": [
+          [
+            701,
+            21
+          ],
+          [
+            691,
+            25.142135623730894
+          ],
+          [
+            691,
+            398.8578643762691
+          ],
+          [
+            678.857864376269,
+            411
+          ],
+          [
+            25.14213562373095,
+            411
+          ],
+          [
+            21,
+            421
+          ]
+        ],
+        "edges": [
+          "right",
+          "bottom"
+        ],
+        "outerConnections": [
+          [
+            701,
+            21
+          ],
+          [
+            21,
+            421
+          ]
+        ]
+      },
+      "layerOrder": [
+        "surface",
+        "embedded-motif",
+        "artwork",
+        "frame",
+        "badge-glyph-text-chevron",
+        "interaction"
+      ],
+      "picking": "frame/decoration false; interaction uses outer polygon"
+    }
+  ],
+  "playerAvatar": {
+    "editable": false,
+    "picking": false,
+    "frame": {
+      "svg": "Assets/Identity/avatar-frame.svg",
+      "png": "Assets/Identity/avatar-frame.png",
+      "width": 88,
+      "height": 88
+    },
+    "apertureMask": {
+      "svg": "Assets/Identity/avatar-aperture-mask.svg",
+      "png": "Assets/Identity/avatar-aperture-mask.png",
+      "width": 88,
+      "height": 88
+    },
+    "outerPolygon": [
+      [
+        13,
+        3
+      ],
+      [
+        75,
+        3
+      ],
+      [
+        85,
+        13
+      ],
+      [
+        85,
+        75
+      ],
+      [
+        75,
+        85
+      ],
+      [
+        13,
+        85
+      ],
+      [
+        3,
+        75
+      ],
+      [
+        3,
+        13
+      ]
+    ],
+    "aperturePolygon": [
+      [
+        22,
+        12
+      ],
+      [
+        66,
+        12
+      ],
+      [
+        76,
+        22
+      ],
+      [
+        76,
+        66
+      ],
+      [
+        66,
+        76
+      ],
+      [
+        22,
+        76
+      ],
+      [
+        12,
+        66
+      ],
+      [
+        12,
+        22
+      ]
+    ],
+    "imageRect": [
+      12,
+      12,
+      64,
+      64
+    ],
+    "source": "existing avatar provider; no picker or editing in Menu"
+  },
+  "skillStates": [
+    {
+      "id": "normal",
+      "svg": "States/skill-normal.svg",
+      "png": "States/skill-normal.png",
+      "width": 72,
+      "height": 72,
+      "usage": "one complete surface; original sprite keeps alpha/color, no whole-tree disabled opacity"
+    },
+    {
+      "id": "hover",
+      "svg": "States/skill-hover.svg",
+      "png": "States/skill-hover.png",
+      "width": 72,
+      "height": 72,
+      "usage": "one complete surface; original sprite keeps alpha/color, no whole-tree disabled opacity"
+    },
+    {
+      "id": "pressed",
+      "svg": "States/skill-pressed.svg",
+      "png": "States/skill-pressed.png",
+      "width": 72,
+      "height": 72,
+      "usage": "one complete surface; original sprite keeps alpha/color, no whole-tree disabled opacity"
+    },
+    {
+      "id": "focus",
+      "svg": "States/skill-focus.svg",
+      "png": "States/skill-focus.png",
+      "width": 72,
+      "height": 72,
+      "usage": "one complete surface; original sprite keeps alpha/color, no whole-tree disabled opacity"
+    },
+    {
+      "id": "selected",
+      "svg": "States/skill-selected.svg",
+      "png": "States/skill-selected.png",
+      "width": 72,
+      "height": 72,
+      "usage": "one complete surface; original sprite keeps alpha/color, no whole-tree disabled opacity"
+    },
+    {
+      "id": "selected+focus",
+      "svg": "States/skill-selected-focus.svg",
+      "png": "States/skill-selected-focus.png",
+      "width": 72,
+      "height": 72,
+      "usage": "one complete surface; original sprite keeps alpha/color, no whole-tree disabled opacity"
+    },
+    {
+      "id": "disabled",
+      "svg": "States/skill-disabled.svg",
+      "png": "States/skill-disabled.png",
+      "width": 72,
+      "height": 72,
+      "usage": "one complete surface; original sprite keeps alpha/color, no whole-tree disabled opacity"
+    }
+  ],
+  "tabDeck": {
+    "top": 12,
+    "left": 16,
+    "height": 48,
+    "bodyTop": 84,
+    "width": 272,
+    "step": 280,
+    "gap": 8,
+    "start": 16,
+    "fixedPanel": true
+  },
+  "icons": [
+    {
+      "id": "profile",
+      "svg": "Icons/profile.svg",
+      "png": "Icons/profile.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "quest",
+      "svg": "Icons/quest.svg",
+      "png": "Icons/quest.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "map",
+      "svg": "Icons/map.svg",
+      "png": "Icons/map.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "book",
+      "svg": "Icons/book.svg",
+      "png": "Icons/book.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "bag",
+      "svg": "Icons/bag.svg",
+      "png": "Icons/bag.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "companion",
+      "svg": "Icons/companion.svg",
+      "png": "Icons/companion.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "compass",
+      "svg": "Icons/compass.svg",
+      "png": "Icons/compass.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "settings",
+      "svg": "Icons/settings.svg",
+      "png": "Icons/settings.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "back",
+      "svg": "Icons/back.svg",
+      "png": "Icons/back.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "chevron",
+      "svg": "Icons/chevron.svg",
+      "png": "Icons/chevron.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "close",
+      "svg": "Icons/close.svg",
+      "png": "Icons/close.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "edit",
+      "svg": "Icons/edit.svg",
+      "png": "Icons/edit.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "favorite",
+      "svg": "Icons/favorite.svg",
+      "png": "Icons/favorite.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "skills",
+      "svg": "Icons/skills.svg",
+      "png": "Icons/skills.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "grow",
+      "svg": "Icons/grow.svg",
+      "png": "Icons/grow.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "heal",
+      "svg": "Icons/heal.svg",
+      "png": "Icons/heal.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "upgrade",
+      "svg": "Icons/upgrade.svg",
+      "png": "Icons/upgrade.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "evolve",
+      "svg": "Icons/evolve.svg",
+      "png": "Icons/evolve.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "swap",
+      "svg": "Icons/swap.svg",
+      "png": "Icons/swap.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "check",
+      "svg": "Icons/check.svg",
+      "png": "Icons/check.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "lock",
+      "svg": "Icons/lock.svg",
+      "png": "Icons/lock.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "warning",
+      "svg": "Icons/warning.svg",
+      "png": "Icons/warning.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "location",
+      "svg": "Icons/location.svg",
+      "png": "Icons/location.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "time",
+      "svg": "Icons/time.svg",
+      "png": "Icons/time.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "portrait",
+      "svg": "Icons/portrait.svg",
+      "png": "Icons/portrait.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "view3d",
+      "svg": "Icons/view3d.svg",
+      "png": "Icons/view3d.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "exp",
+      "svg": "Icons/exp.svg",
+      "png": "Icons/exp.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "hp",
+      "svg": "Icons/hp.svg",
+      "png": "Icons/hp.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "attack",
+      "svg": "Icons/attack.svg",
+      "png": "Icons/attack.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "special_attack",
+      "svg": "Icons/special_attack.svg",
+      "png": "Icons/special_attack.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "defense",
+      "svg": "Icons/defense.svg",
+      "png": "Icons/defense.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "special_defense",
+      "svg": "Icons/special_defense.svg",
+      "png": "Icons/special_defense.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "speed",
+      "svg": "Icons/speed.svg",
+      "png": "Icons/speed.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "crit_rate",
+      "svg": "Icons/crit_rate.svg",
+      "png": "Icons/crit_rate.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    },
+    {
+      "id": "crit_damage",
+      "svg": "Icons/crit_damage.svg",
+      "png": "Icons/crit_damage.png",
+      "width": 64,
+      "height": 66,
+      "style": "filled cutout + steel shadow + bronze relief",
+      "smallStyle": "same filled silhouette; no relief under30px"
+    }
+  ],
+  "navAssets": [
+    {
+      "id": "profile",
+      "svg": "Assets/NavTiles/profile.svg",
+      "png": "Assets/NavTiles/profile.png",
+      "width": 380,
+      "height": 120,
+      "contains": "surface/artwork/frame/end-cap only; no labels, badge or chevron",
+      "artworkRegion": [
+        160,
+        0,
+        176,
+        120
+      ],
+      "textSafe": [
+        99,
+        39,
+        133,
+        44
+      ],
+      "badge": [
+        25,
+        30,
+        60,
+        60
+      ],
+      "chevron": [
+        336,
+        0,
+        44,
+        120
+      ]
+    },
+    {
+      "id": "quest",
+      "svg": "Assets/NavTiles/quest.svg",
+      "png": "Assets/NavTiles/quest.png",
+      "width": 380,
+      "height": 120,
+      "contains": "surface/artwork/frame/end-cap only; no labels, badge or chevron",
+      "artworkRegion": [
+        160,
+        0,
+        176,
+        120
+      ],
+      "textSafe": [
+        99,
+        39,
+        133,
+        44
+      ],
+      "badge": [
+        25,
+        30,
+        60,
+        60
+      ],
+      "chevron": [
+        336,
+        0,
+        44,
+        120
+      ]
+    },
+    {
+      "id": "map",
+      "svg": "Assets/NavTiles/map.svg",
+      "png": "Assets/NavTiles/map.png",
+      "width": 380,
+      "height": 120,
+      "contains": "surface/artwork/frame/end-cap only; no labels, badge or chevron",
+      "artworkRegion": [
+        160,
+        0,
+        176,
+        120
+      ],
+      "textSafe": [
+        99,
+        39,
+        133,
+        44
+      ],
+      "badge": [
+        25,
+        30,
+        60,
+        60
+      ],
+      "chevron": [
+        336,
+        0,
+        44,
+        120
+      ]
+    },
+    {
+      "id": "book",
+      "svg": "Assets/NavTiles/book.svg",
+      "png": "Assets/NavTiles/book.png",
+      "width": 380,
+      "height": 120,
+      "contains": "surface/artwork/frame/end-cap only; no labels, badge or chevron",
+      "artworkRegion": [
+        160,
+        0,
+        176,
+        120
+      ],
+      "textSafe": [
+        99,
+        39,
+        133,
+        44
+      ],
+      "badge": [
+        25,
+        30,
+        60,
+        60
+      ],
+      "chevron": [
+        336,
+        0,
+        44,
+        120
+      ]
+    }
+  ],
+  "motifs": [
+    {
+      "id": "shell",
+      "density": "shell",
+      "alpha": 0.19,
+      "materialOpacity": 0.13,
+      "center": "engraving fades to zero under labels",
+      "svg": "Assets/Motifs/shell.svg",
+      "png": "Assets/Motifs/shell.png",
+      "width": 824,
+      "height": 844
+    },
+    {
+      "id": "content",
+      "density": "content",
+      "alpha": 0.105,
+      "materialOpacity": 0.1,
+      "center": "engraving fades to zero under labels",
+      "svg": "Assets/Motifs/content.svg",
+      "png": "Assets/Motifs/content.png",
+      "width": 812,
+      "height": 172
+    },
+    {
+      "id": "header",
+      "density": "header",
+      "alpha": 0.18,
+      "materialOpacity": 0.12,
+      "center": "engraving fades to zero under labels",
+      "svg": "Assets/Motifs/header.svg",
+      "png": "Assets/Motifs/header.png",
+      "width": 644,
+      "height": 64
+    },
+    {
+      "id": "button",
+      "density": "button",
+      "alpha": 0.27,
+      "materialOpacity": 0.14,
+      "center": "engraving fades to zero under labels",
+      "svg": "Assets/Motifs/button.svg",
+      "png": "Assets/Motifs/button.png",
+      "width": 260,
+      "height": 52
+    },
+    {
+      "id": "button-light",
+      "density": "button",
+      "alpha": 0.27,
+      "materialOpacity": 0.14,
+      "center": "engraving fades to zero under labels",
+      "svg": "Assets/Motifs/button-light.svg",
+      "png": "Assets/Motifs/button-light.png",
+      "width": 380,
+      "height": 80
+    }
+  ],
+  "states": [
+    {
+      "id": "normal",
+      "svg": "States/action-normal.svg",
+      "png": "States/action-normal.png",
+      "width": 260,
+      "height": 52,
+      "usage": "replace complete background; caption does not move/change font"
+    },
+    {
+      "id": "hover",
+      "svg": "States/action-hover.svg",
+      "png": "States/action-hover.png",
+      "width": 260,
+      "height": 52,
+      "usage": "replace complete background; caption does not move/change font"
+    },
+    {
+      "id": "pressed",
+      "svg": "States/action-pressed.svg",
+      "png": "States/action-pressed.png",
+      "width": 260,
+      "height": 52,
+      "usage": "replace complete background; caption does not move/change font"
+    },
+    {
+      "id": "focus",
+      "svg": "States/action-focus.svg",
+      "png": "States/action-focus.png",
+      "width": 260,
+      "height": 52,
+      "usage": "replace complete background; caption does not move/change font"
+    },
+    {
+      "id": "selected",
+      "svg": "States/action-selected.svg",
+      "png": "States/action-selected.png",
+      "width": 260,
+      "height": 52,
+      "usage": "replace complete background; caption does not move/change font"
+    },
+    {
+      "id": "selected+focus",
+      "svg": "States/action-selected-focus.svg",
+      "png": "States/action-selected-focus.png",
+      "width": 260,
+      "height": 52,
+      "usage": "replace complete background; caption does not move/change font"
+    },
+    {
+      "id": "disabled",
+      "svg": "States/action-disabled.svg",
+      "png": "States/action-disabled.png",
+      "width": 260,
+      "height": 52,
+      "usage": "replace complete background; caption does not move/change font"
+    }
+  ],
+  "navOverlays": [
+    {
+      "id": "normal",
+      "svg": "States/nav-normal-overlay.svg",
+      "png": "States/nav-normal-overlay.png",
+      "width": 380,
+      "height": 120,
+      "usage": "decoration only, no whole-art wash; disabled uses standalone text/material tokens"
+    },
+    {
+      "id": "hover",
+      "svg": "States/nav-hover-overlay.svg",
+      "png": "States/nav-hover-overlay.png",
+      "width": 380,
+      "height": 120,
+      "usage": "decoration only, no whole-art wash; disabled uses standalone text/material tokens"
+    },
+    {
+      "id": "pressed",
+      "svg": "States/nav-pressed-overlay.svg",
+      "png": "States/nav-pressed-overlay.png",
+      "width": 380,
+      "height": 120,
+      "usage": "decoration only, no whole-art wash; disabled uses standalone text/material tokens"
+    },
+    {
+      "id": "focus",
+      "svg": "States/nav-focus-overlay.svg",
+      "png": "States/nav-focus-overlay.png",
+      "width": 380,
+      "height": 120,
+      "usage": "decoration only, no whole-art wash; disabled uses standalone text/material tokens"
+    },
+    {
+      "id": "selected",
+      "svg": "States/nav-selected-overlay.svg",
+      "png": "States/nav-selected-overlay.png",
+      "width": 380,
+      "height": 120,
+      "usage": "decoration only, no whole-art wash; disabled uses standalone text/material tokens"
+    },
+    {
+      "id": "selected+focus",
+      "svg": "States/nav-selected-focus-overlay.svg",
+      "png": "States/nav-selected-focus-overlay.png",
+      "width": 380,
+      "height": 120,
+      "usage": "decoration only, no whole-art wash; disabled uses standalone text/material tokens"
+    },
+    {
+      "id": "disabled",
+      "svg": "States/nav-disabled-overlay.svg",
+      "png": "States/nav-disabled-overlay.png",
+      "width": 380,
+      "height": 120,
+      "usage": "decoration only, no whole-art wash; disabled uses standalone text/material tokens"
+    }
+  ],
+  "boxEmptyReference": "Specs/box-empty-reference.json",
+  "portraitInsertion": {
+    "default": "2D",
+    "source": "user-supplied large portrait, not slot avatar",
+    "region": [
+      32,
+      112,
+      648,
+      600
+    ],
+    "rightOverflowMax": 48,
+    "featherPixels": 32,
+    "textAbovePortrait": true
+  },
+  "illustrations": [
+    {
+      "key": "material",
+      "file": "Assets/Art/steel-enamel-r2.png",
+      "nativeSize": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "key": "profile",
+      "file": "Assets/Art/scene-profile-r2.png",
+      "nativeSize": [
+        2172,
+        724
+      ]
+    },
+    {
+      "key": "quest",
+      "file": "Assets/Art/scene-quest-r2.png",
+      "nativeSize": [
+        2172,
+        724
+      ]
+    },
+    {
+      "key": "map",
+      "file": "Assets/Art/scene-map-r2.png",
+      "nativeSize": [
+        2172,
+        724
+      ]
+    },
+    {
+      "key": "book",
+      "file": "Assets/Art/scene-book-r2.png",
+      "nativeSize": [
+        2172,
+        724
+      ]
+    },
+    {
+      "key": "bag",
+      "file": "Assets/Art/scene-bag-r2.png",
+      "nativeSize": [
+        1881,
+        836
+      ]
+    },
+    {
+      "key": "stage",
+      "file": "Assets/Art/scene-stage-r2.png",
+      "nativeSize": [
+        1672,
+        941
+      ]
+    }
+  ],
+  "preserved": [
+    {
+      "file": "Assets/Preserved/item-heal-potion.png",
+      "sha256": "ce5e7853290d09dec8f95fcf0381ab4cf3038421d21af97a6c38eb26a414a0eb",
+      "rule": "reuse original color/alpha; no recolor"
+    },
+    {
+      "file": "Assets/Preserved/pet-avatar-original.png",
+      "sha256": "795d93204ec65f5d71470909a67208fdfd6cb6d6d65e058f099af8fe6dcf26b0",
+      "rule": "reuse original color/alpha; no recolor"
+    },
+    {
+      "file": "Assets/Preserved/skill-bite-arrow.png",
+      "sha256": "22c678c92936cf7291a59a288c37a01f9f1f6ed0d173996a9bf416b0dbf7e733",
+      "rule": "reuse original color/alpha; no recolor"
+    },
+    {
+      "file": "Assets/Preserved/skill-blast-axe.png",
+      "sha256": "cf3b20c09c6ea1152c2e9de1a878a555050f51a8bb03ec56d11a393ac2b97668",
+      "rule": "reuse original color/alpha; no recolor"
+    }
+  ],
+  "sceneRules": "AI scenes contain no frame/UI labels; full scene within tile, no forced square thumbnail",
+  "uiSystems": {
+    "menu": "uGUI existing system",
+    "companion": "UI Toolkit existing system"
+  },
+  "engineStatus": "not implemented or tested for R3",
+  "productionStatus": "design concept assets only",
+  "interactionAssets": "Specs/interaction-assets.json",
+  "framesPolicy": "single fixed inspector, no activeTab-dependent geometry",
+  "statePolicy": {
+    "hoverMs": 140,
+    "pressedMs": 80,
+    "pressedInkAlpha": 0.08,
+    "keyboardOnlyBrackets": true,
+    "pointerFocusLogical": true,
+    "selectedIndependent": true,
+    "disabledWholeTreeOpacity": false
+  },
+  "dock": {
+    "slot": [
+      210,
+      112
+    ],
+    "cover": true,
+    "bottomStrip": [
+      0,
+      86,
+      210,
+      26
+    ],
+    "alpha": 0.18,
+    "localSupportAlpha": 0.84,
+    "glyphAlpha": 1,
+    "sourceColor": "#CCAD83",
+    "targetColor": "#76A6C3",
+    "persistentViewIdentity": true
+  },
+  "fonts": {
+    "heading": "Assets/Fonts/NotoSerif-Regular.ttf",
+    "body": "Assets/Fonts/LiberationSans.ttf",
+    "note": "Font sources copied from project. Fixed Bold rendering and fallback need runtime verification; not a new font recommendation."
+  }
+}

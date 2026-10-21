@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="slot" class="gui-slot">
+        <ui:VisualElement name="slot-portrait" class="gui-slot-portrait" picking-mode="Ignore" />
+        <ui:VisualElement name="slot-favorite" class="gui-icon gui-icon--star gui-slot-favorite" picking-mode="Ignore" />
+        <ui:Label name="slot-count" class="gui-slot-count" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>
