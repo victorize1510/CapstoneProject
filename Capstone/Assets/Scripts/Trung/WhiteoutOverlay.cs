@@ -40,6 +40,10 @@ public class WhiteoutOverlay
             overlayGO.transform.localPosition = Vector3.zero;
             overlayGO.transform.localRotation = Quaternion.identity;
             overlayGO.transform.localScale = Vector3.one;
+            // GameObject mới tạo KHÔNG tự thừa hưởng layer của cha — phải gán tay, nếu không
+            // camera nào đó có Culling Mask giới hạn (VD: Evolution Scene) sẽ không thấy overlay
+            // này, làm con thú không hiện được hiệu ứng trắng xóa dù logic vẫn chạy đúng.
+            overlayGO.layer = srcRenderer.gameObject.layer;
 
             Renderer overlayRenderer;
 

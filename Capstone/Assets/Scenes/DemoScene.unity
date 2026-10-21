@@ -22360,7 +22360,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2105685211}
   - component: {fileID: 2105685210}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: DragonEvolution
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -22380,18 +22380,22 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EvolutionController
   testEvolveKey: 19
+  useEvolutionScene: 1
+  evolutionSceneName: EvolutionScene
+  gameplayCamera: {fileID: 1372618691}
+  evolutionOnlyLayerName: Evolution
   stages:
   - {fileID: 955717841895258307, guid: f8b62f332c9589e4e847b449066a2967, type: 3}
   - {fileID: 1464745901521549467, guid: 3b2bc9ea12bebd34db0ea2d87f964288, type: 3}
   - {fileID: 3319832262097768165, guid: 5aa274becdffa9c46b69f1cf98445a50, type: 3}
   holdBeforeSwap: 0
   whiteOverlayMaterial: {fileID: 2100000, guid: 6aa8d41eaab07fe47b792e7bfad3b5a4, type: 2}
-  glowStartDelay: 1
-  whiteoutFadeInDuration: 3
-  whiteoutFadeOutDuration: 3
+  glowStartDelay: 0.3
+  whiteoutFadeInDuration: 4
+  whiteoutFadeOutDuration: 4
   whiteoutEmissionIntensity: 10
-  maxSpinSpeed: 1500
-  spinUpDuration: 3
+  maxSpinSpeed: 1000
+  spinUpDuration: 5
   spinUpCurve:
     serializedVersion: 2
     m_Curve:
@@ -22416,7 +22420,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  spinDownDuration: 3
+  spinDownDuration: 5
   spinDownCurve:
     serializedVersion: 2
     m_Curve:
@@ -22443,6 +22447,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   groundRingVfxPrefab: {fileID: 100014, guid: 3aa143f52a2c20e45bf4bc03a7e127fd, type: 3}
   groundRingYOffset: 0
+  groundRingScale: 0.3
   growDuration: 0.2
   growCurve:
     serializedVersion: 2
@@ -22470,6 +22475,14 @@ MonoBehaviour:
     m_RotationOrder: 4
   idleStateName: Idle
   disableDuringEvolution: []
+  showStartText: 1
+  startMessageFormat: "{0} \u0111ang b\u1EAFt \u0111\u1EA7u ti\u1EBFn h\xF3a!"
+  startMessageDisplayTime: 1.3
+  showCongratsText: 1
+  congratsMessageFormat: "Ch\xFAc m\u1EEBng! {0} \u0111\xE3 ti\u1EBFn h\xF3a th\xE0nh
+    {1}!"
+  congratsMinDisplayTime: 1
+  congratsContinueKey: 1
 --- !u!4 &2105685211
 Transform:
   m_ObjectHideFlags: 0
@@ -22478,13 +22491,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2105685209}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 417.88654, y: 7.49, z: 187.44}
+  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
+  m_LocalPosition: {x: 414.84, y: 7.49, z: 192.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
 --- !u!4 &2107613249 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4569873704234660, guid: 3c3b0773e182ad847a706394ac5af117, type: 3}
