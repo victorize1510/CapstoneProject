@@ -13196,44 +13196,54 @@ MonoBehaviour:
   - occupied: 1
     selected: 1
     summoned: 1
+    favorite: 0
     displayName: Starter Pet
     level: 18
     icon: {fileID: 0}
   - occupied: 0
     selected: 0
     summoned: 0
+    favorite: 0
     displayName: 
     level: 0
     icon: {fileID: 0}
   - occupied: 0
     selected: 0
     summoned: 0
+    favorite: 0
     displayName: 
     level: 0
     icon: {fileID: 0}
   - occupied: 0
     selected: 0
     summoned: 0
+    favorite: 0
     displayName: 
     level: 0
     icon: {fileID: 0}
   - occupied: 0
     selected: 0
     summoned: 0
+    favorite: 0
     displayName: 
     level: 0
     icon: {fileID: 0}
   - occupied: 0
     selected: 0
     summoned: 0
+    favorite: 0
     displayName: 
     level: 0
     icon: {fileID: 0}
   skills:
-  - unlocked: 1
+  - skillId: 
+    legacySkillIds: []
+    unlocked: 1
     usable: 1
     displayName: Skill 1
     skillLevel: 1
+    requiredPetLevel: 0
+    element: 0
     description: 
     icon: {fileID: 0}
     animatorStates: []
@@ -13243,10 +13253,14 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 0
-  - unlocked: 1
+  - skillId: 
+    legacySkillIds: []
+    unlocked: 1
     usable: 1
     displayName: Skill 2
     skillLevel: 1
+    requiredPetLevel: 0
+    element: 0
     description: 
     icon: {fileID: 0}
     animatorStates: []
@@ -13256,10 +13270,14 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 0
-  - unlocked: 1
+  - skillId: 
+    legacySkillIds: []
+    unlocked: 1
     usable: 1
     displayName: Skill 3
     skillLevel: 1
+    requiredPetLevel: 0
+    element: 0
     description: 
     icon: {fileID: 0}
     animatorStates: []
@@ -13269,10 +13287,14 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 0
-  - unlocked: 1
+  - skillId: 
+    legacySkillIds: []
+    unlocked: 1
     usable: 1
     displayName: Skill 4
     skillLevel: 1
+    requiredPetLevel: 0
+    element: 0
     description: 
     icon: {fileID: 0}
     animatorStates: []
@@ -13288,6 +13310,7 @@ MonoBehaviour:
   selectedPetMaxHealth: 2450
   selectedPetEnergy: 350
   selectedPetMaxEnergy: 850
+  cooldownHudRefreshInterval: 0.05
 --- !u!114 &541011724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13341,6 +13364,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetCommandHudProvider
   petCommandInput: {fileID: 1252813985}
+  saveController: {fileID: 0}
   autoFindPetCommandInput: 1
   searchDataInChildren: 1
   changeCheckInterval: 0.2
@@ -13574,6 +13598,7 @@ MonoBehaviour:
   mapSystem: {fileID: 546535567}
   mapBinder: {fileID: 0}
   mapInput: {fileID: 0}
+  gameMenu: {fileID: 0}
   openMapWhenRequested: 1
 --- !u!114 &546535561
 MonoBehaviour:
@@ -28854,12 +28879,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterInventoryController
   document: {fileID: 1211009753}
-  rowTemplate: {fileID: 9197481963319205126, guid: b34c15ea321a390489354b9060dfa484, type: 3}
   adapter: {fileID: 1211009755}
+  currencyWallet: {fileID: 0}
   autoInstallInputController: 1
   allowPlaceholderActions: 0
   autoInstallPickupActionFeedback: 1
   autoInstallQuestPanelController: 1
+  autoInstallPetPartyPanelController: 1
+  autoInstallPetBoxPanelController: 1
+  autoInstallPetSkillsPanelController: 1
+  autoInstallPetLevelUpPanelController: 1
+  autoInstallPetHealPanelController: 1
+  autoInstallPetEvolutionPanelController: 1
+  autoInstallPetReleasePanelController: 1
 --- !u!114 &1211009758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -30128,7 +30160,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8606331901405872993, guid: af66125fc77de28428e08afd4fd94286, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -93.88
+      value: -92.808
       objectReference: {fileID: 0}
     - target: {fileID: 8606331901405872993, guid: af66125fc77de28428e08afd4fd94286, type: 3}
       propertyPath: m_LocalPosition.z
@@ -37991,6 +38023,8 @@ MonoBehaviour:
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  navPathRefreshInterval: 0.12
+  navDestinationThreshold: 0.15
   attackRange: 1.45
   attackApproachDistance: 0.65
   attackReachPadding: 0.18
@@ -38007,6 +38041,7 @@ MonoBehaviour:
   spawnDuration: 1.1
   keepUndergroundNearOwner: 1
   summonOnCommand: 0
+  undergroundFollowThreshold: 0.25
   roamAroundOwner: 1
   roamMinRadius: 1.8
   roamMaxRadius: 4.2
@@ -38061,12 +38096,18 @@ MonoBehaviour:
   maxHealth: 0
   energy: 0
   maxEnergy: 0
+  equippedSkillSlotCount: 4
   usePrototypeSkillsWhenEmpty: 1
   skills:
-  - unlocked: 1
+  - skillId: bite
+    legacySkillIds:
+    - bite
+    unlocked: 1
     usable: 1
     displayName: Bite
     skillLevel: 1
+    requiredPetLevel: 1
+    element: 1
     description: Close-range bite attack.
     icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
     animatorStates:
@@ -38078,10 +38119,15 @@ MonoBehaviour:
     recoverySeconds: 0.3
     cooldownPercent: 0
     cooldownSeconds: 1.2
-  - unlocked: 1
+  - skillId: blast
+    legacySkillIds:
+    - blast
+    unlocked: 1
     usable: 1
     displayName: Blast
     skillLevel: 1
+    requiredPetLevel: 1
+    element: 8
     description: Short magic blast.
     icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
     animatorStates:
@@ -38093,10 +38139,15 @@ MonoBehaviour:
     recoverySeconds: 0.3
     cooldownPercent: 0
     cooldownSeconds: 3.8
-  - unlocked: 1
+  - skillId: projectile
+    legacySkillIds:
+    - projectile
+    unlocked: 1
     usable: 1
     displayName: Projectile
     skillLevel: 1
+    requiredPetLevel: 1
+    element: 2
     description: Ranged projectile attack.
     icon: {fileID: 0}
     animatorStates:
@@ -38108,10 +38159,95 @@ MonoBehaviour:
     recoverySeconds: 0.3
     cooldownPercent: 0
     cooldownSeconds: 3
-  - unlocked: 1
+  - skillId: wing strike
+    legacySkillIds:
+    - wing strike
+    unlocked: 1
     usable: 1
     displayName: Wing Strike
     skillLevel: 1
+    requiredPetLevel: 1
+    element: 4
+    description: Wing strike attack.
+    icon: {fileID: 0}
+    animatorStates:
+    - Wing Attack
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 4.2
+  learnedSkills:
+  - skillId: bite
+    legacySkillIds:
+    - bite
+    unlocked: 1
+    usable: 1
+    displayName: Bite
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 1
+    description: Close-range bite attack.
+    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
+    animatorStates:
+    - Bite Attack
+    - Bite Attack Low
+    animationDuration: 0.8
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 1.2
+  - skillId: blast
+    legacySkillIds:
+    - blast
+    unlocked: 1
+    usable: 1
+    displayName: Blast
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 8
+    description: Short magic blast.
+    icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
+    animatorStates:
+    - Blast Attack
+    - Cast Spell
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 3.8
+  - skillId: projectile
+    legacySkillIds:
+    - projectile
+    unlocked: 1
+    usable: 1
+    displayName: Projectile
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 2
+    description: Ranged projectile attack.
+    icon: {fileID: 0}
+    animatorStates:
+    - Projectile Attack
+    - Projectile Attack Low
+    animationDuration: 0.95
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 3
+  - skillId: wing strike
+    legacySkillIds:
+    - wing strike
+    unlocked: 1
+    usable: 1
+    displayName: Wing Strike
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 4
     description: Wing strike attack.
     icon: {fileID: 0}
     animatorStates:
@@ -38127,6 +38263,7 @@ MonoBehaviour:
   autoFindAnimationReferences: 1
   stopMovementDuringSkill: 1
   faceTargetDuringSkill: 1
+  cooldownHudRefreshInterval: 0.05
 --- !u!114 &1498933261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -38137,15 +38274,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5486cfda78ec2cc4293deba51edcff3f, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetCollectionMetadata
   petId: auto-QXNzZXRzL1NjZW5lcy9UZXN0Q2hhci51bml0eTpEcmFnb24gRHVzazo0
+  definitionId: 
   species: Dragon Dusk
   gender: Unknown
   element: 9
   rarity: 3
-  nickname:
+  nickname: 
   favorite: 0
+  released: 0
   maxLevel: 60
   experience: 0
   experienceToNextLevel: 1000
@@ -38155,7 +38294,7 @@ MonoBehaviour:
   criticalRate: 12
   criticalDamagePercent: 150
   obtainedOrder: 1
-  captureDate:
+  captureDate: 
   captureLocation: TestChar
   trainerName: Player
   personality: Curious
@@ -38177,7 +38316,7 @@ MonoBehaviour:
     targetVisualPrefab: {fileID: 0}
     trigger: 0
     requiredLevel: 2
-    requiredItemId:
+    requiredItemId: 
     requiredItemQuantity: 1
     maxHealthMultiplier: 1.15
     attackBonus: 12
@@ -38194,19 +38333,20 @@ MonoBehaviour:
     targetVisualPrefab: {fileID: 0}
     trigger: 0
     requiredLevel: 4
-    requiredItemId:
+    requiredItemId: 
     requiredItemQuantity: 1
     maxHealthMultiplier: 1.2
     attackBonus: 18
     defenseBonus: 12
     speedBonus: 8
+  resourceInvestments: []
   hasNextEvolution: 0
-  nextEvolutionName:
+  nextEvolutionName: 
   nextEvolutionIcon: {fileID: 0}
   nextEvolutionDiscovered: 0
   evolutionLevelRequirement: 0
   evolutionFriendshipRequirement: 0
-  extraEvolutionRequirement:
+  extraEvolutionRequirement: 
 --- !u!4 &1500734543 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4627547270634096, guid: 93a135b5c8137e5468cb55d97a43df67, type: 3}
@@ -42968,29 +43108,6 @@ MonoBehaviour:
   autoCompleteDelay: 0.65
   questEventBus: {fileID: 0}
   requirementProviderBehaviours: []
---- !u!114 &1763292795
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1763292792}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8fd1c7980b5f48b5816425e625061b83, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.SaveSystem.PlayerSaveController
-  questManager: {fileID: 1763292793}
-  inventoryAdapter: {fileID: 1211009755}
-  petCommandInput: {fileID: 1252813985}
-  petBoxProvider: {fileID: 0}
-  autoFindReferences: 1
-  slotId: main
-  loadOnStart: 1
-  saveOnApplicationQuit: 1
-  saveOnApplicationPause: 1
-  saveOnDisable: 0
-  migrateLegacyQuestSave: 1
 --- !u!4 &1763292794
 Transform:
   m_ObjectHideFlags: 0
@@ -43006,6 +43123,40 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1763292795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1763292792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8fd1c7980b5f48b5816425e625061b83, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.SaveSystem.PlayerSaveController
+  questManager: {fileID: 1763292793}
+  inventoryAdapter: {fileID: 1211009755}
+  currencyWallet: {fileID: 0}
+  petCommandInput: {fileID: 1252813985}
+  petBoxProvider: {fileID: 0}
+  profileProvider: {fileID: 0}
+  achievementManager: {fileID: 0}
+  questRewardService: {fileID: 0}
+  petCaptureCoordinator: {fileID: 0}
+  petPrefabCatalog: {fileID: 0}
+  restoredPetRoot: {fileID: 0}
+  autoFindReferences: 1
+  autoCreateCurrencyWallet: 1
+  autoCreateQuestRewardService: 1
+  autoCreatePetCaptureCoordinator: 1
+  slotId: main
+  loadOnStart: 1
+  saveOnApplicationQuit: 1
+  saveOnApplicationPause: 1
+  saveOnDisable: 0
+  migrateLegacyQuestSave: 1
+  autoSaveDelay: 0.35
 --- !u!1 &1763389505
 GameObject:
   m_ObjectHideFlags: 0
@@ -43108,6 +43259,10 @@ PrefabInstance:
     - target: {fileID: 2705976317681309978, guid: e20348c64b713e5439f086b914bc2d83, type: 3}
       propertyPath: m_SizeDelta.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2705976317796411926, guid: e20348c64b713e5439f086b914bc2d83, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2705976318376085440, guid: e20348c64b713e5439f086b914bc2d83, type: 3}
       propertyPath: m_Name
@@ -43224,6 +43379,10 @@ PrefabInstance:
     - target: {fileID: 2705976318376085443, guid: e20348c64b713e5439f086b914bc2d83, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2705976318526057541, guid: e20348c64b713e5439f086b914bc2d83, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -47668,6 +47827,7 @@ MonoBehaviour:
   inventory: {fileID: 1211009757}
   inventoryInput: {fileID: 1211009759}
   mapInput: {fileID: 546535562}
+  mapSystem: {fileID: 0}
   profile: {fileID: 1988912895}
   controlLock: {fileID: 1211009758}
   menuKey: 9
@@ -47739,6 +47899,7 @@ MonoBehaviour:
   totalBattles: -1
   questManager: {fileID: 1763292793}
   achievementManager: {fileID: 1988912897}
+  saveController: {fileID: 0}
 --- !u!114 &1988912897
 MonoBehaviour:
   m_ObjectHideFlags: 0
