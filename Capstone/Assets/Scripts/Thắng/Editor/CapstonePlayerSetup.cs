@@ -78,7 +78,8 @@ public static class CapstonePlayerSetup
 
     public static void CreateVexaBasicPlayer()
     {
-        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(GetAssetPath(VexaPrefabGuid));
+        GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(GirlFinalPlayerSetup.PlayerPrefabPath)
+            ?? AssetDatabase.LoadAssetAtPath<GameObject>(GetAssetPath(VexaPrefabGuid));
         if (prefab == null)
         {
             EditorUtility.DisplayDialog("Vexa prefab not found", "Cannot find Vexa prefab by GUID:\n" + VexaPrefabGuid, "OK");
@@ -92,12 +93,12 @@ public static class CapstonePlayerSetup
             return;
         }
 
-        Undo.RegisterCreatedObjectUndo(player, "Create Vexa Basic Player");
+        Undo.RegisterCreatedObjectUndo(player, "Create Player");
         player.name = "Player";
         player.transform.position = Vector3.zero;
         player.transform.rotation = Quaternion.identity;
 
-        SetupPlayer(player);
+        GirlFinalPlayerSetup.ConfigurePlayer(player, AssetDatabase.LoadAssetAtPath<AnimatorController>(GirlFinalPlayerSetup.BoyControllerPath));
         EnsureTestGround();
         SetupCamera(player.transform);
 
@@ -210,6 +211,9 @@ public static class CapstonePlayerSetup
             return false;
         }
 
+        if (GirlFinalPlayerSetup.IsConfiguredPlayer(movement.gameObject))
+            return GirlFinalPlayerSetup.NeedsSetup(movement);
+
         Transform animatorTarget = FindChildRecursive(movement.transform, "Armature");
         if (animatorTarget == null)
         {
@@ -287,6 +291,11 @@ public static class CapstonePlayerSetup
 
     private static void SetupPlayer(GameObject player)
     {
+        if (GirlFinalPlayerSetup.IsConfiguredPlayer(player))
+        {
+            GirlFinalPlayerSetup.ConfigurePlayer(player, AssetDatabase.LoadAssetAtPath<AnimatorController>(GirlFinalPlayerSetup.BoyControllerPath));
+            return;
+        }
         RuntimeAnimatorController controller = EnsureAnimatorController(false);
         Transform animatorTarget = FindChildRecursive(player.transform, "Armature");
         if (animatorTarget == null)
@@ -383,7 +392,7 @@ public static class CapstonePlayerSetup
             new Keyframe(1f, 0f));
         movement.floatFallDelay = 0.18f;
         movement.floatFallVerticalSpeed = -3f;
-        movement.rollKey = KeyCode.Q;
+        movement.rollKey = KeyCode.None;
         movement.idleRollDuration = 0.78f;
         movement.sprintRollDuration = 0.55f;
         movement.idleRollDistance = 5.2f;
@@ -400,7 +409,7 @@ public static class CapstonePlayerSetup
         movement.enableAimMode = false;
         movement.aimMouseButton = 1;
         movement.rightMouseButtonThrows = false;
-        movement.requirePickupTarget = false;
+        movement.SetPickupTarget(null);
         movement.idleSadDelay = 5f;
         movement.battleRelaxDelay = 5f;
         movement.jumpDuration = 0.95f;
@@ -468,6 +477,12 @@ public static class CapstonePlayerSetup
             cameraObject.tag = "MainCamera";
             camera = cameraObject.AddComponent<Camera>();
             cameraObject.AddComponent<AudioListener>();
+        }
+
+        if (camera.gameObject.scene.path == TestCharFreeLookSetup.ScenePath)
+        {
+            TestCharFreeLookSetup.Ensure(camera, target);
+            return;
         }
 
         Undo.RecordObject(camera.transform, "Setup camera position");

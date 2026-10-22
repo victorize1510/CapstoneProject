@@ -35,7 +35,11 @@ namespace Capstone.Game.SaveSystem.Editor {
                 fixtures = Path.Combine(Path.GetTempPath(), "CapstoneSaveValidation", Guid.NewGuid().ToString("N")) };
             Test("Missing save does not write", Missing);
             Test("Full snapshot save-load-edit-save-load", FullRoundtrip);
-            for (int i = 1; i <= 5; i++) { int version = i; Test("Migrate v" + version + " and preserve original archive", () => Migration(version)); }
+            for (int i = 1; i < PlayerSaveData.CurrentVersion; i++) { int version = i; Test("Migrate v" + version + " and preserve original archive", () => Migration(version)); }
+            Test("Sparse Box slots survive save migration", BoxSlotMigration);
+            Test("Box slot operations preserve holes and capacity", BoxSlotOperations);
+            Test("Box panel reveals and identifies a pet moved to a later page", BoxPanelMovedPetVisibility);
+            Test("Migrate v6 magic stats and preserve explicit zero", MagicStatsMigration);
             Test("Missing sections remain absent", MissingSections);
             Test("Legacy nested defaults and missing customization", NestedDefaults);
             Test("Corrupt primary recovers backup without poisoning it", BackupRecovery);
@@ -53,7 +57,17 @@ namespace Capstone.Game.SaveSystem.Editor {
             Test("Explicit empty skill loadout stays empty", EmptySkills);
             Test("Skill legacy alias migrates to stable ID", SkillAlias);
             Test("Missing skill rejected without mutation", MissingSkill);
+            Test("Battle experience curve, growth and level migration", BattleExperienceProgression);
+            Test("Prototype HP and critical defaults", PrototypeCombatDefaults);
+            Test("Pet score, health and equipped critical bonuses", PetStatScores);
+            Test("IV Nature EV limits and save roundtrip", PetGeneticsAndEffort);
+            Test("Scaled pet HP, legacy profiles and display normalization", PetHealthScaling);
+            Test("Dragon form codes resolve profiles and legacy prefab IDs", DragonFormCodes);
+            Test("v10 pet HP migration preserves genetics and injury", PetHealthVersionTenMigration);
+            Test("Legacy pet stats migrate with health fraction", LegacyPetStatsMigration);
+            Test("Combat damage reads current pet attack stat", CombatDamageUsesCurrentStats);
             Test("Quest claimed rewards survive repeated load", QuestRoundtrip);
+            Test("Quest reward retries after freeing inventory without duplication", QuestRewardRetry);
             Test("Unknown quest rejected without clearing state", MissingQuest);
             Test("Controller save-load-edit-save-load", ControllerRoundtrip);
             Test("Controller corrupt load protects file from save", ControllerCorrupt);
@@ -63,6 +77,11 @@ namespace Capstone.Game.SaveSystem.Editor {
             Test("Party Box nickname favorite stats integrated roundtrip", RosterRoundtrip);
             Test("Missing pet catalog blocks load before applying inventory", MissingPet);
             Test("Missing pet customization survives disk roundtrip", MissingCustomization);
+            Test("PETS provider forwards stats and metadata changes across roster lifecycle", PetHudNotifications);
+            Test("Pet initialization preserves an active pet in a later slot", PetSlotInitialization);
+            Test("Evolution failure feedback survives refresh and preserves save", EvolutionFailureFeedback);
+            string sceneAuditPath = Argument("-sceneAuditReport");
+            if (!string.IsNullOrEmpty(sceneAuditPath)) Test("TestChar scene and nested prefab references resolve", () => AuditTestChar(sceneAuditPath));
             string path = Argument("-saveValidationReport") ?? Path.Combine(report.fixtures, "report.json");
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));
             File.WriteAllText(path, JsonUtility.ToJson(report, true));
@@ -124,11 +143,19 @@ namespace Capstone.Game.SaveSystem.Editor {
                 currency = new CurrencySaveData { captured = true, gold = 345 },
                 profile = new PlayerProfileSaveData { captured = true, playerId = "player-one", displayName = "Tester", playTimeSeconds = 123456, capturedSpeciesIds = new List<string> { "leaf" } },
                 achievements = new AchievementSaveData { captured = true, unlockedAchievementIds = new List<string> { "first-catch" }, metrics = new List<AchievementMetricSaveData> { new AchievementMetricSaveData { metricId = "capture", progress = 4 } } },
-                pets = new PetRosterSaveData { captured = true, activePetId = "p1", partyPetIds = new List<string> { "p1", "", "p2" }, boxPetIds = new List<string> { "p3" }, releasedPetIds = new List<string> { "released" }, releasedToday = 2, releaseCountDateUtc = "2026-01-01" }
+                pets = new PetRosterSaveData {
+                    captured = true,
+                    activePetId = "p1",
+                    partyPetIds = new List<string> { "p1", "", "p2" },
+                    boxSlots = new List<PetBoxSlotSaveData> { new PetBoxSlotSaveData { slotIndex = 8, petId = "p3" } },
+                    releasedPetIds = new List<string> { "released" },
+                    releasedToday = 2,
+                    releaseCountDateUtc = "2026-01-01"
+                }
             };
             foreach (string id in new[] { "p1", "p2", "p3" }) data.pets.petStates.Add(new PetInstanceSaveData {
                 petId = id, definitionId = "leaf",
-                customization = new PetCustomizationSaveData { nickname = id + "-nick", favorite = true, evolutionStage = 1, currentFormId = "form2", promptedEvolutionIds = new List<string> { "e1" }, resourceInvestments = new List<PetResourceInvestmentSaveData> { new PetResourceInvestmentSaveData { itemId = "berry", quantity = 10 } } },
+                customization = new PetCustomizationSaveData { nickname = id + "-nick", favorite = true, attack = 20, defense = 30, speed = 40, magicAttack = 50, magicDefense = 60, evolutionStage = 1, currentFormId = "form2", promptedEvolutionIds = new List<string> { "e1" }, resourceInvestments = new List<PetResourceInvestmentSaveData> { new PetResourceInvestmentSaveData { itemId = "berry", quantity = 10 } } },
                 runtimeStats = new PetRuntimeStatsSaveData { captured = true, hasSkillLoadout = true, level = 12, health = 75, maxHealth = 100, equippedSkillSlotCount = 4, equippedSkillIds = new List<string> { "leaf", "", "gust" } }
             });
             data.quest.questStates.Add(new QuestRuntimeSaveData { questId = "q1", status = QuestStatus.Completed, rewardsClaimed = true });
@@ -150,13 +177,115 @@ namespace Capstone.Game.SaveSystem.Editor {
         }
         static void Migration(int version) {
             var store = Store(); JObject root = JObject.Parse(JsonUtility.ToJson(Full())); root["version"] = version;
-            foreach (JObject state in (JArray)root["pets"]["petStates"]) ((JObject)state["runtimeStats"]).Remove("hasSkillLoadout");
+            root["pets"]["boxPetIds"] = new JArray("p3");
+            ((JObject)root["pets"]).Remove("boxSlots");
+            if (version < 6) {
+                foreach (JObject state in (JArray)root["pets"]["petStates"]) ((JObject)state["runtimeStats"]).Remove("hasSkillLoadout");
+            }
             string original = root.ToString(); File.WriteAllText(store.GetPath("main"), original);
             var data = Read(store); Equal(version, store.LoadedVersion, "Source version");
             Check(data.pets.petStates[0].runtimeStats.hasSkillLoadout, "Legacy loadout not recognized.");
+            Equal(0, data.pets.boxSlots[0].slotIndex, "Legacy Box slot index");
+            Equal("p3", data.pets.boxSlots[0].petId, "Legacy Box pet");
             Write(store, data); Write(store, Read(store));
-            Equal(original, File.ReadAllText(store.GetPath("main") + ".pre-v6.bak"), "Original migration archive");
-            Equal(6, Read(store).version, "Migrated version");
+            Equal(original, File.ReadAllText(store.GetPath("main") + ".pre-v12.bak"), "Original migration archive");
+            Equal(PlayerSaveData.CurrentVersion, Read(store).version, "Migrated version");
+        }
+        static void BoxSlotMigration() {
+            var data = Full();
+            string json = PlayerSaveMigration.Write(data);
+            var restored = PlayerSaveMigration.Read(json, out int sourceVersion);
+            Equal(PlayerSaveData.CurrentVersion, sourceVersion, "Current Box source version");
+            Equal(1, restored.pets.boxSlots.Count, "Sparse Box count");
+            Equal(8, restored.pets.boxSlots[0].slotIndex, "Sparse Box position");
+            Equal("p3", restored.pets.boxSlots[0].petId, "Sparse Box identity");
+        }
+        static void BoxSlotOperations() {
+            RosterController(out var input, out var box);
+            var partyPet = Pet("party-slot");
+            var firstBoxPet = Pet("box-five");
+            var secondBoxPet = Pet("box-twenty");
+            input.petSlots[1] = partyPet;
+            var slots = new PetController[60];
+            slots[5] = firstBoxPet;
+            slots[20] = secondBoxPet;
+            box.RestoreState(slots, 60);
+
+            Equal(2, box.StoredCount, "Sparse count");
+            Equal(0, box.FindFirstEmptyBoxSlot(), "First empty slot");
+            Check(box.TryMovePartyToBox(1, out var moveError), moveError);
+            Equal(partyPet, box.GetStoredPet(0), "Party uses first empty Box slot");
+            Check(box.TrySwapStoredPets(0, 10, out var swapError), swapError);
+            Check(box.GetStoredPet(0) == null && box.GetStoredPet(10) == partyPet, "Box swap moved surrounding slots");
+            Check(box.TrySwapPartyWithBox(2, 5, out var partySwapError), partySwapError);
+            Equal(firstBoxPet, input.petSlots[2], "Box pet entered Party");
+            Check(box.GetStoredPet(5) == null, "Empty Party left empty Box slot");
+            box.ApplyPurchasedCapacity(10);
+            Equal(70, box.Capacity, "Expanded capacity");
+            Equal(secondBoxPet, box.GetStoredPet(20), "Expansion preserved existing position");
+        }
+
+        static void BoxPanelMovedPetVisibility() {
+            RosterController(out var input, out var box);
+            var stored = new PetController[60];
+            for (int i = 0; i < 30; i++) stored[i] = Pet("stored-" + i.ToString("D2"));
+            var movedPet = Pet("moved-visible");
+            input.petSlots[1] = movedPet;
+            box.RestoreState(stored, 60);
+
+            var panel = Component<PetBoxPanelController>();
+            var panelRoot = new UnityEngine.UIElements.VisualElement();
+            var partyRow = new UnityEngine.UIElements.VisualElement();
+            var storageGrid = new UnityEngine.UIElements.VisualElement();
+            var search = new UnityEngine.UIElements.TextField { value = "does-not-match" };
+            var feedback = new UnityEngine.UIElements.Label();
+            Set(panel, "provider", box);
+            Set(panel, "panel", panelRoot);
+            Set(panel, "partyRow", partyRow);
+            Set(panel, "storageGrid", storageGrid);
+            Set(panel, "storageScroll", new UnityEngine.UIElements.ScrollView());
+            Set(panel, "searchField", search);
+            Set(panel, "feedback", feedback);
+            Set(panel, "selectedPet", movedPet);
+            var sourceField = typeof(PetBoxPanelController).GetField("selectionSource", BindingFlags.Instance | BindingFlags.NonPublic);
+            sourceField.SetValue(panel, Enum.Parse(sourceField.FieldType, "Party"));
+
+            typeof(PetBoxPanelController).GetMethod("MoveSelectedPetToBox", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(panel, null);
+
+            Equal(movedPet, box.GetStoredPet(30), "Moved pet destination");
+            Equal(1, (int)typeof(PetBoxPanelController).GetField("currentPage", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(panel), "Panel did not reveal destination page");
+            Equal(30, storageGrid.childCount, "Page slot count");
+            var card = storageGrid[0];
+            Check(card.ClassListContains("is-selected"), "Moved pet card is not selected");
+            Check(!card.ClassListContains("is-filtered-out"), "Moved pet is hidden by stale search");
+            var name = UnityEngine.UIElements.UQueryExtensions.Q<UnityEngine.UIElements.Label>(card, null, "box-storage-name");
+            var meta = UnityEngine.UIElements.UQueryExtensions.Q<UnityEngine.UIElements.Label>(card, null, "box-storage-meta");
+            Check(name != null && name.text == "moved-visible", "Moved pet name is missing from card");
+            Check(meta != null && meta.text.Contains("Lv.12"), "Moved pet level is missing from card");
+            Check(feedback.text.Contains("slot 31"), "Move feedback does not identify destination slot");
+        }
+        static void MagicStatsMigration() {
+            JObject root = JObject.Parse(JsonUtility.ToJson(Full()));
+            root["version"] = 6;
+            foreach (JObject state in (JArray)root["pets"]["petStates"]) {
+                var customization = (JObject)state["customization"];
+                customization.Remove("magicAttack");
+                customization.Remove("magicDefense");
+            }
+
+            var migrated = PlayerSaveMigration.Read(root.ToString(), out int sourceVersion);
+            Equal(6, sourceVersion, "Magic migration source version");
+            Equal(20, migrated.pets.petStates[0].customization.magicAttack, "SP.ATK fallback");
+            Equal(30, migrated.pets.petStates[0].customization.magicDefense, "SP.DEF fallback");
+
+            root = JObject.Parse(JsonUtility.ToJson(Full()));
+            root["version"] = 7;
+            var explicitStats = (JObject)root["pets"]["petStates"][0]["customization"];
+            explicitStats["magicAttack"] = 0;
+            explicitStats["magicDefense"] = 0;
+            var current = PlayerSaveMigration.Read(root.ToString(), out _);
+            Equal(0, current.pets.petStates[0].customization.magicAttack, "Explicit zero SP.ATK");
+            Equal(0, current.pets.petStates[0].customization.magicDefense, "Explicit zero SP.DEF");
         }
         static void MissingSections() {
             var data = PlayerSaveMigration.Read("{\"version\":1,\"currency\":{\"captured\":true,\"gold\":7}}", out _);
@@ -195,7 +324,9 @@ namespace Capstone.Game.SaveSystem.Editor {
         }
         static void DuplicateJson() { Throws(() => PlayerSaveMigration.Read("{\"version\":1,\"version\":6,\"currency\":{}}", out _)); }
         static void InvalidRoster() {
-            var data = Full(); data.pets.boxPetIds.Add("p1"); Throws(() => PlayerSaveMigration.Validate(data));
+            var data = Full(); data.pets.boxSlots.Add(new PetBoxSlotSaveData { slotIndex = 9, petId = "p1" }); Throws(() => PlayerSaveMigration.Validate(data));
+            data = Full(); data.pets.boxSlots.Add(new PetBoxSlotSaveData { slotIndex = 8, petId = "p2" }); Throws(() => PlayerSaveMigration.Validate(data));
+            data = Full(); data.pets.boxSlots[0].slotIndex = data.pets.boxCapacity; Throws(() => PlayerSaveMigration.Validate(data));
             data = Full(); data.pets.activePetId = "p3"; Throws(() => PlayerSaveMigration.Validate(data));
             data = Full(); data.pets.partyPetIds.Add("unknown"); Throws(() => PlayerSaveMigration.Validate(data));
             data = Full(); data.pets.petStates.Add(data.pets.petStates[0]); Throws(() => PlayerSaveMigration.Validate(data));
@@ -266,6 +397,181 @@ namespace Capstone.Game.SaveSystem.Editor {
             var after = manager.CreateSaveData(); Equal(1, after.questStates.Count, "No duplicate quest states");
             Check(after.questStates[0].rewardsClaimed, "Reward claim lost"); Equal(0, rewards, "Rewards replayed");
         }
+        static void QuestRewardRetry() {
+            var manager = Quest();
+            var adapter = Component<MonsterInventoryAdapter>();
+            var wallet = Component<PlayerCurrencyWallet>();
+            var controller = Controller(wallet, manager);
+            Set(controller, "inventoryAdapter", adapter);
+            var rewardItem = Item();
+            var filler = Item();
+            var empty = adapter.CreateSaveData();
+            empty.capacity = 1;
+            Check(adapter.RestoreFromSaveData(empty, out var restoreError), restoreError);
+            adapter.AddItem(filler, 1);
+            var goldReward = new QuestRewardDefinition();
+            Set(goldReward, "rewardType", QuestRewardType.Gold);
+            Set(goldReward, "amount", 10);
+            var itemReward = new QuestRewardDefinition();
+            Set(itemReward, "rewardType", QuestRewardType.Item);
+            Set(itemReward, "targetId", rewardItem.StableId);
+            var data = Full().quest;
+            data.questStates[0].rewardsClaimed = false;
+            manager.RestoreFromSaveData(data);
+            var state = manager.GetAllQuests().First();
+            Set(state.Definition, "rewards", new List<QuestRewardDefinition> { goldReward, itemReward });
+            var service = Component<QuestRewardService>();
+            service.Bind(manager, adapter, wallet, null, controller);
+            int failures = 0, grants = 0;
+            service.RewardGrantFailed += (_, __) => failures++;
+            service.RewardsGranted += _ => { grants++; service.RetryPendingRewards(); };
+            service.RetryPendingRewards();
+            Equal(1, failures, "Full bag failure reported");
+            Equal(0, wallet.Gold, "Gold rolled back on item failure");
+            Check(!state.RewardsClaimed, "Failed reward marked claimed");
+            Equal(state.QuestId, service.LastFailedQuestId, "Failure identifies quest");
+            adapter.RemoveItem(filler, 1);
+            service.RetryPendingRewards();
+            service.RetryPendingRewards();
+            Equal(1, grants, "Retry or reentrant event duplicated grant");
+            Equal(10, wallet.Gold, "Gold grant count");
+            Equal(1, adapter.GetQuantity(rewardItem), "Item grant count");
+            Check(state.RewardsClaimed, "Successful retry not claimed");
+            Equal(string.Empty, service.LastFailureMessage, "Failure feedback not cleared");
+            Check(Read(Store()).quest.questStates[0].rewardsClaimed, "Claim not persisted");
+        }
+
+        static void PetHudNotifications() {
+            var first = Pet("hud-first");
+            var second = Pet("hud-second");
+            var input = Component<PetCommandInput>();
+            input.petSlots = new[] { first, second, null, null, null, null };
+            input.activePet = first;
+            var provider = Component<PetCommandHudProvider>();
+            Set(provider, "autoFindPetCommandInput", false);
+            provider.Bind(input);
+            provider.gameObject.SetActive(true);
+            typeof(PetCommandHudProvider).GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(provider, null);
+            int changes = 0;
+            provider.HudDataChanged += () => changes++;
+            var stats = first.GetComponent<PetHudRuntimeStats>();
+            stats.SetStatus(25, 100, 5, 20);
+            Check(changes > 0, "HP changes do not notify PETS provider");
+            Equal(25f, provider.GetSelectedPetStatus().health, "Selected HP snapshot");
+            changes = 0;
+            second.GetComponent<PetCollectionMetadata>().ToggleFavorite();
+            Check(changes > 0, "Non-selected party metadata changes do not notify provider");
+            input.petSlots[1] = null;
+            provider.Bind(input);
+            changes = 0;
+            second.GetComponent<PetCollectionMetadata>().ToggleFavorite();
+            Equal(0, changes, "Removed pet still notifies provider");
+            provider.gameObject.SetActive(false);
+            typeof(PetCommandHudProvider).GetMethod("OnDisable", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(provider, null);
+            changes = 0;
+            stats.SetStatus(30, 100, 5, 20);
+            Equal(0, changes, "Disabled provider still subscribed");
+            provider.gameObject.SetActive(true);
+            typeof(PetCommandHudProvider).GetMethod("OnEnable", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(provider, null);
+            changes = 0;
+            stats.SetStatus(35, 100, 5, 20);
+            Equal(1, changes, "Re-enabled provider must have one subscription");
+        }
+
+        static void PetSlotInitialization() {
+            var pet = Pet("later-slot");
+            var input = Component<PetCommandInput>();
+            input.petSlots = new[] { null, null, null, pet, null, null };
+            input.activePet = pet;
+            var initialize = typeof(PetCommandInput).GetMethod("EnsureSlots", BindingFlags.Instance | BindingFlags.NonPublic);
+            initialize.Invoke(input, null);
+            initialize.Invoke(input, null);
+            Equal(1, input.petSlots.Count(value => value == pet), "Initialization duplicates active pet");
+            Check(input.petSlots[0] == null && input.petSlots[3] == pet, "Initialization moves existing slot");
+            input.petSlots = new PetController[6];
+            initialize.Invoke(input, null);
+            Check(input.petSlots[0] == pet, "Legacy active-only scene no longer seeds slot one");
+        }
+
+        static void EvolutionFailureFeedback() {
+            var pet = Pet("evolution-failure");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            Set(metadata, "evolutionRules", new List<PetEvolutionRule> {
+                PetEvolutionRule.CreateLegacy("Next form", null, 1, string.Empty)
+            });
+            var controller = Controller();
+            File.WriteAllText(Store().GetPath("main"), "broken");
+            Check(!controller.LoadNow(), "Fixture must block save");
+            var service = Component<PetEvolutionService>();
+            Set(service, "saveController", controller);
+            var panel = Component<PetEvolutionPanelController>();
+            var feedback = new UnityEngine.UIElements.Label();
+            Set(panel, "evolutionService", service);
+            Set(panel, "targetPet", pet);
+            Set(panel, "preview", service.CreatePreview(pet));
+            Set(panel, "feedback", feedback);
+            string before = JsonUtility.ToJson(metadata.CreateSaveData());
+            typeof(PetEvolutionPanelController).GetMethod("ConfirmEvolution", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(panel, null);
+            Check(feedback.text.Contains("Không thể lưu"), "Evolution save failure message was cleared by refresh");
+            Equal(before, JsonUtility.ToJson(metadata.CreateSaveData()), "Failed evolution changed metadata");
+            Equal("broken", File.ReadAllText(Store().GetPath("main")), "Failed evolution overwrote protected save");
+        }
+
+        static void AuditTestChar(string path) {
+            var scene = EditorSceneManager.OpenScene("Assets/Scenes/TestChar.unity", OpenSceneMode.Single);
+            var missing = new JArray();
+            var projectComponents = new JArray();
+            var counts = new Dictionary<string, int>();
+            int objects = 0;
+            foreach (var root in scene.GetRootGameObjects()) {
+                foreach (var transform in root.GetComponentsInChildren<Transform>(true)) {
+                    objects++;
+                    string hierarchy = transform.name;
+                    for (var parent = transform.parent; parent != null; parent = parent.parent) hierarchy = parent.name + "/" + hierarchy;
+                    int missingScripts = GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(transform.gameObject);
+                    if (missingScripts > 0) missing.Add(new JObject { ["object"] = hierarchy, ["missingScripts"] = missingScripts });
+                    foreach (var component in transform.GetComponents<Component>()) {
+                        if (component == null) continue;
+                        string type = component.GetType().FullName;
+                        counts[type] = counts.TryGetValue(type, out int count) ? count + 1 : 1;
+                        var behaviour = component as MonoBehaviour;
+                        string script = behaviour != null ? AssetDatabase.GetAssetPath(MonoScript.FromMonoBehaviour(behaviour)) : string.Empty;
+                        bool own = script.StartsWith("Assets/Game/") || script.StartsWith("Assets/Scripts/Thắng/")
+                            || script.StartsWith("Assets/ThangTest/Inventory/") || script.StartsWith("Assets/ThangTest/MapSystem/");
+                        var references = new JObject();
+                        var nullReferences = new JArray();
+                        using (var serialized = new SerializedObject(component)) {
+                            var property = serialized.GetIterator();
+                            while (property.Next(true)) {
+                                if (property.propertyType != SerializedPropertyType.ObjectReference) continue;
+                                if (property.objectReferenceValue == null) {
+                                    if (property.objectReferenceInstanceIDValue != 0) missing.Add(new JObject {
+                                        ["object"] = hierarchy, ["component"] = type, ["property"] = property.propertyPath
+                                    });
+                                    else if (own) nullReferences.Add(property.propertyPath);
+                                } else if (own) {
+                                    references[property.propertyPath] = property.objectReferenceValue.name + " (" + property.objectReferenceValue.GetType().Name + ")";
+                                }
+                            }
+                        }
+                        if (own) projectComponents.Add(new JObject {
+                            ["object"] = hierarchy, ["type"] = type, ["script"] = script,
+                            ["active"] = transform.gameObject.activeInHierarchy, ["enabled"] = behaviour.enabled,
+                            ["references"] = references, ["nullReferences"] = nullReferences
+                        });
+                    }
+                }
+            }
+            var result = new JObject {
+                ["scene"] = scene.path, ["gameObjects"] = objects, ["missingReferences"] = missing,
+                ["componentCounts"] = JObject.FromObject(counts), ["projectComponents"] = projectComponents
+            };
+            File.WriteAllText(path, result.ToString());
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            Check(missing.Count == 0, "Scene has " + missing.Count + " missing references; see scene audit report");
+        }
+
+
         static void MissingQuest() {
             var manager = Quest(); manager.RestoreFromSaveData(Full().quest); string before = JsonUtility.ToJson(manager.CreateSaveData());
             var bad = Full().quest; bad.questStates[0].questId = "unknown";
@@ -310,13 +616,353 @@ namespace Capstone.Game.SaveSystem.Editor {
         static PetController Pet(string id) {
             var pet = Component<PetController>();
             var state = typeof(PetController).GetField("state", BindingFlags.Instance | BindingFlags.NonPublic);
-            state.SetValue(pet, Enum.Parse(state.FieldType, "Underground"));
+            state.SetValue(pet, Enum.Parse(state.FieldType, "Dormant"));
             var metadata = pet.gameObject.AddComponent<PetCollectionMetadata>();
             metadata.AssignPersistentId(id); metadata.AssignDefinitionId("test-definition");
-            metadata.TrySetNickname(id, out _); metadata.ToggleFavorite(); metadata.SetStats(20, 30, 40);
+            metadata.TrySetNickname(id, out _); metadata.ToggleFavorite();
             var stats = pet.gameObject.AddComponent<PetHudRuntimeStats>(); Set(stats, "usePrototypeSkillsWhenEmpty", false);
             stats.SetIdentity(id, 12); stats.SetStatus(70, 100, 15, 20); stats.SetSkills(new[] { Skill("a"), Skill("b") });
             return pet;
+        }
+        static void BattleExperienceProgression() {
+            var pet = Pet("battle-pet");
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            Set(metadata, "geneticsInitialized", true);
+            Set(metadata, "individualValues", default(PetStatValues));
+            var service = Component<PetLevelUpService>();
+
+            stats.SetIdentity("battle-pet", 0);
+            stats.SetStatus(100, 100, 15, 20);
+            metadata.SetProgress(0, 9999);
+
+            Equal(1, stats.Level, "Legacy level zero did not migrate to level one");
+            Equal(100, service.CalculateExperienceRequirement(1), "Level 1 requirement");
+            Equal(160, service.CalculateExperienceRequirement(2), "Level 2 requirement");
+            Equal(240, service.CalculateExperienceRequirement(3), "Level 3 requirement");
+
+            Check(service.GrantBattleExperience(pet, 50, out var first), "First battle EXP was rejected");
+            Equal(1, stats.Level, "Pet leveled too early");
+            Equal(50, metadata.Experience, "First battle EXP");
+            Equal(100, metadata.ExperienceToNextLevel, "Level 1 requirement was not normalized");
+            Equal(0, first.LevelsGained, "Unexpected level gain");
+
+            Check(service.GrantBattleExperience(pet, 50, out var second), "Second battle EXP was rejected");
+            Equal(2, stats.Level, "Pet did not reach level two");
+            Equal(0, metadata.Experience, "Level two overflow EXP");
+            Equal(160, metadata.ExperienceToNextLevel, "Level 2 requirement");
+            Equal(1, second.LevelsGained, "Single level result");
+            Equal(7, metadata.Attack, "Attack growth");
+            Equal(7, metadata.MagicAttack, "Magic attack growth");
+            Equal(56f, stats.MaxHealth, "Health growth");
+
+            stats.SetStatus(0, stats.MaxHealth, 15, 20);
+            Check(service.GrantBattleExperience(pet, 400, out var multi), "Multi-level battle EXP was rejected");
+            Equal(4, stats.Level, "Multi-level gain");
+            Equal(0, metadata.Experience, "Multi-level overflow EXP");
+            Equal(340, metadata.ExperienceToNextLevel, "Level 4 requirement");
+            Equal(2, multi.LevelsGained, "Multi-level result");
+            Equal(10, metadata.Attack, "Multi-level attack growth");
+            Equal(10, metadata.MagicDefense, "Multi-level magic defense growth");
+            Equal(76f, stats.MaxHealth, "Multi-level health growth");
+            Equal(0f, stats.Health, "Level growth revived a fainted pet");
+        }
+        static void PrototypeCombatDefaults() {
+            var pet = Pet("prototype-combat");
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            Set(metadata, "geneticsInitialized", true);
+            Set(metadata, "individualValues", default(PetStatValues));
+
+            stats.SetIdentity("Dragon Dusk", 2);
+            stats.SetStatus(25, 25, 15, 20);
+            stats.RestoreFromSaveData(stats.CreateSaveData());
+            Equal(56f, stats.Health, "Old health was not recalculated");
+            Equal(56f, stats.MaxHealth, "Old max health was not recalculated");
+
+            Set(metadata, "species", "Dragon Dusk");
+            Equal(10f, metadata.CriticalRate, "Dragon Dusk critical rate");
+            Equal(50f, metadata.CriticalDamagePercent, "Dragon Dusk critical damage");
+
+            Set(metadata, "species", "Weakling");
+            metadata.AssignDefinitionId("Weakling");
+            Equal(6.25f, metadata.CriticalRate, "Fallback critical rate");
+            Equal(50f, metadata.CriticalDamagePercent, "Fallback critical damage");
+        }
+        static void CombatDamageUsesCurrentStats() {
+            var pet = Pet("combat-damage");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            Set(metadata, "geneticsInitialized", true);
+            Set(metadata, "individualValues", default(PetStatValues));
+            pet.attackDamage = 20f;
+
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            stats.SetIdentity("combat-damage", 1);
+            Equal(26f, pet.CurrentBaseAttackDamage, "Level 1 attack damage");
+
+            stats.SetIdentity("combat-damage", 100);
+            Equal(165f, pet.CurrentBaseAttackDamage, "Leveled attack damage");
+        }
+        static void PetStatScores() {
+            var pet = Pet("dragon-stat-score");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            metadata.AssignDefinitionId("Dragon Dusk");
+            Set(metadata, "species", "Dragon Dusk");
+            Set(metadata, "geneticsInitialized", true);
+            Set(metadata, "individualValues", new PetStatValues(31, 31, 31, 31, 31, 31));
+            stats.SetIdentity("Dragon Dusk", 1);
+            Equal(48, metadata.HpStat, "Level 1 HP stat");
+            Equal(48f, stats.MaxHealth, "Level 1 real max health");
+            stats.SetIdentity("Dragon Dusk", 4);
+            stats.SetStatus(76, 76, 0, 0);
+            Equal(76, metadata.HpStat, "Level 4 HP stat");
+            Equal(13, metadata.MagicAttack, "Level 4 special attack");
+            Equal(76f, stats.MaxHealth, "Level 4 real max health");
+            stats.SetStatus(5, 76, 0, 0);
+            Equal(76, metadata.HpStat, "Damage changed HP stat");
+            Equal(5f, stats.Health, "Damage did not change current health");
+
+            SkillHudData skill = Skill("crit-skill");
+            skill.criticalRateBonus = 5f;
+            skill.criticalDamageBonus = 25f;
+            stats.SetSkills(new[] { skill, skill });
+            Equal(15f, metadata.CriticalRate, "Equipped skill critical rate");
+            Equal(75f, metadata.CriticalDamagePercent, "Equipped skill critical damage");
+
+            stats.SetIdentity("Dragon Dusk", 60);
+            Equal(616, metadata.HpStat, "Level 60 HP stat");
+            stats.SetIdentity("Dragon Dusk", 100);
+            Equal(1004, metadata.HpStat, "Level 100 HP stat");
+            Equal(206, metadata.MagicAttack, "Level 100 special attack");
+            Equal(1004f, stats.MaxHealth, "Level 100 real max health");
+            Equal(330, metadata.BaseStatTotal, "Base Dragon Dusk BST");
+            Equal(167, PetStatCalculator.CalculateCoreStat(100, 31, 252, 50,
+                PetCoreStat.Attack, "Adamant"), "Pokemon Attack reference formula");
+        }
+        [MenuItem("Game Tools/Pets/Validate Pet HP")]
+        public static void RunPetHealthValidation() {
+            if (EditorApplication.isPlayingOrWillChangePlaymode)
+                throw new InvalidOperationException("Stop Play Mode before validating pet HP.");
+            report = new Report { unityVersion = Application.unityVersion,
+                fixtures = Path.Combine(Path.GetTempPath(), "CapstonePetHealthValidation", Guid.NewGuid().ToString("N")) };
+            Test("Pokemon stats and scaled HP", PetStatScores);
+            Test("Species forms, IV EV and display normalization", PetHealthScaling);
+            Test("v10 migration and repeat load", PetHealthVersionTenMigration);
+            Test("Battle EXP and HP growth", BattleExperienceProgression);
+            Test("Prototype HP and critical defaults", PrototypeCombatDefaults);
+            Test("Genetics EV and injury preservation", PetGeneticsAndEffort);
+            Test("Attack damage unchanged", CombatDamageUsesCurrentStats);
+            Test("HUD provider HP updates", PetHudNotifications);
+            for (int version = 1; version < PlayerSaveData.CurrentVersion; version++) {
+                int sourceVersion = version;
+                Test("Save version " + version + " backup", () => Migration(sourceVersion));
+            }
+            string path = Path.Combine(report.fixtures, "report.json");
+            File.WriteAllText(path, JsonUtility.ToJson(report, true));
+            Debug.Log($"PET_HP_VALIDATION: {report.passed} passed, {report.failed} failed. {path}");
+            if (report.failed > 0) throw new InvalidOperationException("Pet HP validation failed: " + path);
+        }
+
+        static void PetHealthScaling() {
+            int[] baseHp = { 55, 70, 90 };
+            int[] levels = { 1, 7, 50, 100 };
+            int[,] expected = { { 48, 100, 488, 940 }, { 48, 108, 548, 1060 }, { 48, 120, 628, 1220 } };
+            for (int form = 0; form < 3; form++)
+                for (int i = 0; i < levels.Length; i++) {
+                    Equal(expected[form, i], PetStatCalculator.CalculateMaxHealth(baseHp[form], 15, 0, levels[i]), "HP reference table");
+                    foreach (int iv in new[] { 0, 15, 31 })
+                        foreach (int ev in new[] { 0, 252 }) {
+                            int raw = ((2 * baseHp[form] + iv + ev / 4) * levels[i]) / 100 + levels[i] + 10;
+                            Equal(raw * 4, PetStatCalculator.CalculateMaxHealth(baseHp[form], iv, ev, levels[i]), "HP IV EV matrix");
+                        }
+                }
+            var pet = Pet("legacy-elder-profile");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            Set(metadata, "geneticsInitialized", true);
+            Set(metadata, "individualValues", new PetStatValues(15, 15, 15, 15, 15, 15));
+            string[] ids = { "Dragon Dusk", "Dragon Dusk Winged", "Dragon Dusk Elder" };
+            string[] forms = { "dragon-dusk-base", "dragon-dusk-winged", "dragon-dusk-elder" };
+            int[] totals = { 330, 430, 550 };
+            stats.SetStatus(stats.MaxHealth / 2f, stats.MaxHealth, 15, 20);
+            for (int i = 0; i < ids.Length; i++) {
+                metadata.AssignDefinitionId(ids[i]);
+                Set(metadata, "species", ids[i]);
+                Set(metadata, "currentFormId", forms[i]);
+                stats.SetIdentity(ids[i], 7);
+                Equal(baseHp[i], PetStatCalculator.GetBaseStats(metadata).hp, "Legacy form profile HP");
+                Equal(totals[i], metadata.BaseStatTotal, "BST unchanged");
+                Equal(expected[i, 1], metadata.HpStat, "Profile scaled HP");
+                Equal(expected[i, 1] * 0.5f, stats.Health, "Form change preserved injury");
+                Equal(ids[i], metadata.DefinitionId, "Prefab ID changed");
+            }
+            int maximum = PetStatCalculator.CalculateMaxHealth(90, 31, 252, 7);
+            Equal(1f, PetStatCalculator.DisplayRatio(maximum, 7, PetCoreStat.Hp), "Maximum HP ratio");
+            Check(PetStatCalculator.DisplayRatio(120, 7, PetCoreStat.Hp) < 1f, "Healthy HP stat filled radar");
+            Equal(30, PetStatCalculator.CalculateCoreStat(90, 15, 0, 7, PetCoreStat.Hp, "Adamant"), "Raw Pokemon HP changed");
+        }
+
+        static void DragonFormCodes() {
+            PetController pet = Pet("dragon-forms");
+            PetCollectionMetadata metadata = pet.GetComponent<PetCollectionMetadata>();
+            metadata.AssignDefinitionId("Dragon Dusk");
+            Set(metadata, "species", "Dragon Dusk");
+            Set(metadata, "secondaryElement", PetElement.Dark);
+            int[] totals = { 330, 430, 550 };
+            for (int stage = 0; stage < 3; stage++) {
+                Set(metadata, "evolutionStage", stage);
+                Set(metadata, "currentFormId", (stage + 1).ToString("00"));
+                Equal((stage + 1).ToString("00"), metadata.FormCode, "Dragon form ID");
+                Equal(totals[stage], metadata.BaseStatTotal, "Dragon form BST");
+                Equal(PetElement.Dark, metadata.SecondaryElement, "Dragon secondary type");
+            }
+
+            PetPrefabCatalog catalog = Asset<PetPrefabCatalog>();
+            var entries = new List<PetPrefabCatalog.Entry>();
+            for (int stage = 0; stage < 3; stage++) {
+                var entry = new PetPrefabCatalog.Entry();
+                Set(entry, "definitionId", "Dragon Dusk");
+                Set(entry, "formId", (stage + 1).ToString("00"));
+                Set(entry, "prefab", pet);
+                entries.Add(entry);
+            }
+            Set(catalog, "entries", entries);
+            Check(catalog.TryGetPrefab("Dragon Nightfall", "dragon-dusk-winged", out PetController resolved)
+                && resolved == pet, "Legacy middle-form save cannot restore");
+            Check(catalog.TryGetPrefab("Dragon Dusk Elder", "dragon-dusk-elder", out resolved)
+                && resolved == pet, "Legacy final-form save cannot restore");
+        }
+
+        static void PetHealthVersionTenMigration() {
+            var pet = Pet("v10-health-pet");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            metadata.AssignDefinitionId("Dragon Dusk Elder");
+            Set(metadata, "species", "Dragon Dusk Elder");
+            Set(metadata, "currentFormId", "dragon-dusk-elder");
+            Set(metadata, "geneticsInitialized", true);
+            Set(metadata, "individualValues", new PetStatValues(15, 7, 21, 31, 0, 9));
+            Set(metadata, "effortValues", new PetStatValues(0, 12, 0, 0, 0, 0));
+            Set(metadata, "nature", "Modest");
+            stats.SetIdentity("Dragon Dusk Elder", 7);
+            stats.SetStatus(13.5f, 27f, 15, 20);
+            var data = Currency();
+            data.pets = new PetRosterSaveData { captured = true,
+                petStates = new List<PetInstanceSaveData> { new PetInstanceSaveData {
+                    petId = metadata.PetId, definitionId = metadata.DefinitionId,
+                    customization = metadata.CreateSaveData(), runtimeStats = stats.CreateSaveData() } } };
+            // Serialization recalculates metadata only; explicitly model the previous health scale.
+            JObject old = JObject.Parse(PlayerSaveMigration.Write(data));
+            old["version"] = 10;
+            old["pets"]["petStates"][0]["runtimeStats"]["health"] = 13.5;
+            old["pets"]["petStates"][0]["runtimeStats"]["maxHealth"] = 27;
+            string original = old.ToString();
+            var store = Store();
+            File.WriteAllText(store.GetPath("main"), original);
+            var restored = Read(store);
+            var savedPet = restored.pets.petStates[0];
+            metadata.RestoreFromSaveData(savedPet.customization);
+            stats.RestoreFromSaveData(savedPet.runtimeStats);
+            Equal(120f, stats.MaxHealth, "v10 HP recalculated from profile");
+            Equal(60f, stats.Health, "v10 injury preserved");
+            Equal("Modest", metadata.Nature, "Nature preserved");
+            Equal(31, metadata.IndividualValues.magicAttack, "IV preserved");
+            Equal(12, metadata.EffortValues.attack, "EV preserved");
+            for (int i = 0; i < 3; i++) {
+                savedPet.runtimeStats = stats.CreateSaveData();
+                Write(store, restored);
+                restored = Read(store);
+                savedPet = restored.pets.petStates[0];
+                metadata.RestoreFromSaveData(savedPet.customization);
+                stats.RestoreFromSaveData(savedPet.runtimeStats);
+                Equal(120f, stats.MaxHealth, "Repeated load multiplied HP");
+                Equal(60f, stats.Health, "Repeated load changed injury");
+            }
+            Equal(original, File.ReadAllText(store.GetPath("main") + ".pre-v12.bak"), "v10 original backup");
+            stats.SetStatus(0, 120, 15, 20);
+            stats.RestoreFromSaveData(stats.CreateSaveData());
+            Equal(0f, stats.Health, "Reload revived fainted pet");
+        }
+        static void PetGeneticsAndEffort() {
+            var pet = Pet("genetics-pet");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            metadata.RollGeneticsForNewCapture();
+            PetStatValues iv = metadata.IndividualValues;
+            for (int axis = 0; axis < 6; axis++)
+                Check(iv.Get((PetCoreStat)axis) >= 0 && iv.Get((PetCoreStat)axis) <= 31, "IV out of range");
+            Check(!string.IsNullOrWhiteSpace(metadata.Nature), "Nature missing");
+
+            stats.SetIdentity("genetics-pet", 50);
+            metadata.SyncRuntimeHealth(stats);
+            stats.SetStatus(stats.MaxHealth / 2f, stats.MaxHealth, 0, 0);
+            Check(metadata.GrantEffortValues(new PetStatValues(300, 300, 300, 300, 300, 300)), "EV gain rejected");
+            Equal(510, metadata.EffortValues.Total, "Total EV cap");
+            for (int axis = 0; axis < 6; axis++)
+                Check(metadata.EffortValues.Get((PetCoreStat)axis) <= 252, "Per-stat EV cap");
+            Check(!metadata.GrantEffortValues(new PetStatValues(0, 1, 0, 0, 0, 0)), "EV gain exceeded cap");
+            Equal(stats.MaxHealth / 2f, stats.Health, "EV changed health fraction");
+
+            var saved = JsonUtility.FromJson<PetCustomizationSaveData>(
+                JsonUtility.ToJson(metadata.CreateSaveData()));
+            metadata.RestoreFromSaveData(saved);
+            for (int axis = 0; axis < 6; axis++)
+                Equal(iv.Get((PetCoreStat)axis), metadata.IndividualValues.Get((PetCoreStat)axis),
+                    "IV save roundtrip " + axis);
+            Equal(510, metadata.EffortValues.Total, "EV save roundtrip");
+            Equal(saved.nature, metadata.Nature, "Nature save roundtrip");
+            Equal(1.1f, PetNature.Multiplier("Adamant", PetCoreStat.Attack), "Nature up");
+            Equal(0.9f, PetNature.Multiplier("Adamant", PetCoreStat.MagicAttack), "Nature down");
+            Equal(1f, PetNature.Multiplier("Adamant", PetCoreStat.Hp), "Nature changed HP");
+        }
+        static void LegacyPetStatsMigration() {
+            var controller = RosterController(out var input, out _);
+            var pet = Pet("legacy-stat-pet");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            metadata.AssignDefinitionId("Dragon Dusk");
+            Set(metadata, "species", "Dragon Dusk");
+            stats.SetIdentity("Dragon Dusk", 4);
+            stats.SetStatus(50, 100, 0, 0);
+            input.petSlots[0] = pet;
+            input.SetActivePet(pet);
+            Check(controller.SaveNow(), controller.SaveBlockedReason);
+
+            string path = Store().GetPath("main");
+            JObject legacy = JObject.Parse(File.ReadAllText(path));
+            legacy["version"] = 9;
+            var oldCustomization = (JObject)legacy["pets"]["petStates"][0]["customization"];
+            oldCustomization.Remove("hasGenetics");
+            oldCustomization.Remove("individualValues");
+            oldCustomization.Remove("effortValues");
+            oldCustomization.Remove("nature");
+            var oldStats = (JObject)legacy["pets"]["petStates"][0]["runtimeStats"];
+            oldStats["health"] = 50;
+            oldStats["maxHealth"] = 100;
+            string original = legacy.ToString();
+            File.WriteAllText(path, original);
+
+            Check(controller.LoadNow(), controller.SaveBlockedReason);
+            Equal(metadata.HpStat, Mathf.RoundToInt(stats.MaxHealth), "Migrated HP stat/max health");
+            Equal(stats.MaxHealth * 0.5f, stats.Health, "Migrated health fraction");
+            Equal("Serious", metadata.Nature, "Legacy Nature");
+            Equal(0, metadata.EffortValues.Total, "Legacy EV");
+            PetStatValues migratedIv = metadata.IndividualValues;
+            Equal(340, metadata.ExperienceToNextLevel, "Migrated EXP requirement");
+            Check(controller.SaveNow(), controller.SaveBlockedReason);
+            Equal(original, File.ReadAllText(path + ".pre-v12.bak"), "Legacy pet backup");
+            stats.SetStatus(0, stats.MaxHealth, 0, 0);
+            Check(controller.SaveNow(), controller.SaveBlockedReason);
+            Check(controller.LoadNow(), controller.SaveBlockedReason);
+            for (int axis = 0; axis < 6; axis++)
+                Equal(migratedIv.Get((PetCoreStat)axis), metadata.IndividualValues.Get((PetCoreStat)axis),
+                    "Legacy IV changed after reload " + axis);
+            Equal(0f, stats.Health, "Zero health survived save/load");
+            stats.SetStatus(0, 0, 0, 0);
+            metadata.SyncRuntimeHealth(stats);
+            Equal(0f, stats.Health, "Zero health with legacy zero max remained zero");
+            Equal((float)metadata.HpStat, stats.MaxHealth, "Legacy zero max was recalculated");
         }
         static PlayerSaveController RosterController(out PetCommandInput input, out PetBoxRuntimeProvider box) {
             input = Component<PetCommandInput>(); input.petSlots = new PetController[6];
@@ -328,13 +974,16 @@ namespace Capstone.Game.SaveSystem.Editor {
             var controller = RosterController(out var input, out var box);
             var first = Pet("first"); var second = Pet("second"); var third = Pet("third");
             input.petSlots[0] = first; input.petSlots[2] = second; input.SetActivePet(first);
-            box.RestoreState(new[] { third }, 60);
+            var sparseBox = new PetController[60];
+            sparseBox[8] = third;
+            box.RestoreState(sparseBox, 60);
             Check(controller.SaveNow(), controller.SaveBlockedReason);
             var metadata = first.GetComponent<PetCollectionMetadata>(); var stats = first.GetComponent<PetHudRuntimeStats>();
             metadata.TrySetNickname("changed", out _); metadata.ToggleFavorite(); stats.SetStatus(1, 100, 0, 20);
             for (int i = 0; i < 3; i++) Check(controller.LoadNow(), controller.SaveBlockedReason);
-            Equal("first", metadata.Nickname, "Nickname restored"); Check(metadata.IsFavorite, "Favorite restored"); Equal(70f, stats.Health, "Health restored");
-            Equal(first, input.petSlots[0], "Party first"); Equal(second, input.petSlots[2], "Party gap preserved"); Equal(1, box.StoredCount, "Box not duplicated"); Equal(third, box.StoredPets[0], "Box identity");
+            Equal("first", metadata.Nickname, "Nickname restored"); Check(metadata.IsFavorite, "Favorite restored"); Check(Mathf.Approximately(109.2f, stats.Health), "Health ratio restored");
+            Equal(21, metadata.MagicAttack, "SP.ATK recalculated"); Equal(21, metadata.MagicDefense, "SP.DEF recalculated");
+            Equal(first, input.petSlots[0], "Party first"); Equal(second, input.petSlots[2], "Party gap preserved"); Equal(1, box.StoredCount, "Box not duplicated"); Equal(third, box.StoredPets[8], "Sparse Box identity");
             metadata.TrySetNickname("new-name", out _); metadata.ToggleFavorite(); stats.SetIdentity("first", 13);
             Check(controller.SaveNow(), controller.SaveBlockedReason); Check(controller.LoadNow(), controller.SaveBlockedReason);
             Equal("new-name", metadata.Nickname, "Second nickname"); Check(!metadata.IsFavorite, "Second favorite"); Equal(13, stats.Level, "Second level");

@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using Capstone.Game.HudSystem;
 using Capstone.Game.Inventory;
+using Capstone.Game.PetSummon;
 using Capstone.Game.ProfileSystem;
 using Capstone.Game.QuestSystem;
 using Capstone.Game.QuestSystem.Save;
@@ -39,6 +41,7 @@ namespace Capstone.Game.SaveSystem {
         [SerializeField] bool saveOnDisable;
         [SerializeField] bool migrateLegacyQuestSave = true;
         [SerializeField, Min(0f)] float autoSaveDelay = 0.35f;
+        [SerializeField] bool seedDragonPreviewPartyOnFreshSave;
 
         PlayerJsonFileSaveStore saveStore;
         bool startupCompleted;
@@ -51,6 +54,8 @@ namespace Capstone.Game.SaveSystem {
         PlayerSaveData retainedData;
         readonly List<PetCollectionMetadata> watchedMetadata = new List<PetCollectionMetadata>();
         readonly List<PetHudRuntimeStats> watchedStats = new List<PetHudRuntimeStats>();
+        PetController pendingSummonedRestore;
+        Coroutine summonedRestoreRoutine;
 
         public bool IsApplyingSave => isApplyingSave;
         public string SaveBlockedReason => saveBlockedReason;
@@ -75,6 +80,7 @@ namespace Capstone.Game.SaveSystem {
         public string SlotId => string.IsNullOrWhiteSpace(slotId) ? "main" : slotId.Trim();
         public string SavePath => GetSaveStore().GetPath(SlotId);
         public bool HasSave => GetSaveStore().Exists(SlotId);
+        public bool IsCurrentSlotLoaded => string.Equals(loadedSlotPath, SavePath, StringComparison.Ordinal);
         public PetCaptureCoordinator CaptureCoordinator => petCaptureCoordinator;
 
         public event Action<PlayerSaveData> SaveCompleted;
@@ -86,8 +92,101 @@ namespace Capstone.Game.SaveSystem {
             yield return null;
             ResolveReferences();
             SubscribeDataSources();
+            if (!ApplyPendingReset()) yield break;
             if (loadOnStart) LoadNow();
+            if (seedDragonPreviewPartyOnFreshSave && !HasSave && !IsSaveBlocked
+                && TrySeedDragonPreviewParty()) SaveNow();
             startupCompleted = true;
+        }
+
+        bool TrySeedDragonPreviewParty() {
+            if (petCommandInput == null || petPrefabCatalog == null) return false;
+            PetController dusk = FindScenePetTemplate("Dragon Dusk");
+            PetCollectionMetadata duskMetadata = ResolveMetadata(dusk, false);
+            if (dusk == null || duskMetadata == null || duskMetadata.EvolutionStage != 0
+                || dusk.GetComponentInChildren<PetHudRuntimeStats>(true) == null) {
+                Debug.LogError("Cannot seed Dragon preview party: the base Dusk pet is missing.", this);
+                return false;
+            }
+
+            var created = new PetController[2];
+            var configured = new bool[2];
+            for (int stage = 1; stage <= 2; stage++) {
+                if (!petPrefabCatalog.TryInstantiate("Dragon Dusk", "01", restoredPetRoot,
+                    out PetController pet) || pet == null) break;
+                created[stage - 1] = pet;
+                PetCollectionMetadata metadata = ResolveMetadata(pet, false);
+                PetHudRuntimeStats stats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+                PetEvolutionVisualController visual = pet.GetComponentInChildren<PetEvolutionVisualController>(true);
+                if (metadata == null || stats == null || visual == null) break;
+
+                metadata.AssignPersistentId("preview-dragon-" + (stage + 1) + "-" + Guid.NewGuid().ToString("N"));
+                metadata.AssignDefinitionId("Dragon Dusk");
+                pet.AssignOwner(petCommandInput.transform);
+                pet.Withdraw();
+                PetEvolutionRule finalRule = null;
+                bool valid = true;
+                for (int step = 0; step < stage; step++) {
+                    if (!metadata.TryGetNextEvolutionRule(out PetEvolutionRule rule)
+                        || !metadata.ApplyEvolution(rule)) { valid = false; break; }
+                    finalRule = rule;
+                }
+                string visualError = string.Empty;
+                if (!valid || finalRule?.TargetVisualPrefab == null
+                    || !visual.TryApply(finalRule.TargetVisualPrefab, out visualError)) {
+                    Debug.LogError("Cannot seed Dragon preview form " + (stage + 1)
+                        + ": " + (valid ? visualError : "evolution rule missing"), this);
+                    break;
+                }
+                pet.gameObject.name = finalRule.TargetDisplayName + " (Preview Slot " + (stage + 1) + ")";
+                SetPreviewPetLevel(pet, finalRule.TargetDisplayName, stage + 1, finalRule.TargetIcon);
+                configured[stage - 1] = true;
+            }
+
+            if (!configured[0] || !configured[1]
+                || ResolveMetadata(created[0], false)?.EvolutionStage != 1
+                || ResolveMetadata(created[1], false)?.EvolutionStage != 2) {
+                foreach (PetController pet in created)
+                    if (pet != null) Destroy(pet.gameObject);
+                Debug.LogError("Dragon preview party setup failed; starter party was kept.", this);
+                return false;
+            }
+
+            dusk.Withdraw();
+            SetPreviewPetLevel(dusk, "Dragon Dusk", 1,
+                dusk.GetComponentInChildren<PetHudRuntimeStats>(true)?.Icon);
+            petCommandInput.petSlots = new PetController[PartySize];
+            petCommandInput.petSlots[0] = dusk;
+            petCommandInput.petSlots[1] = created[0];
+            petCommandInput.petSlots[2] = created[1];
+            petCommandInput.SetActivePet(dusk);
+            Debug.Log("Fresh game seeded Dragon Dusk, Nightfall and Darkness in PETS slots 1-3.", this);
+            return true;
+        }
+
+        static void SetPreviewPetLevel(PetController pet, string displayName, int level, Sprite icon) {
+            PetCollectionMetadata metadata = ResolveMetadata(pet, false);
+            PetHudRuntimeStats stats = pet != null
+                ? pet.GetComponentInChildren<PetHudRuntimeStats>(true) : null;
+            if (metadata == null || stats == null) return;
+            stats.SetIdentity(displayName, level, icon);
+            float maxHealth = metadata.GetStatsAtLevel(level).MaxHealth;
+            stats.SetStatus(maxHealth, maxHealth, stats.MaxEnergy, stats.MaxEnergy);
+            metadata.SetProgress(0, PetLevelUpService.CalculateDefaultExperienceRequirement(level));
+        }
+
+        bool ApplyPendingReset() {
+            string marker = SavePath + ".reset-pending";
+            if (!File.Exists(marker)) return true;
+            if (!DeleteSave()) return BlockSave("Could not reset current player save slot.", true);
+            var quests = new QuestJsonFileSaveStore(GetSaveStore().RootDirectory);
+            if (!quests.TryDelete(SlotId, out string error)) return BlockSave(error, true);
+            try {
+                File.Delete(marker);
+                Debug.Log("Player save slot " + SlotId + " reset to scene defaults.", this);
+                return true;
+            }
+            catch (Exception exception) { return BlockSave(exception.Message, true); }
         }
 
         void OnEnable() {
@@ -112,6 +211,7 @@ namespace Capstone.Game.SaveSystem {
         void OnDisable() {
             UnsubscribeDataSources();
             if (!applicationIsQuitting && startupCompleted && saveOnDisable) SaveNow();
+            CancelSummonedRestore();
         }
 
         public void RequestSave() {
@@ -144,12 +244,13 @@ namespace Capstone.Game.SaveSystem {
 
         public bool LoadNow() {
             if (isApplyingSave) return false;
+            CancelSummonedRestore();
             saveQueued = false;
             ResolveReferences();
             if (GetSaveStore().TryLoad(SlotId, out PlayerSaveData saveData, out string error)) {
                 try {
                     ValidateSources(saveData);
-                    ApplySaveData(saveData);
+                    ApplySaveData(saveData, GetSaveStore().LoadedVersion < PlayerSaveData.CurrentVersion);
                     retainedData = saveData;
                     loadedSlotPath = SavePath;
                     saveBlockedReason = string.Empty;
@@ -209,7 +310,8 @@ namespace Capstone.Game.SaveSystem {
                 captured = petCommandInput != null,
                 activePetSummoned = petCommandInput != null
                     && petCommandInput.activePet != null
-                    && petCommandInput.activePet.IsSummoned,
+                    && (petCommandInput.activePet.IsSummoned
+                        || petCommandInput.activePet == pendingSummonedRestore),
                 boxCapacity = petBoxProvider != null ? petBoxProvider.Capacity : 60,
                 releaseCountDateUtc = petBoxProvider != null ? petBoxProvider.ReleaseCountDateUtc : string.Empty,
                 releasedToday = petBoxProvider != null ? petBoxProvider.ReleasedToday : 0
@@ -251,16 +353,22 @@ namespace Capstone.Game.SaveSystem {
             }
 
             if (petBoxProvider != null) {
-                foreach (PetController pet in petBoxProvider.StoredPets) {
+                for (int slotIndex = 0; slotIndex < petBoxProvider.Capacity; slotIndex++) {
+                    PetController pet = petBoxProvider.GetStoredPet(slotIndex);
                     string petId = ResolvePetId(pet, petIds);
-                    if (!string.IsNullOrWhiteSpace(petId)) saveData.boxPetIds.Add(petId);
+                    if (!string.IsNullOrWhiteSpace(petId)) {
+                        saveData.boxSlots.Add(new PetBoxSlotSaveData {
+                            slotIndex = slotIndex,
+                            petId = petId
+                        });
+                    }
                 }
             }
 
             return saveData;
         }
 
-        void ApplySaveData(PlayerSaveData saveData) {
+        void ApplySaveData(PlayerSaveData saveData, bool fromLegacyVersion) {
             if (saveData == null) return;
             isApplyingSave = true;
             try {
@@ -271,7 +379,7 @@ namespace Capstone.Game.SaveSystem {
                 }
 
                 if (saveData.currency?.captured == true) currencyWallet?.RestoreFromSaveData(saveData.currency);
-                RestorePetRoster(saveData.pets);
+                RestorePetRoster(saveData.pets, fromLegacyVersion);
                 if (saveData.achievements?.captured == true) achievementManager?.RestoreFromSaveData(saveData.achievements);
                 if (saveData.profile?.captured == true) profileProvider?.RestoreFromSaveData(saveData.profile);
                 if (questManager != null && saveData.quest != null) questManager.RestoreFromSaveData(saveData.quest);
@@ -283,9 +391,16 @@ namespace Capstone.Game.SaveSystem {
         }
 
         PetController RestoreMissingPet(PetInstanceSaveData petState) {
-            if (petState == null || petPrefabCatalog == null
-                || !petPrefabCatalog.TryInstantiate(petState.definitionId, restoredPetRoot, out PetController pet)) {
-                return null;
+            if (petState == null) return null;
+            PetController pet = null;
+            bool fromCatalog = petPrefabCatalog != null && petPrefabCatalog.TryInstantiate(
+                petState.definitionId, petState.customization?.currentFormId, restoredPetRoot, out pet);
+            if (!fromCatalog) {
+                PetController template = FindScenePetTemplate(petState.definitionId);
+                if (template == null) return null;
+                Debug.LogWarning("Pet prefab catalog is unavailable; restoring " + petState.definitionId
+                    + " from the scene pet template.", this);
+                pet = Instantiate(template, restoredPetRoot);
             }
 
             PetCollectionMetadata metadata = ResolveMetadata(pet, true);
@@ -296,7 +411,16 @@ namespace Capstone.Game.SaveSystem {
             return pet;
         }
 
-        void RestorePetRoster(PetRosterSaveData saveData) {
+        PetController FindScenePetTemplate(string definitionId) {
+            foreach (PetController candidate in FindScenePets()) {
+                PetCollectionMetadata metadata = ResolveMetadata(candidate, false);
+                if (metadata != null && string.Equals(metadata.DefinitionId, definitionId,
+                    StringComparison.OrdinalIgnoreCase)) return candidate;
+            }
+            return null;
+        }
+
+        void RestorePetRoster(PetRosterSaveData saveData, bool fromLegacyVersion) {
             if (saveData == null || !saveData.captured || petCommandInput == null) return;
 
             var petsById = new Dictionary<string, PetController>(StringComparer.OrdinalIgnoreCase);
@@ -337,10 +461,20 @@ namespace Capstone.Game.SaveSystem {
                     }
 
                     PetCollectionMetadata metadata = ResolveMetadata(pet, true);
+                    if (!string.IsNullOrWhiteSpace(petState.definitionId))
+                        metadata?.AssignDefinitionId(petState.definitionId);
                     metadata?.RestoreFromSaveData(petState.customization);
                     PetHudRuntimeStats runtimeStats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
                     runtimeStats?.RestoreFromSaveData(petState.runtimeStats);
                     metadata?.RestoreEvolutionPresentation(runtimeStats);
+                    if (metadata != null && runtimeStats != null) {
+                        metadata.SyncRuntimeHealth(runtimeStats);
+                        if (fromLegacyVersion) {
+                            int requirement = runtimeStats.Level >= metadata.MaxLevel ? 0
+                                : PetLevelUpService.CalculateDefaultExperienceRequirement(runtimeStats.Level);
+                            metadata.SetProgress(metadata.Experience, requirement);
+                        }
+                    }
                 }
             }
 
@@ -364,24 +498,65 @@ namespace Capstone.Game.SaveSystem {
             }
 
             if (activePet != null) {
-                if (saveData.activePetSummoned) activePet.Summon();
+                if (saveData.activePetSummoned) {
+                    // Scene physics and the player can still be settling during the
+                    // first load frame. Keep the saved intent until a safe spot exists.
+                    activePet.Withdraw();
+                    pendingSummonedRestore = activePet;
+                    summonedRestoreRoutine = StartCoroutine(RestoreSummonedWhenReady(activePet));
+                }
                 else activePet.Withdraw();
             }
 
             if (petBoxProvider != null) {
-                var restoredBoxPets = new List<PetController>();
-                if (saveData.boxPetIds != null) {
-                    foreach (string petId in saveData.boxPetIds) {
-                        PetController pet = ResolvePet(petId, petsById);
-                        if (pet != null) restoredBoxPets.Add(pet);
+                int restoredCapacity = Mathf.Max(1, saveData.boxCapacity);
+                var restoredBoxPets = new PetController[restoredCapacity];
+                if (saveData.boxSlots != null) {
+                    foreach (PetBoxSlotSaveData slot in saveData.boxSlots) {
+                        if (slot == null || slot.slotIndex < 0 || slot.slotIndex >= restoredCapacity) continue;
+                        restoredBoxPets[slot.slotIndex] = ResolvePet(slot.petId, petsById);
                     }
                 }
                 petBoxProvider.RestoreState(
                     restoredBoxPets,
-                    saveData.boxCapacity,
+                    restoredCapacity,
                     saveData.releaseCountDateUtc,
                     saveData.releasedToday);
             }
+        }
+
+        IEnumerator RestoreSummonedWhenReady(PetController pet) {
+            yield return null;
+            var retryDelay = new WaitForSecondsRealtime(0.2f);
+            PetSummonDirector director = FindFirstObjectByType<PetSummonDirector>();
+            while (pet != null && pet == pendingSummonedRestore) {
+                if (petCommandInput == null || petCommandInput.activePet != pet
+                    || pet.IsSummoned || (director != null && director.IsSequenceRunning)) {
+                    break;
+                }
+                Physics.SyncTransforms();
+                if (pet.TryRestoreSummonedNearOwner()) {
+                    pendingSummonedRestore = null;
+                    summonedRestoreRoutine = null;
+                    yield break;
+                }
+                yield return retryDelay;
+            }
+            pendingSummonedRestore = null;
+            summonedRestoreRoutine = null;
+        }
+
+        void CancelSummonedRestore() {
+            if (summonedRestoreRoutine != null) StopCoroutine(summonedRestoreRoutine);
+            summonedRestoreRoutine = null;
+            pendingSummonedRestore = null;
+        }
+
+        public bool CancelPendingSummonedRestore(PetController pet) {
+            if (pet == null || pet != pendingSummonedRestore) return false;
+            CancelSummonedRestore();
+            RequestSave();
+            return true;
         }
 
         bool TryMigrateLegacyQuestSave() {
@@ -435,7 +610,9 @@ namespace Capstone.Game.SaveSystem {
             foreach (var state in data.pets.petStates) {
                 PetController pet;
                 if (!pets.TryGetValue(state.petId, out pet)) {
-                    if (petPrefabCatalog == null || !petPrefabCatalog.TryGetPrefab(state.definitionId, out pet))
+                    if ((petPrefabCatalog == null || !petPrefabCatalog.TryGetPrefab(
+                            state.definitionId, state.customization?.currentFormId, out pet))
+                        && (pet = FindScenePetTemplate(state.definitionId)) == null)
                         throw new InvalidOperationException("Missing pet definition " + state.definitionId + " for " + state.petId + "; save is protected.");
                 }
                 if (state.runtimeStats?.captured == true) {

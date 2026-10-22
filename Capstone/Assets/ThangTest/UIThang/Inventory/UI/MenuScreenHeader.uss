@@ -1,0 +1,84 @@
+/* Owning panel rules. Shared colors come from MenuTheme.uss. */
+
+.codex-panel .screen-header,
+.shop-panel .screen-header,
+.settings-panel .screen-header,
+.inventory-panel .screen-header,
+.pets-panel .screen-header,
+.box-panel .screen-header,
+.quest-panel .screen-header {
+    height: var(--menu-header-height, 76px);
+    min-height: var(--menu-header-height, 76px);
+    max-height: var(--menu-header-height, 76px);
+    flex-shrink: 0;
+    padding-top: 0;
+    padding-right: 22px;
+    padding-bottom: 0;
+    padding-left: 24px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf");
+}
+
+.screen-header .screen-heading {
+    min-width: 300px;
+    width: auto;
+    flex-shrink: 0;
+    flex-direction: row;
+    align-items: center;
+}
+
+.screen-header .screen-heading-mark {
+    rotate: 45deg;
+    background-color: var(--menu-heading-accent, #54825b);
+    border-width: 2px;
+    border-color: #d6e3ca;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    flex-shrink: 0;
+    margin-left: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-right: 18px;
+}
+
+.screen-header .screen-title {
+    margin: 0;
+    padding: 0;
+    font-size: var(--menu-title-size, 38px);
+    -unity-font-style: bold;
+    color: var(--menu-title-color, #174a30);
+    white-space: nowrap;
+}
+
+.screen-header .screen-back {
+    width: var(--menu-back-width, 146px);
+    min-width: var(--menu-back-width, 146px);
+    max-width: var(--menu-back-width, 146px);
+    height: var(--menu-back-height, 42px);
+    flex-shrink: 0;
+    margin: 0;
+    color: var(--menu-back-text, #31573d);
+    background-color: var(--menu-back-surface, #fffdf6);
+    border-width: 1px;
+    border-color: var(--menu-back-border, #a9bd9c);
+    border-radius: 6px;
+    font-size: 15px;
+    -unity-font-style: bold;
+}
+
+.screen-header .screen-back:hover {
+    background-color: var(--menu-back-hover, #e4edda);
+}
+
+.screen-header .screen-back:focus {
+    border-color: var(--menu-focus-border, #c6a34d);
+}
+
+.screen-header {
+    background-color: var(--menu-background, #f8f4eb);
+    border-bottom-width: 1px;
+    border-bottom-color: #d8d5ca;
+}

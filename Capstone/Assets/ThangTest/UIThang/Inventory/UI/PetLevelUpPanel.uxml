@@ -1,0 +1,150 @@
+<ui:UXML xmlns:ga="Capstone.Game.UISystem" xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+  <ui:Style src="../../../../Game/UISystem/Resources/UI/GreenAngular/GreenAngular.uss" />
+  <ui:VisualElement name="level-up-modal-overlay" class="ga-overlay">
+    <ga:AngularSurface class="ga-popup" role="shell" name="level-up-modal-dialog" style="width:960px;height:712px;">
+      <ga:AngularSurface class="ga-modal-header" role="primary" shape="tab">
+        <ui:Label name="" text="TĂNG CẤP" class="ga-popup-title" />
+        <ga:AngularButton name="level-up-close-button" text="×" class="ga-button ga-close" role="primary" shape="diamond" />
+      </ga:AngularSurface>
+      <ga:AngularSurface class="ga-summary level-summary" role="panel">
+        <ga:AngularSurface class="ga-summary-portrait" role="shell" name="level-up-pet-portrait">
+          <ui:Label name="level-up-pet-portrait-fallback" text="◇" class="ga-art-fallback" />
+        </ga:AngularSurface>
+        <ui:VisualElement class="ga-summary-copy">
+          <ui:Label name="level-up-pet-name" text="Chọn một thú" class="ga-pet-name" />
+          <ui:VisualElement class="ga-summary-meta">
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Loài" class="ga-info-key" />
+              <ui:Label name="level-up-species" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Hệ" class="ga-info-key" />
+              <ui:Label name="level-up-element" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Độ hiếm" class="ga-info-key" />
+              <ui:Label name="level-up-rarity" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement class="ga-level-progress">
+          <ui:VisualElement class="ga-level-pair">
+            <ui:Label name="level-up-current-level" text="Cấp —" class="ga-copy" />
+            <ui:Label name="" text="→" class="ga-copy" />
+            <ui:Label name="level-up-next-level" text="Cấp —" class="ga-copy" />
+            <ui:Label name="level-up-max-label" text="" class="ga-copy" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ga-resource-row">
+            <ui:Label name="" text="EXP" class="ga-resource-name" />
+            <ga:AngularSurface class="ga-resource-track" role="track" shape="parallel">
+              <ga:AngularSurface class="ga-resource-fill" role="exp" name="level-up-exp-fill" shape="parallel" />
+            </ga:AngularSurface>
+            <ui:Label name="level-up-exp-value" text="— / —" class="ga-resource-value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ga-resource-row">
+            <ui:Label name="" text="HP" class="ga-resource-name" />
+            <ga:AngularSurface class="ga-resource-track" role="track" shape="parallel">
+              <ga:AngularSurface class="ga-resource-fill" role="hp" name="level-up-health-fill" shape="parallel" />
+            </ga:AngularSurface>
+            <ui:Label name="level-up-health-value" text="— / —" class="ga-resource-value" />
+          </ui:VisualElement>
+          <ui:Label name="level-up-exp-needed" text="" class="ga-hidden" />
+        </ui:VisualElement>
+      </ga:AngularSurface>
+      <ga:AngularSurface class="ga-level-stats" role="panel">
+        <ui:Label name="" text="CHỈ SỐ TĂNG" class="ga-section-title" />
+        <ui:VisualElement class="ga-level-stat-row">
+          <ui:Label name="" text="" class="ga-level-stat-key" />
+          <ui:Label name="" text="Hiện tại" class="ga-level-stat-current" />
+          <ui:Label name="" text="→" class="ga-level-stat-arrow" />
+          <ui:Label name="" text="Sau tăng" class="ga-level-stat-next" />
+          <ui:Label name="" text="Tăng" class="ga-level-stat-delta" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ga-level-stat-row">
+          <ui:Label name="" text="HP" class="ga-level-stat-key" />
+          <ui:Label name="level-up-stat-hp-current" text="—" class="ga-level-stat-current" />
+          <ui:Label name="" text="→" class="ga-level-stat-arrow" />
+          <ui:Label name="level-up-stat-hp-next" text="—" class="ga-level-stat-next" />
+          <ui:Label name="level-up-stat-hp-delta" text="—" class="ga-level-stat-delta" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ga-level-stat-row">
+          <ui:Label name="" text="ATK" class="ga-level-stat-key" />
+          <ui:Label name="level-up-stat-atk-current" text="—" class="ga-level-stat-current" />
+          <ui:Label name="" text="→" class="ga-level-stat-arrow" />
+          <ui:Label name="level-up-stat-atk-next" text="—" class="ga-level-stat-next" />
+          <ui:Label name="level-up-stat-atk-delta" text="—" class="ga-level-stat-delta" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ga-level-stat-row">
+          <ui:Label name="" text="SP.ATK" class="ga-level-stat-key" />
+          <ui:Label name="level-up-stat-magic-atk-current" text="—" class="ga-level-stat-current" />
+          <ui:Label name="" text="→" class="ga-level-stat-arrow" />
+          <ui:Label name="level-up-stat-magic-atk-next" text="—" class="ga-level-stat-next" />
+          <ui:Label name="level-up-stat-magic-atk-delta" text="—" class="ga-level-stat-delta" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ga-level-stat-row">
+          <ui:Label name="" text="DEF" class="ga-level-stat-key" />
+          <ui:Label name="level-up-stat-def-current" text="—" class="ga-level-stat-current" />
+          <ui:Label name="" text="→" class="ga-level-stat-arrow" />
+          <ui:Label name="level-up-stat-def-next" text="—" class="ga-level-stat-next" />
+          <ui:Label name="level-up-stat-def-delta" text="—" class="ga-level-stat-delta" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ga-level-stat-row">
+          <ui:Label name="" text="SP.DEF" class="ga-level-stat-key" />
+          <ui:Label name="level-up-stat-magic-def-current" text="—" class="ga-level-stat-current" />
+          <ui:Label name="" text="→" class="ga-level-stat-arrow" />
+          <ui:Label name="level-up-stat-magic-def-next" text="—" class="ga-level-stat-next" />
+          <ui:Label name="level-up-stat-magic-def-delta" text="—" class="ga-level-stat-delta" />
+        </ui:VisualElement>
+        <ui:VisualElement class="ga-level-stat-row">
+          <ui:Label name="" text="SPD" class="ga-level-stat-key" />
+          <ui:Label name="level-up-stat-spd-current" text="—" class="ga-level-stat-current" />
+          <ui:Label name="" text="→" class="ga-level-stat-arrow" />
+          <ui:Label name="level-up-stat-spd-next" text="—" class="ga-level-stat-next" />
+          <ui:Label name="level-up-stat-spd-delta" text="—" class="ga-level-stat-delta" />
+        </ui:VisualElement>
+      </ga:AngularSurface>
+      <ui:VisualElement name="level-up-new-skill-section" class="ga-level-new">
+        <ui:Label text="KỸ NĂNG MỚI" class="level-up-section-title" />
+        <ui:VisualElement class="level-up-skill-content">
+          <ui:VisualElement name="level-up-skill-icon" class="level-up-skill-icon">
+            <ui:Label name="level-up-skill-icon-fallback" text="S" class="level-up-icon-fallback" />
+          </ui:VisualElement>
+          <ui:VisualElement class="level-up-skill-copy">
+            <ui:Label name="level-up-skill-name" text="-" class="level-up-skill-name" />
+            <ui:Label name="level-up-skill-description" text="-" class="level-up-skill-description" />
+            <ui:Label name="level-up-skill-unlock" text="-" class="level-up-skill-unlock" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="level-up-evolution-section" class="ga-level-evolution">
+        <ui:Label text="TIẾN HÓA" class="level-up-section-title" />
+        <ui:VisualElement class="level-up-evolution-content">
+          <ui:VisualElement name="level-up-evolution-current-icon" class="level-up-evolution-icon">
+            <ui:Label name="level-up-evolution-current-fallback" text="?" class="level-up-icon-fallback" />
+          </ui:VisualElement>
+          <ui:Label text="→" class="level-up-evolution-arrow" />
+          <ui:VisualElement name="level-up-evolution-next-icon" class="level-up-evolution-icon">
+            <ui:Label name="level-up-evolution-next-fallback" text="?" class="level-up-icon-fallback" />
+          </ui:VisualElement>
+          <ui:VisualElement class="level-up-evolution-copy">
+            <ui:Label name="level-up-evolution-state" text="Chưa có dữ liệu tiến hóa" class="level-up-evolution-state" />
+            <ui:Label name="level-up-evolution-level" text="-" class="level-up-evolution-requirement" />
+            <ui:Label name="level-up-evolution-friendship" text="-" class="level-up-evolution-requirement" />
+            <ui:Button name="level-up-evolution-button" text="TIẾN HÓA" class="level-up-evolution-button" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ga:AngularSurface class="ga-level-item" role="panel">
+        <ga:AngularSurface class="ga-summary-portrait" role="shell" name="level-up-item-icon">
+          <ui:Label name="level-up-item-icon-fallback" text="◇" class="ga-art-fallback" />
+        </ga:AngularSurface>
+        <ui:VisualElement class="ga-item-copy">
+          <ui:Label name="level-up-item-name" text="—" class="ga-item-name" />
+          <ui:Label name="level-up-item-count" text="— / —" class="ga-copy" />
+        </ui:VisualElement>
+      </ga:AngularSurface>
+      <ga:AngularButton name="level-up-confirm-button" text="Tăng cấp" class="ga-button ga-level-confirm" role="primary" shape="parallel" />
+      <ui:Label name="level-up-feedback" text="" class="ga-level-feedback" />
+    </ga:AngularSurface>
+  </ui:VisualElement>
+</ui:UXML>

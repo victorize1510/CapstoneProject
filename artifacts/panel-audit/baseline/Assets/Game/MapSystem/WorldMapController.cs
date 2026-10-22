@@ -1,0 +1,1347 @@
+using System;
+using System.Collections.Generic;
+using AAMAP;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
+
+namespace Capstone.Game.MapSystem {
+    [DisallowMultipleComponent]
+    public sealed class WorldMapController : MonoBehaviour {
+        [Serializable]
+        public struct MapFilterBinding {
+            public Toggle toggle;
+            public MapMarkerType markerType;
+        }
+
+
+        struct RendererState {
+            public readonly Renderer renderer;
+            public readonly bool wasEnabled;
+
+            public RendererState(Renderer renderer, bool wasEnabled) {
+                this.renderer = renderer;
+                this.wasEnabled = wasEnabled;
+            }
+        }
+
+        struct TerrainTreeState {
+            public readonly Terrain terrain;
+            public readonly bool drewTreesAndFoliage;
+
+            public TerrainTreeState(Terrain terrain, bool drewTreesAndFoliage) {
+                this.terrain = terrain;
+                this.drewTreesAndFoliage = drewTreesAndFoliage;
+            }
+        }
+        struct HudRootState {
+            public readonly GameObject root;
+            public readonly bool wasActive;
+
+            public HudRootState(GameObject root, bool wasActive) {
+                this.root = root;
+                this.wasActive = wasActive;
+            }
+        }
+
+        readonly struct FilterListener {
+            public readonly Toggle Toggle;
+            public readonly UnityAction<bool> Callback;
+
+            public FilterListener(Toggle toggle, UnityAction<bool> callback) {
+                Toggle = toggle;
+                Callback = callback;
+            }
+        }
+
+        [Header("References")]
+        [SerializeField] MapManager mapManager = null;
+        [SerializeField] Camera mapCamera = null;
+        [SerializeField] GameObject minimapRoot = null;
+        [SerializeField] RectTransform mapInteractionRect = null;
+        [SerializeField] RectTransform overlayRoot = null;
+        [SerializeField] Text regionNameText = null;
+        [SerializeField] Button closeButton = null;
+        [SerializeField] Button zoomInButton = null;
+        [SerializeField] Button zoomOutButton = null;
+        [SerializeField] Button centerOnPlayerButton = null;
+        [SerializeField] Button clearWaypointButton = null;
+        [SerializeField] MapIconRegistry iconRegistry = null;
+        [SerializeField] Transform playerTarget = null;
+        [SerializeField] MapMarker waypointMarker = null;
+        [SerializeField] RectTransform customFrame = null;
+        [SerializeField] UI.WorldMapUIController presentation;
+
+        [Header("Camera")]
+        [SerializeField] bool startClosed = true;
+        [SerializeField, Min(1f)] float cameraHeight = 180f;
+        [SerializeField, Range(0.01f, 1f)] float minimumVisiblePercent = 0.05f;
+        [SerializeField, Range(0.01f, 1f)] float initialVisiblePercent = 0.12f;
+        [SerializeField, Range(0.01f, 1f)] float maximumVisiblePercent = 0.30f;
+        [SerializeField, Min(0.01f)] float wheelZoomStep = 0.08f;
+        [SerializeField, Min(0.01f)] float panSpeed = 1f;
+        [SerializeField] bool openMapCenteredOnPlayer = true;
+
+        [Header("Viewport")]
+        [SerializeField] bool enforceRuntimeViewport = true;
+        [SerializeField] Vector2 viewportSize = new Vector2(1920f, 1080f);
+        [SerializeField] Vector2 viewportOffset = Vector2.zero;
+        [SerializeField, Min(0f)] float frameOverscan = 0f;
+
+        [Header("HUD Layering")]
+        [SerializeField] bool hideGameplayHudWhileOpen = true;
+        [SerializeField] List<GameObject> hudRootsToHide = new List<GameObject>();
+
+        [Header("Map Bounds Source")]
+        [SerializeField] bool useMapSetBounds = true;
+        [SerializeField] string mapSetObjectName = "MapSet";
+
+        [Header("Map Camera Cleanup")]
+        [SerializeField, HideInInspector] bool hideTreesWaterAndEffectsOnMap = false;
+        [SerializeField] bool hideTerrainTreesOnMap = false;
+        [SerializeField] bool hideWaterAndEffectsOnMap = false;
+        [SerializeField] string[] mapExcludedLayerNames = { "Water", "Suimono_Water", "Suimono_Depth", "Suimono_Screen", "TransparentFX", "SmallVFX", "MedVFX", "LargeVFX" };
+        [SerializeField] string[] mapHiddenNameKeywords = { "Water", "Lake", "Tree", "Trees", "Foliage", "Grass", "VFX", "FX", "Effect", "Particle", "Splash", "Foam", "Mist", "Fog" };
+
+        [Header("World Bounds")]
+        [SerializeField] bool clampToWorldBounds = true;
+        [SerializeField] Vector2 worldCenter = Vector2.zero;
+        [SerializeField] Vector2 worldSize = new Vector2(120f, 120f);
+        [SerializeField] Vector4 worldBoundsInsetPercent = new Vector4(0.24f, 0.04f, 0.10f, 0.32f);
+        [SerializeField] Vector4 minimumWorldBoundsInsetPercent = new Vector4(0.24f, 0.04f, 0.10f, 0.32f);
+
+        [Header("Waypoint")]
+        [SerializeField] string waypointMarkerId = "custom-waypoint";
+        [SerializeField] string waypointDisplayName = "Waypoint";
+        [SerializeField] Color waypointColor = new Color(0.25f, 0.95f, 1f, 1f);
+
+        [Header("Filters")]
+        [SerializeField] List<MapFilterBinding> filterBindings = new List<MapFilterBinding>();
+
+        bool buttonsWired;
+        bool cachedMinimapActive;
+        bool hasCachedMinimapActive;
+        bool hasMapSetBounds;
+        bool worldMapOpen;
+        Bounds mapSetBounds;
+        RenderTexture runtimeWorldMapTexture;
+        readonly List<HudRootState> hiddenHudRoots = new List<HudRootState>();
+        readonly List<RendererState> hiddenMapRenderers = new List<RendererState>();
+        readonly List<TerrainTreeState> hiddenMapTerrains = new List<TerrainTreeState>();
+        bool mapSceneVisualsHidden;
+        RawImage mapDisplay;
+        readonly List<FilterListener> filterListeners = new List<FilterListener>();
+
+        public event Action<Vector3> WaypointChanged;
+        public event Action WaypointCleared;
+        public event Action BackRequested;
+
+        public MapManager MapManager => mapManager;
+        public Camera MapCamera => mapCamera;
+        public RectTransform MapInteractionRect => mapInteractionRect;
+        public Vector2 WorldSize => worldSize;
+        public float MinimumVisiblePercent => minimumVisiblePercent;
+        public float InitialVisiblePercent => initialVisiblePercent;
+        public float MaximumVisiblePercent => maximumVisiblePercent;
+        public bool IsOpen => worldMapOpen;
+        public RectTransform OverlayRoot => overlayRoot;
+        public UI.WorldMapUIController Presentation => presentation;
+
+        public void UsePresentation(UI.WorldMapUIController view, RectTransform overlay) {
+            UnwireButtons();
+            presentation = view; overlayRoot = overlay;
+            regionNameText = null; closeButton = zoomInButton = zoomOutButton = centerOnPlayerButton = clearWaypointButton = null;
+            filterBindings.Clear();
+            WireButtons();
+        }
+        public void RequestBackFromUI() => RequestBack();
+
+        void Awake() {
+            ResolveReferences();
+            WireButtons();
+            NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
+            EnsureOpaqueMapVisuals();
+            SetMinimapVisible(!IsOpen);
+            ApplyMapSetBoundsIfAvailable();
+        }
+
+        void OnEnable() {
+            ResolveReferences();
+            WireButtons();
+            NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
+            EnsureOpaqueMapVisuals();
+            SetMinimapVisible(!IsOpen);
+        }
+
+        void Start() {
+            ResolveReferences();
+            WireButtons();
+            NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
+            EnsureOpaqueMapVisuals();
+            SetMinimapVisible(!IsOpen);
+            ApplyMapSetBoundsIfAvailable();
+            ApplyCameraDefaults();
+            if (startClosed) CloseMap();
+        }
+
+        void LateUpdate() {
+            if (!IsOpen) return;
+
+            if (!HasValidMapVisualState()) {
+                EnableMapSafely();
+                EnsureOpaqueMapVisuals();
+            }
+
+            UpdateRegionName();
+        }
+
+        void OnDestroy() {
+            UnwireButtons();
+            RestoreHiddenHudRoots();
+            RestoreMapHiddenSceneVisuals();
+
+            if (runtimeWorldMapTexture == null) return;
+            runtimeWorldMapTexture.Release();
+            Destroy(runtimeWorldMapTexture);
+        }
+
+        public void SetTarget(Transform target) {
+            playerTarget = target;
+        }
+
+        public void SetWorldBounds(Vector2 center, Vector2 size) {
+            worldCenter = center;
+            worldSize = new Vector2(Mathf.Max(1f, size.x), Mathf.Max(1f, size.y));
+            ApplyCameraDefaults();
+        }
+
+        public void SetReferences(MapManager manager, Camera camera, RectTransform interactionRect, RectTransform overlay, Transform target) {
+            mapManager = manager != null ? manager : mapManager;
+            mapCamera = camera != null ? camera : mapCamera;
+            mapInteractionRect = interactionRect != null ? interactionRect : mapInteractionRect;
+            overlayRoot = overlay != null ? overlay : overlayRoot;
+            playerTarget = target != null ? target : playerTarget;
+            ApplyCameraDefaults();
+        }
+
+        public void OpenMap(bool focusPlayer) {
+            ResolveReferences();
+            if (mapManager == null) return;
+
+            worldMapOpen = true;
+            SetWorldMapRootVisible(true);
+            NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
+            ApplyMapSetBoundsIfAvailable();
+            ApplyCameraDefaults();
+            if (focusPlayer) {
+                if (openMapCenteredOnPlayer && playerTarget != null) Focus(playerTarget.position, false);
+                else Focus(new Vector3(worldCenter.x, 0f, worldCenter.y), false);
+            }
+
+            SetMinimapVisible(false);
+            SetOverlayVisible(true);
+            HideCustomFrame();
+            SetHudRootsVisibleForMap(true);
+            SetMapOnlySceneVisualsHidden(false);
+            EnableMapSafely();
+            BringWorldMapToFront();
+            EnsureOpaqueMapVisuals();
+            UpdateRegionName();
+        }
+
+        public void CloseMap() {
+            ResolveReferences();
+            worldMapOpen = false;
+            DisableMapSafely();
+            SetOverlayVisible(false);
+            HideCustomFrame();
+            SetWorldMapRootVisible(false);
+            RestoreMinimapVisible();
+            SetMapOnlySceneVisualsHidden(false);
+            SetHudRootsVisibleForMap(false);
+        }
+
+        public void ToggleMap() {
+            if (IsOpen) CloseMap();
+            else OpenMap(true);
+        }
+
+        public void Focus(Vector3 worldPosition, bool openMap) {
+            ResolveReferences();
+            if (mapManager == null) return;
+
+            NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
+            float size = ClampOrthographicSize(CalculateOrthographicSizeForVisiblePercent(initialVisiblePercent));
+            Vector3 cameraPosition = ClampCameraPosition(new Vector3(worldPosition.x, cameraHeight, worldPosition.z), size);
+            mapManager.SetCameraPosition(cameraPosition);
+            mapManager.SetCameraOrthograpicSize(size);
+            if (openMap) OpenMap(false);
+            UpdateRegionName();
+        }
+
+        public void Zoom(float scrollDelta) {
+            ResolveReferences();
+            if (mapManager == null) return;
+
+            float current = mapManager.GetCameraOrthograpicSize();
+            if (current <= 0f) current = CalculateOrthographicSizeForVisiblePercent(initialVisiblePercent);
+
+            float direction = Mathf.Sign(scrollDelta);
+            float multiplier = 1f - direction * wheelZoomStep;
+            float next = ClampOrthographicSize(current * multiplier);
+            mapManager.SetCameraOrthograpicSize(next);
+            mapManager.SetCameraPosition(ClampCameraPosition(mapManager.GetCameraPosition(), next));
+            UpdateRegionName();
+        }
+
+        public void CenterOnPlayer() {
+            ResolveReferences();
+            if (playerTarget != null) Focus(playerTarget.position, false);
+        }
+
+        public void Pan(Vector2 screenDelta) {
+            ResolveReferences();
+            if (mapManager == null || mapCamera == null) return;
+
+            float rectHeight = mapInteractionRect != null ? Mathf.Max(1f, mapInteractionRect.rect.height) : Mathf.Max(1f, Screen.height);
+            float worldUnitsPerPixel = mapManager.GetCameraOrthograpicSize() * 2f / rectHeight;
+            Vector3 position = mapManager.GetCameraPosition();
+            Vector3 pan = new Vector3(-screenDelta.x, 0f, -screenDelta.y) * worldUnitsPerPixel * panSpeed;
+            mapManager.SetCameraPosition(ClampCameraPosition(position + pan, mapManager.GetCameraOrthograpicSize()));
+            UpdateRegionName();
+        }
+
+        public bool TrySetWaypoint(Vector2 screenPosition) {
+            ResolveReferences();
+            if (!ScreenPointToWorld(screenPosition, out Vector3 worldPosition)) return false;
+
+            EnsureWaypointMarker();
+            if (waypointMarker == null) return false;
+
+            waypointMarker.transform.position = ClampWorldPosition(worldPosition);
+            waypointMarker.ConfigureRuntime(MapMarkerType.Custom, waypointMarkerId, waypointDisplayName, null, waypointColor, true, true);
+            waypointMarker.SetVisible(true);
+            WaypointChanged?.Invoke(waypointMarker.transform.position);
+            return true;
+        }
+
+        public void ClearWaypoint() {
+            EnsureWaypointMarker();
+            if (waypointMarker != null) waypointMarker.SetVisible(false);
+            WaypointCleared?.Invoke();
+        }
+
+        public void SetFilter(MapMarkerType markerType, bool visible) {
+            ResolveReferences();
+            iconRegistry?.SetTypeVisible(markerType, visible);
+        }
+
+        void ApplyMapCameraCullingMask() {
+            if (mapCamera == null || mapExcludedLayerNames == null) return;
+
+            int mask = mapCamera.cullingMask;
+            for (int i = 0; i < mapExcludedLayerNames.Length; i++) {
+                int layer = LayerMask.NameToLayer(mapExcludedLayerNames[i]);
+                if (layer >= 0) mask &= ~(1 << layer);
+            }
+
+            mapCamera.cullingMask = mask;
+        }
+
+        void SetMapOnlySceneVisualsHidden(bool hidden) {
+            bool legacyHideAll = hideTreesWaterAndEffectsOnMap;
+            bool shouldHideTrees = hideTerrainTreesOnMap || legacyHideAll;
+            bool shouldHideRenderers = hideWaterAndEffectsOnMap || legacyHideAll;
+
+            if (!shouldHideTrees && !shouldHideRenderers) {
+                if (mapSceneVisualsHidden) RestoreMapHiddenSceneVisuals();
+                return;
+            }
+            if (hidden == mapSceneVisualsHidden) return;
+
+            if (!hidden) {
+                RestoreMapHiddenSceneVisuals();
+                return;
+            }
+
+            mapSceneVisualsHidden = true;
+            if (shouldHideRenderers) ApplyMapCameraCullingMask();
+            else if (mapCamera != null) mapCamera.cullingMask = ~0;
+            if (shouldHideTrees) HideTerrainTreesForMap();
+            if (shouldHideRenderers) HideNamedRenderersForMap();
+        }
+        void HideTerrainTreesForMap() {
+            Terrain[] terrains = FindObjectsByType<Terrain>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < terrains.Length; i++) {
+                Terrain terrain = terrains[i];
+                if (terrain == null) continue;
+                hiddenMapTerrains.Add(new TerrainTreeState(terrain, terrain.drawTreesAndFoliage));
+                terrain.drawTreesAndFoliage = false;
+            }
+        }
+
+        void HideNamedRenderersForMap() {
+            Renderer[] renderers = FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < renderers.Length; i++) {
+                Renderer renderer = renderers[i];
+                if (renderer == null || !renderer.enabled || IsMapOwnedRenderer(renderer) || !ShouldHideRendererForMap(renderer)) continue;
+                hiddenMapRenderers.Add(new RendererState(renderer, renderer.enabled));
+                renderer.enabled = false;
+            }
+        }
+
+        void RestoreMapHiddenSceneVisuals() {
+            for (int i = 0; i < hiddenMapRenderers.Count; i++) {
+                RendererState state = hiddenMapRenderers[i];
+                if (state.renderer != null) state.renderer.enabled = state.wasEnabled;
+            }
+
+            for (int i = 0; i < hiddenMapTerrains.Count; i++) {
+                TerrainTreeState state = hiddenMapTerrains[i];
+                if (state.terrain != null) state.terrain.drawTreesAndFoliage = state.drewTreesAndFoliage;
+            }
+
+            hiddenMapRenderers.Clear();
+            hiddenMapTerrains.Clear();
+            mapSceneVisualsHidden = false;
+        }
+
+        bool ShouldHideRendererForMap(Renderer renderer) {
+            if (renderer is ParticleSystemRenderer || renderer.GetComponentInParent<ParticleSystem>() != null) return true;
+
+            string layerName = LayerMask.LayerToName(renderer.gameObject.layer);
+            if (ContainsText(layerName, mapExcludedLayerNames)) return true;
+            if (TransformNameContains(renderer.transform, mapHiddenNameKeywords)) return true;
+
+            Material material = renderer.sharedMaterial;
+            if (material != null) {
+                if (ContainsText(material.name, mapHiddenNameKeywords)) return true;
+                Shader shader = material.shader;
+                if (shader != null && ContainsText(shader.name, mapHiddenNameKeywords)) return true;
+            }
+
+            return false;
+        }
+
+        bool IsMapOwnedRenderer(Renderer renderer) {
+            if (renderer == null) return true;
+            Transform target = renderer.transform;
+            if (target.GetComponentInParent<Canvas>() != null) return true;
+            if (target.GetComponentInParent<MapMarker>() != null) return true;
+            if (mapManager != null && target.IsChildOf(mapManager.transform)) return true;
+            if (overlayRoot != null && target.IsChildOf(overlayRoot)) return true;
+            if (customFrame != null && target.IsChildOf(customFrame)) return true;
+            return false;
+        }
+
+        static bool TransformNameContains(Transform transform, string[] keywords) {
+            Transform current = transform;
+            int depth = 0;
+            while (current != null && depth < 6) {
+                if (ContainsText(current.name, keywords)) return true;
+                current = current.parent;
+                depth++;
+            }
+            return false;
+        }
+
+        static bool ContainsText(string value, string[] keywords) {
+            if (string.IsNullOrWhiteSpace(value) || keywords == null) return false;
+            for (int i = 0; i < keywords.Length; i++) {
+                string keyword = keywords[i];
+                if (!string.IsNullOrWhiteSpace(keyword) && value.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0) return true;
+            }
+            return false;
+        }
+        void ResolveReferences() {
+            if (presentation == null) presentation = GetComponent<UI.WorldMapUIController>();
+            if (mapManager == null) mapManager = FindFirst<MapManager>();
+            if (mapCamera == null && mapManager != null && mapManager.GetMapCamera() != null) mapCamera = mapManager.GetMapCamera().GetComponent<Camera>();
+            if (mapCamera == null) {
+                GameObject cameraObject = GameObject.Find("Map Camera");
+                if (cameraObject != null) mapCamera = cameraObject.GetComponent<Camera>();
+            }
+            if (mapInteractionRect == null && mapManager != null) {
+                Transform mask = mapManager.transform.Find("Map Mask");
+                if (mask != null) mapInteractionRect = mask.GetComponent<RectTransform>();
+            }
+            if (customFrame == null) {
+                Transform frame = overlayRoot != null ? overlayRoot.Find("Thang World Map Frame") : null;
+                if (frame == null && mapManager != null) frame = mapManager.transform.Find("Thang World Map Frame");
+                if (frame != null) customFrame = frame.GetComponent<RectTransform>();
+            }
+            if (iconRegistry == null) iconRegistry = FindFirst<MapIconRegistry>();
+            if (playerTarget == null) playerTarget = AAMapRuntimeBinder.FindPlayerTarget();
+            if (minimapRoot == null) {
+                MinimapManager minimap = FindFirst<MinimapManager>();
+                if (minimap != null) minimapRoot = minimap.gameObject;
+            }
+        }
+
+        void ApplyCameraDefaults() {
+            NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
+            if (mapManager != null) {
+                mapManager.enablingShortcut = KeyCode.None;
+                mapManager.disablingShortcut = KeyCode.None;
+                if (mapCamera != null) mapManager.SetMapCamera(mapCamera.gameObject);
+                float currentSize = mapManager.GetCameraOrthograpicSize();
+                float size = currentSize > 0f ? ClampOrthographicSize(currentSize) : CalculateOrthographicSizeForVisiblePercent(initialVisiblePercent);
+                if (mapCamera != null) {
+                    mapManager.SetCameraPosition(ClampCameraPosition(
+                        new Vector3(mapCamera.transform.position.x, cameraHeight, mapCamera.transform.position.z),
+                        size));
+                }
+                mapManager.SetCameraOrthograpicSize(size);
+            }
+
+            if (mapCamera != null) {
+                mapCamera.orthographic = true;
+                if (!hideWaterAndEffectsOnMap && !hideTreesWaterAndEffectsOnMap) mapCamera.cullingMask = ~0;
+                mapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+                mapCamera.nearClipPlane = 0.1f;
+                mapCamera.farClipPlane = Mathf.Max(cameraHeight + 500f, 1000f);
+                mapCamera.clearFlags = CameraClearFlags.SolidColor;
+                mapCamera.backgroundColor = new Color(0.015f, 0.035f, 0.035f, 1f);
+                mapCamera.aspect = GetWorldMapAspect();
+                mapCamera.transform.position = ClampCameraPosition(
+                    new Vector3(mapCamera.transform.position.x, cameraHeight, mapCamera.transform.position.z),
+                    mapCamera.orthographicSize);
+            }
+        }
+
+        bool ApplyMapSetBoundsIfAvailable() {
+            if (!useMapSetBounds) return false;
+            if (!TryResolveMapSetBounds()) return false;
+
+            Vector3 center = mapSetBounds.center;
+            worldCenter = new Vector2(center.x, center.z);
+            worldSize = new Vector2(Mathf.Max(1f, mapSetBounds.size.x), Mathf.Max(1f, mapSetBounds.size.z));
+            return true;
+        }
+
+        bool TryResolveMapSetBounds() {
+            hasMapSetBounds = false;
+            Transform mapSet = FindNamedTransform(mapSetObjectName);
+            if (mapSet == null) mapSet = FindLikelyMapContentTransform();
+            if (mapSet == null) return false;
+
+            Renderer[] renderers = mapSet.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++) {
+                Renderer renderer = renderers[i];
+                if (renderer == null || renderer.GetComponentInParent<Canvas>() != null) continue;
+
+                if (!hasMapSetBounds) {
+                    mapSetBounds = renderer.bounds;
+                    hasMapSetBounds = true;
+                } else {
+                    mapSetBounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            return hasMapSetBounds;
+        }
+
+        float GetWorldMapAspect() {
+            if (mapInteractionRect != null) {
+                Rect rect = mapInteractionRect.rect;
+                if (rect.width > 1f && rect.height > 1f) return Mathf.Max(0.01f, rect.width / rect.height);
+            }
+            if (mapManager != null && mapManager.renderTexture != null && mapManager.renderTexture.height > 0) {
+                return Mathf.Max(0.01f, (float)mapManager.renderTexture.width / mapManager.renderTexture.height);
+            }
+            if (mapCamera != null) return Mathf.Max(0.01f, mapCamera.aspect);
+            return 16f / 9f;
+        }
+
+        float CalculateOrthographicSizeForVisiblePercent(float visiblePercent) {
+            float normalizedPercent = Mathf.Clamp(visiblePercent, 0.01f, 1f);
+            float referenceLength = Mathf.Max(1f, Mathf.Min(worldSize.x, worldSize.y));
+            float maxVisibleLongSide = referenceLength * normalizedPercent;
+            float aspect = Mathf.Max(0.01f, GetWorldMapAspect());
+
+            // Orthographic size is half vertical height; keep the viewport's longest visible side within the percent cap.
+            return aspect >= 1f ? maxVisibleLongSide / (2f * aspect) : maxVisibleLongSide * 0.5f;
+        }
+
+        float ClampOrthographicSize(float size) {
+            float closeSize = CalculateOrthographicSizeForVisiblePercent(minimumVisiblePercent);
+            float farSize = CalculateOrthographicSizeForVisiblePercent(maximumVisiblePercent);
+            float lower = Mathf.Min(closeSize, farSize);
+            float upper = Mathf.Max(closeSize, farSize);
+            return Mathf.Clamp(size, lower, upper);
+        }
+
+        void NormalizeVisiblePercents() {
+            minimumVisiblePercent = Mathf.Clamp(minimumVisiblePercent, 0.01f, 1f);
+            maximumVisiblePercent = Mathf.Clamp(maximumVisiblePercent, minimumVisiblePercent, 1f);
+            initialVisiblePercent = Mathf.Clamp(initialVisiblePercent, minimumVisiblePercent, maximumVisiblePercent);
+        }
+
+        void NormalizeWorldBoundsInsets() {
+            minimumWorldBoundsInsetPercent = Clamp01(minimumWorldBoundsInsetPercent);
+            worldBoundsInsetPercent = Clamp01(worldBoundsInsetPercent);
+
+            worldBoundsInsetPercent.x = Mathf.Max(worldBoundsInsetPercent.x, minimumWorldBoundsInsetPercent.x);
+            worldBoundsInsetPercent.y = Mathf.Max(worldBoundsInsetPercent.y, minimumWorldBoundsInsetPercent.y);
+            worldBoundsInsetPercent.z = Mathf.Max(worldBoundsInsetPercent.z, minimumWorldBoundsInsetPercent.z);
+            worldBoundsInsetPercent.w = Mathf.Max(worldBoundsInsetPercent.w, minimumWorldBoundsInsetPercent.w);
+        }
+
+        static Vector4 Clamp01(Vector4 value) {
+            value.x = Mathf.Clamp01(value.x);
+            value.y = Mathf.Clamp01(value.y);
+            value.z = Mathf.Clamp01(value.z);
+            value.w = Mathf.Clamp01(value.w);
+            return value;
+        }
+
+        void EnsureOpaqueMapVisuals() {
+            presentation?.EnsureBuilt();
+            Color backgroundColor = new Color(0.015f, 0.035f, 0.035f, 1f);
+            RenderTexture renderTexture = EnsureWorldMapRenderTexture();
+
+            if (mapManager != null) {
+                EnsurePanelBackdrop(mapManager.transform, backgroundColor);
+                mapManager.mapOpacity = 1f;
+                mapManager.mapColor = Color.white;
+                mapManager.haveBorder = false;
+                mapManager.clearFlags = MapClearFlags.SolidColor;
+                mapManager.cameraBGColor = backgroundColor;
+                mapManager.haveBackgroundImage = false;
+                mapManager.haveZoomButtons = false;
+                mapManager.haveExitButton = false;
+                mapManager.disableMinimap = true;
+            }
+
+            if (mapCamera != null) {
+                mapCamera.clearFlags = CameraClearFlags.SolidColor;
+                mapCamera.backgroundColor = backgroundColor;
+                if (renderTexture != null) mapCamera.targetTexture = renderTexture;
+            }
+
+            Transform mapRoot = mapManager != null ? mapManager.transform : null;
+            Transform mask = mapRoot != null ? mapRoot.Find("Map Mask") : null;
+            if (mask == null) return;
+
+            ApplyViewportLayout(mask.GetComponent<RectTransform>());
+            ApplyCustomFrameLayout();
+
+            Image maskImage = mask.GetComponent<Image>();
+            if (maskImage != null) {
+                maskImage.color = Color.white;
+                maskImage.raycastTarget = false;
+            }
+
+            Mask maskComponent = mask.GetComponent<Mask>();
+            if (maskComponent != null) maskComponent.showMaskGraphic = false;
+
+            Image filler = EnsureRuntimeImage(mask, "Map Background Filler", backgroundColor);
+            if (filler != null) filler.transform.SetAsFirstSibling();
+
+            Image background = EnsureRuntimeImage(mask, "Map Background", Color.clear);
+            if (background != null) background.gameObject.SetActive(false);
+
+            Image grid = EnsureRuntimeImage(mask, "Map Grid", Color.clear);
+            if (grid != null) grid.gameObject.SetActive(false);
+
+            Transform displayTransform = mask.Find("Map Display");
+            RawImage display = displayTransform != null ? displayTransform.GetComponent<RawImage>() : null;
+            mapDisplay = display;
+            if (display != null) {
+                display.color = Color.white;
+                display.material = null;
+                display.raycastTarget = false;
+                if (renderTexture != null) display.texture = renderTexture;
+                Stretch(display.rectTransform);
+                display.transform.SetSiblingIndex(1);
+            }
+
+            Transform zoomButtons = mapRoot.Find("Map Zoom Buttons");
+            if (zoomButtons != null) zoomButtons.gameObject.SetActive(false);
+
+            Transform exitButton = mapRoot.Find("Map Exit Button");
+            if (exitButton != null) exitButton.gameObject.SetActive(false);
+
+            if (presentation != null) presentation.FitViewport();
+            else StyleAndArrangeOverlay();
+        }
+
+        bool HasValidMapVisualState() {
+            if (mapManager == null || !mapManager.IsMapEnabled()) return false;
+            if (mapCamera == null || !mapCamera.isActiveAndEnabled) return false;
+
+            RenderTexture texture = mapManager.renderTexture;
+            if (texture == null || !texture.IsCreated() || mapCamera.targetTexture != texture) return false;
+
+            if (mapDisplay == null && mapInteractionRect != null) {
+                Transform displayTransform = mapInteractionRect.Find("Map Display");
+                if (displayTransform != null) mapDisplay = displayTransform.GetComponent<RawImage>();
+            }
+
+            return mapDisplay != null
+                   && mapDisplay.gameObject.activeInHierarchy
+                   && mapDisplay.texture == texture;
+        }
+
+        RenderTexture EnsureWorldMapRenderTexture() {
+            const int width = 2048;
+            float targetAspect = presentation != null ? presentation.ViewportAspect : 16f / 9f;
+            int height = Mathf.RoundToInt(width / targetAspect);
+
+            RenderTexture current = mapManager != null ? mapManager.renderTexture : null;
+            bool valid = current != null
+                         && current.height > 0
+                         && Mathf.Abs(((float)current.width / current.height) - targetAspect) < 0.02f;
+
+            RenderTexture texture = valid ? current : runtimeWorldMapTexture;
+            if (texture == null) {
+                runtimeWorldMapTexture = new RenderTexture(width, height, 16, RenderTextureFormat.ARGB32) {
+                    name = "WorldMap_RT_Runtime",
+                    useMipMap = false,
+                    autoGenerateMips = false,
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp
+                };
+                runtimeWorldMapTexture.Create();
+                texture = runtimeWorldMapTexture;
+            }
+
+            if (texture != null && !texture.IsCreated()) texture.Create();
+            if (mapManager != null) mapManager.renderTexture = texture;
+            if (mapCamera != null) {
+                mapCamera.targetTexture = texture;
+                mapCamera.aspect = targetAspect;
+            }
+            return texture;
+        }
+
+        static void EnsurePanelBackdrop(Transform mapRoot, Color color) {
+            if (mapRoot == null) return;
+
+            Image backdrop = mapRoot.GetComponent<Image>();
+            if (backdrop == null) backdrop = mapRoot.gameObject.AddComponent<Image>();
+            backdrop.color = new Color(color.r, color.g, color.b, 0.96f);
+            backdrop.raycastTarget = true;
+
+            CanvasGroup group = mapRoot.GetComponent<CanvasGroup>();
+            if (group == null) return;
+            group.alpha = 1f;
+            group.interactable = true;
+            group.blocksRaycasts = true;
+        }
+
+        void ApplyViewportLayout(RectTransform rect) {
+            if (presentation != null) { presentation.FitViewport(); return; }
+            if (!enforceRuntimeViewport || rect == null) return;
+
+            // Full-screen map surface. Zoom limits still control how much of the world is visible.
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.sizeDelta = Vector2.zero;
+            rect.localScale = Vector3.one;
+        }
+        void SetMinimapVisible(bool visible) {
+            MapSystemController system = GetComponent<MapSystemController>();
+            if (system != null) {
+                system.SetMinimapVisible(visible);
+                return;
+            }
+            if (minimapRoot == null) {
+                MinimapManager minimap = FindFirst<MinimapManager>();
+                if (minimap != null) minimapRoot = minimap.gameObject;
+            }
+
+            if (minimapRoot != null) minimapRoot.SetActive(visible);
+
+            MinimapManager manager = FindFirst<MinimapManager>();
+            if (manager != null) manager.gameObject.SetActive(visible);
+
+            GameObject cameraObject = manager != null ? manager.GetCamera() : GameObject.Find("Minimap Camera");
+            if (cameraObject != null) cameraObject.SetActive(visible);
+        }
+
+        void RestoreMinimapVisible() {
+            SetMinimapVisible(true);
+        }
+        static Image EnsureRuntimeImage(Transform parent, string name, Color color) {
+            Transform child = parent.Find(name);
+            if (child == null) {
+                GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Image));
+                obj.transform.SetParent(parent, false);
+                child = obj.transform;
+            }
+
+            RectTransform rect = child.GetComponent<RectTransform>();
+            if (rect != null) Stretch(rect);
+
+            Image image = child.GetComponent<Image>();
+            if (image == null) image = child.gameObject.AddComponent<Image>();
+            image.color = color;
+            image.raycastTarget = false;
+            return image;
+        }
+
+        static void Stretch(RectTransform rect) {
+            if (rect == null) return;
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.localScale = Vector3.one;
+        }
+
+        static Transform FindNamedTransform(string objectName) {
+            if (string.IsNullOrWhiteSpace(objectName)) return null;
+
+            Transform[] transforms = FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < transforms.Length; i++) {
+                Transform item = transforms[i];
+                if (item != null && item.name == objectName) return item;
+            }
+            return null;
+        }
+
+        static Transform FindLikelyMapContentTransform() {
+            Renderer[] renderers = FindObjectsByType<Renderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            Transform best = null;
+            float bestArea = 0f;
+
+            for (int i = 0; i < renderers.Length; i++) {
+                Renderer renderer = renderers[i];
+                if (renderer == null) continue;
+                Transform candidate = GetMapContentRoot(renderer.transform);
+                if (candidate == null) continue;
+
+                Bounds bounds = renderer.bounds;
+                float area = Mathf.Max(0f, bounds.size.x) * Mathf.Max(0f, bounds.size.z);
+                if (area <= bestArea) continue;
+
+                bestArea = area;
+                best = candidate;
+            }
+
+            return best;
+        }
+
+        static Transform GetMapContentRoot(Transform transform) {
+            if (transform == null) return null;
+            if (transform.GetComponentInParent<Canvas>() != null) return null;
+            if (transform.GetComponentInParent<Camera>() != null) return null;
+            if (transform.GetComponentInParent<MapMarker>() != null) return null;
+
+            Transform current = transform;
+            while (current != null) {
+                string name = current.name;
+                if (name.Contains("Map Icon") || name.Contains("Minimap") || name.Contains("WorldMap") || name.Contains("MapSystem")) return null;
+                if (name.StartsWith("Map") || name.Contains("MapSet") || name.Contains("Map Set")) return current;
+                current = current.parent;
+            }
+
+            return null;
+        }
+
+        void StyleAndArrangeOverlay() {
+            Color panelBackground = new Color(0.98f, 0.985f, 0.965f, 0.96f);
+            Color panelBorder = new Color(0.38f, 0.55f, 0.31f, 0.95f);
+            Color textColor = new Color(0.12f, 0.28f, 0.14f, 1f);
+            Color accentBackground = new Color(0.84f, 0.91f, 0.80f, 0.98f);
+            Color checkColor = new Color(0.35f, 0.60f, 0.29f, 1f);
+
+            StyleOverlaySurface(panelBorder);
+            StyleButton(closeButton, panelBackground, textColor, true);
+            StyleButton(zoomInButton, panelBackground, textColor);
+            StyleButton(zoomOutButton, panelBackground, textColor);
+            StyleButton(centerOnPlayerButton, accentBackground, textColor);
+            StyleButton(clearWaypointButton, panelBackground, textColor, true);
+            EnsureButtonLabel(closeButton, "<  BACK", 16);
+            EnsureButtonLabel(clearWaypointButton, "CLEAR WAYPOINT", 14);
+
+            PositionButton(closeButton, new Vector2(1f, 1f), new Vector2(-24f, -22f), new Vector2(150f, 48f), new Vector2(1f, 1f));
+            PositionButton(clearWaypointButton, new Vector2(1f, 0f), new Vector2(-24f, 22f), new Vector2(180f, 44f), new Vector2(1f, 0f));
+
+            RectTransform zoomRoot = zoomInButton != null ? zoomInButton.transform.parent as RectTransform : null;
+            if (zoomRoot != null) {
+                PositionRect(zoomRoot, new Vector2(1f, 0.5f), new Vector2(-22f, 0f), new Vector2(60f, 178f), new Vector2(1f, 0.5f));
+                Image image = zoomRoot.GetComponent<Image>();
+                StylePanel(image, new Color(0.98f, 0.985f, 0.965f, 0.88f), panelBorder);
+
+                PositionButton(zoomInButton, new Vector2(0.5f, 1f), new Vector2(0f, -8f), new Vector2(44f, 44f), new Vector2(0.5f, 1f));
+                PositionButton(zoomOutButton, new Vector2(0.5f, 1f), new Vector2(0f, -67f), new Vector2(44f, 44f), new Vector2(0.5f, 1f));
+                PositionButton(centerOnPlayerButton, new Vector2(0.5f, 1f), new Vector2(0f, -126f), new Vector2(44f, 44f), new Vector2(0.5f, 1f));
+            }
+
+            if (regionNameText != null) {
+                regionNameText.color = textColor;
+                regionNameText.fontStyle = FontStyle.Bold;
+                regionNameText.fontSize = 20;
+                RectTransform region = regionNameText.transform.parent as RectTransform;
+                if (region != null) PositionRect(region, new Vector2(0.5f, 1f), new Vector2(0f, -22f), new Vector2(420f, 48f), new Vector2(0.5f, 1f));
+                Image regionBg = region != null ? region.GetComponent<Image>() : null;
+                StylePanel(regionBg, panelBackground, panelBorder);
+            }
+
+            RectTransform filterBar = filterBindings.Count > 0 && filterBindings[0].toggle != null
+                ? filterBindings[0].toggle.transform.parent as RectTransform
+                : null;
+            if (filterBar != null) {
+                PositionRect(filterBar, new Vector2(0.5f, 0f), new Vector2(0f, 22f), new Vector2(908f, 48f), new Vector2(0.5f, 0f));
+                Image barImage = filterBar.GetComponent<Image>();
+                StylePanel(barImage, new Color(0.98f, 0.985f, 0.965f, 0.90f), panelBorder);
+            }
+
+            for (int i = 0; i < filterBindings.Count; i++) {
+                Toggle toggle = filterBindings[i].toggle;
+                if (toggle == null) continue;
+
+                RectTransform rect = toggle.transform as RectTransform;
+                if (rect != null) {
+                    rect.anchorMin = new Vector2(0f, 0.5f);
+                    rect.anchorMax = new Vector2(0f, 0.5f);
+                    rect.pivot = new Vector2(0f, 0.5f);
+                    rect.sizeDelta = new Vector2(100f, 34f);
+                    rect.anchoredPosition = new Vector2(12f + i * 110f, 0f);
+                }
+
+                Image bg = toggle.GetComponent<Image>();
+                StylePanel(bg, toggle.isOn ? accentBackground : panelBackground, panelBorder, true);
+
+                if (toggle.graphic != null) toggle.graphic.color = checkColor;
+
+                Text label = toggle.GetComponentInChildren<Text>(true);
+                if (label != null) {
+                    label.color = textColor;
+                    label.fontSize = 13;
+                }
+            }
+        }
+
+        void StyleOverlaySurface(Color borderColor) {
+            if (overlayRoot == null) return;
+
+            Image surface = overlayRoot.GetComponent<Image>();
+            if (surface == null) surface = overlayRoot.gameObject.AddComponent<Image>();
+            surface.sprite = null;
+            surface.type = Image.Type.Simple;
+            surface.color = new Color(0.98f, 0.985f, 0.965f, 0.025f);
+            surface.raycastTarget = false;
+            EnsureOutline(surface.gameObject, borderColor, new Vector2(2f, -2f));
+
+            if (customFrame != null) customFrame.gameObject.SetActive(false);
+        }
+
+        static void StyleButton(Button button, Color background, Color textColor, bool removeSprite = false) {
+            if (button == null) return;
+
+            Image image = button.GetComponent<Image>();
+            if (image != null) {
+                if (removeSprite) {
+                    image.sprite = null;
+                    image.preserveAspect = false;
+                    image.type = Image.Type.Simple;
+                }
+
+                image.color = background;
+                EnsureOutline(image.gameObject, new Color(0.38f, 0.55f, 0.31f, 0.95f), new Vector2(1f, -1f));
+            }
+
+            ColorBlock colors = button.colors;
+            colors.normalColor = Color.white;
+            colors.highlightedColor = new Color(0.93f, 0.98f, 0.91f, 1f);
+            colors.pressedColor = new Color(0.79f, 0.89f, 0.75f, 1f);
+            colors.selectedColor = colors.highlightedColor;
+            colors.disabledColor = new Color(0.78f, 0.80f, 0.75f, 0.65f);
+            colors.colorMultiplier = 1f;
+            colors.fadeDuration = 0.08f;
+            button.colors = colors;
+
+            Text text = button.GetComponentInChildren<Text>(true);
+            if (text != null) {
+                text.color = textColor;
+                text.fontStyle = FontStyle.Bold;
+            }
+        }
+
+        static void StylePanel(Image image, Color background, Color border, bool raycastTarget = false) {
+            if (image == null) return;
+            image.sprite = null;
+            image.type = Image.Type.Simple;
+            image.color = background;
+            image.raycastTarget = raycastTarget;
+            EnsureOutline(image.gameObject, border, new Vector2(1f, -1f));
+        }
+
+        static void EnsureButtonLabel(Button button, string value, int fontSize) {
+            if (button == null) return;
+
+            Text label = button.GetComponentInChildren<Text>(true);
+            if (label == null) {
+                GameObject labelObject = new GameObject("Text", typeof(RectTransform), typeof(Text));
+                labelObject.transform.SetParent(button.transform, false);
+                label = labelObject.GetComponent<Text>();
+                label.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                RectTransform rect = label.rectTransform;
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.offsetMin = Vector2.zero;
+                rect.offsetMax = Vector2.zero;
+            }
+
+            label.gameObject.SetActive(true);
+            label.text = value;
+            label.fontSize = fontSize;
+            label.fontStyle = FontStyle.Bold;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = new Color(0.12f, 0.28f, 0.14f, 1f);
+            label.raycastTarget = false;
+        }
+
+        static void EnsureOutline(GameObject target, Color color, Vector2 distance) {
+            if (target == null) return;
+            Outline outline = target.GetComponent<Outline>();
+            if (outline == null) outline = target.AddComponent<Outline>();
+            outline.effectColor = color;
+            outline.effectDistance = distance;
+            outline.useGraphicAlpha = false;
+        }
+
+        static void PositionButton(Button button, Vector2 anchor, Vector2 anchoredPosition, Vector2 size, Vector2 pivot) {
+            if (button == null) return;
+            PositionRect(button.transform as RectTransform, anchor, anchoredPosition, size, pivot);
+        }
+
+        static void PositionRect(RectTransform rect, Vector2 anchor, Vector2 anchoredPosition, Vector2 size, Vector2 pivot) {
+            if (rect == null) return;
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = pivot;
+            rect.anchoredPosition = anchoredPosition;
+            rect.sizeDelta = size;
+            rect.localScale = Vector3.one;
+        }
+        void WireButtons() {
+            if (buttonsWired) return;
+            buttonsWired = true;
+
+            if (closeButton != null) closeButton.onClick.AddListener(RequestBack);
+            if (zoomInButton != null) zoomInButton.onClick.AddListener(HandleZoomIn);
+            if (zoomOutButton != null) zoomOutButton.onClick.AddListener(HandleZoomOut);
+            if (centerOnPlayerButton != null) centerOnPlayerButton.onClick.AddListener(CenterOnPlayer);
+            if (clearWaypointButton != null) clearWaypointButton.onClick.AddListener(ClearWaypoint);
+
+            for (int i = 0; i < filterBindings.Count; i++) {
+                Toggle toggle = filterBindings[i].toggle;
+                MapMarkerType type = filterBindings[i].markerType;
+                if (toggle == null) continue;
+                UnityAction<bool> callback = value => SetFilter(type, value);
+                toggle.onValueChanged.AddListener(callback);
+                filterListeners.Add(new FilterListener(toggle, callback));
+            }
+        }
+
+        void UnwireButtons() {
+            if (!buttonsWired) return;
+
+            if (closeButton != null) closeButton.onClick.RemoveListener(RequestBack);
+            if (zoomInButton != null) zoomInButton.onClick.RemoveListener(HandleZoomIn);
+            if (zoomOutButton != null) zoomOutButton.onClick.RemoveListener(HandleZoomOut);
+            if (centerOnPlayerButton != null) centerOnPlayerButton.onClick.RemoveListener(CenterOnPlayer);
+            if (clearWaypointButton != null) clearWaypointButton.onClick.RemoveListener(ClearWaypoint);
+
+            for (int i = 0; i < filterListeners.Count; i++) {
+                FilterListener listener = filterListeners[i];
+                if (listener.Toggle != null) listener.Toggle.onValueChanged.RemoveListener(listener.Callback);
+            }
+
+            filterListeners.Clear();
+            buttonsWired = false;
+        }
+
+        void HandleZoomIn() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HandleZoomIn")) return;
+            Zoom(1f);
+        }
+
+        void HandleZoomOut() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HandleZoomOut")) return;
+            Zoom(-1f);
+        }
+
+        void RequestBack() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "RequestBack")) return;
+            if (BackRequested != null) BackRequested.Invoke();
+            else CloseMap();
+        }
+
+        void SetOverlayVisible(bool visible) {
+            if (overlayRoot != null) overlayRoot.gameObject.SetActive(visible);
+        }
+
+        void HideCustomFrame() {
+            if (customFrame != null) customFrame.gameObject.SetActive(false);
+        }
+        void BringWorldMapToFront() {
+            if (mapManager != null) mapManager.transform.SetAsLastSibling();
+            if (overlayRoot != null) overlayRoot.SetAsLastSibling();
+            if (customFrame != null) customFrame.SetAsLastSibling();
+        }
+
+        void SetHudRootsVisibleForMap(bool mapVisible) {
+            if (!hideGameplayHudWhileOpen) return;
+
+            if (mapVisible) HideGameplayHudRoots();
+            else RestoreHiddenHudRoots();
+        }
+
+        void HideGameplayHudRoots() {
+            ResolveDefaultHudRoots();
+
+            for (int i = 0; i < hudRootsToHide.Count; i++) {
+                GameObject root = hudRootsToHide[i];
+                if (root == null || IsMapOwnedRoot(root) || IsHiddenHudRoot(root)) continue;
+
+                hiddenHudRoots.Add(new HudRootState(root, root.activeSelf));
+                root.SetActive(false);
+            }
+        }
+
+        void RestoreHiddenHudRoots() {
+            for (int i = 0; i < hiddenHudRoots.Count; i++) {
+                HudRootState state = hiddenHudRoots[i];
+                if (state.root != null) state.root.SetActive(state.wasActive);
+            }
+
+            hiddenHudRoots.Clear();
+        }
+
+        void ResolveDefaultHudRoots() {
+            AddHudRoot(GameObject.Find("GameplayHUDRoot"));
+            AddHudRoot(GameObject.Find("CompassHUDRoot"));
+            AddHudRoot(GameObject.Find("QuestTrackerHUD"));
+        }
+
+        void AddHudRoot(GameObject candidate) {
+            if (candidate == null || hudRootsToHide.Contains(candidate)) return;
+            hudRootsToHide.Add(candidate);
+        }
+
+        bool IsHiddenHudRoot(GameObject candidate) {
+            for (int i = 0; i < hiddenHudRoots.Count; i++) {
+                if (hiddenHudRoots[i].root == candidate) return true;
+            }
+
+            return false;
+        }
+
+        bool IsMapOwnedRoot(GameObject candidate) {
+            if (candidate == null) return true;
+            Transform candidateTransform = candidate.transform;
+
+            if (mapManager != null && (candidate == mapManager.gameObject || candidateTransform.IsChildOf(mapManager.transform))) return true;
+            if (overlayRoot != null && (candidate == overlayRoot.gameObject || candidateTransform.IsChildOf(overlayRoot))) return true;
+            if (customFrame != null && (candidate == customFrame.gameObject || candidateTransform.IsChildOf(customFrame))) return true;
+
+            return false;
+        }
+
+        void ApplyCustomFrameLayout() {
+            HideCustomFrame();
+        }
+        void SetWorldMapRootVisible(bool visible) {
+            if (mapManager == null) return;
+
+            if (!mapManager.gameObject.activeSelf) mapManager.gameObject.SetActive(true);
+
+            CanvasGroup group = mapManager.GetComponent<CanvasGroup>();
+            if (group == null) group = mapManager.gameObject.AddComponent<CanvasGroup>();
+            group.alpha = visible ? 1f : 0f;
+            group.interactable = visible;
+            group.blocksRaycasts = visible;
+        }
+
+        void EnableMapSafely() {
+            if (mapManager == null) return;
+
+            if (!mapManager.gameObject.activeSelf) mapManager.gameObject.SetActive(true);
+            mapManager.disableMinimap = true;
+            mapManager.haveBorder = false;
+            mapManager.haveZoomButtons = false;
+            mapManager.haveExitButton = false;
+            mapManager.displayDirections = false;
+            mapManager.displayGrid = false;
+            EnsureWorldMapRenderTexture();
+            mapManager.EnableMap();
+            SetMapChildActive("Map Mask", true);
+            SetMapChildActive("Map Border", false);
+            SetMapChildActive("Map Directions", false);
+            SetMapChildActive("Map Zoom Buttons", false);
+            SetMapChildActive("Map Exit Button", false);
+            if (mapCamera != null) {
+                mapCamera.gameObject.SetActive(true);
+                mapCamera.enabled = true;
+                if (mapManager.renderTexture != null) mapCamera.targetTexture = mapManager.renderTexture;
+            }
+
+            Canvas.ForceUpdateCanvases();
+        }
+
+        void DisableMapSafely() {
+            if (mapManager == null) return;
+
+            if (!mapManager.gameObject.activeSelf) mapManager.gameObject.SetActive(true);
+            mapManager.disableMinimap = true;
+            mapManager.haveBorder = false;
+            mapManager.haveZoomButtons = false;
+            mapManager.haveExitButton = false;
+            mapManager.displayDirections = false;
+            mapManager.displayGrid = false;
+            mapManager.mapEnabled = false;
+            SetMapChildActive("Map Mask", false);
+            SetMapChildActive("Map Border", false);
+            SetMapChildActive("Map Directions", false);
+            SetMapChildActive("Map Zoom Buttons", false);
+            SetMapChildActive("Map Exit Button", false);
+            if (mapCamera != null) mapCamera.gameObject.SetActive(false);
+        }
+
+        void SetMapChildActive(string childName, bool active) {
+            if (mapManager == null || string.IsNullOrWhiteSpace(childName)) return;
+            Transform child = mapManager.transform.Find(childName);
+            if (child != null) child.gameObject.SetActive(active);
+        }
+
+        void UpdateRegionName() {
+            if (regionNameText == null || mapManager == null) return;
+            Vector3 position = mapManager.GetCameraPosition();
+            regionNameText.text = string.Format("Region: X {0:0}, Z {1:0}", position.x, position.z);
+        }
+
+        bool ScreenPointToWorld(Vector2 screenPosition, out Vector3 worldPosition) {
+            worldPosition = Vector3.zero;
+            if (mapCamera == null) return false;
+
+            RectTransform rect = mapInteractionRect;
+            if (rect != null) {
+                if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screenPosition, null, out Vector2 local)) return false;
+                Rect bounds = rect.rect;
+                if (!bounds.Contains(local)) return false;
+
+                float viewportX = Mathf.InverseLerp(bounds.xMin, bounds.xMax, local.x);
+                float viewportY = Mathf.InverseLerp(bounds.yMin, bounds.yMax, local.y);
+                Ray ray = mapCamera.ViewportPointToRay(new Vector3(viewportX, viewportY, 0f));
+                if (!IntersectGround(ray, out worldPosition)) return false;
+                worldPosition = ClampWorldPosition(worldPosition);
+                return true;
+            }
+
+            if (!IntersectGround(mapCamera.ScreenPointToRay(screenPosition), out worldPosition)) return false;
+            worldPosition = ClampWorldPosition(worldPosition);
+            return true;
+        }
+
+        Vector3 ClampCameraPosition(Vector3 position, float orthographicSize) {
+            position.y = cameraHeight;
+            if (!clampToWorldBounds || mapCamera == null) return position;
+
+            float halfHeight = Mathf.Max(1f, orthographicSize);
+            float halfWidth = halfHeight * Mathf.Max(0.01f, mapCamera.aspect);
+            GetEffectiveWorldBounds(out float minWorldX, out float maxWorldX, out float minWorldZ, out float maxWorldZ);
+
+            float minX = minWorldX + halfWidth;
+            float maxX = maxWorldX - halfWidth;
+            float minZ = minWorldZ + halfHeight;
+            float maxZ = maxWorldZ - halfHeight;
+
+            position.x = minX <= maxX ? Mathf.Clamp(position.x, minX, maxX) : (minWorldX + maxWorldX) * 0.5f;
+            position.z = minZ <= maxZ ? Mathf.Clamp(position.z, minZ, maxZ) : (minWorldZ + maxWorldZ) * 0.5f;
+            return position;
+        }
+
+        Vector3 ClampWorldPosition(Vector3 position) {
+            if (!clampToWorldBounds) return position;
+
+            GetEffectiveWorldBounds(out float minWorldX, out float maxWorldX, out float minWorldZ, out float maxWorldZ);
+            position.x = Mathf.Clamp(position.x, minWorldX, maxWorldX);
+            position.z = Mathf.Clamp(position.z, minWorldZ, maxWorldZ);
+            return position;
+        }
+
+        void GetEffectiveWorldBounds(out float minX, out float maxX, out float minZ, out float maxZ) {
+            float halfWorldX = Mathf.Max(0.5f, worldSize.x * 0.5f);
+            float halfWorldZ = Mathf.Max(0.5f, worldSize.y * 0.5f);
+            float leftInset = worldSize.x * Mathf.Clamp01(worldBoundsInsetPercent.x);
+            float topInset = worldSize.y * Mathf.Clamp01(worldBoundsInsetPercent.y);
+            float rightInset = worldSize.x * Mathf.Clamp01(worldBoundsInsetPercent.z);
+            float bottomInset = worldSize.y * Mathf.Clamp01(worldBoundsInsetPercent.w);
+
+            minX = worldCenter.x - halfWorldX + leftInset;
+            maxX = worldCenter.x + halfWorldX - rightInset;
+            minZ = worldCenter.y - halfWorldZ + bottomInset;
+            maxZ = worldCenter.y + halfWorldZ - topInset;
+
+            if (minX > maxX) {
+                float center = (minX + maxX) * 0.5f;
+                minX = center;
+                maxX = center;
+            }
+
+            if (minZ > maxZ) {
+                float center = (minZ + maxZ) * 0.5f;
+                minZ = center;
+                maxZ = center;
+            }
+        }
+
+        void OnValidate() {
+            NormalizeVisiblePercents();
+            NormalizeWorldBoundsInsets();
+            viewportSize = new Vector2(Mathf.Max(320f, viewportSize.x), Mathf.Max(240f, viewportSize.y));
+            worldSize = new Vector2(Mathf.Max(1f, worldSize.x), Mathf.Max(1f, worldSize.y));
+            frameOverscan = Mathf.Max(0f, frameOverscan);
+        }
+
+        static bool IntersectGround(Ray ray, out Vector3 worldPosition) {
+            Plane ground = new Plane(Vector3.up, Vector3.zero);
+            if (ground.Raycast(ray, out float enter)) {
+                worldPosition = ray.GetPoint(enter);
+                return true;
+            }
+
+            worldPosition = Vector3.zero;
+            return false;
+        }
+
+        void EnsureWaypointMarker() {
+            if (waypointMarker != null) return;
+
+            Transform markerTransform = transform.Find("Custom Waypoint Marker");
+            GameObject markerObject = markerTransform != null ? markerTransform.gameObject : new GameObject("Custom Waypoint Marker");
+            markerObject.transform.SetParent(transform, false);
+            waypointMarker = markerObject.GetComponent<MapMarker>();
+            if (waypointMarker == null) waypointMarker = markerObject.AddComponent<MapMarker>();
+            waypointMarker.SetVisible(false);
+        }
+
+        static T FindFirst<T>() where T : UnityEngine.Object {
+            T[] items = FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            return items.Length > 0 ? items[0] : null;
+        }
+    }
+}
+
+
+
+
+
+
+

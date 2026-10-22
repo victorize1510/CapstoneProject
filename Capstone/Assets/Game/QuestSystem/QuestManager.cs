@@ -162,10 +162,11 @@ namespace Capstone.Game.QuestSystem {
         public bool RegisterQuestDefinition(QuestDefinition definition) {
             if (definition == null || string.IsNullOrWhiteSpace(definition.QuestId)) return false;
 
-            if (!runtimeQuestDefinitions.Contains(definition)) {
-                runtimeQuestDefinitions.Add(definition);
-            }
+            EnsureReady();
+            QuestDefinition registeredDefinition = registry.Find(definition.QuestId);
+            if (registeredDefinition != null) return registeredDefinition == definition;
 
+            runtimeQuestDefinitions.Add(definition);
             registry.Register(definition);
             return true;
         }
@@ -184,7 +185,7 @@ namespace Capstone.Game.QuestSystem {
         public bool AcceptQuest(QuestDefinition definition) {
             if (definition == null || string.IsNullOrWhiteSpace(definition.QuestId)) return false;
 
-            RegisterQuestDefinition(definition);
+            if (!RegisterQuestDefinition(definition)) return false;
             EnsureReady();
 
             if (!CanAcceptQuest(definition, out _)) return false;

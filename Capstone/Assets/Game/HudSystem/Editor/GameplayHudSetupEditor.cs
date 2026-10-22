@@ -1,4 +1,5 @@
 using Capstone.Game.QuestSystem;
+using Capstone.Game.MapSystem;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -39,10 +40,25 @@ namespace Capstone.Game.HudSystem.Editor {
             SetObject(serialized, "localPlayer", FindPlayer());
             SetBool(serialized, "buildOnAwake", true);
             SetBool(serialized, "autoFindReferences", true);
-            SetBool(serialized, "positionExistingMinimap", false);
+            SetBool(serialized, "positionExistingMinimap", true);
             SetBool(serialized, "disableMinimapHud", false);
             SetBool(serialized, "hideWhileUiOpen", true);
+            SetObject(serialized, "hudFont", AssetDatabase.LoadAssetAtPath<Font>("Assets/TextMesh Pro/Fonts/LiberationSans.ttf"));
+            SetObject(serialized, "hudCircleMask", AssetDatabase.LoadAssetAtPath<Sprite>("Assets/ThangTest/UIThang/AA Map and Minimap System/Sprites/Minimap Shapes/Minimap Shape Circle.png"));
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            AAMapRuntimeBinder mapBinder = Object.FindFirstObjectByType<AAMapRuntimeBinder>(FindObjectsInactive.Include);
+            if (mapBinder != null) {
+                var binderSettings = new SerializedObject(mapBinder); SetBool(binderSettings, "minimapDisabled", false);
+                binderSettings.ApplyModifiedProperties(); EditorUtility.SetDirty(mapBinder);
+            }
+            MinimapController minimap = Object.FindFirstObjectByType<MinimapController>(FindObjectsInactive.Include);
+            if (minimap != null) {
+                minimap.enabled = true;
+                if (minimap.Manager != null) minimap.Manager.gameObject.SetActive(true);
+                if (minimap.Camera != null) { minimap.Camera.gameObject.SetActive(true); minimap.Camera.enabled = true; }
+                EditorUtility.SetDirty(minimap);
+            }
 
             controller.RebuildHud();
             DisableLegacyQuestTrackerHud();
@@ -52,7 +68,7 @@ namespace Capstone.Game.HudSystem.Editor {
             EditorSceneManager.MarkSceneDirty(hudObject.scene);
             Undo.CollapseUndoOperations(group);
 
-            Debug.Log("Gameplay HUD setup: created/updated GameplayHUD. Press Play to test quest tracker, pet status, pet slots and Z/X/C/V skill bar.");
+            Debug.Log("Gameplay HUD setup: five reference modules configured. Carousel focuses locally; 1–6 or the focused card summons. Skills Z/X/C/V, items R/T.");
         }
 
         static GameObject EnsureHudObject() {

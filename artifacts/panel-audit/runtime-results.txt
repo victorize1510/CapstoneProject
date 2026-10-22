@@ -1,0 +1,8 @@
+World Map UI validation passed: 20 checks; real map binding, viewport, buttons, grouped filters, normalized marker updates and camera actions.
+Director integration passed: idle/accepted/cancelled ball visibility, ball disappears after recall, authored Throw/Pickup, flight/bounce, three Cast Spell clips, queued switching and latest-request wins.
+Panel lifecycle validation passed: 54 checks; Menu/Profile/BAG/PETS/BOX/QUEST/MAP, rebinds, hidden updates and input restoration.
+Panel lifecycle validation passed: 62 checks; Menu/Profile/BAG/PETS/BOX/QUEST/MAP, rebinds, hidden updates and input restoration.
+Director integration passed: idle/accepted/cancelled ball visibility, ball disappears after recall, authored Throw/Pickup, flight/bounce, three Cast Spell clips, queued switching and latest-request wins.
+World Map UI validation passed: 22 checks; real map binding, viewport, buttons, grouped filters, normalized marker updates and camera actions.
+PASS actual composed BOX viewport (1366.40, 700.00): (1366.40, 700.00)
+PASS actual composed BOX viewport (1366.40, 700.00): (1366.40, 700.00)

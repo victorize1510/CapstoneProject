@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="gui-screen-header">
+        <ui:VisualElement class="gui-screen-heading">
+            <ui:VisualElement name="screen-icon" class="gui-icon" picking-mode="Ignore" />
+            <ui:Label name="screen-title" class="gui-screen-title" />
+        </ui:VisualElement>
+        <ui:Label name="screen-description" class="gui-caption gui-screen-description" />
+        <ui:Button name="screen-back" tooltip="Trở lại" class="gui-button">
+            <ui:VisualElement class="gui-icon gui-icon--back" picking-mode="Ignore" />
+            <ui:Label text="Trở lại" picking-mode="Ignore" />
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>

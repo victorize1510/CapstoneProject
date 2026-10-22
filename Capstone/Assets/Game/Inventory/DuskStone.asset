@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
+  m_Name: DuskStone
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
+  Name: Dusk Stone
+  Icon: {fileID: 21300000, guid: e7d29a79bc7fae248887c8a08a160303, type: 3}
+  Stackable: 1
+  MaxStackSize: 99
+  Tags: []
+  stableId: dusk-stone
+  legacyIds: []
+  category: 6
+  rarity: 2
+  description: A dark stone that evolves Dragon Dusk or Dragon Nightfall.
+  effect: Evolve one eligible pet in the Party without increasing its level.
+  source: TestChar
+  flavorText: A faint dragon-shaped shadow moves inside the stone.
+  healAmount: 0
+  usableFromInventory: 1
+  consumable: 1

@@ -1,0 +1,277 @@
+<ui:UXML xmlns:ga="Capstone.Game.UISystem" xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+  <ui:Style src="../../../../Game/UISystem/Resources/UI/GreenAngular/GreenAngular.uss" />
+  <ui:Style src="MenuTheme.uss" />
+  <ui:Style src="MenuCommon.uss" />
+  <ui:Style src="PetsPanel.uss" />
+  <ui:Style src="MenuScreenHeader.uss" />
+  <ui:Style src="CompanionPanel.uss" />
+  <ui:VisualElement name="pets-panel" class="pets-panel menu-theme companion-panel">
+    <ui:VisualElement name="pets-design" class="companion-design">
+      <ui:VisualElement name="companion-header" class="companion-header">
+        <ui:VisualElement name="companion-emblem" class="companion-emblem" picking-mode="Ignore" />
+        <ui:Label text="THÚ ĐỒNG HÀNH" class="companion-title" />
+        <ga:AngularButton name="pets-back-button" class="companion-button companion-back" shape="parallel" role="primary">
+          <ui:VisualElement class="companion-icon ci-back " picking-mode="Ignore" />
+          <ui:Label text="Trở lại" />
+        </ga:AngularButton>
+      </ui:VisualElement>
+      <ui:VisualElement name="companion-hero" class="companion-hero">
+        <ui:VisualElement class="companion-sanctuary" picking-mode="Ignore" />
+        <ga:AngularSurface name="pets-selected-portrait" class="companion-large-portrait ga-portrait ga-portrait" picking-mode="Ignore" />
+        <ui:Label name="pets-selected-portrait-fallback" text="Chưa có ảnh 2D" class="companion-missing-art" />
+        <ui:VisualElement class="companion-mode">
+          <ga:AngularButton name="pets-mode-2d" class="companion-button " shape="parallel" role="primary">
+            <ui:VisualElement class="companion-icon ci-illustration " picking-mode="Ignore" />
+            <ui:Label text="2D" />
+          </ga:AngularButton>
+          <ga:AngularButton name="pets-mode-3d" class="companion-button " shape="parallel" role="primary">
+            <ui:VisualElement class="companion-icon ci-view3d " picking-mode="Ignore" />
+            <ui:Label text="3D" />
+          </ga:AngularButton>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <ui:VisualElement name="companion-tabs" class="companion-tabs">
+        <ga:AngularButton name="pets-tab-overview" class="companion-button companion-tab" shape="tab" role="primary">
+          <ui:VisualElement class="companion-icon ci-compass " picking-mode="Ignore" />
+          <ui:Label text="Tổng quan" />
+        </ga:AngularButton>
+        <ga:AngularButton name="pets-tab-skills" class="companion-button companion-tab" shape="tab" role="primary">
+          <ui:VisualElement class="companion-icon ci-skills " picking-mode="Ignore" />
+          <ui:Label text="Kỹ năng" />
+        </ga:AngularButton>
+        <ga:AngularButton name="pets-tab-growth" class="companion-button companion-tab" shape="tab" role="primary">
+          <ui:VisualElement class="companion-icon ci-evolve " picking-mode="Ignore" />
+          <ui:Label text="Phát triển" />
+        </ga:AngularButton>
+      </ui:VisualElement>
+      <ui:VisualElement name="companion-inspector" class="companion-inspector">
+        <ui:VisualElement class="companion-shell-border" picking-mode="Ignore" />
+        <ui:VisualElement name="companion-corner" class="companion-corner" picking-mode="Ignore" />
+        <ui:VisualElement class="companion-summary">
+          <ui:VisualElement class="companion-name-row">
+            <ui:Label name="pets-selected-name" text="Chọn một thú" class="companion-name" />
+            <ga:AngularButton name="pets-rename-button" class="companion-button companion-icon-button" shape="diamond" role="primary">
+              <ui:VisualElement class="companion-icon ci-edit " picking-mode="Ignore" />
+              <ui:Label text="" />
+            </ga:AngularButton>
+            <ga:AngularButton name="pets-favorite-button" class="companion-button companion-icon-button" shape="diamond" role="primary">
+              <ui:VisualElement class="companion-icon ci-favorite " picking-mode="Ignore" />
+              <ui:Label text="" />
+            </ga:AngularButton>
+            <ui:Label name="pets-summoned-badge" text="Đang xuất chiến" class="companion-summoned" />
+          </ui:VisualElement>
+          <ui:VisualElement class="companion-meta">
+            <ui:Label name="pets-selected-level" text="Lv. —" />
+            <ui:Label name="pets-selected-species" text="Loài: —" />
+            <ui:Label name="pets-selected-element" text="Hệ: —" />
+            <ui:Label name="pets-selected-gender" text="Giới tính: —" />
+            <ui:Label name="pets-selected-rarity" class="companion-hidden" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="pets-tab-body-overview" class="companion-tab-body">
+          <ui:VisualElement name="companion-resources" class="companion-resources">
+            <ui:VisualElement class="companion-resource-row">
+              <ui:VisualElement class="companion-icon ci-hp " picking-mode="Ignore" />
+              <ui:Label text="HP" class="companion-resource-name" />
+              <ui:VisualElement class="companion-bar-track">
+                <ui:VisualElement name="pets-health-fill" class="companion-bar-fill fill-health" />
+              </ui:VisualElement>
+              <ui:Label name="pets-health-value" text="— / —" class="companion-resource-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="companion-resource-row">
+              <ui:VisualElement class="companion-icon ci-upgrade " picking-mode="Ignore" />
+              <ui:Label text="EXP" class="companion-resource-name" />
+              <ui:VisualElement class="companion-bar-track">
+                <ui:VisualElement name="pets-exp-fill" class="companion-bar-fill fill-exp" />
+              </ui:VisualElement>
+              <ui:Label name="pets-exp-value" text="— / —" class="companion-resource-value" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement name="companion-stats" class="companion-content companion-stats">
+            <ui:VisualElement class="companion-stat-column">
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-hp " picking-mode="Ignore" />
+                <ui:Label text="HP" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-health-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-health" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-attack " picking-mode="Ignore" />
+                <ui:Label text="ATK" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-attack-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-attack" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-special_attack " picking-mode="Ignore" />
+                <ui:Label text="SP.ATK" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-magic-attack-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-magic-attack" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-defense " picking-mode="Ignore" />
+                <ui:Label text="DEF" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-defense-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-defense" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="companion-stat-column">
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-special_defense " picking-mode="Ignore" />
+                <ui:Label text="SP.DEF" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-magic-defense-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-magic-defense" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-speed " picking-mode="Ignore" />
+                <ui:Label text="SPD" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-speed-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-speed" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-crit_rate " picking-mode="Ignore" />
+                <ui:Label text="CRIT RATE" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-critical-rate-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-critical-rate" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="companion-stat-row">
+                <ui:VisualElement class="companion-icon ci-crit_damage " picking-mode="Ignore" />
+                <ui:Label text="CRIT DMG" class="companion-stat-name" />
+                <ui:VisualElement class="companion-stat-track">
+                  <ui:VisualElement name="pets-stat-critical-damage-fill" class="companion-stat-fill" />
+                </ui:VisualElement>
+                <ui:Label name="pets-stat-critical-damage" text="—" class="companion-stat-value" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+          </ui:VisualElement>
+          <ui:VisualElement name="companion-skill-summary" class="companion-content companion-skill-summary">
+            <ui:Label text="Kỹ năng" class="companion-section-label" />
+            <ui:VisualElement name="pets-skills-row" class="pets-skills-row" />
+            <ga:AngularButton name="pets-skills-details" class="companion-button companion-small-button" shape="parallel" role="primary">
+              <ui:VisualElement class="companion-icon ci-skills " picking-mode="Ignore" />
+              <ui:Label text="Chi tiết" />
+            </ga:AngularButton>
+          </ui:VisualElement>
+          <ui:VisualElement name="companion-actions" class="companion-actions">
+            <ga:AngularButton name="pets-level-up-button" class="companion-button companion-accent" shape="parallel" role="primary">
+              <ui:VisualElement class="companion-icon ci-upgrade " picking-mode="Ignore" />
+              <ui:Label text="Tăng cấp" />
+            </ga:AngularButton>
+            <ga:AngularButton name="pets-heal-button" class="companion-button " shape="parallel" role="primary">
+              <ui:VisualElement class="companion-icon ci-heal " picking-mode="Ignore" />
+              <ui:Label text="Hồi phục" />
+            </ga:AngularButton>
+            <ga:AngularButton name="pets-evolution-button" class="companion-button companion-secondary" shape="parallel" role="shell">
+              <ui:VisualElement class="companion-icon ci-evolve " picking-mode="Ignore" />
+              <ui:Label text="Tiến hóa" />
+            </ga:AngularButton>
+            <ui:Label name="pets-evolution-subtitle" class="companion-hidden" />
+          </ui:VisualElement>
+          <ga:AngularButton name="pets-details-button" class="companion-button companion-details-link" shape="parallel" role="primary">
+            <ui:VisualElement class="companion-icon ci-details " picking-mode="Ignore" />
+            <ui:Label text="Thông tin thú" />
+          </ga:AngularButton>
+        </ui:VisualElement>
+        <ui:VisualElement name="pets-tab-body-skills" class="companion-tab-body companion-skills-host" />
+        <ui:ScrollView name="pets-tab-body-growth" class="companion-tab-body companion-growth" horizontal-scroller-visibility="Hidden">
+          <ui:VisualElement name="companion-growth-level" class="companion-content companion-growth-module">
+            <ui:VisualElement class="companion-growth-heading">
+              <ui:VisualElement class="companion-icon ci-upgrade " picking-mode="Ignore" />
+              <ui:Label text="Tăng cấp" class="companion-section-label" />
+              <ga:AngularButton name="pets-growth-level" class="companion-button companion-small-button" shape="parallel" role="primary">
+                <ui:VisualElement class="companion-icon ci-details " picking-mode="Ignore" />
+                <ui:Label text="Xem trước" />
+              </ga:AngularButton>
+            </ui:VisualElement>
+            <ui:VisualElement class="companion-growth-copy">
+              <ui:VisualElement name="pets-growth-level-icon" class="companion-growth-icon" />
+              <ui:Label name="pets-growth-level-summary" text="—" class="companion-growth-text" />
+            </ui:VisualElement>
+            <ui:Label name="pets-growth-level-reason" class="companion-growth-reason" />
+          </ui:VisualElement>
+          <ui:VisualElement name="companion-growth-heal" class="companion-content companion-growth-module">
+            <ui:VisualElement class="companion-growth-heading">
+              <ui:VisualElement class="companion-icon ci-heal " picking-mode="Ignore" />
+              <ui:Label text="Hồi phục" class="companion-section-label" />
+              <ga:AngularButton name="pets-growth-heal" class="companion-button companion-small-button" shape="parallel" role="primary">
+                <ui:VisualElement class="companion-icon ci-details " picking-mode="Ignore" />
+                <ui:Label text="Xem trước" />
+              </ga:AngularButton>
+            </ui:VisualElement>
+            <ui:VisualElement class="companion-growth-copy">
+              <ui:VisualElement name="pets-growth-heal-icon" class="companion-growth-icon" />
+              <ui:Label name="pets-growth-heal-summary" text="—" class="companion-growth-text" />
+            </ui:VisualElement>
+            <ui:Label name="pets-growth-heal-reason" class="companion-growth-reason" />
+          </ui:VisualElement>
+          <ui:VisualElement name="companion-growth-evolution" class="companion-content companion-growth-module">
+            <ui:VisualElement class="companion-growth-heading">
+              <ui:VisualElement class="companion-icon ci-evolve " picking-mode="Ignore" />
+              <ui:Label text="Tiến hóa" class="companion-section-label" />
+              <ga:AngularButton name="pets-growth-evolution" class="companion-button companion-small-button" shape="parallel" role="primary">
+                <ui:VisualElement class="companion-icon ci-details " picking-mode="Ignore" />
+                <ui:Label text="Xem trước" />
+              </ga:AngularButton>
+            </ui:VisualElement>
+            <ui:VisualElement class="companion-growth-copy">
+              <ui:VisualElement name="pets-growth-evolution-icon" class="companion-growth-icon" />
+              <ui:Label name="pets-growth-evolution-summary" text="—" class="companion-growth-text" />
+            </ui:VisualElement>
+            <ui:Label name="pets-growth-evolution-reason" class="companion-growth-reason" />
+          </ui:VisualElement>
+        </ui:ScrollView>
+      </ui:VisualElement>
+      <ui:VisualElement name="companion-dock" class="companion-dock">
+        <ui:VisualElement class="companion-shell-border" picking-mode="Ignore" />
+        <ui:Label name="pets-party-title" text="ĐỘI HÌNH" class="companion-party-title" />
+        <ui:VisualElement name="pets-party-row" class="pets-party-row" />
+        <ga:AngularButton name="pets-swap-button" class="companion-button companion-swap" shape="parallel" role="primary">
+          <ui:VisualElement class="companion-icon ci-swap " picking-mode="Ignore" />
+          <ui:Label name="pets-swap-caption" text="Đổi vị trí" />
+        </ga:AngularButton>
+        <ui:Label name="pets-feedback-label" class="companion-feedback" />
+      </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="pets-tooltip" class="pets-tooltip">
+      <ui:Label name="pets-tooltip-title" text="Tooltip" class="pets-tooltip-title" />
+      <ui:Label name="pets-tooltip-body" text="-" class="pets-tooltip-body" />
+    </ui:VisualElement>
+    <ui:VisualElement name="pets-rename-overlay" class="ga-overlay">
+      <ga:AngularSurface class="ga-popup" role="shell" name="pets-rename-dialog" style="width:640px;height:460px;">
+        <ga:AngularSurface class="ga-modal-header" role="primary" shape="tab">
+          <ui:Label name="" text="ĐỔI TÊN THÚ" class="ga-popup-title" />
+          <ga:AngularButton name="pets-rename-close" text="×" class="ga-button ga-close" role="primary" shape="diamond" />
+        </ga:AngularSurface>
+        <ga:AngularSurface class="ga-summary rename-summary" role="panel">
+          <ga:AngularSurface class="ga-summary-portrait" role="shell" name="pets-rename-portrait">
+            <ui:Label name="pets-rename-portrait-fallback" text="◇" class="ga-art-fallback" />
+          </ga:AngularSurface>
+          <ui:Label name="pets-rename-current-name" text="Chọn một thú" class="ga-pet-name" />
+        </ga:AngularSurface>
+        <ui:Label name="" text="Tên mới" class="ga-field-label" />
+        <ga:AngularSurface class="ga-rename-input" role="raised" name="pets-rename-input-shell">
+          <ui:TextField name="pets-rename-input" value="" class="pets-rename-input" />
+          <ui:Label name="pets-rename-placeholder" text="Nhập tên mới cho thú…" class="pets-rename-placeholder" />
+        </ga:AngularSurface>
+        <ui:Label name="pets-rename-counter" text="0 / 16" class="ga-counter" />
+        <ui:Label name="pets-rename-error" text="" class="ga-rename-error" />
+        <ui:Label name="" text="Từ 1–16 ký tự; không để trống hoặc chỉ có khoảng trắng." class="ga-rename-helper" />
+        <ga:AngularButton name="pets-rename-cancel" text="Hủy" class="ga-button ga-rename-cancel" role="shell" shape="parallel" />
+        <ga:AngularButton name="pets-rename-save" text="Đổi tên" class="ga-button ga-rename-save" role="primary" shape="parallel" />
+      </ga:AngularSurface>
+    </ui:VisualElement>
+  </ui:VisualElement>
+</ui:UXML>

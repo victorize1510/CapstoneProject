@@ -1,0 +1,17 @@
+{
+  "source": "Source/Companion/Icons/illustration.svg",
+  "runtime": "Resources/UI/Companion/Icons/Mask/illustration.png",
+  "purpose": "Functional 2D illustration mode icon; replaces human bust. No pet artwork.",
+  "size": [
+    64,
+    64
+  ],
+  "slice": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "tint": "alpha white mask",
+  "sha256": "0cb590119ec41c6949f91a683364d666b2bb479984afe0b54945757b2a5a9b20"
+}

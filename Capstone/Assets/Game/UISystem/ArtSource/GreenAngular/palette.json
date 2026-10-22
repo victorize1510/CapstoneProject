@@ -1,0 +1,15 @@
+{
+  "primary": "#245B4B",
+  "shell": "#52766A",
+  "panel": "#A7BBA8",
+  "raised": "#B7C8B4",
+  "ink": "#17352C",
+  "muted": "#354B40",
+  "gold": "#C5A16A",
+  "lavender": "#998CAA",
+  "hp": "#C77E79",
+  "exp": "#759AA1",
+  "light": "#E8E8D5",
+  "disabled": "#82958A",
+  "edge": "#759387"
+}

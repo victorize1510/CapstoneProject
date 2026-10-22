@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Capstone.Game.HudSystem;
 using Capstone.Game.Inventory;
 using Capstone.Game.MapSystem;
 using Capstone.Game.ProfileSystem;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace Capstone.Game.UISystem {
@@ -15,12 +18,14 @@ namespace Capstone.Game.UISystem {
         Dialogue
     }
 
+    enum UiReturnTarget {
+        Gameplay,
+        Menu
+    }
+
     [DisallowMultipleComponent]
     public sealed class GameMenuController : MonoBehaviour {
         const string RootName = "GameMenuRoot";
-
-        static Sprite solidSprite;
-        static Font cachedFont;
 
         [Header("References")]
         [SerializeField] Canvas targetCanvas = null;
@@ -30,11 +35,15 @@ namespace Capstone.Game.UISystem {
         [SerializeField] MapSystemController mapSystem = null;
         [SerializeField] ProfilePanelController profile = null;
         [SerializeField] LocalPlayerControlLock controlLock = null;
+        [SerializeField] MonoBehaviour profileProviderSource = null;
+        [SerializeField] PetBoxRuntimeProvider petRoster = null;
 
         [Header("Keys")]
         [SerializeField] KeyCode menuKey = KeyCode.Tab;
         [SerializeField] KeyCode inventoryKey = KeyCode.I;
         [SerializeField] KeyCode mapKey = KeyCode.M;
+        [SerializeField] KeyCode questKey = KeyCode.Q;
+        [SerializeField] KeyCode petsKey = KeyCode.P;
         [SerializeField] KeyCode closeKey = KeyCode.Escape;
 
         [Header("Behaviour")]
@@ -44,10 +53,15 @@ namespace Capstone.Game.UISystem {
 
         RectTransform root;
         RectTransform panel;
+        TrainerMenuView trainerView;
+        readonly TrainerMenuPresentation menuPresentation = new TrainerMenuPresentation();
+
+        [Header("Trainer Menu artwork (optional 2D sprite)")]
+        [SerializeField] Sprite trainerPetArtwork = null;
         RectTransform placeholderPanel;
         Text placeholderTitle;
         Text placeholderBody;
-        Text descriptionText;
+        IPlayerProfileProvider profileProvider;
         bool cursorStateSaved;
         bool previousCursorVisible;
         CursorLockMode previousLockState;
@@ -56,13 +70,25 @@ namespace Capstone.Game.UISystem {
         MapInputController ownedMapInput;
         ProfilePanelController configuredProfile;
         Canvas configuredProfileCanvas;
+        WorldMapController subscribedWorldMap;
+        UiReturnTarget mapReturnTarget = UiReturnTarget.Gameplay;
+        UiReturnTarget placeholderReturnTarget = UiReturnTarget.Menu;
+        UiReturnTarget profileReturnTarget = UiReturnTarget.Gameplay;
         float nextReferenceResolveTime;
+        float nextTrainerSummaryRefreshTime;
+        int handledShortcutFrame = -1;
+        KeyCode handledShortcutKey;
+        bool inputModeApplied;
+        bool minimapPresentationApplied;
+        GameObject trainerReturnFocus;
 
         const float ReferenceRetryInterval = 1f;
 
         public bool IsMenuOpen => root != null && root.gameObject.activeSelf;
         public GameInputMode CurrentMode { get; private set; } = GameInputMode.Gameplay;
         public bool IsUiOpen => CurrentMode != GameInputMode.Gameplay;
+        public bool AllowsCameraTracking => IsMenuOpen && !IsInventoryOpen() && !IsMapOpen()
+            && !IsProfileOpen() && dialogueOwners.Count == 0;
 
         void Awake() {
             ResolveReferences();
@@ -71,7 +97,9 @@ namespace Capstone.Game.UISystem {
 
         void OnEnable() {
             ResolveReferences();
+            SubscribeProfileProvider();
             SubscribeProfile();
+            SubscribeMapBack();
             ApplyInputOwnership();
             if (root == null && buildOnAwake) RebuildMenu();
         }
@@ -84,35 +112,87 @@ namespace Capstone.Game.UISystem {
         }
 
         void OnDisable() {
+            if (inventory != null) inventory.CodexBackRequested -= HandleCodexBack;
+            if (subscribedInventoryBack != null) subscribedInventoryBack.BackRequested -= HandleInventoryBack;
+            subscribedInventoryBack = null;
+            UnsubscribeProfileProvider();
             UnsubscribeProfile();
+            UnsubscribeMapBack();
             CloseProfile(false);
             CloseMenu();
+            dialogueOwners.Clear();
+            controlLock?.UnlockControls(this);
             SetRouterGameplayBlock(false);
             ReleaseInputOwnership();
+            if (!IsInventoryOpen() && !IsMapOpen()) RestoreCursorState();
         }
 
         void Update() {
             ResolveRuntimeReferences(false);
             RefreshInputModeFromOpenUi();
 
-            if (Pressed(menuKey)) {
-                ToggleMenuFromInput();
-                return;
+            if (IsMenuOpen && Time.unscaledTime >= nextTrainerSummaryRefreshTime) {
+                nextTrainerSummaryRefreshTime = Time.unscaledTime + 1f;
+                RefreshTrainerSummary();
             }
 
-            if (Pressed(inventoryKey)) {
-                ToggleInventoryFromInput();
-                return;
-            }
+            bool reverse = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            if (Pressed(closeKey)) HandleShortcut(closeKey, reverse);
+            else if (Pressed(menuKey)) HandleShortcut(menuKey, reverse);
+            else if (Pressed(inventoryKey)) HandleShortcut(inventoryKey, reverse);
+            else if (Pressed(mapKey)) HandleShortcut(mapKey, reverse);
+            else if (Pressed(questKey)) HandleShortcut(questKey, reverse);
+            else if (Pressed(petsKey)) HandleShortcut(petsKey, reverse);
+            else if (menuKey != KeyCode.Tab && Pressed(KeyCode.Tab)) HandleShortcut(KeyCode.Tab, reverse);
+        }
 
-            if (Pressed(mapKey)) {
-                ToggleMapFromInput();
-                return;
-            }
+        // UI Toolkit and legacy Input share this route; the same key edge runs once.
+        public bool HandleShortcut(KeyCode key, bool reverse = false) {
+            if (key == KeyCode.None) return false;
+            if (handledShortcutFrame == Time.frameCount && handledShortcutKey == key) return true;
+            RefreshInputModeFromOpenUi();
+            if (key != closeKey && IsEditingText()) return false;
+            bool handled = RouteShortcut(key, reverse);
+            if (handled) MarkShortcutHandled(key);
+            return handled;
+        }
+        public void MarkShortcutHandled(KeyCode key) { handledShortcutFrame = Time.frameCount; handledShortcutKey = key; }
 
-            if (Pressed(closeKey)) {
-                CloseTopUi();
+        bool RouteShortcut(KeyCode key, bool reverse) {
+            if (key == closeKey) {
+                if (inventory != null && inventory.IsEvolutionScreenOpen) { inventory.DismissEvolutionScreen(); return true; }
+                if (CurrentMode == GameInputMode.Gameplay) OpenSettingsFromGameplay(); else CloseTopUi();
+                return true;
             }
+            if (CurrentMode == GameInputMode.Dialogue) return false;
+            if (key == menuKey && (CurrentMode == GameInputMode.Gameplay || IsMenuOpen) && !(key == KeyCode.Tab && reverse && IsMenuOpen)) {
+                ToggleMenuFromInput(); return true;
+            }
+            if (key == KeyCode.Tab && (IsProfileOpen() || CurrentMode == GameInputMode.WorldMap || IsMenuOpen)) {
+                Transform navigationRoot = IsProfileOpen() ? profile.NavigationRoot
+                    : CurrentMode == GameInputMode.WorldMap ? mapSystem?.GetComponent<Capstone.Game.MapSystem.UI.WorldMapUIController>()?.NavigationRoot : panel;
+                MenuKeyboardNavigation.Advance(navigationRoot, reverse); return true;
+            }
+            if (key == inventoryKey && inventory != null && inventory.IsBagSectionOpen
+                || key == questKey && inventory != null && inventory.IsQuestSectionOpen
+                || key == petsKey && inventory != null && inventory.IsPetsSectionOpen
+                || key == mapKey && IsMapOpen()) { CloseTopUi(); return true; }
+            if (CurrentMode != GameInputMode.Gameplay && !IsMenuOpen) return false;
+            if (key == inventoryKey) { OpenInventoryDirect(); return true; }
+            if (key == mapKey) { OpenMapDirect(); return true; }
+            if (key == questKey) { OpenQuestDirect(); return true; }
+            if (key == petsKey) { OpenPetsDirect(); return true; }
+            return false;
+        }
+
+        bool IsEditingText() {
+            if (inventoryInput != null && inventory != null && inventory.IsOpen && inventoryInput.IsEditingUiText()) return true;
+            var selected = EventSystem.current?.currentSelectedGameObject;
+            if (selected == null) return false;
+            var input = selected.GetComponentInParent<InputField>();
+            if (input != null && input.isFocused) return true;
+            var tmpInput = selected.GetComponentInParent<TMPro.TMP_InputField>();
+            return tmpInput != null && tmpInput.isFocused;
         }
 
         [ContextMenu("Rebuild Game Menu")]
@@ -124,12 +204,10 @@ namespace Capstone.Game.UISystem {
             ClearChildren(root);
 
             BuildDimmer(root);
-            panel = CreatePanel(root, "MenuPanel", new Color(0.025f, 0.08f, 0.10f, 0.94f), true);
-            SetRightPanel(panel, 48f, 54f, 620f, 890f);
-
-            BuildHeader(panel);
-            BuildMenuGrid(panel);
-            BuildFooter(panel);
+            trainerView = new TrainerMenuView(root, trainerPetArtwork, HandleTrainerAction);
+            panel = trainerView.NavigationRoot;
+            trainerReturnFocus = null;
+            RefreshMenuLayout();
             BuildFeaturePlaceholder(root);
             root.gameObject.SetActive(false);
         }
@@ -149,10 +227,17 @@ namespace Capstone.Game.UISystem {
             Cursor.lockState = CursorLockMode.None;
             HideFeaturePlaceholder();
             root.gameObject.SetActive(true);
+            root.SetAsLastSibling();
+            RefreshTrainerSummary();
             SetInputMode(GameInputMode.Menu);
+            if (trainerReturnFocus != null && trainerReturnFocus.activeInHierarchy)
+                MenuKeyboardNavigation.Restore(trainerReturnFocus);
+            else if (trainerView.DefaultFocus != null) MenuKeyboardNavigation.Restore(trainerView.DefaultFocus);
+            else MenuKeyboardNavigation.FocusFirst(panel);
         }
 
         public void CloseMenu() {
+            RememberTrainerFocus();
             if (root != null) root.gameObject.SetActive(false);
             HideFeaturePlaceholder();
 
@@ -164,13 +249,42 @@ namespace Capstone.Game.UISystem {
 
             RefreshInputModeFromOpenUi();
         }
+        void RememberTrainerFocus() {
+            var selected = EventSystem.current?.currentSelectedGameObject;
+            if (root != null && selected != null && selected.transform.IsChildOf(root)) trainerReturnFocus = selected;
+        }
+
+        void LateUpdate() {
+            if (IsMenuOpen) RefreshMenuLayout();
+        }
+
+        void RefreshMenuLayout() {
+            if (root != null) trainerView?.Fit(root.rect.size);
+        }
+
+        void HandleTrainerAction(string id) {
+            if (!PlayerActionGate.TryAccept(this, "button:" + id)) return;
+            switch (id) {
+                case "Pets": OpenPetsDirect(); break;
+                case "Inventory": OpenInventoryDirect(); break;
+                case "Profile": OpenProfileDirect(); break;
+                case "EditName": OpenProfileDirect(); profile?.EditDisplayName(); break;
+                case "Quest": OpenQuestDirect(); break;
+                case "Map": OpenMapDirect(); break;
+                case "Codex": OpenCodexDirect(); break;
+                case "Settings": OpenSettings(UiReturnTarget.Menu); break;
+                case "Back": if (PlayerActionGate.TryAccept(this, "menu-visibility")) CloseMenu(); break;
+            }
+        }
 
         public void ToggleMenu() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "menu-visibility")) return;
             if (IsMenuOpen) CloseMenu();
             else OpenMenu();
         }
 
         void ToggleMenuFromInput() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "menu-visibility")) return;
             if (IsProfileOpen()) {
                 CloseProfile(true);
                 return;
@@ -186,35 +300,16 @@ namespace Capstone.Game.UISystem {
             OpenMenu();
         }
 
-        void ToggleInventoryFromInput() {
-            if (IsInventoryOpen()) {
-                CloseInventory();
-                RefreshInputModeFromOpenUi();
-                return;
-            }
-
-            OpenInventoryDirect();
-        }
-
-        void ToggleMapFromInput() {
-            if (IsMapOpen()) {
-                CloseMap();
-                RefreshInputModeFromOpenUi();
-                return;
-            }
-
-            OpenMapDirect();
-        }
-
         public void OpenInventoryDirect() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "bag")) return;
             ResolveReferences();
 
             if (IsInventoryOpen()) {
-                CloseInventory();
-                RefreshInputModeFromOpenUi();
+                inventory.RequestClose();
                 return;
             }
 
+            SetInventoryReturnTarget(IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay);
             CloseProfile(false);
             CloseMenu();
             CloseMap();
@@ -228,8 +323,41 @@ namespace Capstone.Game.UISystem {
             SetInputMode(GameInputMode.Inventory);
         }
 
-        public void OpenQuestDirect() {
+        UiReturnTarget codexReturnTarget;
+        UiReturnTarget inventoryReturnTarget;
+        MonsterInventoryController subscribedInventoryBack;
+        void SetInventoryReturnTarget(UiReturnTarget target) {
+            inventoryReturnTarget = target;
+            if (subscribedInventoryBack == inventory) return;
+            if (subscribedInventoryBack != null) subscribedInventoryBack.BackRequested -= HandleInventoryBack;
+            subscribedInventoryBack = inventory;
+            if (subscribedInventoryBack != null) subscribedInventoryBack.BackRequested += HandleInventoryBack;
+        }
+        void HandleInventoryBack() {
+            bool returnToMenu = inventoryReturnTarget == UiReturnTarget.Menu;
+            inventoryReturnTarget = UiReturnTarget.Gameplay;
+            if (returnToMenu) OpenMenu(); else RefreshInputModeFromOpenUi();
+        }
+        public void OpenCodexDirect() {
+            if (!PlayerActionGate.TryAccept(this, "codex")) return;
             ResolveReferences();
+            codexReturnTarget = IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay;
+            CloseProfile(false); CloseMenu(); CloseMap();
+            if (inventory == null) { OpenFeaturePlaceholder("Codex", codexReturnTarget); return; }
+            inventory.CodexBackRequested -= HandleCodexBack;
+            inventory.CodexBackRequested += HandleCodexBack;
+            inventory.OpenCodexPanel();
+            SetInputMode(GameInputMode.Inventory);
+        }
+        void HandleCodexBack() {
+            if (codexReturnTarget == UiReturnTarget.Menu) OpenMenu();
+            else RefreshInputModeFromOpenUi();
+        }
+
+        public void OpenQuestDirect() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "quest")) return;
+            ResolveReferences();
+            SetInventoryReturnTarget(IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay);
             CloseProfile(false);
             CloseMenu();
             CloseMap();
@@ -244,7 +372,9 @@ namespace Capstone.Game.UISystem {
         }
 
         public void OpenPetsDirect() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "pets")) return;
             ResolveReferences();
+            SetInventoryReturnTarget(IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay);
             CloseProfile(false);
             CloseMenu();
             CloseMap();
@@ -259,7 +389,9 @@ namespace Capstone.Game.UISystem {
         }
 
         public void OpenBoxDirect() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "box")) return;
             ResolveReferences();
+            SetInventoryReturnTarget(IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay);
             CloseProfile(false);
             CloseMenu();
             CloseMap();
@@ -273,20 +405,55 @@ namespace Capstone.Game.UISystem {
             SetInputMode(GameInputMode.Inventory);
         }
 
+        public void OpenBoxFromWorld() {
+            ResolveReferences();
+            SetInventoryReturnTarget(UiReturnTarget.Gameplay);
+            CloseProfile(false);
+            CloseMenu();
+            CloseMap();
+
+            if (inventory == null) {
+                OpenFeaturePlaceholder("Box", UiReturnTarget.Gameplay);
+                return;
+            }
+
+            inventory.OpenPetBoxPanel(PetBoxReturnTarget.Gameplay);
+            SetInputMode(GameInputMode.Inventory);
+        }
+
+        public void OpenShopFromWorld(Capstone.Game.ShopSystem.ShopSource source = null) {
+            if (!PlayerActionGate.TryAccept(this, "shop")) return;
+            ResolveReferences();
+            SetInventoryReturnTarget(UiReturnTarget.Gameplay);
+            CloseProfile(false);
+            CloseMenu();
+            CloseMap();
+            if (inventory == null) return;
+            inventory.OpenShopPanel(source);
+            SetInputMode(GameInputMode.Inventory);
+        }
+
         public void OpenMapDirect() {
+            OpenMap(IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay);
+        }
+
+        void OpenMap(UiReturnTarget returnTarget) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "map")) return;
             ResolveReferences();
 
             if (mapInput != null && mapInput.IsOpen) {
-                CloseMap();
+                HandleMapBack();
                 return;
             }
+
+            mapReturnTarget = returnTarget;
 
             CloseProfile(false);
             CloseMenu();
             CloseInventory();
 
             if (mapInput == null) {
-                OpenFeaturePlaceholder("Map");
+                OpenFeaturePlaceholder("Map", returnTarget);
                 return;
             }
 
@@ -294,8 +461,61 @@ namespace Capstone.Game.UISystem {
             SetInputMode(GameInputMode.WorldMap);
         }
 
+        void OpenSettingsFromGameplay() {
+            OpenSettings(UiReturnTarget.Gameplay);
+        }
+        public void OpenSettingsDirect() => OpenSettings(IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay);
+        void OpenSettings(UiReturnTarget target) {
+            if (!PlayerActionGate.TryAccept(this, "settings")) return;
+            ResolveReferences(); SetInventoryReturnTarget(target);
+            CloseProfile(false); CloseMenu(); CloseMap();
+            if (inventory == null) return;
+            inventory.OpenSettingsPanel(GetControlsGuide);
+            SetInputMode(GameInputMode.Inventory);
+        }
+
+        public string GetControlsGuide() {
+            var text = new System.Text.StringBuilder();
+            text.AppendLine("WASD / phím mũi tên — Di chuyển\nShift — Chạy nhanh");
+            var movement = FindFirstObjectByType<BasicPlayerMovement>();
+            if (movement != null) {
+                if (movement.enableJump && movement.jumpKey != KeyCode.None) text.AppendLine(movement.jumpKey + " — Nhảy");
+                if (movement.pickUpKey != KeyCode.None) text.AppendLine(movement.pickUpKey + " — Nhặt đồ khi nhìn thấy và ở đủ gần");
+                if (movement.enableRoll && movement.rollKey != KeyCode.None) text.AppendLine(movement.rollKey + " — Lăn");
+            }
+            text.AppendLine(menuKey + " — Mở / đóng Menu nhà huấn luyện");
+            text.AppendLine(inventoryKey + " — Mở / đóng Túi đồ"); text.AppendLine(mapKey + " — Mở / đóng Bản đồ");
+            text.AppendLine(questKey + " — Mở / đóng Nhiệm vụ"); text.AppendLine(petsKey + " — Mở / đóng Thú đồng hành");
+            text.AppendLine(closeKey + " — Cài đặt / Trở lại; đóng hộp thoại trước");
+            text.AppendLine("Tab / Shift+Tab — Chuyển focus trong các panel; Shift+Tab trong Trainer Menu\nEnter — Chọn nút đang focus");
+            foreach (var npc in FindObjectsByType<NpcPanelInteractable>(FindObjectsSortMode.None)) {
+                text.AppendLine(npc.InteractKey + " — Tương tác khi nhìn thấy và ở đủ gần"); break;
+            }
+            var camera = FindFirstObjectByType<BasicCameraFollow>();
+            if (camera != null) {
+                text.AppendLine("Di chuyển chuột — Xoay camera");
+                if (camera.enableEnemyLock) text.AppendLine("Chuột " + (camera.lockMouseButton + 1) + " — Ghim / bỏ ghim mục tiêu");
+                if (camera.enableScrollZoom) text.AppendLine("Con lăn — Thu phóng; đổi mục tiêu khi đang ghim");
+            }
+            var command = FindFirstObjectByType<PetCommandInput>();
+            if (command != null) {
+                text.AppendLine("1–6 — Gọi thú ở ô tương ứng");
+                if (command.withdrawKey != KeyCode.None) text.AppendLine(command.withdrawKey + " — Thu thú");
+                text.AppendLine("Chuột " + (command.commandMouseButton + 1) + " — Ra lệnh thú tấn công mục tiêu");
+            }
+            var visuals = FindFirstObjectByType<PlayerVisualSwitcher>();
+            if (visuals != null && visuals.SwitchKey != KeyCode.None) text.AppendLine(visuals.SwitchKey + " — Đổi nhân vật nam / nữ");
+            var hud = FindFirstObjectByType<GameplayHudController>();
+            if (hud != null) for (int i = 0; i < 4; i++) if (hud.GetSkillHotkey(i) != KeyCode.None) text.AppendLine(hud.GetSkillHotkey(i) + " — Kỹ năng thú " + (i + 1));
+            var items = FindFirstObjectByType<GameplayHudQuickItemsView>();
+            if (items != null) for (int i = 0; i < 2; i++) if (items.GetHotkey(i) != KeyCode.None) text.AppendLine(items.GetHotkey(i) + " — Vật phẩm nhanh " + (i + 1));
+            return text.ToString();
+        }
+
         public void OpenProfileDirect() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "profile")) return;
             ResolveReferences();
+            profileReturnTarget = IsMenuOpen ? UiReturnTarget.Menu : UiReturnTarget.Gameplay;
 
             if (profile == null) {
                 OpenFeaturePlaceholder("Profile");
@@ -305,6 +525,7 @@ namespace Capstone.Game.UISystem {
             CloseInventory();
             CloseMap();
             HideFeaturePlaceholder();
+            RememberTrainerFocus();
             if (root != null) root.gameObject.SetActive(false);
 
             SaveCursorState();
@@ -344,39 +565,79 @@ namespace Capstone.Game.UISystem {
         }
 
         void CloseTopUi() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, IsMenuOpen ? "menu-visibility" : "ui-back")) return;
+            if (inventory != null && inventory.IsCodexOpen) {
+                if (inventory.TryCloseTopmostPanel()) return;
+                inventory.Close(); HandleCodexBack(); return;
+            }
             RefreshInputModeFromOpenUi();
 
             if (IsProfileOpen()) {
-                CloseProfile(true);
+                if (profile.TryClosePopup()) return;
+                HandleProfileBack();
                 return;
             }
 
             if (placeholderPanel != null && placeholderPanel.gameObject.activeSelf) {
-                HideFeaturePlaceholder();
-                RefreshInputModeFromOpenUi();
+                HandlePlaceholderBack();
                 return;
             }
 
             switch (CurrentMode) {
                 case GameInputMode.Dialogue:
-                    break;
+                    return;
                 case GameInputMode.WorldMap:
-                    CloseMap();
-                    break;
+                    if (mapSystem != null && mapSystem.GetComponent<Capstone.Game.MapSystem.UI.WorldMapUIController>()?.TryCloseMarkerGroup() == true) return;
+                    HandleMapBack();
+                    return;
                 case GameInputMode.Inventory:
-                    if (inventory == null || !inventory.TryCloseTopmostPanel()) CloseInventory();
-                    break;
+                    if (inventory != null && !inventory.TryCloseTopmostPanel()) inventory.RequestClose();
+                    return;
                 case GameInputMode.Menu:
                     CloseMenu();
-                    break;
+                    return;
             }
-
-            RefreshInputModeFromOpenUi();
         }
 
         void ResolveReferences() {
             EnsureCanvas();
             ResolveRuntimeReferences(true);
+        }
+
+        void ResolveProfileProvider() {
+            IPlayerProfileProvider nextProvider = profileProviderSource as IPlayerProfileProvider;
+            if (nextProvider == null) {
+                MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+                foreach (MonoBehaviour behaviour in behaviours) {
+                    if (!(behaviour is IPlayerProfileProvider candidate)) continue;
+                    profileProviderSource = behaviour;
+                    nextProvider = candidate;
+                    break;
+                }
+            }
+
+            if (nextProvider == null && Application.isPlaying) {
+                PlayerProfileRuntimeProvider runtimeProvider = GetComponent<PlayerProfileRuntimeProvider>();
+                if (runtimeProvider == null) runtimeProvider = gameObject.AddComponent<PlayerProfileRuntimeProvider>();
+                profileProviderSource = runtimeProvider;
+                nextProvider = runtimeProvider;
+            }
+
+            if (ReferenceEquals(profileProvider, nextProvider)) return;
+            UnsubscribeProfileProvider();
+            profileProvider = nextProvider;
+            SubscribeProfileProvider();
+        }
+
+        void SubscribeProfileProvider() {
+            if (profileProvider == null) return;
+            profileProvider.ProfileChanged -= RefreshTrainerSummary;
+            profileProvider.ProfileChanged += RefreshTrainerSummary;
+        }
+
+        void UnsubscribeProfileProvider() {
+            if (profileProvider == null) return;
+            profileProvider.ProfileChanged -= RefreshTrainerSummary;
         }
 
         void ResolveRuntimeReferences(bool force) {
@@ -385,7 +646,9 @@ namespace Capstone.Game.UISystem {
                 || mapInput == null
                 || mapSystem == null
                 || profile == null
-                || controlLock == null;
+                || controlLock == null
+                || profileProvider == null
+                || petRoster == null;
             if (!force && !needsReferences) return;
             if (!force && Time.unscaledTime < nextReferenceResolveTime) return;
             nextReferenceResolveTime = Time.unscaledTime + ReferenceRetryInterval;
@@ -397,6 +660,8 @@ namespace Capstone.Game.UISystem {
             if (profile == null) profile = FindFirstObjectByType<ProfilePanelController>();
             if (profile == null && Application.isPlaying) profile = gameObject.AddComponent<ProfilePanelController>();
             if (controlLock == null) controlLock = FindFirstObjectByType<LocalPlayerControlLock>();
+            if (petRoster == null) petRoster = FindFirstObjectByType<PetBoxRuntimeProvider>(FindObjectsInactive.Include);
+            ResolveProfileProvider();
 
             if (inventoryInput == null && inventory != null) inventoryInput = inventory.GetComponent<InventoryInputController>();
             if (profile != null && (configuredProfile != profile || configuredProfileCanvas != targetCanvas)) {
@@ -406,6 +671,7 @@ namespace Capstone.Game.UISystem {
                 SubscribeProfile();
             }
 
+            SubscribeMapBack();
             ApplyInputOwnership();
         }
 
@@ -416,9 +682,9 @@ namespace Capstone.Game.UISystem {
             }
 
             if (ownedInventoryInput != inventoryInput) {
-                if (ownedInventoryInput != null) ownedInventoryInput.SetOpenCloseHotkeysEnabled(true);
+                if (ownedInventoryInput != null) { ownedInventoryInput.SetShortcutRouter(null); ownedInventoryInput.SetOpenCloseHotkeysEnabled(true); }
                 ownedInventoryInput = inventoryInput;
-                if (ownedInventoryInput != null) ownedInventoryInput.SetOpenCloseHotkeysEnabled(false);
+                if (ownedInventoryInput != null) { ownedInventoryInput.SetOpenCloseHotkeysEnabled(false); ownedInventoryInput.SetShortcutRouter(this); }
             }
 
             if (ownedMapInput != mapInput) {
@@ -429,7 +695,7 @@ namespace Capstone.Game.UISystem {
         }
 
         void ReleaseInputOwnership() {
-            if (ownedInventoryInput != null) ownedInventoryInput.SetOpenCloseHotkeysEnabled(true);
+            if (ownedInventoryInput != null) { ownedInventoryInput.SetShortcutRouter(null); ownedInventoryInput.SetOpenCloseHotkeysEnabled(true); }
             if (ownedMapInput != null) ownedMapInput.SetOpenCloseHotkeysEnabled(true);
             ownedInventoryInput = null;
             ownedMapInput = null;
@@ -460,8 +726,19 @@ namespace Capstone.Game.UISystem {
         }
 
         void SetInputMode(GameInputMode mode) {
+            menuPresentation.SetMenuVisible(IsMenuOpen);
+            bool showMinimap = mode == GameInputMode.Gameplay;
+            if (inputModeApplied && CurrentMode == mode && minimapPresentationApplied == showMinimap) return;
+            inputModeApplied = true;
+            minimapPresentationApplied = showMinimap;
             CurrentMode = mode;
-            mapSystem?.SetMinimapVisible(mode == GameInputMode.Gameplay);
+            if (mode == GameInputMode.Gameplay) {
+                // Recover if a panel is hidden/disabled directly instead of using its Back button.
+                controlLock?.UnlockControls(this);
+                SetRouterGameplayBlock(false);
+                RestoreCursorState();
+            }
+            mapSystem?.SetMinimapVisible(showMinimap);
         }
 
         void EnsureCanvas() {
@@ -484,75 +761,8 @@ namespace Capstone.Game.UISystem {
         }
 
         void BuildDimmer(RectTransform parent) {
-            RectTransform dimmer = CreatePanel(parent, "Dimmer", new Color(0f, 0f, 0f, 0.44f), true);
+            RectTransform dimmer = CreatePanel(parent, "Dimmer", new Color(0.88f, 0.94f, 0.94f, 0.04f), true);
             Stretch(dimmer);
-        }
-
-        void BuildHeader(RectTransform parent) {
-            RectTransform header = CreatePanel(parent, "Header", new Color(0.03f, 0.11f, 0.14f, 0.96f), true);
-            SetTopStretch(header, 24f, 22f, 24f, 132f);
-
-            RectTransform avatar = CreatePanel(header, "Avatar", new Color(0.14f, 0.36f, 0.40f, 1f), true);
-            SetTopLeft(avatar, 24f, 22f, 88f, 88f);
-
-            Text title = CreateText(header, "Title", "Trainer Menu", 30, FontStyle.Bold, new Color(0.96f, 0.89f, 0.70f, 1f), TextAnchor.MiddleLeft);
-            SetTopLeft(title.rectTransform, 132f, 24f, 310f, 42f);
-
-            Text subtitle = CreateText(header, "Subtitle", "TAB close  |  I inventory  |  M map", 15, FontStyle.Normal, new Color(0.73f, 0.84f, 0.82f, 1f), TextAnchor.MiddleLeft);
-            SetTopLeft(subtitle.rectTransform, 134f, 74f, 390f, 26f);
-
-            Button close = CreateButton(header, "CloseButton", "X", true);
-            SetTopRight(close.GetComponent<RectTransform>(), 20f, 22f, 42f, 42f);
-            close.onClick.AddListener(CloseMenu);
-        }
-
-        void BuildMenuGrid(RectTransform parent) {
-            RectTransform grid = CreatePanel(parent, "MenuGrid", new Color(0.02f, 0.07f, 0.09f, 0.7f), true);
-            SetTopStretch(grid, 24f, 178f, 24f, 518f);
-
-            GridLayoutGroup layout = grid.gameObject.AddComponent<GridLayoutGroup>();
-            layout.padding = new RectOffset(22, 22, 22, 22);
-            layout.spacing = new Vector2(22f, 22f);
-            layout.cellSize = new Vector2(160f, 138f);
-            layout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-            layout.constraintCount = 3;
-
-            AddMenuButton(grid, "Profile", profile != null ? "Open player profile" : "Profile panel\nMissing", true, OpenProfileDirect);
-            AddMenuButton(grid, "Pets", inventory != null ? "Open pet party" : "Pet panel\nMissing", true, OpenPetsDirect);
-            AddMenuButton(grid, "Inventory", inventory != null ? "Open bag" : "Inventory panel\nMissing", true, OpenInventoryDirect);
-            AddMenuButton(grid, "Quest", inventory != null ? "Open quest journal" : "Quest panel\nMissing", true, OpenQuestDirect);
-            AddMenuButton(grid, "Settings", "Options\nSoon", true, () => OpenFeaturePlaceholder("Settings"));
-            AddMenuButton(grid, "Map", mapInput != null ? "Open world map" : "Map panel\nMissing", true, OpenMapDirect);
-            AddMenuButton(grid, "Codex", "Creature book\nSoon", true, () => OpenFeaturePlaceholder("Codex"));
-            AddMenuButton(grid, "Store", "Shop\nSoon", true, () => OpenFeaturePlaceholder("Store"));
-            AddMenuButton(grid, "Box", inventory != null ? "Manage party and pet storage" : "Box panel\nMissing", true, OpenBoxDirect);
-        }
-
-        void AddMenuButton(RectTransform parent, string title, string description, bool enabled, UnityEngine.Events.UnityAction action) {
-            Button button = CreateButton(parent, title + "Button", string.Empty, true);
-            button.interactable = enabled;
-            if (enabled && action != null) button.onClick.AddListener(action);
-
-            Text icon = CreateText(button.transform, "Icon", GetMenuIcon(title), 34, FontStyle.Bold, enabled ? new Color(0.88f, 0.72f, 0.48f, 1f) : new Color(0.58f, 0.58f, 0.52f, 0.75f), TextAnchor.MiddleCenter);
-            SetTopStretch(icon.rectTransform, 8f, 18f, 8f, 42f);
-
-            Text label = CreateText(button.transform, "Label", title, 18, FontStyle.Bold, enabled ? Color.white : new Color(0.75f, 0.75f, 0.69f, 0.8f), TextAnchor.MiddleCenter);
-            SetTopStretch(label.rectTransform, 10f, 64f, 10f, 28f);
-
-            Text sub = CreateText(button.transform, "Description", enabled ? description : description + "\nSoon", 12, FontStyle.Normal, enabled ? new Color(0.70f, 0.83f, 0.80f, 0.95f) : new Color(0.60f, 0.65f, 0.62f, 0.7f), TextAnchor.UpperCenter);
-            SetTopStretch(sub.rectTransform, 10f, 96f, 10f, 38f);
-        }
-
-        void BuildFooter(RectTransform parent) {
-            RectTransform footer = CreatePanel(parent, "Footer", new Color(0.03f, 0.10f, 0.12f, 0.84f), true);
-            SetBottomStretch(footer, 24f, 22f, 24f, 92f);
-
-            descriptionText = CreateText(footer, "Description", "Select a menu item.", 15, FontStyle.Normal, new Color(0.88f, 0.84f, 0.72f, 1f), TextAnchor.MiddleLeft);
-            SetTopStretch(descriptionText.rectTransform, 18f, 14f, 144f, 60f);
-
-            Button back = CreateButton(footer, "BackButton", "Back", true);
-            SetTopRight(back.GetComponent<RectTransform>(), 18f, 22f, 106f, 46f);
-            back.onClick.AddListener(CloseMenu);
         }
 
         void BuildFeaturePlaceholder(RectTransform parent) {
@@ -562,34 +772,38 @@ namespace Capstone.Game.UISystem {
             RectTransform header = CreatePanel(placeholderPanel, "Header", new Color(0.82f, 0.73f, 0.54f, 1f), true);
             SetTopStretch(header, 0f, 0f, 0f, 82f);
 
-            placeholderTitle = CreateText(header, "Title", "Feature", 38, FontStyle.Bold, new Color(0.13f, 0.12f, 0.08f, 1f), TextAnchor.MiddleLeft);
+            placeholderTitle = CreateText(header, "Title", "Tính năng", 38, FontStyle.Bold, new Color(0.13f, 0.12f, 0.08f, 1f), TextAnchor.MiddleLeft);
             SetTopStretch(placeholderTitle.rectTransform, 34f, 16f, 96f, 52f);
 
             Button close = CreateButton(header, "CloseButton", "X", true);
             SetTopRight(close.GetComponent<RectTransform>(), 24f, 18f, 46f, 46f);
-            close.onClick.AddListener(HideFeaturePlaceholder);
+            close.onClick.AddListener(HandlePlaceholderBack);
 
             placeholderBody = CreateText(placeholderPanel, "Body", string.Empty, 22, FontStyle.Normal, new Color(0.20f, 0.18f, 0.13f, 1f), TextAnchor.MiddleCenter);
             SetTopStretch(placeholderBody.rectTransform, 72f, 130f, 72f, 260f);
 
-            Button back = CreateButton(placeholderPanel, "BackButton", "Back", true);
+            Button back = CreateButton(placeholderPanel, "BackButton", "Trở lại", true);
             SetBottomRight(back.GetComponent<RectTransform>(), 34f, 30f, 132f, 50f);
-            back.onClick.AddListener(HideFeaturePlaceholder);
+            back.onClick.AddListener(HandlePlaceholderBack);
 
             placeholderPanel.gameObject.SetActive(false);
         }
 
         void OpenFeaturePlaceholder(string featureName) {
+            OpenFeaturePlaceholder(featureName, UiReturnTarget.Menu);
+        }
+
+        void OpenFeaturePlaceholder(string featureName, UiReturnTarget returnTarget) {
+            placeholderReturnTarget = returnTarget;
             OpenMenu();
             if (placeholderPanel == null) return;
 
-            string title = string.IsNullOrWhiteSpace(featureName) ? "Feature" : featureName;
-            if (placeholderTitle != null) placeholderTitle.text = title;
+            string title = string.IsNullOrWhiteSpace(featureName) ? "Tính năng" : featureName;
+            if (placeholderTitle != null) placeholderTitle.text = VietnameseUI.Screen(title);
             if (placeholderBody != null) {
-                placeholderBody.text = title + "\n\nPanel nay chua co backend that. Khi co system rieng, minh chi can noi nut menu nay sang controller cua system do.";
+                placeholderBody.text = "Tính năng này chưa sẵn sàng. Hãy quay lại sau.";
             }
 
-            if (descriptionText != null) descriptionText.text = title + " is a placeholder panel.";
             placeholderPanel.SetAsLastSibling();
             placeholderPanel.gameObject.SetActive(true);
             SetInputMode(GameInputMode.Menu);
@@ -597,6 +811,15 @@ namespace Capstone.Game.UISystem {
 
         void HideFeaturePlaceholder() {
             if (placeholderPanel != null) placeholderPanel.gameObject.SetActive(false);
+        }
+
+        void HandlePlaceholderBack() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "placeholder-back")) return;
+            UiReturnTarget returnTarget = placeholderReturnTarget;
+            HideFeaturePlaceholder();
+
+            if (returnTarget == UiReturnTarget.Gameplay) CloseMenu();
+            else RefreshInputModeFromOpenUi();
         }
 
         bool IsInventoryOpen() {
@@ -619,6 +842,29 @@ namespace Capstone.Game.UISystem {
             if (mapInput != null && mapInput.IsOpen) mapInput.CloseMap();
         }
 
+        void SubscribeMapBack() {
+            WorldMapController worldMap = mapSystem != null ? mapSystem.WorldMap : null;
+            if (worldMap == null) worldMap = FindFirstObjectByType<WorldMapController>();
+            if (subscribedWorldMap == worldMap) return;
+
+            UnsubscribeMapBack();
+            subscribedWorldMap = worldMap;
+            if (subscribedWorldMap != null) subscribedWorldMap.BackRequested += HandleMapBack;
+        }
+
+        void UnsubscribeMapBack() {
+            if (subscribedWorldMap != null) subscribedWorldMap.BackRequested -= HandleMapBack;
+            subscribedWorldMap = null;
+        }
+
+        void HandleMapBack() {
+            UiReturnTarget returnTarget = mapReturnTarget;
+            CloseMap();
+
+            if (returnTarget == UiReturnTarget.Menu) OpenMenu();
+            else RefreshInputModeFromOpenUi();
+        }
+
         void SubscribeProfile() {
             if (profile == null) return;
             profile.BackRequested -= HandleProfileBack;
@@ -632,7 +878,14 @@ namespace Capstone.Game.UISystem {
 
         void HandleProfileBack() {
             CloseProfile(false);
-            OpenMenu();
+            if (profileReturnTarget == UiReturnTarget.Menu) OpenMenu();
+            else {
+                controlLock?.UnlockControls(this);
+                SetRouterGameplayBlock(false);
+                RestoreCursorState();
+                RefreshInputModeFromOpenUi();
+            }
+            profileReturnTarget = UiReturnTarget.Gameplay;
         }
 
         void CloseProfile(bool restoreGameplay) {
@@ -666,19 +919,15 @@ namespace Capstone.Game.UISystem {
             cursorStateSaved = false;
         }
 
-        static string GetMenuIcon(string title) {
-            switch (title) {
-                case "Profile": return "P";
-                case "Pets": return "Pet";
-                case "Inventory": return "Bag";
-                case "Quest": return "Q";
-                case "Settings": return "Cfg";
-                case "Map": return "Map";
-                case "Codex": return "Book";
-                case "Store": return "Shop";
-                case "Box": return "Box";
-                default: return title.Substring(0, 1);
-            }
+        void RefreshTrainerSummary() {
+            if (!IsMenuOpen) return;
+            if (profileProvider == null) ResolveProfileProvider();
+            if (petRoster == null) petRoster = FindFirstObjectByType<PetBoxRuntimeProvider>(FindObjectsInactive.Include);
+
+            PlayerProfileSnapshot snapshot = profileProvider != null
+                ? profileProvider.GetSnapshot()
+                : default;
+            trainerView?.Bind(snapshot, profileProvider != null, petRoster != null ? (int?)petRoster.PartyCount : null);
         }
 
         static void ConfigureCanvas(Canvas canvas) {
@@ -712,7 +961,6 @@ namespace Capstone.Game.UISystem {
             GameObject obj = new GameObject(name, typeof(RectTransform), typeof(Image));
             obj.transform.SetParent(parent, false);
             Image image = obj.GetComponent<Image>();
-            image.sprite = SolidSprite;
             image.color = color;
             image.raycastTarget = raycastTarget;
             return obj.GetComponent<RectTransform>();
@@ -780,24 +1028,6 @@ namespace Capstone.Game.UISystem {
             rect.localScale = Vector3.one;
         }
 
-        static void SetRightPanel(RectTransform rect, float right, float top, float width, float height) {
-            rect.anchorMin = new Vector2(1f, 1f);
-            rect.anchorMax = new Vector2(1f, 1f);
-            rect.pivot = new Vector2(1f, 1f);
-            rect.anchoredPosition = new Vector2(-right, -top);
-            rect.sizeDelta = new Vector2(width, height);
-            rect.localScale = Vector3.one;
-        }
-
-        static void SetTopLeft(RectTransform rect, float x, float y, float width, float height) {
-            rect.anchorMin = new Vector2(0f, 1f);
-            rect.anchorMax = new Vector2(0f, 1f);
-            rect.pivot = new Vector2(0f, 1f);
-            rect.anchoredPosition = new Vector2(x, -y);
-            rect.sizeDelta = new Vector2(width, height);
-            rect.localScale = Vector3.one;
-        }
-
         static void SetTopRight(RectTransform rect, float x, float y, float width, float height) {
             rect.anchorMin = new Vector2(1f, 1f);
             rect.anchorMax = new Vector2(1f, 1f);
@@ -813,15 +1043,6 @@ namespace Capstone.Game.UISystem {
             rect.pivot = new Vector2(0.5f, 1f);
             rect.offsetMin = new Vector2(left, -top - height);
             rect.offsetMax = new Vector2(-right, -top);
-            rect.localScale = Vector3.one;
-        }
-
-        static void SetBottomStretch(RectTransform rect, float left, float bottom, float right, float height) {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = new Vector2(1f, 0f);
-            rect.pivot = new Vector2(0.5f, 0f);
-            rect.offsetMin = new Vector2(left, bottom);
-            rect.offsetMax = new Vector2(-right, bottom + height);
             rect.localScale = Vector3.one;
         }
 
@@ -847,31 +1068,6 @@ namespace Capstone.Game.UISystem {
             return key != KeyCode.None && Input.GetKeyDown(key);
         }
 
-        static Sprite SolidSprite {
-            get {
-                if (solidSprite != null) return solidSprite;
-
-                Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false) {
-                    hideFlags = HideFlags.HideAndDontSave,
-                    filterMode = FilterMode.Point,
-                    wrapMode = TextureWrapMode.Clamp
-                };
-                texture.SetPixel(0, 0, Color.white);
-                texture.Apply();
-                solidSprite = Sprite.Create(texture, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1f);
-                solidSprite.hideFlags = HideFlags.HideAndDontSave;
-                return solidSprite;
-            }
-        }
-
-        static Font DefaultFont {
-            get {
-                if (cachedFont != null) return cachedFont;
-
-                cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                if (cachedFont == null) cachedFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
-                return cachedFont;
-            }
-        }
+        static Font DefaultFont => MenuTypography.Font;
     }
 }

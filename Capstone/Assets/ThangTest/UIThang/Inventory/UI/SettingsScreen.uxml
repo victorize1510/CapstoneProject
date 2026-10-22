@@ -1,0 +1,78 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="MenuTheme.uss" />
+    <ui:Style src="MenuCommon.uss" />
+    <ui:Style src="SettingsScreen.uss" />
+    <ui:Style src="MenuScreenHeader.uss" />
+    <ui:Template name="SettingsSliderRow" src="SettingsSliderRow.uxml" />
+    <ui:Template name="SettingsToggleRow" src="SettingsToggleRow.uxml" />
+    <ui:Template name="SettingsDropdownRow" src="SettingsDropdownRow.uxml" />
+    <ui:Template name="SettingsButtonRow" src="SettingsButtonRow.uxml" />
+    <ui:VisualElement name="settings-panel" class="settings-panel menu-theme">
+        <ui:VisualElement class="screen-header">
+            <ui:VisualElement class="screen-heading">
+                <ui:VisualElement class="screen-heading-mark" picking-mode="Ignore" focusable="false" />
+                <ui:Label text="CÀI ĐẶT" class="screen-title" />
+            </ui:VisualElement>
+            <ui:Label text="Tùy chỉnh trải nghiệm trò chơi theo ý thích của bạn" class="settings-subtitle" />
+            <ui:Button name="settings-back" text="←  TRỞ LẠI" class="screen-back" />
+        </ui:VisualElement>
+        <ui:VisualElement class="settings-body">
+            <ui:VisualElement class="settings-grid-row">
+                <ui:VisualElement name="settings-audio-group" class="settings-group settings-left-group">
+                    <ui:VisualElement class="settings-section-heading"><ui:Label text="ÂM THANH" class="settings-section-title" /><ui:VisualElement class="settings-heading-line" /></ui:VisualElement>
+                    <ui:ScrollView class="settings-section-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+                        <ui:Instance name="settings-master-row" template="SettingsSliderRow" />
+                        <ui:VisualElement class="settings-divider" />
+                        <ui:Instance name="settings-mute-row" template="SettingsToggleRow" />
+                        <ui:Label text="Tổng âm lượng áp dụng cho toàn bộ âm thanh. Tắt âm thanh giữ nguyên mức âm lượng đã chọn." class="settings-note" />
+                    </ui:ScrollView>
+                </ui:VisualElement>
+                <ui:VisualElement name="settings-camera-group" class="settings-group">
+                    <ui:VisualElement class="settings-section-heading"><ui:Label text="ĐIỀU KHIỂN &amp; CAMERA" class="settings-section-title" /><ui:VisualElement class="settings-heading-line" /></ui:VisualElement>
+                    <ui:ScrollView class="settings-section-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+                        <ui:Instance name="settings-mouse-row" template="SettingsSliderRow" />
+                        <ui:VisualElement class="settings-divider" />
+                        <ui:Instance name="settings-invert-row" template="SettingsToggleRow" />
+                        <ui:Instance name="settings-smoothing-row" template="SettingsToggleRow" />
+                        <ui:Label name="settings-camera-unavailable" text="Camera chưa sẵn sàng trong khu vực này." class="settings-note" />
+                    </ui:ScrollView>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="settings-grid-row settings-bottom-row">
+                <ui:VisualElement name="settings-interface-group" class="settings-group settings-left-group">
+                    <ui:VisualElement class="settings-section-heading"><ui:Label text="TRÒ CHƠI &amp; GIAO DIỆN" class="settings-section-title" /><ui:VisualElement class="settings-heading-line" /></ui:VisualElement>
+                    <ui:ScrollView class="settings-section-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+                        <ui:Instance name="settings-prompts-row" template="SettingsToggleRow" />
+                        <ui:Instance name="settings-minimap-row" template="SettingsToggleRow" />
+                        <ui:Instance name="settings-quest-row" template="SettingsToggleRow" />
+                        <ui:Instance name="settings-save-row" template="SettingsToggleRow" />
+                    </ui:ScrollView>
+                </ui:VisualElement>
+                <ui:VisualElement name="settings-other-group" class="settings-group">
+                    <ui:VisualElement class="settings-section-heading"><ui:Label text="KHÁC" class="settings-section-title" /><ui:VisualElement class="settings-heading-line" /></ui:VisualElement>
+                    <ui:ScrollView class="settings-section-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+                        <ui:Instance name="settings-language-row" template="SettingsDropdownRow" />
+                        <ui:Instance name="settings-fullscreen-row" template="SettingsToggleRow" />
+                        <ui:Instance name="settings-resolution-row" template="SettingsDropdownRow" />
+                        <ui:Label name="settings-display-note" class="settings-note" />
+                        <ui:VisualElement class="settings-divider" />
+                        <ui:Instance name="settings-guide-row" template="SettingsButtonRow" />
+                        <ui:Instance name="settings-reset-row" template="SettingsButtonRow" />
+                        <ui:Instance name="settings-quit-row" template="SettingsButtonRow" />
+                    </ui:ScrollView>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="settings-modal" class="settings-modal">
+            <ui:VisualElement class="settings-modal-card">
+                <ui:Label name="settings-modal-title" class="settings-modal-title" />
+                <ui:ScrollView class="settings-modal-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto"><ui:Label name="settings-modal-text" class="settings-modal-text" /></ui:ScrollView>
+                <ui:Label name="settings-modal-error" class="settings-modal-error" />
+                <ui:VisualElement class="settings-modal-actions">
+                    <ui:Button name="settings-modal-cancel" text="HỦY" class="settings-secondary" />
+                    <ui:Button name="settings-modal-confirm" text="ĐẶT LẠI" class="action-button primary-action" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-18",
+  "mode": "built-in image_gen",
+  "generated": [
+    {
+      "file": "Assets/Art/sanctuary-backdrop.png",
+      "nativeWidth": 1672,
+      "nativeHeight": 941,
+      "transparentBackground": false,
+      "inputImages": [],
+      "promptFile": "Prompts/05_Imagegen_Actual_Prompts.md",
+      "usage": "concept backdrop only, not a runtime scene replacement"
+    }
+  ],
+  "reused": [
+    {
+      "file": "Assets/Art/backpack.png",
+      "source": "../Menu/Assets/01-backpack.png",
+      "sourceSha256": "0ffe10da4ebd1704467c516e1c415682e69c1cfab746365bcbd556a14256c21f",
+      "identical": true
+    }
+  ],
+  "deterministic": "All UI geometry, line etchings, icons, labels and layouts authored in SVG. No pet art generated. Screens are composed concepts, not engine captures."
+}

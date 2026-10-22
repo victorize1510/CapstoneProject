@@ -15,7 +15,6 @@ namespace Capstone.Game.UISystem {
         static readonly float[] DirectionAngles = { 0f, 45f, 90f, 135f, 180f, 225f, 270f, 315f };
 
         static Sprite solidSprite;
-        static Font cachedFont;
 
         [Header("References")]
         [SerializeField] Canvas targetCanvas = null;
@@ -461,15 +460,7 @@ namespace Capstone.Game.UISystem {
             }
         }
 
-        static Font DefaultFont {
-            get {
-                if (cachedFont != null) return cachedFont;
-
-                cachedFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-                if (cachedFont == null) cachedFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
-                return cachedFont;
-            }
-        }
+        static Font DefaultFont => MenuTypography.Font;
 
         readonly struct TickBinding {
             public TickBinding(float angle, RectTransform rect) {

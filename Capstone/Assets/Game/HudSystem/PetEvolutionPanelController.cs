@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Capstone.Game.Inventory;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,13 +8,16 @@ namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
     public sealed class PetEvolutionPanelController : MonoBehaviour {
+        bool confirmationRunning;
         [SerializeField] UIDocument document = null;
         [SerializeField] MonoBehaviour petHudProvider = null;
         [SerializeField] PetEvolutionService evolutionService = null;
         [SerializeField] bool autoFindReferences = true;
 
         MonsterInventoryAdapter inventory;
-        PetLevelUpService levelUpService;
+        VisualTreeAsset standaloneTree;
+        UIDocument screenDocument;
+        readonly System.Collections.Generic.HashSet<PetController> pendingPrompts = new();
         VisualElement overlay;
         VisualElement content;
         VisualElement currentPortrait;
@@ -35,9 +39,12 @@ namespace Capstone.Game.HudSystem {
         PetEvolutionPreview preview;
         bool controlsRegistered;
         bool resultShown;
+        bool openedAutomatically;
+        VisualElement returnFocus;
 
         PetCommandHudProvider CommandProvider => petHudProvider as PetCommandHudProvider;
-        public bool IsOpen => overlay != null && overlay.resolvedStyle.display != DisplayStyle.None;
+        public bool IsOpen => screenDocument != null
+            && screenDocument.rootVisualElement.style.display.value != DisplayStyle.None;
 
         void OnEnable() {
             ResolveReferences();
@@ -50,12 +57,22 @@ namespace Capstone.Game.HudSystem {
         void OnDisable() {
             Unsubscribe();
             UnregisterControls();
+            Close();
         }
 
-        public void Bind(UIDocument targetDocument, MonsterInventoryAdapter targetInventory) {
+        void OnDestroy() {
+            if (screenDocument != null) Destroy(screenDocument.gameObject);
+        }
+
+        public void Bind(UIDocument targetDocument, MonsterInventoryAdapter targetInventory,
+            VisualTreeAsset targetStandaloneTree) {
+            Unsubscribe();
+            UnregisterControls();
             document = targetDocument != null ? targetDocument : document;
             inventory = targetInventory != null ? targetInventory : inventory;
+            standaloneTree = targetStandaloneTree != null ? targetStandaloneTree : standaloneTree;
             ResolveReferences();
+            EnsureStandaloneScreen();
             CacheElements();
             RegisterControls();
             Subscribe();
@@ -63,6 +80,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public void Open(PetController pet = null, bool automaticPrompt = false) {
+            EnsureStandaloneScreen();
             if (overlay == null) CacheElements();
             if (overlay == null) return;
 
@@ -70,26 +88,46 @@ namespace Capstone.Game.HudSystem {
             targetPet = pet != null ? pet : CommandProvider?.GetSelectedPetController();
             preview = evolutionService?.CreatePreview(targetPet);
             resultShown = false;
-            overlay.style.display = DisplayStyle.Flex;
-            overlay.BringToFront();
+            openedAutomatically = automaticPrompt;
+            returnFocus = document?.rootVisualElement?.focusController?.focusedElement as VisualElement;
+            screenDocument.rootVisualElement.style.display = DisplayStyle.Flex;
             Refresh(automaticPrompt);
-            content?.Focus();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(screenDocument.rootVisualElement);
         }
 
         public bool TryOpenFromInventory(InventoryItemSnapshot item) {
-            if (!CanUseForSelectedPet(item)) return false;
+            if (!IsEvolutionItem(item)) return false;
             ResolveReferences();
-            PetController selectedPet = CommandProvider?.GetSelectedPetController();
-            document?.rootVisualElement?.schedule.Execute(() => Open(selectedPet));
+            MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
+            if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
+            controller?.OpenPetPartyPanel();
+            PetPartyPanelController party = GetComponent<PetPartyPanelController>();
+            if (party == null) party = FindFirstObjectByType<PetPartyPanelController>();
+            party?.BeginEvolutionItemSelection(item.ItemId, this);
             return true;
+        }
+
+        public bool IsEvolutionItem(InventoryItemSnapshot item) {
+            if (item == null) return false;
+            ResolveReferences();
+            for (int i = 0; i < 6; i++) {
+                PetController pet = CommandProvider?.GetPetControllerAt(i);
+                PetCollectionMetadata metadata = pet != null ? pet.GetComponentInChildren<PetCollectionMetadata>(true) : null;
+                if (metadata == null || !metadata.TryGetNextEvolutionRule(out PetEvolutionRule rule)
+                    || rule.Trigger == PetEvolutionTrigger.Level) continue;
+                if (string.Equals(item.ItemId, rule.RequiredItemId, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(item.Name, rule.RequiredItemId, StringComparison.OrdinalIgnoreCase)) return true;
+            }
+            return false;
         }
 
         public bool CanUseForSelectedPet(InventoryItemSnapshot item) {
             if (item == null) return false;
             ResolveReferences();
             PetController selectedPet = CommandProvider?.GetSelectedPetController();
-            PetEvolutionPreview itemPreview = evolutionService?.CreatePreview(selectedPet);
-            if (itemPreview?.Rule == null || itemPreview.Rule.Trigger != PetEvolutionTrigger.Item) return false;
+            PetEvolutionPreview itemPreview = evolutionService?.CreatePreview(selectedPet,
+                PetEvolutionMethod.Item, item.ItemId);
+            if (itemPreview?.Rule == null || itemPreview.Rule.Trigger == PetEvolutionTrigger.Level) return false;
 
             return string.Equals(item.ItemId, itemPreview.RequiredItemId, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(item.Name, itemPreview.RequiredItemId, StringComparison.OrdinalIgnoreCase);
@@ -99,14 +137,34 @@ namespace Capstone.Game.HudSystem {
             targetPet = null;
             preview = null;
             resultShown = false;
-            if (overlay != null) overlay.style.display = DisplayStyle.None;
+            openedAutomatically = false;
+            if (screenDocument != null)
+                screenDocument.rootVisualElement.style.display = DisplayStyle.None;
+            if (screenDocument != null) Capstone.Game.UISystem.PanelFocusUtility.Close(screenDocument.rootVisualElement);
+            if (returnFocus != null && returnFocus.panel != null && returnFocus.enabledInHierarchy) returnFocus.Focus();
+            returnFocus = null;
+        }
+
+        public void DismissPanel() {
+            Dismiss();
+        }
+
+        void Dismiss() {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "Dismiss")) return;
+            bool wasAutomatic = openedAutomatically;
+            Close();
+            if (wasAutomatic) {
+                MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
+                if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
+                controller?.EvolutionScreenClosed();
+            }
         }
 
         void Refresh(bool automaticPrompt = false) {
             if (evolutionService == null) return;
             preview = evolutionService.CreatePreview(targetPet);
 
-            string current = preview?.CurrentName ?? "Chọn một pet";
+            string current = preview?.CurrentName ?? "Chọn một thú";
             string target = preview != null && preview.IsConfigured ? preview.TargetName : "Dạng cuối";
             SetPortrait(currentPortrait, currentFallback, preview?.CurrentIcon, current);
             SetPortrait(targetPortrait, targetFallback, preview?.TargetIcon, target);
@@ -114,19 +172,15 @@ namespace Capstone.Game.HudSystem {
             if (targetName != null) targetName.text = target;
             if (formPath != null) {
                 formPath.text = preview?.Metadata != null
-                    ? $"FORM {preview.Metadata.EvolutionStage + 1}  →  FORM {preview.Metadata.EvolutionStage + 2}"
+                    ? $"FORM {preview.Metadata.FormCode}  →  FORM {preview.Rule?.TargetFormId ?? "--"}"
                     : "FORM -";
             }
 
-            bool usesItem = preview?.Rule?.Trigger == PetEvolutionTrigger.Item;
-            if (itemRow != null) itemRow.style.display = usesItem ? DisplayStyle.Flex : DisplayStyle.None;
-            if (itemCount != null && preview != null) {
-                itemCount.text = $"{preview.RequiredItemId}: {preview.OwnedItemQuantity} / {preview.RequiredItemQuantity}";
-            }
+            if (itemRow != null) itemRow.style.display = DisplayStyle.None;
             if (requirement != null) requirement.text = BuildRequirement(preview);
             if (dialogue != null) {
                 dialogue.text = preview == null || !preview.IsConfigured
-                    ? "Pet này không còn dạng tiến hóa tiếp theo."
+                    ? "Thú này không còn dạng tiến hóa tiếp theo."
                     : automaticPrompt
                         ? $"{current} đã đủ điều kiện tiến hóa thành {target}. Bạn có muốn tiến hóa ngay không?"
                         : $"Bạn có muốn cho {current} tiến hóa thành {target} không?";
@@ -135,23 +189,32 @@ namespace Capstone.Game.HudSystem {
             if (laterButton != null) laterButton.style.display = DisplayStyle.Flex;
             if (confirmButton != null) {
                 confirmButton.text = "TIẾN HÓA";
-                confirmButton.SetEnabled(preview?.CanEvolve == true);
+                confirmButton.SetEnabled(!confirmationRunning && (preview?.CanEvolve == true));
             }
         }
 
         void ConfirmEvolution() {
+            if (confirmationRunning || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "confirm")) return;
+            confirmationRunning = true;
+            confirmButton?.SetEnabled(false);
+            try { ConfirmEvolutionCore(); }
+            finally { confirmationRunning = false; if (IsOpen) confirmButton?.SetEnabled(resultShown || preview?.CanEvolve == true); }
+        }
+
+        void ConfirmEvolutionCore() {
             if (resultShown) {
-                Close();
+                Dismiss();
                 return;
             }
 
             if (evolutionService == null || preview == null) return;
             Sprite evolvedIcon = preview.TargetIcon ?? preview.CurrentIcon;
             string evolvedName = preview.TargetName;
-            bool success = evolutionService.TryEvolve(targetPet, out string message);
+            bool success = evolutionService.TryEvolve(targetPet, out string message,
+                PetEvolutionMethod.Level);
             if (!success) {
-                if (feedback != null) feedback.text = message;
                 Refresh();
+                if (feedback != null) feedback.text = message;
                 return;
             }
 
@@ -161,12 +224,12 @@ namespace Capstone.Game.HudSystem {
             if (targetName != null) targetName.text = evolvedName;
             if (dialogue != null) dialogue.text = message;
             if (requirement != null) requirement.text = "Tiến hóa hoàn tất";
-            if (feedback != null) feedback.text = "Dữ liệu, chỉ số và vị trí Party/Box đã được giữ nguyên.";
+            if (feedback != null) feedback.text = "Dữ liệu, chỉ số và vị trí Đội hình/Kho thú đã được giữ nguyên.";
             if (itemRow != null) itemRow.style.display = DisplayStyle.None;
             if (laterButton != null) laterButton.style.display = DisplayStyle.None;
             if (confirmButton != null) {
                 confirmButton.text = "TIẾP TỤC";
-                confirmButton.SetEnabled(true);
+                confirmButton.SetEnabled(!confirmationRunning);
             }
         }
 
@@ -181,12 +244,24 @@ namespace Capstone.Game.HudSystem {
             if (evolutionService == null) evolutionService = GetComponent<PetEvolutionService>();
             if (evolutionService == null && Application.isPlaying) evolutionService = gameObject.AddComponent<PetEvolutionService>();
             evolutionService?.Bind(inventory);
-            levelUpService = GetComponent<PetLevelUpService>();
+        }
+
+        void EnsureStandaloneScreen() {
+            if (screenDocument != null || document == null || standaloneTree == null) return;
+            GameObject screen = new GameObject("Pet Evolution Screen");
+            // A child UIDocument is nested under the Inventory UIDocument and would be
+            // hidden when Inventory closes for an automatic level-up prompt.
+            screen.transform.SetParent(transform.parent, false);
+            screenDocument = screen.AddComponent<UIDocument>();
+            screenDocument.panelSettings = document.panelSettings;
+            screenDocument.visualTreeAsset = standaloneTree;
+            screenDocument.sortingOrder = document.sortingOrder + 100;
+            screenDocument.rootVisualElement.style.display = DisplayStyle.None;
         }
 
         void CacheElements() {
-            if (document == null || document.rootVisualElement == null) return;
-            VisualElement root = document.rootVisualElement;
+            if (screenDocument == null || screenDocument.rootVisualElement == null) return;
+            VisualElement root = screenDocument.rootVisualElement;
             overlay = root.Q<VisualElement>("evolution-modal-overlay");
             content = root.Q<VisualElement>("evolution-modal-content");
             currentPortrait = root.Q<VisualElement>("evolution-current-portrait");
@@ -208,7 +283,7 @@ namespace Capstone.Game.HudSystem {
 
         void RegisterControls() {
             if (controlsRegistered || overlay == null) return;
-            if (laterButton != null) laterButton.clicked += Close;
+            if (laterButton != null) laterButton.clicked += Dismiss;
             if (confirmButton != null) confirmButton.clicked += ConfirmEvolution;
             if (content != null) content.RegisterCallback<KeyDownEvent>(HandleKeyDown);
             controlsRegistered = true;
@@ -216,7 +291,7 @@ namespace Capstone.Game.HudSystem {
 
         void UnregisterControls() {
             if (!controlsRegistered) return;
-            if (laterButton != null) laterButton.clicked -= Close;
+            if (laterButton != null) laterButton.clicked -= Dismiss;
             if (confirmButton != null) confirmButton.clicked -= ConfirmEvolution;
             if (content != null) content.UnregisterCallback<KeyDownEvent>(HandleKeyDown);
             controlsRegistered = false;
@@ -227,15 +302,13 @@ namespace Capstone.Game.HudSystem {
                 inventory.ItemsChanged -= HandleInventoryChanged;
                 inventory.ItemsChanged += HandleInventoryChanged;
             }
-            if (levelUpService != null) {
-                levelUpService.PetLeveledUp -= HandlePetLeveledUp;
-                levelUpService.PetLeveledUp += HandlePetLeveledUp;
-            }
+            PetLevelUpService.AnyPetLeveledUp -= HandlePetLeveledUp;
+            PetLevelUpService.AnyPetLeveledUp += HandlePetLeveledUp;
         }
 
         void Unsubscribe() {
             if (inventory != null) inventory.ItemsChanged -= HandleInventoryChanged;
-            if (levelUpService != null) levelUpService.PetLeveledUp -= HandlePetLeveledUp;
+            PetLevelUpService.AnyPetLeveledUp -= HandlePetLeveledUp;
         }
 
         void HandleInventoryChanged(System.Collections.Generic.IReadOnlyList<InventoryItemSnapshot> _) {
@@ -243,31 +316,37 @@ namespace Capstone.Game.HudSystem {
         }
 
         void HandlePetLeveledUp(PetController pet) {
+            if (pet == null || !pendingPrompts.Add(pet)) return;
+            StartCoroutine(OpenLevelPromptWhenReady(pet));
+        }
+
+        IEnumerator OpenLevelPromptWhenReady(PetController pet) {
+            yield return null;
+            var director = FindFirstObjectByType<Capstone.Game.PetSummon.PetSummonDirector>();
+            while (pet != null && ((director != null && director.IsSequenceRunning)
+                || pet.IsSummonPresentationPending || IsOpen)) yield return null;
+            pendingPrompts.Remove(pet);
+            if (pet == null) yield break;
             PetEvolutionPreview next = evolutionService?.CreatePreview(pet);
-            if (next == null || !next.ShouldAutoPrompt) return;
-            document?.rootVisualElement?.schedule.Execute(() => {
-                Open(pet, true);
-                if (IsOpen) evolutionService.MarkAutoPromptShown(next);
-            });
+            if (next == null || !next.ShouldAutoPrompt) yield break;
+            MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
+            if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
+            if (controller != null) controller.OpenAutomaticPetEvolutionPrompt(pet);
+            else Open(pet, true);
+            if (IsOpen) evolutionService.MarkAutoPromptShown(next);
         }
 
         void HandleKeyDown(KeyDownEvent evt) {
             if (evt.keyCode != KeyCode.Escape) return;
-            Close();
+            Dismiss();
             evt.StopImmediatePropagation();
         }
 
         static string BuildRequirement(PetEvolutionPreview value) {
             if (value == null || !value.IsConfigured || value.Rule == null) return "Dạng tiến hóa cuối";
-            if (value.Rule.Trigger == PetEvolutionTrigger.Level) {
-                return value.RequirementMet
-                    ? $"Đã đạt yêu cầu Lv. {value.RequiredLevel}"
-                    : $"Yêu cầu Lv. {value.RequiredLevel} • Hiện tại Lv. {value.CurrentLevel}";
-            }
-
-            return value.RequirementMet
-                ? $"Đã đủ {value.RequiredItemQuantity} {value.RequiredItemId}"
-                : $"Cần {value.RequiredItemQuantity} {value.RequiredItemId}";
+            return value.Rule.Trigger == PetEvolutionTrigger.Item
+                ? "Dạng này chỉ tiến hóa bằng vật phẩm trong Túi đồ"
+                : $"Cấp {value.CurrentLevel}/{value.RequiredLevel}";
         }
 
         static void SetPortrait(VisualElement portrait, Label fallback, Sprite sprite, string label) {

@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
+  m_Name: ManaPotion
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
+  Name: "B\xECnh mana"
+  Icon: {fileID: 21300000, guid: 6592b916f86b19e428db6f6847c7b6dd, type: 3}
+  Stackable: 1
+  MaxStackSize: 99
+  Tags: []
+  stableId: mana-potion
+  legacyIds: []
+  category: 2
+  rarity: 0
+  description: "B\xECnh thu\u1ED1c h\u1ED3i n\u0103ng l\u01B0\u1EE3ng cho th\xFA
+    c\xF3 s\u1EED d\u1EE5ng MP."
+  effect: "H\u1ED3i t\u1ED1i \u0111a 30 MP."
+  source: "D\u1EEF li\u1EC7u th\u1EED nghi\u1EC7m"
+  flavorText: 
+  healAmount: 0
+  energyRestoreAmount: 30
+  usableFromInventory: 1
+  consumable: 1

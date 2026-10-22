@@ -1,0 +1,13 @@
+.gui-gallery { background-color: #f8f4eb; color: #31573d; flex-grow: 1; min-height: 0; padding: 24px; }
+.gui-gallery-header { flex-direction: row; align-items: center; margin-bottom: 16px; min-height: 60px; background-color: rgba(248,244,235,.88); border-radius: 8px; padding: 0 8px; }
+.gui-gallery-title { flex-grow: 1; font-size: 32px; -unity-font-style: bold; color: #174a30; }
+.gui-gallery-scroll { flex-grow: 1; min-height: 0; }
+.gui-gallery-row { flex-direction: row; flex-wrap: wrap; margin-bottom: 16px; }
+.gui-gallery-row > .gui-button { margin-right: 12px; margin-bottom: 8px; }
+.gui-gallery-section { margin-bottom: 16px; }
+.gui-gallery-section > .gui-caption { margin-bottom: 12px; }
+.gui-gallery-columns { flex-direction: row; flex-wrap: wrap; }
+.gui-gallery-columns > .gui-surface { flex-grow: 1; flex-basis: 350px; margin-right: 12px; margin-bottom: 12px; }
+.gui-gallery-icon-cell { width: 92px; height: 78px; align-items: center; justify-content: center; }
+.gui-gallery-icon-cell .gui-caption { width: 88px; font-size: 12px; margin-top: 6px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; -unity-text-align: middle-center; }
+.gui-gallery-status { min-height: 32px; color: #31573d; white-space: normal; margin-top: 12px; background-color: rgba(248,244,235,.9); border-radius: 6px; padding: 4px 8px; }

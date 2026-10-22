@@ -7,6 +7,7 @@ namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
     public sealed class PetReleasePanelController : MonoBehaviour {
+        bool confirmationRunning;
         [SerializeField] UIDocument document = null;
         [SerializeField] MonoBehaviour petHudProvider = null;
         [SerializeField] MonsterInventoryAdapter inventory = null;
@@ -75,13 +76,18 @@ namespace Capstone.Game.HudSystem {
             overlay.style.display = DisplayStyle.Flex;
             overlay.BringToFront();
             Refresh();
-            dialog?.Focus();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(overlay);
+        }
+
+        void RequestClose() {
+            if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "close")) Close();
         }
 
         public void Close() {
             transientFeedback = string.Empty;
             targetPet = null;
             if (overlay != null) overlay.style.display = DisplayStyle.None;
+            Capstone.Game.UISystem.PanelFocusUtility.Close(overlay);
         }
 
         public void Refresh() {
@@ -89,13 +95,13 @@ namespace Capstone.Game.HudSystem {
             if (overlay == null || releaseService == null) return;
 
             PetReleasePreview preview = releaseService.CreatePreview(targetPet);
-            string displayName = string.IsNullOrWhiteSpace(preview.DisplayName) ? "Chọn một pet" : preview.DisplayName;
+            string displayName = string.IsNullOrWhiteSpace(preview.DisplayName) ? "Chọn một thú" : preview.DisplayName;
             SetPortrait(portrait, portraitFallback, preview.Icon, displayName);
             if (petName != null) petName.text = displayName;
             if (species != null) species.text = DisplayOrDash(preview.Species);
             if (element != null) element.text = FormatElement(preview.Element);
             if (rarity != null) rarity.text = FormatRarity(preview.Rarity);
-            if (level != null) level.text = preview.IsValid ? $"Lv. {preview.Level}" : "-";
+            if (level != null) level.text = preview.IsValid ? $"Cấp {preview.Level}" : "-";
             if (stage != null) stage.text = preview.IsValid ? preview.EvolutionStage.ToString() : "-";
             if (goldValue != null) goldValue.text = $"+{preview.GoldValue:N0}";
 
@@ -104,9 +110,9 @@ namespace Capstone.Game.HudSystem {
                 favoriteWarning.style.display = preview.IsFavorite ? DisplayStyle.Flex : DisplayStyle.None;
             }
             if (dailyCount != null) {
-                dailyCount.text = $"PET ĐÃ THẢ: {preview.ReleasedToday} / {preview.DailyReleaseLimit} HÔM NAY";
+                dailyCount.text = $"THÚ ĐÃ THẢ: {preview.ReleasedToday} / {preview.DailyReleaseLimit} HÔM NAY";
             }
-            if (confirmButton != null) confirmButton.SetEnabled(preview.CanRelease);
+            if (confirmButton != null) confirmButton.SetEnabled(!confirmationRunning && (preview.CanRelease));
             if (feedback != null) {
                 feedback.text = !string.IsNullOrWhiteSpace(transientFeedback)
                     ? transientFeedback
@@ -156,16 +162,16 @@ namespace Capstone.Game.HudSystem {
 
         void RegisterControls() {
             if (controlsRegistered || overlay == null) return;
-            if (closeButton != null) closeButton.clicked += Close;
-            if (cancelButton != null) cancelButton.clicked += Close;
+            if (closeButton != null) closeButton.clicked += RequestClose;
+            if (cancelButton != null) cancelButton.clicked += RequestClose;
             if (confirmButton != null) confirmButton.clicked += ConfirmRelease;
             controlsRegistered = true;
         }
 
         void UnregisterControls() {
             if (!controlsRegistered) return;
-            if (closeButton != null) closeButton.clicked -= Close;
-            if (cancelButton != null) cancelButton.clicked -= Close;
+            if (closeButton != null) closeButton.clicked -= RequestClose;
+            if (cancelButton != null) cancelButton.clicked -= RequestClose;
             if (confirmButton != null) confirmButton.clicked -= ConfirmRelease;
             controlsRegistered = false;
         }
@@ -202,6 +208,14 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ConfirmRelease() {
+            if (confirmationRunning || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "confirm")) return;
+            confirmationRunning = true;
+            confirmButton?.SetEnabled(false);
+            try { ConfirmReleaseCore(); }
+            finally { confirmationRunning = false; if (IsOpen) Refresh(); }
+        }
+
+        void ConfirmReleaseCore() {
             if (releaseService == null) return;
             if (!releaseService.TryRelease(targetPet, out string message)) {
                 transientFeedback = message;
@@ -269,19 +283,8 @@ namespace Capstone.Game.HudSystem {
             return string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
         }
 
-        static string FormatElement(PetElement value) {
-            return value == PetElement.Unknown ? "-" : value.ToString();
-        }
+        static string FormatElement(PetElement value) => Capstone.Game.UISystem.VietnameseUI.Element(value);
 
-        static string FormatRarity(PetRarity value) {
-            switch (value) {
-                case PetRarity.Common: return "★";
-                case PetRarity.Uncommon: return "★★";
-                case PetRarity.Rare: return "★★★";
-                case PetRarity.Epic: return "★★★★";
-                case PetRarity.Legendary: return "★★★★★";
-                default: return "-";
-            }
-        }
+        static string FormatRarity(PetRarity value) => Capstone.Game.UISystem.VietnameseUI.Rarity(value);
     }
 }

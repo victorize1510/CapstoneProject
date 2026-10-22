@@ -1,0 +1,86 @@
+{
+  "tool": "built-in image_gen",
+  "date": "2026-10-19",
+  "purpose": "UI concept illustration and material assets, not production art",
+  "assets": [
+    {
+      "key": "material",
+      "file": "Assets/Art/steel-enamel-r2.png",
+      "prompt": "Use case: stylized-concept. Asset type: new hand-painted game UI MATERIAL TEXTURE ONLY, square 1:1, front-facing flat material sample. A continuous muted blue steel and smoky amethyst enamel surface, matte satin brushed micrograin, subtle cold hammered mineral flecks and very soft patina variation, restrained premium fantasy adventure craftsmanship. Base color #66748E with #3C4772 and #A596BB undertones, medium brightness, low contrast across the whole sample, softly directional upper-left light. Fine rich tactile detail visible when inspected but broad color is even and quiet. NO border, no framed panel, no object, no scene, no compass, no circles, no glyphs, no writing, no logo, no metallic rivets, no big black area, no white rectangle, no green cast, no folds. Orthographic flat texture intended underneath separately drawn faint cartography and runes.",
+      "referenceImages": [],
+      "nativeSize": [
+        1254,
+        1254
+      ],
+      "sha256": "540b5b634be9abf0ea7c4a7cd0a3b5102926440fafe6358ecac4a4cf3afc575d"
+    },
+    {
+      "key": "profile",
+      "file": "Assets/Art/scene-profile-r2.png",
+      "prompt": "Use case: stylized-concept. Asset type: polished fantasy adventure RPG menu illustration, a concept asset rather than production screenshot. A single VERY WIDE landscape banner approximately 3:1 aspect ratio, no border, no UI, no typography. Painterly premium game inventory art, tangible materials and carefully sculpted lighting, cool steel blue and smoky lilac shadows, warm muted champagne metal highlights, balanced medium brightness. Composition: LEFT 45 percent is low-detail cool atmospheric negative space for later UI labels; RIGHT 45 percent contains the clearly legible large focal object and a little surrounding environment, focal object centered at 73 percent of image width, fills 80-90 percent of image height, complete silhouette fully inside frame, nothing critical beyond 88 percent image width. Soft transition from atmospheric left to detailed right. No words, no letters, no numbers, no labels, no characters, no creature, no screenshot, no website, no card framing, no black void, no excessive bloom. Subject: an adventurer trainer's closed leather dossier with a blue-steel cover medallion, a bronze seal with a simple portrait silhouette, a quill and a folded blank credential, resting at the right end of a weathered writing desk in an expedition outpost. A softly visible arched window and distant misty mountain architecture set context behind it. The dossier and medallion are the dominant readable silhouette, not tiny stationery. Any paper markings are abstract faded brush dashes only, absolutely no readable text. The left side fades to cool outpost atmosphere, not a second object.",
+      "referenceImages": [],
+      "nativeSize": [
+        2172,
+        724
+      ],
+      "sha256": "babe5985bbc4aaa084da79dc8ee88514d0dee34ebaed195111a7b53af0917a7f"
+    },
+    {
+      "key": "quest",
+      "file": "Assets/Art/scene-quest-r2.png",
+      "prompt": "Use case: stylized-concept. Asset type: polished fantasy adventure RPG menu illustration, a concept asset rather than production screenshot. A single VERY WIDE landscape banner approximately 3:1 aspect ratio, no border, no UI, no typography. Painterly premium game inventory art, tangible materials and carefully sculpted lighting, cool steel blue and smoky lilac shadows, warm muted champagne metal highlights, balanced medium brightness. Composition: LEFT 45 percent is low-detail cool atmospheric negative space for later UI labels; RIGHT 45 percent contains the clearly legible large focal object and a little surrounding environment, focal object centered at 73 percent of image width, fills 80-90 percent of image height, complete silhouette fully inside frame, nothing critical beyond 88 percent image width. Soft transition from atmospheric left to detailed right. No words, no letters, no numbers, no labels, no characters, no creature, no screenshot, no website, no card framing, no black void, no excessive bloom. Subject: a handsome compact roadside quest notice board made of weathered wood with blue-steel braces, pinned blank parchment notices and one muted bronze wax seal, standing on the RIGHT foreground. Beyond it are a stone path, meadow and softly painted fantasy mountain towers. The notice board fills the right-side scene height, with a bold clean silhouette; do not shrink it to a tiny icon. No readable notices, only a few abstract faded lines. Keep the whole board inside the image and leave the far-right 10 percent low-detail.",
+      "referenceImages": [],
+      "nativeSize": [
+        2172,
+        724
+      ],
+      "sha256": "217d6318e6ea0e341217950f83be4d682497a33b49e88f44ecbef89155c23ae7"
+    },
+    {
+      "key": "map",
+      "file": "Assets/Art/scene-map-r2.png",
+      "prompt": "Use case: stylized-concept. Asset type: polished fantasy adventure RPG menu illustration, a concept asset rather than production screenshot. A single VERY WIDE landscape banner approximately 3:1 aspect ratio, no border, no UI, no typography. Painterly premium game inventory art, tangible materials and carefully sculpted lighting, cool steel blue and smoky lilac shadows, warm muted champagne metal highlights, balanced medium brightness. Composition: LEFT 45 percent is low-detail cool atmospheric negative space for later UI labels; RIGHT 45 percent contains the clearly legible large focal object and a little surrounding environment, focal object centered at 73 percent of image width, fills 80-90 percent of image height, complete silhouette fully inside frame, nothing critical beyond 88 percent image width. Soft transition from atmospheric left to detailed right. No words, no letters, no numbers, no labels, no characters, no creature, no screenshot, no website, no card framing, no black void, no excessive bloom. Subject: a large folded terrain map on a stone survey table at RIGHT foreground, terrain painted in actual relief with miniature mountain ridges and winding blue river shapes, a substantial antique bronze compass at the lower right of the map, a few cool grey peaks visible beyond the table. The map is physically large and nearly fills the height of the right side, no text or labels anywhere, no invented game region name. Map and compass must remain entirely inside the image; far-right ten percent quiet.",
+      "referenceImages": [],
+      "nativeSize": [
+        2172,
+        724
+      ],
+      "sha256": "bf79ae73b0a2e0b911047cd8ba14acf93ec052ea49157900c8f93460991c1edf"
+    },
+    {
+      "key": "book",
+      "file": "Assets/Art/scene-book-r2.png",
+      "prompt": "Use case: stylized-concept. Asset type: polished fantasy adventure RPG menu illustration, a concept asset rather than production screenshot. A single VERY WIDE landscape banner approximately 3:1 aspect ratio, no border, no UI, no typography. Painterly premium game inventory art, tangible materials and carefully sculpted lighting, cool steel blue and smoky lilac shadows, warm muted champagne metal highlights, balanced medium brightness. Composition: LEFT 45 percent is low-detail cool atmospheric negative space for later UI labels; RIGHT 45 percent contains the clearly legible large focal object and a little surrounding environment, focal object centered at 73 percent of image width, fills 80-90 percent of image height, complete silhouette fully inside frame, nothing critical beyond 88 percent image width. Soft transition from atmospheric left to detailed right. No words, no letters, no numbers, no labels, no characters, no creature, no screenshot, no website, no card framing, no black void, no excessive bloom. Subject: an open creature field codex with handsome blue-steel and bronze binding on a stone-and-wood research desk at RIGHT foreground. Large cream pages show intricate botanical diagrams, simple abstract paw-trail symbols and arcane line illustrations, NO readable script and NO creature species design. Pressed leaves, one small quill, and softly visible archive alcove or misty garden behind. The open book is the dominant subject and fills the right-side image height, both covers and pages fully inside.",
+      "referenceImages": [],
+      "nativeSize": [
+        2172,
+        724
+      ],
+      "sha256": "f44090733b6913320e9c9237b3d3321b65415dca111a3add0d3109303ea56913"
+    },
+    {
+      "key": "bag",
+      "file": "Assets/Art/scene-bag-r2.png",
+      "prompt": "Use case: compositing. Image 1 is a DESIGN REFERENCE for the backpack only, not an edit target and not a screenshot. Create a new premium painterly fantasy RPG menu banner in approximately 2.25:1 landscape aspect ratio. Preserve the key backpack design: brown leather, cream flap, bronze compass emblem, dark navy side pouch, rolled cream bedroll, leaf charm. Show the WHOLE bag prominently at right-of-center on a mossy stone resting spot beside an adventurer camp and distant misty stone arches, with understated grass and travel scenery. Bag centered at 65 percent width, fills 85 percent image height, handle and bottom fully visible, not clipped. Left third is calm low-detail cool steel-blue atmosphere for later compositing, not a second bag. Sculpted believable material and soft highlights; medium-bright cool blue/lilac surroundings and warm muted leather. No people, no creature, no readable text, no UI, no frame, no black background, no close-up crop.",
+      "referenceImages": [
+        "Assets/Art/backpack.png"
+      ],
+      "nativeSize": [
+        1881,
+        836
+      ],
+      "sha256": "9d2e1c5a932923246f0255a622922a14e0560237f945e9af6243949d4c72532a"
+    },
+    {
+      "key": "stage",
+      "file": "Assets/Art/scene-stage-r2.png",
+      "prompt": "Use case: stylized-concept. Create an elegant fantasy adventure creature portrait STAGE BACKGROUND with NO CREATURE, NO CHARACTER and NO OBJECT IN THE MAIN STAGING AREA. Wide 16:9 landscape composition, painterly premium RPG concept asset. A broad flat mossy stone platform fills the lower middle and lower right, framed by only a few grasses and low ferns at the extreme bottom corners. Behind are softly lit ancient arches, misty blue mountain sanctuary and quiet twilight-pastel sky. The CENTER 65 percent is uncluttered atmospheric open space intended for a large 2D creature illustration to be inserted later. Cool steel blue and smoky amethyst, subtle muted champagne light, soft sage foliage only at edges. Gentle vignette, medium brightness, balanced warm and cool. No compass logo, no giant rune in the center, no monster silhouette, no person, no UI frame, no writing, no black void. Front-facing level camera, dignified calm sanctuary.",
+      "referenceImages": [],
+      "nativeSize": [
+        1672,
+        941
+      ],
+      "sha256": "1974b7b0ae68b160d756c9e3cbd847acdfc2ad7555e35734c5ac86eba5c2fabe"
+    }
+  ]
+}

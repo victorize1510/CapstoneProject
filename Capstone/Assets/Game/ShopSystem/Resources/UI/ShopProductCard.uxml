@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Button name="shop-card" class="shop-card">
+        <ui:VisualElement name="card-icon" class="shop-card-icon" picking-mode="Ignore">
+            <ui:Label name="card-placeholder" text="?" class="shop-card-placeholder" picking-mode="Ignore" />
+        </ui:VisualElement>
+        <ui:Label name="card-name" class="shop-card-name" picking-mode="Ignore" />
+        <ui:Label name="card-status" class="shop-card-status" picking-mode="Ignore" />
+        <ui:Label name="card-price" class="shop-card-price" picking-mode="Ignore" />
+    </ui:Button>
+</ui:UXML>

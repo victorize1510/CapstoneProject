@@ -31,6 +31,7 @@ namespace Capstone.Game.MapSystem {
         [SerializeField] Vector2 topLeftOffset = new Vector2(28f, -28f);
         [SerializeField, Min(0f)] float maskInset = 20f;
         [SerializeField, Min(0f)] float frameOverscan = 30f;
+        [SerializeField] bool useMinimalHudFrame;
 
         RenderTexture runtimeMinimapTexture;
         Transform configuredVisualRoot;
@@ -38,6 +39,16 @@ namespace Capstone.Game.MapSystem {
         public MinimapManager Manager => minimapManager;
         public Camera Camera => minimapCamera;
         public Transform Target => target;
+
+        public void UseGameplayHudPresentation() {
+            ResolveReferences();
+            useMinimalHudFrame = true;
+            enforceTopLeftLayout = false;
+            maskInset = 7f;
+            if (minimapManager != null) minimapManager.minimapShape = Capstone.Game.HudSystem.GameplayHudVisuals.CircleMask;
+            ApplySettings();
+            EnsureOpaqueMinimapVisuals();
+        }
 
         void Awake() {
             ResolveReferences();
@@ -201,7 +212,11 @@ namespace Capstone.Game.MapSystem {
                 display.transform.SetSiblingIndex(1);
             }
 
-            ConfigureCustomFrame(root.Find("Thang Minimap Frame"));
+            Transform customFrame = root.Find("Thang Minimap Frame");
+            if (useMinimalHudFrame) {
+                if (customFrame != null) customFrame.gameObject.SetActive(false);
+                if (maskImage != null) maskImage.sprite = Capstone.Game.HudSystem.GameplayHudVisuals.CircleMask;
+            } else ConfigureCustomFrame(customFrame);
         }
 
         RenderTexture EnsureMinimapRenderTexture() {

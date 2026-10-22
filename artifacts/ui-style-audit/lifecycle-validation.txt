@@ -1,0 +1,62 @@
+PASS all scene panel owners exist
+PASS initial gameplay restores gameplay input
+PASS Trainer Menu keeps tracking while blocking gameplay
+PASS Trainer Menu spans 35% width
+PASS Profile replaces Menu and blocks camera input
+PASS Profile graphic: BackButton
+PASS Profile graphic: AvatarCameraButton
+PASS Profile graphic: ChangeAvatarButton
+PASS Profile graphic: ChangeNameButton
+PASS Profile graphic: TeamPetSlot_01
+PASS Profile graphic: TeamPetSlot_02
+PASS Profile graphic: TeamPetSlot_03
+PASS Profile graphic: TeamPetSlot_04
+PASS Profile graphic: TeamPetSlot_05
+PASS Profile graphic: TeamPetSlot_06
+PASS Profile graphic: NameInput
+PASS Profile graphic: CancelButton
+PASS Profile graphic: ConfirmButton
+PASS Profile graphic: CloseButton
+PASS Profile Back returns to Trainer Menu
+PASS disabled Profile restores gameplay input
+PASS disabled router releases its dialogue lock
+PASS BAG controls are registered
+PASS BAG opens and locks, cycle 0
+PASS disabled BAG closes and detaches callbacks, cycle 0
+PASS disabled BAG cycle 0 restores gameplay input
+PASS BAG callback count stays stable, cycle 0
+PASS BAG opens and locks, cycle 1
+PASS disabled BAG closes and detaches callbacks, cycle 1
+PASS disabled BAG cycle 1 restores gameplay input
+PASS BAG callback count stays stable, cycle 1
+PASS BAG opens and locks, cycle 2
+PASS disabled BAG closes and detaches callbacks, cycle 2
+PASS disabled BAG cycle 2 restores gameplay input
+PASS BAG callback count stays stable, cycle 2
+PASS BAG search still works after enable cycles
+PASS BAG search value survives controller rebind
+PASS disabled inventory input closes BAG
+PASS disabled inventory input restores gameplay input
+PASS PETS hover callbacks detach, cycle 0
+PASS PETS hover callback count stays stable, cycle 0
+PASS PETS hover callbacks detach, cycle 1
+PASS PETS hover callback count stays stable, cycle 1
+PASS PETS hover callbacks detach, cycle 2
+PASS PETS hover callback count stays stable, cycle 2
+PASS PETS section is visible
+PASS PETS locks gameplay
+PASS PETS has six party cards
+PASS PETS closed restores gameplay input
+PASS BOX section is visible
+PASS BOX locks gameplay
+PASS hidden BOX does not rebuild its cards
+PASS BOX closed restores gameplay input
+PASS QUEST section is visible
+PASS QUEST locks gameplay
+PASS QUEST closed restores gameplay input
+PASS MAP opens and locks gameplay
+PASS filtered marker hides its selection label
+PASS disabled MAP closes its screen
+PASS disabled MAP restores gameplay input
+PASS idle player has no ball after panel transitions
+PASS quest item reward has a persistent definition

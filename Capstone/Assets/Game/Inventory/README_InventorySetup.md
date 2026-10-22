@@ -78,7 +78,7 @@ Neu khong co, tool se fallback sang:
 ## Kiem tra sau khi setup
 
 1. Bam Play.
-2. Nhan `I` hoac `Tab` de mo/tat bag.
+2. Nhấn `I` để mở/tắt Túi đồ. `Tab` mở/tắt Trainer Menu.
 3. Neu bag khong hien:
    - Kiem tra `InventoryUI > UIDocument > Source Asset`.
    - Kiem tra `InventoryUI > UIDocument > Panel Settings`.
@@ -86,3 +86,18 @@ Neu khong co, tool se fallback sang:
 4. Neu item khong hien:
    - Kiem tra scene co `MonsterInventoryAdapter`.
    - Neu dung debug item, gan them `InventoryDebugSeeder` vao cung GameObject voi adapter hoac mot GameObject khac va tro reference ve adapter.
+
+## Item hồi phục thử nghiệm
+
+- `healing-apple`: Táo hồi phục, tối đa **30 HP**, thuộc Thức ăn.
+- `Potion`: Bình hồi máu, tối đa **100 HP**. Giữ GUID/ID cũ cho phần thưởng và save.
+- `mana-potion`: Bình mana, tối đa **30 MP**. Thú không sử dụng MP sẽ không tiêu hao bình.
+- `DuskStone.asset` được giữ nguyên. Không tự thêm giá Shop hoặc dữ liệu sinh vật.
+
+`Assets/Resources/Inventory/RecoveryItems.asset` giữ tham chiếu các definition để
+save nạp lại đúng hiệu ứng mà không thêm field/schema save. Túi đồ và R/T dùng
+cùng luồng hồi phục. Không tiêu hao khi chỉ số đầy; lỗi lưu hoàn tác item và chỉ số.
+
+Menu **Game Tools/GameToolThang/Inventory** có các lệnh tạo definition, thêm tối
+thiểu 5 item mỗi loại vào túi hiện tại, và kiểm tra bằng fixture với save riêng.
+Lệnh thêm item đọc save hiện có trước khi bổ sung; không đặt lại kho hoặc Túi đồ.

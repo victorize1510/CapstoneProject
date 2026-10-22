@@ -32,6 +32,26 @@ namespace Capstone.Game.SaveSystem {
             if (Absent(root, "pets")) data.pets = null;
             if (Absent(root, "profile")) data.profile = null;
             if (Absent(root, "achievements")) data.achievements = null;
+            if (data.pets != null) {
+                JObject petsRoot = root["pets"] as JObject;
+                bool hasBoxSlots = petsRoot?["boxSlots"] is JArray;
+                if (!hasBoxSlots || sourceVersion < 8) {
+                    data.pets.boxSlots = new List<PetBoxSlotSaveData>();
+                    if (data.pets.boxPetIds != null) {
+                        int slotIndex = 0;
+                        foreach (string petId in data.pets.boxPetIds) {
+                            if (!string.IsNullOrWhiteSpace(petId)) {
+                                data.pets.boxSlots.Add(new PetBoxSlotSaveData {
+                                    slotIndex = slotIndex,
+                                    petId = petId
+                                });
+                            }
+                            slotIndex++;
+                        }
+                    }
+                    data.pets.boxPetIds = new List<string>();
+                }
+            }
             if (data.pets?.petStates != null) {
                 JArray states = root["pets"]?["petStates"] as JArray;
                 for (int i = 0; i < data.pets.petStates.Count; i++) {
@@ -39,6 +59,10 @@ namespace Capstone.Game.SaveSystem {
                     if (pet == null) continue;
                     JObject source = states != null && i < states.Count ? states[i] as JObject : null;
                     if (source?["customization"] == null || source["customization"].Type == JTokenType.Null) pet.customization = null;
+                    else if (pet.customization != null && source["customization"] is JObject customization) {
+                        if (customization["magicAttack"] == null) pet.customization.magicAttack = pet.customization.attack;
+                        if (customization["magicDefense"] == null) pet.customization.magicDefense = pet.customization.defense;
+                    }
                     if (source?["runtimeStats"] == null || source["runtimeStats"].Type == JTokenType.Null) pet.runtimeStats = null;
                     else if (sourceVersion < 6 && pet.runtimeStats != null)
                         pet.runtimeStats.hasSkillLoadout = source["runtimeStats"]?["equippedSkillIds"] is JArray;
@@ -102,7 +126,8 @@ namespace Capstone.Game.SaveSystem {
             }
             if (data.pets?.captured != true) return;
             var roster = data.pets;
-            if (roster.petStates == null || roster.partyPetIds == null || roster.boxPetIds == null || roster.partyPetIds.Count > 6 || roster.boxCapacity < 1)
+            if (roster.petStates == null || roster.partyPetIds == null || roster.boxSlots == null
+                || roster.boxPetIds == null || roster.partyPetIds.Count > 6 || roster.boxCapacity < 1)
                 throw new InvalidDataException("Invalid pet roster.");
             var petIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var pet in roster.petStates) {
@@ -114,8 +139,15 @@ namespace Capstone.Game.SaveSystem {
             }
             var assigned = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (string id in roster.partyPetIds) ValidateAssignment(id, petIds, assigned);
-            foreach (string id in roster.boxPetIds) ValidateAssignment(id, petIds, assigned);
-            if (roster.boxPetIds.Count > roster.boxCapacity) throw new InvalidDataException("Box exceeds its saved capacity.");
+            if (roster.boxPetIds.Count > 0) throw new InvalidDataException("Legacy Box assignments must be migrated before validation.");
+            var occupiedSlots = new HashSet<int>();
+            foreach (PetBoxSlotSaveData slot in roster.boxSlots) {
+                if (slot == null || slot.slotIndex < 0 || slot.slotIndex >= roster.boxCapacity
+                    || string.IsNullOrWhiteSpace(slot.petId) || !occupiedSlots.Add(slot.slotIndex)) {
+                    throw new InvalidDataException("Invalid or duplicate Box slot.");
+                }
+                ValidateAssignment(slot.petId, petIds, assigned);
+            }
             if (!string.IsNullOrWhiteSpace(roster.activePetId) && !roster.partyPetIds.Exists(id => string.Equals(id, roster.activePetId, StringComparison.OrdinalIgnoreCase)))
                 throw new InvalidDataException("Active pet is not in the saved party.");
             if (roster.releasedPetIds != null) foreach (string id in roster.releasedPetIds) {

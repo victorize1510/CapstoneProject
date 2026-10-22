@@ -1,0 +1,65 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="MenuTheme.uss" />
+    <ui:Style src="MenuCommon.uss" />
+    <ui:Style src="ShopScreen.uss" />
+    <ui:Style src="MenuScreenHeader.uss" />
+    <ui:VisualElement name="shop-panel" class="shop-panel menu-theme">
+        <ui:VisualElement class="screen-header">
+            <ui:VisualElement class="screen-heading">
+                <ui:VisualElement class="screen-heading-mark" picking-mode="Ignore" focusable="false" />
+                <ui:Label text="CỬA HÀNG" class="screen-title" />
+            </ui:VisualElement>
+            <ui:Label text="Mua sắm vật phẩm và vật tư cho hành trình phiêu lưu" class="shop-subtitle" />
+            <ui:VisualElement class="inventory-currency" tooltip="Vàng đang sở hữu">
+                <ui:Label text="G" class="inventory-currency-icon" />
+                <ui:Label name="shop-gold" text="—" class="inventory-gold-value" />
+            </ui:VisualElement>
+            <ui:Button name="shop-back" text="←  TRỞ LẠI" class="screen-back" />
+        </ui:VisualElement>
+        <ui:VisualElement class="shop-body">
+            <ui:ScrollView class="shop-sidebar shop-column" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+                <ui:Button name="shop-category-consumables" class="shop-category"><ui:Label text="+" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="shop-category-capture" class="shop-category"><ui:Label text="◉" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="shop-category-materials" class="shop-category"><ui:Label text="◇" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="shop-category-special" class="shop-category"><ui:Label text="★" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
+                <ui:Button name="shop-category-evolution" class="shop-category"><ui:Label text="◆" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
+            </ui:ScrollView>
+            <ui:VisualElement class="shop-products shop-column">
+                <ui:VisualElement class="shop-toolbar">
+                    <ui:TextField name="shop-search" placeholder-text="Tìm kiếm vật phẩm..." class="shop-search" />
+                    <ui:Button name="shop-clear" text="×" tooltip="Xóa tìm kiếm" class="menu-search-clear" />
+                    <ui:DropdownField name="shop-sort" class="shop-sort" />
+                </ui:VisualElement>
+                <ui:ScrollView class="shop-grid-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+                    <ui:VisualElement name="shop-grid" class="shop-grid" />
+                    <ui:Label name="shop-empty" text="Hiện chưa có vật phẩm." class="menu-detail-empty" />
+                </ui:ScrollView>
+            </ui:VisualElement>
+            <ui:VisualElement class="shop-details shop-column">
+                <ui:Label name="shop-detail-empty" text="Chọn vật phẩm để xem thông tin." class="menu-detail-empty" />
+                <ui:ScrollView name="shop-detail" class="shop-detail-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+                    <ui:VisualElement class="shop-portrait-frame"><ui:Image name="shop-portrait" class="shop-portrait" scale-mode="ScaleToFit" /></ui:VisualElement>
+                    <ui:Label name="shop-item-name" class="shop-item-name" />
+                    <ui:Label name="shop-owned" class="shop-owned" />
+                    <ui:VisualElement class="shop-badges"><ui:Label name="shop-item-category" class="shop-badge" /><ui:Label name="shop-rarity" class="shop-badge" /></ui:VisualElement>
+                    <ui:Label name="shop-description" class="shop-description" />
+                    <ui:VisualElement class="shop-effect-section"><ui:Label text="HIỆU QUẢ" class="shop-section-title" /><ui:Label name="shop-effect" class="shop-description" /></ui:VisualElement>
+                    <ui:Label name="shop-stock" class="shop-owned" />
+                </ui:ScrollView>
+                <ui:VisualElement name="shop-purchase" class="shop-purchase">
+                    <ui:Label text="Số lượng" class="shop-section-title" />
+                    <ui:VisualElement class="shop-quantity-row">
+                        <ui:Button name="shop-minus" text="−" tooltip="Giảm số lượng" />
+                        <ui:IntegerField name="shop-quantity" value="1" is-delayed="true" tooltip="Số lượng cần mua" />
+                        <ui:Button name="shop-plus" text="+" tooltip="Tăng số lượng" />
+                        <ui:Button name="shop-max" text="Tối đa" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="shop-total-row"><ui:Label text="Tổng giá" /><ui:Label name="shop-total" /></ui:VisualElement>
+                    <ui:Label name="shop-reason" class="shop-reason" />
+                    <ui:Button name="shop-buy" text="MUA" class="action-button primary-action shop-buy" />
+                </ui:VisualElement>
+                <ui:Label name="shop-feedback" class="shop-feedback" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

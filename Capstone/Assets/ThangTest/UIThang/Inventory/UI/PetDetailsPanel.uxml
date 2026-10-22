@@ -1,0 +1,248 @@
+<ui:UXML xmlns:ga="Capstone.Game.UISystem" xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+  <ui:Style src="../../../../Game/UISystem/Resources/UI/GreenAngular/GreenAngular.uss" />
+  <ui:VisualElement name="pet-details-overlay" class="ga-overlay">
+    <ga:AngularSurface class="ga-popup" role="shell" name="pet-details-dialog" style="width:1080px;height:740px;">
+      <ga:AngularSurface class="ga-modal-header" role="primary" shape="tab">
+        <ui:Label name="" text="THÔNG TIN THÚ" class="ga-popup-title" />
+        <ga:AngularButton name="pet-details-close-button" text="×" class="ga-button ga-close" role="primary" shape="diamond" />
+      </ga:AngularSurface>
+      <ui:ScrollView mode="Vertical" horizontal-scroller-visibility="Hidden" class="ga-details-scroll">
+        <ga:AngularSurface class="ga-details-summary" role="panel">
+          <ga:AngularSurface class="ga-summary-portrait" role="shell" name="pet-details-portrait">
+            <ui:Label name="pet-details-portrait-fallback" text="◇" class="ga-art-fallback" />
+          </ga:AngularSurface>
+          <ui:VisualElement class="ga-details-summary-copy">
+            <ui:Label name="pet-details-name" text="—" class="ga-pet-name" />
+            <ui:VisualElement class="ga-details-summary-meta">
+              <ui:VisualElement class="ga-info-row">
+                <ui:Label name="" text="Loài" class="ga-info-key" />
+                <ui:Label name="pet-details-species" text="—" class="ga-info-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="ga-info-row">
+                <ui:Label name="" text="Hệ" class="ga-info-key" />
+                <ui:Label name="pet-details-element" text="—" class="ga-info-value" />
+              </ui:VisualElement>
+              <ui:VisualElement class="ga-info-row">
+                <ui:Label name="" text="Cấp" class="ga-info-key" />
+                <ui:Label name="pet-details-level" text="—" class="ga-info-value" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-resource">
+              <ui:Label name="" text="EXP" class="ga-copy" />
+              <ga:AngularSurface class="ga-details-resource-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-details-resource-fill" role="exp" name="pet-details-exp-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-exp-value" text="— / —" class="ga-copy" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-resource ga-details-resource-hp">
+              <ui:Label name="" text="HP" class="ga-copy" />
+              <ga:AngularSurface class="ga-details-resource-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-details-resource-fill" role="hp" name="pet-details-hp-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-hp-value" text="— / —" class="ga-copy" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ga:AngularSurface>
+        <ui:VisualElement class="ga-details-middle">
+          <ga:AngularSurface class="ga-details-basic" role="panel">
+            <ui:Label name="" text="THÔNG TIN CƠ BẢN" class="ga-section-title" />
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Giới tính" class="ga-info-key" />
+              <ui:Label name="pet-details-gender" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Độ hiếm" class="ga-info-key" />
+              <ui:Label name="pet-details-rarity" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="ID thú" class="ga-info-key" />
+              <ui:Label name="pet-details-id" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Ngày bắt" class="ga-info-key" />
+              <ui:Label name="pet-details-capture-date" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Nơi bắt" class="ga-info-key" />
+              <ui:Label name="pet-details-capture-location" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Huấn luyện viên" class="ga-info-key" />
+              <ui:Label name="pet-details-trainer" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Tính cách" class="ga-info-key" />
+              <ui:Label name="pet-details-personality" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-info-row">
+              <ui:Label name="" text="Cẩm nang" class="ga-info-key" />
+              <ui:Label name="pet-details-codex-state-basic" text="—" class="ga-info-value" />
+            </ui:VisualElement>
+          </ga:AngularSurface>
+          <ga:AngularSurface class="ga-details-stats" role="panel">
+            <ui:Label name="" text="CHỈ SỐ" class="ga-section-title" />
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="HP" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-hp-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-hp" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="ATK" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-atk-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-atk" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="SP.ATK" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-magic-atk-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-magic-atk" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="DEF" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-def-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-def" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="SP.DEF" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-magic-def-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-magic-def" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="SPD" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-spd-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-spd" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="CRIT RATE" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-crit-rate-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-crit-rate" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ga-details-stat-row">
+              <ui:Label name="" text="CRIT DMG" class="pet-detail-stat-key" />
+              <ga:AngularSurface class="ga-detail-stat-track" role="track" shape="parallel">
+                <ga:AngularSurface class="ga-detail-stat-fill" role="shell" name="pet-details-stat-crit-dmg-fill" shape="parallel" />
+              </ga:AngularSurface>
+              <ui:Label name="pet-details-stat-crit-dmg" text="—" class="pet-detail-stat-value" />
+            </ui:VisualElement>
+          </ga:AngularSurface>
+        </ui:VisualElement>
+        <ga:AngularSurface class="ga-details-advanced" role="panel">
+          <ui:Label name="" text="TIỀM NĂNG &amp; RÈN LUYỆN" class="ga-section-title" />
+          <ui:VisualElement class="ga-info-row">
+            <ui:Label name="" text="Nature" class="ga-info-key" />
+            <ui:Label name="pet-details-nature" text="—" class="ga-info-value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ga-info-row">
+            <ui:Label name="" text="BST" class="ga-info-key" />
+            <ui:Label name="pet-details-bst" text="—" class="ga-info-value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ga-info-row">
+            <ui:Label name="" text="IV (0–31)" class="ga-info-key" />
+            <ui:Label name="pet-details-iv" text="—" class="ga-info-value" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ga-info-row">
+            <ui:Label name="" text="EV (tối đa 510)" class="ga-info-key" />
+            <ui:Label name="pet-details-ev" text="—" class="ga-info-value" />
+          </ui:VisualElement>
+        </ga:AngularSurface>
+        <ga:AngularSurface class="ga-details-skills" role="panel">
+          <ui:Label name="" text="KỸ NĂNG ĐANG TRANG BỊ" class="ga-section-title" />
+          <ui:VisualElement name="pet-details-skills-row" class="pet-details-skills-row">
+            <ui:VisualElement class="pet-details-skill-card">
+              <ui:VisualElement class="pet-details-skill-icon">
+                <ui:Label text="1" class="pet-details-skill-fallback" />
+              </ui:VisualElement>
+              <ui:VisualElement class="pet-details-skill-text">
+                <ui:Label text="Kỹ năng 1" class="pet-details-skill-name" />
+                <ui:Label text="Hệ: -" class="pet-details-skill-element" />
+                <ui:Label text="PP - / -" class="pet-details-skill-pp" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="pet-details-skill-card">
+              <ui:VisualElement class="pet-details-skill-icon">
+                <ui:Label text="2" class="pet-details-skill-fallback" />
+              </ui:VisualElement>
+              <ui:VisualElement class="pet-details-skill-text">
+                <ui:Label text="Kỹ năng 2" class="pet-details-skill-name" />
+                <ui:Label text="Hệ: -" class="pet-details-skill-element" />
+                <ui:Label text="PP - / -" class="pet-details-skill-pp" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="pet-details-skill-card">
+              <ui:VisualElement class="pet-details-skill-icon">
+                <ui:Label text="3" class="pet-details-skill-fallback" />
+              </ui:VisualElement>
+              <ui:VisualElement class="pet-details-skill-text">
+                <ui:Label text="Kỹ năng 3" class="pet-details-skill-name" />
+                <ui:Label text="Hệ: -" class="pet-details-skill-element" />
+                <ui:Label text="PP - / -" class="pet-details-skill-pp" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="pet-details-skill-card">
+              <ui:VisualElement class="pet-details-skill-icon">
+                <ui:Label text="4" class="pet-details-skill-fallback" />
+              </ui:VisualElement>
+              <ui:VisualElement class="pet-details-skill-text">
+                <ui:Label text="Kỹ năng 4" class="pet-details-skill-name" />
+                <ui:Label text="Hệ: -" class="pet-details-skill-element" />
+                <ui:Label text="PP - / -" class="pet-details-skill-pp" />
+              </ui:VisualElement>
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ga:AngularSurface>
+        <ui:VisualElement class="ga-details-codex">
+          <ui:Label text="❧  CODEX / EVOLUTION  ❧" class="pet-detail-section-title" />
+          <ui:VisualElement class="pet-details-codex-content">
+            <ui:VisualElement class="pet-details-codex-status">
+              <ui:Label text="▤" class="pet-details-codex-icon" />
+              <ui:Label text="Trạng thái Codex" class="pet-details-codex-label" />
+              <ui:Label name="pet-details-codex-state" text="Chưa đăng ký" class="pet-details-codex-value" />
+              <ui:Label text="Số hiệu Codex" class="pet-details-codex-label" />
+              <ui:Label name="pet-details-codex-number" text="-" class="pet-details-codex-value" />
+            </ui:VisualElement>
+            <ui:Label name="pet-details-codex-description" text="Chưa có mô tả cẩm nang cho thú này." class="pet-details-codex-description" />
+            <ui:VisualElement class="pet-details-evolution-column">
+              <ui:Label text="TIẾN HÓA" class="pet-details-evolution-title" />
+              <ui:VisualElement name="pet-details-evolution-flow" class="pet-details-evolution-flow">
+                <ui:VisualElement class="pet-details-evolution-pet">
+                  <ui:VisualElement name="pet-details-evolution-current-icon" class="pet-details-evolution-icon">
+                    <ui:Label name="pet-details-evolution-current-fallback" text="?" class="pet-details-evolution-fallback" />
+                  </ui:VisualElement>
+                  <ui:Label name="pet-details-evolution-current-name" text="-" class="pet-details-evolution-name" />
+                </ui:VisualElement>
+                <ui:Label text="→" class="pet-details-evolution-arrow" />
+                <ui:VisualElement class="pet-details-evolution-pet">
+                  <ui:VisualElement name="pet-details-evolution-next-icon" class="pet-details-evolution-icon">
+                    <ui:Label name="pet-details-evolution-next-fallback" text="?" class="pet-details-evolution-fallback" />
+                  </ui:VisualElement>
+                  <ui:Label name="pet-details-evolution-next-name" text="???" class="pet-details-evolution-name" />
+                </ui:VisualElement>
+              </ui:VisualElement>
+              <ui:Label name="pet-details-evolution-max" text="Tiến hóa tối đa" class="pet-details-evolution-max" />
+            </ui:VisualElement>
+            <ui:VisualElement name="pet-details-evolution-requirements" class="pet-details-evolution-requirements">
+              <ui:Label text="Điều kiện tiến hóa:" class="pet-details-requirement-title" />
+              <ui:Label name="pet-details-evolution-level" text="• Chưa thiết lập cấp độ" class="pet-details-requirement" />
+              <ui:Label name="pet-details-evolution-friendship" text="• Chưa thiết lập tình bạn" class="pet-details-requirement" />
+              <ui:Label name="pet-details-evolution-extra" text="" class="pet-details-requirement" />
+              <ui:Button name="pet-details-evolution-button" text="TIẾN HÓA" class="pet-details-evolution-button" />
+            </ui:VisualElement>
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:ScrollView>
+    </ga:AngularSurface>
+  </ui:VisualElement>
+</ui:UXML>

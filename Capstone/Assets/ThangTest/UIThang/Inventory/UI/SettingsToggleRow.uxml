@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="settings-row settings-toggle-row">
+        <ui:Label name="setting-label" class="settings-row-label" picking-mode="Ignore" />
+        <ui:Toggle name="setting-toggle" class="settings-switch" />
+        <ui:Label name="setting-value" class="settings-toggle-value" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,371 @@
+/* Owning panel rules. Shared colors come from MenuTheme.uss. */
+
+.codex-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    display: none;
+    color: #174a30;
+    -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf");
+    font-size: 17px;
+    background-color: var(--menu-background, #f8f4eb);
+}
+
+.codex-panel .screen-header {
+    border-bottom-width: 1px;
+    border-bottom-color: #cddac4;
+}
+
+.codex-subtitle {
+    flex-grow: 1;
+    margin-left: 28px;
+    color: #677961;
+    font-size: 18px;
+}
+
+.codex-body {
+    flex-grow: 1;
+    min-height: 0;
+    flex-direction: row;
+    padding: 16px;
+}
+
+.codex-column {
+    border-width: 1px;
+    border-color: #becfb4;
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 0;
+    background-color: var(--menu-surface, #ffffff);
+}
+
+.codex-left {
+    width: 23%;
+    margin-right: 12px;
+}
+
+.codex-center {
+    width: 47%;
+    flex-shrink: 1;
+    margin-right: 12px;
+}
+
+.codex-right {
+    flex-grow: 1;
+    width: 30%;
+}
+
+.codex-section-title {
+    font-size: 23px;
+    -unity-font-style: bold;
+    margin-bottom: 12px;
+    white-space: normal;
+}
+
+.codex-progress {
+    margin-bottom: 16px;
+    padding: 14px;
+    border-radius: 10px;
+    background-color: var(--menu-surface, #ffffff);
+}
+
+.codex-progress-number {
+    font-size: 30px;
+    -unity-font-style: bold;
+}
+
+.codex-progress .unity-progress-bar__progress {
+    background-color: #518457;
+}
+
+.codex-progress .unity-progress-bar__background {
+    background-color: #dde7d4;
+}
+
+.codex-search-row {
+    flex-direction: row;
+    margin-bottom: 12px;
+}
+
+.codex-search {
+    flex-grow: 1;
+    min-width: 0;
+    height: 42px;
+}
+
+.codex-clear {
+    width: 40px;
+    height: 42px;
+    margin-left: 4px;
+}
+
+.codex-clear,
+.codex-filter-toggle {
+    color: #244d34;
+    background-color: #edf3e6;
+    border-color: #becfb4;
+}
+
+.codex-panel .unity-base-field__input {
+    color: #244d34;
+    background-color: #fffdf6;
+    border-color: #becfb4;
+}
+
+.codex-category {
+    height: 43px;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px;
+    border-width: 0;
+    background-color: transparent;
+    color: #244d34;
+    font-size: 18px;
+}
+
+.codex-category-name {
+    flex-grow: 1;
+}
+
+.codex-category.is-selected {
+    background-color: #52855c;
+    color: white;
+    border-radius: 8px;
+}
+
+.codex-toolbar {
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.codex-sort {
+    flex-grow: 1;
+    height: 40px;
+    min-width: 120px;
+    margin: 2px;
+    color: #244d34;
+    background-color: #edf3e6;
+}
+
+.codex-sort.is-selected {
+    background-color: #52855c;
+    color: white;
+}
+
+.codex-filter-toggle {
+    height: 34px;
+    margin-bottom: 8px;
+}
+
+.codex-filters {
+    display: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.codex-filters .unity-base-field {
+    width: 48%;
+    margin: 4px;
+    min-width: 0;
+}
+
+.codex-grid-scroll {
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.codex-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.codex-grid > TemplateContainer {
+    width: 20%;
+    min-width: 0;
+    flex-shrink: 0;
+}
+
+.codex-card {
+    margin: 5px;
+    padding: 5px;
+    border-width: 1px;
+    border-color: #c6d3bd;
+    border-radius: 10px;
+    color: #244d34;
+    background-color: var(--menu-surface, #ffffff);
+}
+
+.codex-card-portrait {
+    height: 124px;
+    -unity-background-scale-mode: scale-to-fit;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    background-color: var(--menu-surface, #ffffff);
+}
+
+.codex-card-unknown {
+    font-size: 40px;
+    color: #8e9b89;
+}
+
+.codex-card-favorite {
+    position: absolute;
+    right: 3px;
+    top: 1px;
+    color: #d0a441;
+    font-size: 20px;
+}
+
+.codex-card-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 3px;
+}
+
+.codex-card-type {
+    font-size: 11px;
+    color: #527751;
+}
+
+.codex-card.is-selected {
+    border-color: #2c8648;
+    border-width: 2px;
+    padding: 4px;
+}
+
+.codex-card:hover {
+    background-color: #e5eede;
+}
+
+.codex-card:focus,
+.codex-page-button:focus,
+.codex-category:focus {
+    border-color: #c6a34d;
+}
+
+.codex-pagination {
+    height: 46px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.codex-pagination > TemplateContainer {
+    flex-direction: row;
+}
+
+.codex-page-button {
+    width: 38px;
+    height: 36px;
+    margin: 2px;
+    color: #174a30;
+    background-color: #f2f5ed;
+}
+
+.codex-page-button.is-selected {
+    background-color: #52855c;
+    color: white;
+}
+
+.codex-empty {
+    flex-grow: 1;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    color: #63755e;
+}
+
+.codex-detail-name {
+    font-size: 29px;
+    -unity-font-style: bold;
+    white-space: normal;
+}
+
+.codex-detail-portrait {
+    height: 250px;
+    margin-top: 12px;
+    margin-right: 0;
+    margin-bottom: 12px;
+    margin-left: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    border-radius: 10px;
+    background-color: var(--menu-surface, #ffffff);
+}
+
+.codex-types {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.codex-type-badge {
+    padding-top: 5px;
+    padding-right: 12px;
+    padding-bottom: 5px;
+    padding-left: 12px;
+    margin-right: 6px;
+    border-radius: 16px;
+    background-color: #dbe9d2;
+    color: #244d34;
+}
+
+.codex-detail-text {
+    white-space: normal;
+    margin-bottom: 12px;
+}
+
+.codex-evolution {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.codex-evolution-node {
+    width: 30%;
+    min-width: 80px;
+    margin-right: 6px;
+    white-space: normal;
+}
+
+.codex-evolution-icon {
+    height: 75px;
+    -unity-background-scale-mode: scale-to-fit;
+    background-color: var(--menu-surface, #ffffff);
+}
+
+.codex-favorite-action {
+    height: 36px;
+    margin-top: 8px;
+    margin-right: 0;
+    margin-bottom: 8px;
+    margin-left: 0;
+    background-color: #edf3e6;
+    color: #244d34;
+    border-color: #becfb4;
+    font-size: 16px;
+}
+
+.codex-panel .unity-disabled {
+    opacity: 1;
+}
+
+.codex-panel .unity-disabled Label,
+.codex-panel .unity-disabled .unity-base-field__input,
+.codex-panel .unity-disabled .unity-popup-field__text {
+    color: #68765f;
+}
+
+.codex-panel .codex-category Label {
+    font-size: 18px;
+}
+
+.codex-panel .codex-category.is-selected Label {
+    color: white;
+}
+
+.codex-panel .codex-progress Label {
+    color: #31573d;
+}

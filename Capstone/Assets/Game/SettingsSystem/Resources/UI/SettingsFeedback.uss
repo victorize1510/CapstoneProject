@@ -1,0 +1,1 @@
+.menu-save-indicator { position: absolute; top: 88px; right: 24px; padding: 10px 16px; border-width: 1px; border-color: #a9bd9c; border-radius: 7px; background-color: #fffdf6; color: #31573d; font-size: 17px; -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf"); }

@@ -1,0 +1,232 @@
+PASS query count 0
+PASS page count 0
+PASS query count 1
+PASS page count 1
+PASS query count 25
+PASS page count 25
+PASS query count 26
+PASS page count 26
+PASS query count 320
+PASS page count 320
+PASS Vietnamese search without accents
+PASS unknown number searchable
+PASS unknown name remains private
+PASS unknown filter
+PASS type filter
+PASS region filter
+PASS rarity filter
+PASS sort Number
+PASS sort Type
+PASS sort Region
+PASS sort Rarity
+PASS sort Name
+PASS fixture favorite
+PASS cached name sort preserves previous order
+PASS name search observes provider edits without stale cache
+PASS grouped marker stays inactive across 100 visible position updates
+PASS marker becomes visible when it leaves a group
+PASS filter visibility survives group removal
+PASS map transitive cluster and separate marker
+PASS map empty cluster set
+PASS map warmed regroup reuses roots and group buffers over 100 passes
+PASS map workspace shrinks and resets old groups
+PASS map zero radius groups only coincident points
+PASS render count 0
+PASS render pages 0
+PASS render count 1
+PASS render pages 1
+PASS render count 25
+PASS render pages 25
+PASS render count 26
+PASS render pages 26
+PASS render count 320
+PASS render pages 320
+PASS card submit selects details
+PASS last page and retained selection
+PASS search resets page and retains selection
+PASS filter clears unavailable selection
+PASS unknown details stay private
+PASS unknown favorite state stays private
+PASS codex callback count stays stable after rebind
+PASS codex rebind preserves visible filter state
+PASS codex reset clears preserved filters
+PASS popup starts at text input (TextField)
+PASS popup Tab leaves input and skips hidden/disabled buttons
+PASS popup Tab advances to next button (Button:focus-last; TextField:focus-input:True:Flex:True,TextInput:unity-text-input:True:Flex:True,TextElement::True:Flex:False,Button::False:Flex:False,Button::True:None:False,Button:focus-first:True:Flex:False,Button:focus-last:True:Flex:False)
+PASS popup Tab wraps to input
+PASS popup Shift Tab wraps backwards
+PASS popup close restores opener focus
+PASS 25 cards at (1920.00, 1080.00)
+PASS fixed card pool at (1920.00, 1080.00)
+PASS five columns at (1920.00, 1080.00)
+PASS Back inside viewport (1920.00, 1080.00)
+PASS pagination inside viewport (1920.00, 1080.00)
+PASS missing provider (1920.00, 1080.00)
+PASS 25 cards at (1366.00, 768.00)
+PASS fixed card pool at (1366.00, 768.00)
+PASS five columns at (1366.00, 768.00)
+PASS Back inside viewport (1366.00, 768.00)
+PASS pagination inside viewport (1366.00, 768.00)
+PASS missing provider (1366.00, 768.00)
+PASS 25 cards at (1920.00, 1200.00)
+PASS fixed card pool at (1920.00, 1200.00)
+PASS five columns at (1920.00, 1200.00)
+PASS Back inside viewport (1920.00, 1200.00)
+PASS pagination inside viewport (1920.00, 1200.00)
+PASS missing provider (1920.00, 1200.00)
+PASS 25 cards at (2560.00, 1080.00)
+PASS fixed card pool at (2560.00, 1080.00)
+PASS five columns at (2560.00, 1080.00)
+PASS Back inside viewport (2560.00, 1080.00)
+PASS pagination inside viewport (2560.00, 1080.00)
+PASS missing provider (2560.00, 1080.00)
+PASS Dragon01Gameplay preview available 0,25 / 0
+PASS Dragon01Gameplay portrait camera fitted 0,25 / 0
+PASS Dragon01Gameplay source untouched 0,25 / 0
+PASS Dragon01Gameplay mesh vertices fit 0,25 / 0
+PASS Dragon01Gameplay preview available 0,25 / 0,5
+PASS Dragon01Gameplay portrait camera fitted 0,25 / 0,5
+PASS Dragon01Gameplay source untouched 0,25 / 0,5
+PASS Dragon01Gameplay mesh vertices fit 0,25 / 0,5
+PASS Dragon01Gameplay preview available 0,25 / 0,95
+PASS Dragon01Gameplay portrait camera fitted 0,25 / 0,95
+PASS Dragon01Gameplay source untouched 0,25 / 0,95
+PASS Dragon01Gameplay mesh vertices fit 0,25 / 0,95
+PASS Dragon01Gameplay preview available 1 / 0
+PASS Dragon01Gameplay portrait camera fitted 1 / 0
+PASS Dragon01Gameplay source untouched 1 / 0
+PASS Dragon01Gameplay mesh vertices fit 1 / 0
+PASS Dragon01Gameplay preview available 1 / 0,5
+PASS Dragon01Gameplay portrait camera fitted 1 / 0,5
+PASS Dragon01Gameplay source untouched 1 / 0,5
+PASS Dragon01Gameplay mesh vertices fit 1 / 0,5
+PASS Dragon01Gameplay preview available 1 / 0,95
+PASS Dragon01Gameplay portrait camera fitted 1 / 0,95
+PASS Dragon01Gameplay source untouched 1 / 0,95
+PASS Dragon01Gameplay mesh vertices fit 1 / 0,95
+PASS Dragon01Gameplay preview available 2,5 / 0
+PASS Dragon01Gameplay portrait camera fitted 2,5 / 0
+PASS Dragon01Gameplay source untouched 2,5 / 0
+PASS Dragon01Gameplay mesh vertices fit 2,5 / 0
+PASS Dragon01Gameplay preview available 2,5 / 0,5
+PASS Dragon01Gameplay portrait camera fitted 2,5 / 0,5
+PASS Dragon01Gameplay source untouched 2,5 / 0,5
+PASS Dragon01Gameplay mesh vertices fit 2,5 / 0,5
+PASS Dragon01Gameplay preview available 2,5 / 0,95
+PASS Dragon01Gameplay portrait camera fitted 2,5 / 0,95
+PASS Dragon01Gameplay source untouched 2,5 / 0,95
+PASS Dragon01Gameplay mesh vertices fit 2,5 / 0,95
+PASS Dragon02Gameplay preview available 0,25 / 0
+PASS Dragon02Gameplay portrait camera fitted 0,25 / 0
+PASS Dragon02Gameplay source untouched 0,25 / 0
+PASS Dragon02Gameplay mesh vertices fit 0,25 / 0
+PASS Dragon02Gameplay preview available 0,25 / 0,5
+PASS Dragon02Gameplay portrait camera fitted 0,25 / 0,5
+PASS Dragon02Gameplay source untouched 0,25 / 0,5
+PASS Dragon02Gameplay mesh vertices fit 0,25 / 0,5
+PASS Dragon02Gameplay preview available 0,25 / 0,95
+PASS Dragon02Gameplay portrait camera fitted 0,25 / 0,95
+PASS Dragon02Gameplay source untouched 0,25 / 0,95
+PASS Dragon02Gameplay mesh vertices fit 0,25 / 0,95
+PASS Dragon02Gameplay preview available 1 / 0
+PASS Dragon02Gameplay portrait camera fitted 1 / 0
+PASS Dragon02Gameplay source untouched 1 / 0
+PASS Dragon02Gameplay mesh vertices fit 1 / 0
+PASS Dragon02Gameplay preview available 1 / 0,5
+PASS Dragon02Gameplay portrait camera fitted 1 / 0,5
+PASS Dragon02Gameplay source untouched 1 / 0,5
+PASS Dragon02Gameplay mesh vertices fit 1 / 0,5
+PASS Dragon02Gameplay preview available 1 / 0,95
+PASS Dragon02Gameplay portrait camera fitted 1 / 0,95
+PASS Dragon02Gameplay source untouched 1 / 0,95
+PASS Dragon02Gameplay mesh vertices fit 1 / 0,95
+PASS Dragon02Gameplay preview available 2,5 / 0
+PASS Dragon02Gameplay portrait camera fitted 2,5 / 0
+PASS Dragon02Gameplay source untouched 2,5 / 0
+PASS Dragon02Gameplay mesh vertices fit 2,5 / 0
+PASS Dragon02Gameplay preview available 2,5 / 0,5
+PASS Dragon02Gameplay portrait camera fitted 2,5 / 0,5
+PASS Dragon02Gameplay source untouched 2,5 / 0,5
+PASS Dragon02Gameplay mesh vertices fit 2,5 / 0,5
+PASS Dragon02Gameplay preview available 2,5 / 0,95
+PASS Dragon02Gameplay portrait camera fitted 2,5 / 0,95
+PASS Dragon02Gameplay source untouched 2,5 / 0,95
+PASS Dragon02Gameplay mesh vertices fit 2,5 / 0,95
+PASS Dragon03Gameplay preview available 0,25 / 0
+PASS Dragon03Gameplay portrait camera fitted 0,25 / 0
+PASS Dragon03Gameplay source untouched 0,25 / 0
+PASS Dragon03Gameplay mesh vertices fit 0,25 / 0
+PASS Dragon03Gameplay preview available 0,25 / 0,5
+PASS Dragon03Gameplay portrait camera fitted 0,25 / 0,5
+PASS Dragon03Gameplay source untouched 0,25 / 0,5
+PASS Dragon03Gameplay mesh vertices fit 0,25 / 0,5
+PASS Dragon03Gameplay preview available 0,25 / 0,95
+PASS Dragon03Gameplay portrait camera fitted 0,25 / 0,95
+PASS Dragon03Gameplay source untouched 0,25 / 0,95
+PASS Dragon03Gameplay mesh vertices fit 0,25 / 0,95
+PASS Dragon03Gameplay preview available 1 / 0
+PASS Dragon03Gameplay portrait camera fitted 1 / 0
+PASS Dragon03Gameplay source untouched 1 / 0
+PASS Dragon03Gameplay mesh vertices fit 1 / 0
+PASS Dragon03Gameplay preview available 1 / 0,5
+PASS Dragon03Gameplay portrait camera fitted 1 / 0,5
+PASS Dragon03Gameplay source untouched 1 / 0,5
+PASS Dragon03Gameplay mesh vertices fit 1 / 0,5
+PASS Dragon03Gameplay preview available 1 / 0,95
+PASS Dragon03Gameplay portrait camera fitted 1 / 0,95
+PASS Dragon03Gameplay source untouched 1 / 0,95
+PASS Dragon03Gameplay mesh vertices fit 1 / 0,95
+PASS Dragon03Gameplay preview available 2,5 / 0
+PASS Dragon03Gameplay portrait camera fitted 2,5 / 0
+PASS Dragon03Gameplay source untouched 2,5 / 0
+PASS Dragon03Gameplay mesh vertices fit 2,5 / 0
+PASS Dragon03Gameplay preview available 2,5 / 0,5
+PASS Dragon03Gameplay portrait camera fitted 2,5 / 0,5
+PASS Dragon03Gameplay source untouched 2,5 / 0,5
+PASS Dragon03Gameplay mesh vertices fit 2,5 / 0,5
+PASS Dragon03Gameplay preview available 2,5 / 0,95
+PASS Dragon03Gameplay portrait camera fitted 2,5 / 0,95
+PASS Dragon03Gameplay source untouched 2,5 / 0,95
+PASS Dragon03Gameplay mesh vertices fit 2,5 / 0,95
+PASS InventoryPanel Back fits (1920.00, 1080.00)
+PASS InventoryPanel shared title size (1920.00, 1080.00)
+PASS PetsPanel Back fits (1920.00, 1080.00)
+PASS PetsPanel shared title size (1920.00, 1080.00)
+PASS BoxPanel Back fits (1920.00, 1080.00)
+PASS BoxPanel shared title size (1920.00, 1080.00)
+PASS QuestPanel Back fits (1920.00, 1080.00)
+PASS QuestPanel shared title size (1920.00, 1080.00)
+PASS InventoryPanel Back fits (1366.00, 768.00)
+PASS InventoryPanel shared title size (1366.00, 768.00)
+PASS PetsPanel Back fits (1366.00, 768.00)
+PASS PetsPanel shared title size (1366.00, 768.00)
+PASS BoxPanel Back fits (1366.00, 768.00)
+PASS BoxPanel shared title size (1366.00, 768.00)
+PASS QuestPanel Back fits (1366.00, 768.00)
+PASS QuestPanel shared title size (1366.00, 768.00)
+PASS InventoryPanel Back fits (1920.00, 1200.00)
+PASS InventoryPanel shared title size (1920.00, 1200.00)
+PASS PetsPanel Back fits (1920.00, 1200.00)
+PASS PetsPanel shared title size (1920.00, 1200.00)
+PASS BoxPanel Back fits (1920.00, 1200.00)
+PASS BoxPanel shared title size (1920.00, 1200.00)
+PASS QuestPanel Back fits (1920.00, 1200.00)
+PASS QuestPanel shared title size (1920.00, 1200.00)
+PASS InventoryPanel Back fits (2560.00, 1080.00)
+PASS InventoryPanel shared title size (2560.00, 1080.00)
+PASS PetsPanel Back fits (2560.00, 1080.00)
+PASS PetsPanel shared title size (2560.00, 1080.00)
+PASS BoxPanel Back fits (2560.00, 1080.00)
+PASS BoxPanel shared title size (2560.00, 1080.00)
+PASS QuestPanel Back fits (2560.00, 1080.00)
+PASS QuestPanel shared title size (2560.00, 1080.00)
+PASS import InventoryPanel
+PASS import PetsPanel
+PASS import BoxPanel
+PASS import QuestPanel
+PASS import SkillsPanel
+PASS import PetDetailsPanel
+PASS import PetLevelUpPanel
+PASS import PetHealPanel
+PASS import PetEvolutionPanel
+PASS import PetReleasePanel

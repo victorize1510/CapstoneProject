@@ -4,7 +4,8 @@ using UnityEngine;
 namespace Capstone.Game.HudSystem {
     public enum PetEvolutionTrigger {
         Level,
-        Item
+        Item,
+        LevelOrItem
     }
 
     [Serializable]
@@ -19,6 +20,7 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] string targetSpecies = string.Empty;
         [SerializeField] Sprite targetIcon = null;
         [SerializeField] PetElement targetElement = PetElement.Unknown;
+        [SerializeField] PetElement targetSecondaryElement = PetElement.Unknown;
         [SerializeField] PetRarity targetRarity = PetRarity.Unknown;
         [Tooltip("Optional model-only prefab. Assign a PetEvolutionVisualController before using this field.")]
         [SerializeField] GameObject targetVisualPrefab = null;
@@ -34,6 +36,8 @@ namespace Capstone.Game.HudSystem {
         [SerializeField, Min(0)] int attackBonus;
         [SerializeField, Min(0)] int defenseBonus;
         [SerializeField, Min(0)] int speedBonus;
+        [SerializeField, Min(0)] int magicAttackBonus;
+        [SerializeField, Min(0)] int magicDefenseBonus;
 
         public string EvolutionId => string.IsNullOrWhiteSpace(evolutionId)
             ? $"stage-{SourceStage}-to-{TargetStage}-{TargetFormId}"
@@ -47,6 +51,7 @@ namespace Capstone.Game.HudSystem {
         public string TargetSpecies => targetSpecies?.Trim() ?? string.Empty;
         public Sprite TargetIcon => targetIcon;
         public PetElement TargetElement => targetElement;
+        public PetElement TargetSecondaryElement => targetSecondaryElement;
         public PetRarity TargetRarity => targetRarity;
         public GameObject TargetVisualPrefab => targetVisualPrefab;
         public PetEvolutionTrigger Trigger => trigger;
@@ -57,6 +62,8 @@ namespace Capstone.Game.HudSystem {
         public int AttackBonus => Mathf.Max(0, attackBonus);
         public int DefenseBonus => Mathf.Max(0, defenseBonus);
         public int SpeedBonus => Mathf.Max(0, speedBonus);
+        public int MagicAttackBonus => Mathf.Max(0, magicAttackBonus);
+        public int MagicDefenseBonus => Mathf.Max(0, magicDefenseBonus);
 
         public static PetEvolutionRule CreateLegacy(
             string targetName,

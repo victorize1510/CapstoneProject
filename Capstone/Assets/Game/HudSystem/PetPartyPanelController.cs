@@ -7,8 +7,10 @@ using UnityEngine.UIElements;
 namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
-    public sealed class PetPartyPanelController : MonoBehaviour {
+    public sealed partial class PetPartyPanelController : MonoBehaviour {
         const int RenameMaxLength = 16;
+        const float CriticalRateDisplayMaximum = 100f;
+        const float CriticalDamageDisplayMaximum = 100f;
 
         [SerializeField] UIDocument document = null;
         [SerializeField] MonoBehaviour petHudProvider = null;
@@ -17,10 +19,15 @@ namespace Capstone.Game.HudSystem {
         readonly List<Button> partyCards = new List<Button>(6);
         readonly List<VisualElement> skillCards = new List<VisualElement>(4);
         readonly Dictionary<Button, Action> buttonCallbacks = new Dictionary<Button, Action>();
+        readonly Dictionary<Button, EventCallback<PointerEnterEvent>> tooltipCallbacks = new Dictionary<Button, EventCallback<PointerEnterEvent>>();
 
         VisualElement root;
+        MonsterInventoryController inventoryOwner;
         VisualElement panel;
+        VisualElement layoutPanel;
         VisualElement partyRow;
+        Label partyTitle;
+        readonly PetPortraitPreview portraitPreview = new PetPortraitPreview { BackgroundColor = new Color32(82,118,106,255) };
         VisualElement selectedPortrait;
         Label selectedPortraitFallback;
         Label selectedName;
@@ -37,6 +44,18 @@ namespace Capstone.Game.HudSystem {
         Label statAttack;
         Label statDefense;
         Label statSpeed;
+        Label statMagicAttack;
+        Label statMagicDefense;
+        Label statCriticalRate;
+        Label statCriticalDamage;
+        VisualElement statHealthFill;
+        VisualElement statAttackFill;
+        VisualElement statDefenseFill;
+        VisualElement statSpeedFill;
+        VisualElement statMagicAttackFill;
+        VisualElement statMagicDefenseFill;
+        VisualElement statCriticalRateFill;
+        VisualElement statCriticalDamageFill;
         VisualElement skillsRow;
         Label feedbackLabel;
         VisualElement tooltip;
@@ -46,6 +65,7 @@ namespace Capstone.Game.HudSystem {
         Button renameButton;
         Button favoriteButton;
         Button evolutionButton;
+        Label evolutionSubtitle;
         VisualElement renameOverlay;
         VisualElement renamePortrait;
         Label renamePortraitFallback;
@@ -76,6 +96,8 @@ namespace Capstone.Game.HudSystem {
         string renameOriginalName = string.Empty;
         int pendingSwapSourceIndex = -1;
         bool controlsRegistered;
+        string evolutionSelectionItemId;
+        PetEvolutionPanelController evolutionSelectionPanel;
 
         sealed class TooltipData {
             public readonly string Title;
@@ -90,8 +112,6 @@ namespace Capstone.Game.HudSystem {
         IPetHudProvider Provider => petHudProvider as IPetHudProvider;
         PetCommandHudProvider CommandProvider => petHudProvider as PetCommandHudProvider;
 
-        public event Action<string> ActionRequested;
-
         public bool IsRenameOpen => renameOverlay != null
             && renameOverlay.resolvedStyle.display != DisplayStyle.None;
 
@@ -104,6 +124,12 @@ namespace Capstone.Game.HudSystem {
         }
 
         void OnDisable() {
+            StopCompanionPresentation();
+            ReleaseCompanionBindings();
+            layoutPanel?.UnregisterCallback<GeometryChangedEvent>(OnPanelGeometry);
+            layoutPanel = null;
+            portraitPreview.Clear();
+            CancelEvolutionItemSelection();
             ClearSwapSelection();
             HideRenamePopup();
             CloseDetails();
@@ -111,6 +137,21 @@ namespace Capstone.Game.HudSystem {
             UnregisterControls();
         }
 
+        void OnDestroy() => portraitPreview.Dispose();
+        void LateUpdate() {
+            bool visible=inventoryOwner?.IsPetsSectionOpen==true;
+            UpdateCompanionVisibility(visible);
+            if (!visible || !preview3D) { if(portraitPreview.Texture!=null) portraitPreview.Clear(); return; }
+            var pet = ViewedPet;
+            if(pet==null){if(portraitPreview.Texture!=null)portraitPreview.Clear();RefreshCompanionPortrait(null);return;}
+            if (selectedPortrait != null) portraitPreview.SetViewportSize(selectedPortrait.resolvedStyle.width, selectedPortrait.resolvedStyle.height);
+            if (selectedPortrait != null && portraitPreview.Show(pet)) {
+                portraitPreview.Update();
+                var texture = (RenderTexture)portraitPreview.Texture;
+                Capstone.Game.UISystem.AngularSurface.SetArt(selectedPortrait,texture);
+                if (selectedPortraitFallback != null) selectedPortraitFallback.style.display = DisplayStyle.None;
+            }
+        }
         public void Bind(UIDocument targetDocument) {
             document = targetDocument != null ? targetDocument : document;
             CacheElements();
@@ -125,22 +166,55 @@ namespace Capstone.Game.HudSystem {
             if (partyRow == null) return;
 
             ResolveProvider();
+            ResolveViewedPet();
             SubscribeProvider();
             EnsurePartyCards();
             EnsureSkillCards();
 
             IReadOnlyList<PetSlotHudData> slots = Provider?.GetPetSlots();
+            int occupiedCount = 0;
+            if (slots != null) {
+                for (int i = 0; i < slots.Count && i < 6; i++) {
+                    if (slots[i].occupied) occupiedCount++;
+                }
+            }
+            if (partyTitle != null) partyTitle.text = evolutionSelectionItemId != null
+                ? "CHỌN THÚ ĐỂ TIẾN HÓA"
+                : $"ĐỘI HÌNH ({occupiedCount}/6)";
             for (int i = 0; i < partyCards.Count; i++) {
                 PetSlotHudData slot = slots != null && i < slots.Count ? slots[i] : default;
+                if(CommandProvider!=null)slot.selected=slot.occupied && CommandProvider.GetPetControllerAt(i)==ViewedPet;
                 RefreshPartyCard(partyCards[i], i, slot);
             }
 
             RefreshSelectedPet();
             RefreshSkills();
             if (IsDetailsOpen) RefreshDetails();
+            RefreshCompanionPresentation(slots);
+        }
+
+        public void BeginEvolutionItemSelection(string itemId, PetEvolutionPanelController evolutionPanel) {
+            if (string.IsNullOrWhiteSpace(itemId) || evolutionPanel == null) return;
+            ClearSwapSelection();
+            evolutionSelectionItemId = itemId;
+            evolutionSelectionPanel = evolutionPanel;
+            panel?.AddToClassList("is-evolution-selecting");
+            SetFeedback("Chọn thú để tiến hóa");
+            Refresh();
+        }
+
+        public bool HasEvolutionItemSelection => evolutionSelectionItemId != null;
+
+        public void CancelEvolutionItemSelection() {
+            evolutionSelectionItemId = null;
+            evolutionSelectionPanel = null;
+            panel?.RemoveFromClassList("is-evolution-selecting");
+            foreach (Button card in partyCards) card.style.opacity = 1f;
+            SetFeedback(string.Empty);
         }
 
         void ResolveReferences() {
+            if (inventoryOwner == null) inventoryOwner = GetComponent<MonsterInventoryController>();
             document = document != null ? document : GetComponent<UIDocument>();
             ResolveProvider();
         }
@@ -148,8 +222,12 @@ namespace Capstone.Game.HudSystem {
         void ResolveProvider() {
             if (Provider != null || !autoFindProvider) return;
 
-        PetCommandHudProvider concreteProvider = FindFirstObjectByType<PetCommandHudProvider>();
+            PetCommandHudProvider concreteProvider = FindFirstObjectByType<PetCommandHudProvider>();
             if (concreteProvider != null) petHudProvider = concreteProvider;
+        }
+
+        void OnPanelGeometry(GeometryChangedEvent evt) {
+            FitCompanionLayout();
         }
 
         void CacheElements() {
@@ -157,9 +235,20 @@ namespace Capstone.Game.HudSystem {
 
             root = document.rootVisualElement.Q<VisualElement>("monster-inventory-root");
             panel = document.rootVisualElement.Q<VisualElement>("pets-panel");
+            if (layoutPanel != panel) {
+                layoutPanel?.UnregisterCallback<GeometryChangedEvent>(OnPanelGeometry);
+                layoutPanel = panel;
+                layoutPanel?.RegisterCallback<GeometryChangedEvent>(OnPanelGeometry);
+            }
             partyRow = document.rootVisualElement.Q<VisualElement>("pets-party-row");
+            partyTitle = document.rootVisualElement.Q<Label>("pets-party-title");
             selectedPortrait = document.rootVisualElement.Q<VisualElement>("pets-selected-portrait");
             selectedPortraitFallback = document.rootVisualElement.Q<Label>("pets-selected-portrait-fallback");
+            foreach (var label in document.rootVisualElement.Query<Label>().ToList()) {
+                string key = label.text.Trim().TrimStart('♥', '⚔', '✦', '◆', '◇', '➤', '★', '◉', ' ');
+                string tip = Capstone.Game.UISystem.VietnameseUI.StatTooltip(key);
+                if (tip.Length > 0) label.tooltip = tip;
+            }
             selectedName = document.rootVisualElement.Q<Label>("pets-selected-name");
             selectedSpecies = document.rootVisualElement.Q<Label>("pets-selected-species");
             selectedLevel = document.rootVisualElement.Q<Label>("pets-selected-level");
@@ -174,8 +263,21 @@ namespace Capstone.Game.HudSystem {
             statAttack = document.rootVisualElement.Q<Label>("pets-stat-attack");
             statDefense = document.rootVisualElement.Q<Label>("pets-stat-defense");
             statSpeed = document.rootVisualElement.Q<Label>("pets-stat-speed");
+            statMagicAttack = document.rootVisualElement.Q<Label>("pets-stat-magic-attack");
+            statMagicDefense = document.rootVisualElement.Q<Label>("pets-stat-magic-defense");
+            statCriticalRate = document.rootVisualElement.Q<Label>("pets-stat-critical-rate");
+            statCriticalDamage = document.rootVisualElement.Q<Label>("pets-stat-critical-damage");
+            statHealthFill = document.rootVisualElement.Q<VisualElement>("pets-stat-health-fill");
+            statAttackFill = document.rootVisualElement.Q<VisualElement>("pets-stat-attack-fill");
+            statDefenseFill = document.rootVisualElement.Q<VisualElement>("pets-stat-defense-fill");
+            statSpeedFill = document.rootVisualElement.Q<VisualElement>("pets-stat-speed-fill");
+            statMagicAttackFill = document.rootVisualElement.Q<VisualElement>("pets-stat-magic-attack-fill");
+            statMagicDefenseFill = document.rootVisualElement.Q<VisualElement>("pets-stat-magic-defense-fill");
+            statCriticalRateFill = document.rootVisualElement.Q<VisualElement>("pets-stat-critical-rate-fill");
+            statCriticalDamageFill = document.rootVisualElement.Q<VisualElement>("pets-stat-critical-damage-fill");
             skillsRow = document.rootVisualElement.Q<VisualElement>("pets-skills-row");
             feedbackLabel = document.rootVisualElement.Q<Label>("pets-feedback-label");
+            SetFeedback(feedbackLabel?.text);
             tooltip = document.rootVisualElement.Q<VisualElement>("pets-tooltip");
             tooltipTitle = document.rootVisualElement.Q<Label>("pets-tooltip-title");
             tooltipBody = document.rootVisualElement.Q<Label>("pets-tooltip-body");
@@ -183,6 +285,7 @@ namespace Capstone.Game.HudSystem {
             renameButton = document.rootVisualElement.Q<Button>("pets-rename-button");
             favoriteButton = document.rootVisualElement.Q<Button>("pets-favorite-button");
             evolutionButton = document.rootVisualElement.Q<Button>("pets-evolution-button");
+            evolutionSubtitle = document.rootVisualElement.Q<Label>("pets-evolution-subtitle");
             renameOverlay = document.rootVisualElement.Q<VisualElement>("pets-rename-overlay");
             renamePortrait = document.rootVisualElement.Q<VisualElement>("pets-rename-portrait");
             renamePortraitFallback = document.rootVisualElement.Q<Label>("pets-rename-portrait-fallback");
@@ -207,6 +310,7 @@ namespace Capstone.Game.HudSystem {
             evolutionNextFallback = document.rootVisualElement.Q<Label>("pet-details-evolution-next-fallback");
             detailsCloseButton = document.rootVisualElement.Q<Button>("pet-details-close-button");
             detailsEvolutionButton = document.rootVisualElement.Q<Button>("pet-details-evolution-button");
+            CacheCompanionPresentation();
         }
 
         void RegisterControls() {
@@ -226,46 +330,22 @@ namespace Capstone.Game.HudSystem {
             Button levelUpButton = document?.rootVisualElement?.Q<Button>("pets-level-up-button");
             RegisterButton(levelUpButton, OpenLevelUpPanel);
             if (levelUpButton != null) {
-                levelUpButton.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(levelUpButton, "Level Up", "Tăng cấp pet đang chọn."));
-                levelUpButton.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
+                RegisterActionTooltip(levelUpButton, "Tăng cấp", "Tăng cấp thú đang chọn.");
             }
             Button healButton = document?.rootVisualElement?.Q<Button>("pets-heal-button");
             RegisterButton(healButton, OpenHealPanel);
             if (healButton != null) {
-                healButton.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(healButton, "Heal", "Hồi HP cho pet đang chọn bằng Potion."));
-                healButton.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
-            }
-            Button skillsButton = document?.rootVisualElement?.Q<Button>("pets-skills-button");
-            RegisterButton(skillsButton, OpenSkillsPanel);
-            if (skillsButton != null) {
-                skillsButton.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(skillsButton, "Skills", "Quản lý bộ kỹ năng của pet."));
-                skillsButton.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
-            }
-            Button detailsButton = document?.rootVisualElement?.Q<Button>("pets-details-button");
-            RegisterButton(detailsButton, () => OpenDetails());
-            if (detailsButton != null) {
-                detailsButton.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(detailsButton, "Details", "Mở thông tin chi tiết và Codex."));
-                detailsButton.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
-            }
-            Button boxButton = document?.rootVisualElement?.Q<Button>("pets-box-button");
-            RegisterButton(boxButton, OpenBoxPanel);
-            if (boxButton != null) {
-                boxButton.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(boxButton, "Box", "Mở kho pet và thay đổi đội hình."));
-                boxButton.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
+                RegisterActionTooltip(healButton, "Hồi phục", "Xem vật phẩm và lượng HP/MP có thể hồi phục.");
             }
             RegisterButton(evolutionButton, () => OpenEvolutionPanel());
             if (evolutionButton != null) {
-                evolutionButton.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(evolutionButton, "Evolution", "Xem điều kiện và tiến hóa pet theo đúng thứ tự form."));
-                evolutionButton.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
+                RegisterActionTooltip(evolutionButton, "Tiến hóa", "Xem điều kiện và tiến hóa thú theo đúng thứ tự dạng.");
             }
-            Button releaseButton = document?.rootVisualElement?.Q<Button>("pets-release-button");
-            RegisterButton(releaseButton, OpenReleasePanel);
-            if (releaseButton != null) {
-                releaseButton.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(releaseButton, "Release", "Thả pet và nhận lại một phần tài nguyên đã đầu tư."));
-                releaseButton.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
-            }
+            Button detailsButton = document?.rootVisualElement?.Q<Button>("pets-details-button");
+            RegisterButton(detailsButton, () => OpenDetails());
             RegisterButton(detailsCloseButton, CloseDetails);
             RegisterButton(detailsEvolutionButton, () => OpenEvolutionPanel(detailsPet));
+            RegisterCompanionControls();
 
             controlsRegistered = true;
         }
@@ -274,8 +354,11 @@ namespace Capstone.Game.HudSystem {
             foreach (var pair in buttonCallbacks) pair.Key.clicked -= pair.Value;
             buttonCallbacks.Clear();
 
-            if (root != null) {
+            foreach (var pair in tooltipCallbacks) {
+                pair.Key.UnregisterCallback(pair.Value);
+                pair.Key.UnregisterCallback<PointerLeaveEvent>(HandleActionTooltipLeave);
             }
+            tooltipCallbacks.Clear();
             if (renameInput != null) {
                 renameInput.UnregisterCallback<KeyDownEvent>(HandleRenameKeyDown);
                 renameInput.UnregisterValueChangedCallback(HandleRenameValueChanged);
@@ -284,43 +367,20 @@ namespace Capstone.Game.HudSystem {
             controlsRegistered = false;
         }
 
-        void RegisterActionButton(string buttonName, string title, string description) {
-            Button button = document?.rootVisualElement?.Q<Button>(buttonName);
-            RegisterButton(button, () => RequestPlaceholderAction(title, description));
-            if (button == null) return;
-
-            button.RegisterCallback<PointerEnterEvent>(_ => ShowTooltip(button, title, description));
-            button.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
+        void RegisterActionTooltip(Button button, string title, string body) {
+            if(button==null||tooltipCallbacks.ContainsKey(button))return;
+            button.tooltip=string.Empty;
+            EventCallback<PointerEnterEvent> callback = _ => ShowTooltip(button, title, actionReasons.TryGetValue(button,out var reason)&&!string.IsNullOrEmpty(reason)?reason:body);
+            tooltipCallbacks.Add(button, callback);
+            button.RegisterCallback(callback);
+            button.RegisterCallback<PointerLeaveEvent>(HandleActionTooltipLeave);
         }
-
-        void OpenBoxPanel() {
-            MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
-            if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
-            if (controller != null) {
-                HideTooltip();
-                controller.OpenPetBoxPanel(true);
-                return;
-            }
-
-            RequestPlaceholderAction("Box", "Không tìm thấy MonsterInventoryController để mở Box.");
-        }
-
-        void OpenSkillsPanel() {
-            MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
-            if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
-            if (controller != null) {
-                HideTooltip();
-                controller.OpenPetSkillsPanel();
-                return;
-            }
-
-            RequestPlaceholderAction("Skills", "Không tìm thấy MonsterInventoryController để mở Skills Panel.");
-        }
+        void HandleActionTooltipLeave(PointerLeaveEvent _) => HideTooltip();
 
         void OpenLevelUpPanel() {
-            PetController target = CommandProvider?.GetSelectedPetController();
+            PetController target = ViewedPet;
             if (target == null) {
-                if (feedbackLabel != null) feedbackLabel.text = "Chưa chọn pet để tăng cấp.";
+                SetFeedback("Chưa chọn thú để tăng cấp.");
                 return;
             }
 
@@ -332,13 +392,13 @@ namespace Capstone.Game.HudSystem {
                 return;
             }
 
-            RequestPlaceholderAction("Level Up", "Không tìm thấy MonsterInventoryController để mở Level Up Panel.");
+            ShowMissingControllerFeedback("Không tìm thấy MonsterInventoryController để mở Cấp Up Panel.");
         }
 
         void OpenHealPanel() {
-            PetController target = CommandProvider?.GetSelectedPetController();
+            PetController target = ViewedPet;
             if (target == null) {
-                if (feedbackLabel != null) feedbackLabel.text = "Chưa chọn pet để hồi phục.";
+                SetFeedback("Chưa chọn thú để hồi phục.");
                 return;
             }
 
@@ -350,13 +410,13 @@ namespace Capstone.Game.HudSystem {
                 return;
             }
 
-            RequestPlaceholderAction("Heal", "Không tìm thấy MonsterInventoryController để mở Heal Popup.");
+            ShowMissingControllerFeedback("Không thể mở màn hồi phục lúc này.");
         }
 
         void OpenEvolutionPanel(PetController pet = null) {
-            PetController target = pet != null ? pet : CommandProvider?.GetSelectedPetController();
+            PetController target = pet != null ? pet : ViewedPet;
             if (target == null) {
-                if (feedbackLabel != null) feedbackLabel.text = "Chưa chọn pet để tiến hóa.";
+                SetFeedback("Chưa chọn thú để tiến hóa.");
                 return;
             }
 
@@ -368,25 +428,7 @@ namespace Capstone.Game.HudSystem {
                 return;
             }
 
-            RequestPlaceholderAction("Evolution", "Không tìm thấy MonsterInventoryController để mở Evolution Panel.");
-        }
-
-        void OpenReleasePanel() {
-            PetController target = CommandProvider?.GetSelectedPetController();
-            if (target == null) {
-                if (feedbackLabel != null) feedbackLabel.text = "Chưa chọn pet để thả.";
-                return;
-            }
-
-            MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
-            if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
-            if (controller != null) {
-                HideTooltip();
-                controller.OpenPetReleasePanel(target);
-                return;
-            }
-
-            RequestPlaceholderAction("Release", "Không tìm thấy MonsterInventoryController để mở Release Popup.");
+            ShowMissingControllerFeedback("Không tìm thấy MonsterInventoryController để mở Evolution Panel.");
         }
 
         public bool IsDetailsOpen => detailsOverlay != null
@@ -394,9 +436,9 @@ namespace Capstone.Game.HudSystem {
 
         public void OpenDetails(PetController targetPet = null) {
             if (detailsOverlay == null) CacheElements();
-            PetController target = targetPet != null ? targetPet : CommandProvider?.GetSelectedPetController();
+            PetController target = targetPet != null ? targetPet : ViewedPet;
             if (target == null || detailsOverlay == null) {
-                if (feedbackLabel != null) feedbackLabel.text = "Chưa chọn pet để xem chi tiết.";
+                SetFeedback("Chọn thú đồng hành để xem chi tiết.");
                 return;
             }
 
@@ -406,10 +448,12 @@ namespace Capstone.Game.HudSystem {
             RefreshDetails();
             detailsOverlay.style.display = DisplayStyle.Flex;
             detailsOverlay.BringToFront();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(detailsOverlay);
         }
 
         public void CloseDetails() {
             if (detailsOverlay != null) detailsOverlay.style.display = DisplayStyle.None;
+            Capstone.Game.UISystem.PanelFocusUtility.Close(detailsOverlay);
             detailsPet = null;
         }
 
@@ -432,8 +476,8 @@ namespace Capstone.Game.HudSystem {
             SetPortrait(detailsPortrait, detailsPortraitFallback, source?.Icon, displayName);
             SetNamedText(documentRoot, "pet-details-name", displayName);
             SetNamedText(documentRoot, "pet-details-species", DisplayOrDash(metadata.Species));
-            SetNamedText(documentRoot, "pet-details-gender", DisplayOrDash(metadata.Gender));
-            SetNamedText(documentRoot, "pet-details-element", FormatElement(metadata.Element));
+            SetNamedText(documentRoot, "pet-details-gender", Capstone.Game.UISystem.VietnameseUI.Gender(metadata.Gender));
+            SetNamedText(documentRoot, "pet-details-element", FormatElements(metadata));
             SetNamedText(documentRoot, "pet-details-rarity", FormatRarity(metadata.Rarity));
             SetNamedText(documentRoot, "pet-details-level", $"{level} / {metadata.MaxLevel}");
             SetNamedText(documentRoot, "pet-details-exp-value", FormatPair(metadata.Experience, metadata.ExperienceToNextLevel));
@@ -445,17 +489,24 @@ namespace Capstone.Game.HudSystem {
             SetNamedText(documentRoot, "pet-details-capture-date", DisplayOrDash(metadata.CaptureDate));
             SetNamedText(documentRoot, "pet-details-capture-location", DisplayOrDash(metadata.CaptureLocation));
             SetNamedText(documentRoot, "pet-details-trainer", DisplayOrDash(metadata.TrainerName));
-            SetNamedText(documentRoot, "pet-details-personality", DisplayOrDash(metadata.Personality));
+            SetNamedText(documentRoot, "pet-details-personality", Capstone.Game.UISystem.VietnameseUI.Personality(metadata.Personality));
+            SetNamedText(documentRoot, "pet-details-nature", metadata.Nature);
+            SetNamedText(documentRoot, "pet-details-bst", metadata.BaseStatTotal.ToString());
+            SetNamedText(documentRoot, "pet-details-iv", FormatStatValues(metadata.IndividualValues));
+            SetNamedText(documentRoot, "pet-details-ev",
+                $"{FormatStatValues(metadata.EffortValues)}  ({metadata.EffortValues.Total}/510)");
             string codexState = metadata.CodexRegistered ? "Đã đăng ký" : "Chưa đăng ký";
             SetNamedText(documentRoot, "pet-details-codex-state-basic", codexState);
 
-            int largestCoreStat = Mathf.Max(1, metadata.Attack, metadata.Defense, metadata.Speed);
-            SetDetailStat(documentRoot, "hp", maxHealth, Percent(health, maxHealth), false);
-            SetDetailStat(documentRoot, "atk", metadata.Attack, Percent(metadata.Attack, largestCoreStat), false);
-            SetDetailStat(documentRoot, "def", metadata.Defense, Percent(metadata.Defense, largestCoreStat), false);
-            SetDetailStat(documentRoot, "spd", metadata.Speed, Percent(metadata.Speed, largestCoreStat), false);
-            SetDetailStat(documentRoot, "crit-rate", metadata.CriticalRate, metadata.CriticalRate / 100f, true);
-            SetDetailStat(documentRoot, "crit-dmg", metadata.CriticalDamagePercent, metadata.CriticalDamagePercent / 200f, true);
+            PetStatSnapshot scores = metadata.GetStatsAtLevel(level);
+            SetDetailStat(documentRoot, "hp", scores.Hp, PetStatCalculator.DisplayRatio(scores.Hp, level, PetCoreStat.Hp), false);
+            SetDetailStat(documentRoot, "atk", scores.Attack, PetStatCalculator.DisplayRatio(scores.Attack, level, PetCoreStat.Attack), false);
+            SetDetailStat(documentRoot, "magic-atk", scores.MagicAttack, PetStatCalculator.DisplayRatio(scores.MagicAttack, level, PetCoreStat.MagicAttack), false);
+            SetDetailStat(documentRoot, "def", scores.Defense, PetStatCalculator.DisplayRatio(scores.Defense, level, PetCoreStat.Defense), false);
+            SetDetailStat(documentRoot, "magic-def", scores.MagicDefense, PetStatCalculator.DisplayRatio(scores.MagicDefense, level, PetCoreStat.MagicDefense), false);
+            SetDetailStat(documentRoot, "spd", scores.Speed, PetStatCalculator.DisplayRatio(scores.Speed, level, PetCoreStat.Speed), false);
+            SetDetailStat(documentRoot, "crit-rate", scores.CriticalRate, scores.CriticalRate / CriticalRateDisplayMaximum, true);
+            SetDetailStat(documentRoot, "crit-dmg", scores.CriticalDamage, scores.CriticalDamage / CriticalDamageDisplayMaximum, true);
 
             RebuildDetailsSkills(equippedSkills, loadout != null
                 ? loadout.EquippedSkillSlotCount
@@ -465,7 +516,7 @@ namespace Capstone.Game.HudSystem {
             SetNamedText(documentRoot, "pet-details-codex-number", DisplayOrDash(metadata.CodexNumber));
             SetNamedText(documentRoot, "pet-details-codex-description",
                 string.IsNullOrWhiteSpace(metadata.CodexDescription)
-                    ? "Chưa có mô tả Codex cho pet này."
+                    ? "Chưa có mô tả Codex cho thú này."
                     : metadata.CodexDescription.Trim());
             RefreshEvolution(documentRoot, metadata, source?.Icon, displayName);
         }
@@ -485,15 +536,12 @@ namespace Capstone.Game.HudSystem {
                 icon.AddToClassList("pet-details-skill-icon");
                 var fallback = CreateLabel(hasSkill ? FirstLetter(skill.displayName) : "?", "pet-details-skill-fallback");
                 icon.Add(fallback);
-                if (hasSkill && skill.icon != null) {
-                    icon.style.backgroundImage = new StyleBackground(skill.icon);
-                    fallback.style.display = DisplayStyle.None;
-                }
+                CompanionArt.SetSkillImage(icon,fallback,hasSkill?skill.icon:null,!hasSkill);
                 card.Add(icon);
 
                 var text = new VisualElement();
                 text.AddToClassList("pet-details-skill-text");
-                text.Add(CreateLabel(hasSkill ? SafeName(skill.displayName) : "Chưa mở", "pet-details-skill-name"));
+                text.Add(CreateLabel(hasSkill ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Chưa mở", "pet-details-skill-name"));
                 text.Add(CreateLabel(hasSkill ? FormatElement(skill.element) : "Hệ: -", "pet-details-skill-element"));
                 text.Add(CreateLabel("PP - / -", "pet-details-skill-pp"));
                 card.Add(text);
@@ -506,7 +554,9 @@ namespace Capstone.Game.HudSystem {
             SetNamedText(documentRoot, "pet-details-evolution-current-name", currentName);
 
             bool hasNext = metadata.HasNextEvolution;
-            if (detailsEvolutionButton != null) detailsEvolutionButton.SetEnabled(hasNext);
+            if (detailsEvolutionButton != null) detailsEvolutionButton.SetEnabled(hasNext
+                && metadata.TryGetNextEvolutionRule(out PetEvolutionRule detailRule)
+                && detailRule.Trigger != PetEvolutionTrigger.Item);
             SetVisible(evolutionFlow, hasNext);
             SetVisible(evolutionMax, !hasNext);
             SetVisible(evolutionRequirements, hasNext);
@@ -522,31 +572,30 @@ namespace Capstone.Game.HudSystem {
             Label levelRequirement = documentRoot.Q<Label>("pet-details-evolution-level");
             Label friendshipRequirement = documentRoot.Q<Label>("pet-details-evolution-friendship");
             Label extraRequirement = documentRoot.Q<Label>("pet-details-evolution-extra");
-            bool hasLevel = metadata.EvolutionLevelRequirement > 0;
             bool hasFriendship = metadata.EvolutionFriendshipRequirement > 0;
             PetEvolutionService service = GetComponent<PetEvolutionService>();
             PetEvolutionPreview preview = service?.CreatePreview(detailsPet);
-            bool usesItem = preview?.Rule?.Trigger == PetEvolutionTrigger.Item;
-            bool hasExtra = usesItem || !string.IsNullOrWhiteSpace(metadata.ExtraEvolutionRequirement);
+            bool hasLevel = preview?.Rule?.Trigger != PetEvolutionTrigger.Item && preview?.RequiredLevel > 0;
+            bool hasExtra = !string.IsNullOrWhiteSpace(metadata.ExtraEvolutionRequirement);
 
             SetVisible(levelRequirement, hasLevel || (!hasFriendship && !hasExtra));
             SetVisible(friendshipRequirement, hasFriendship);
             SetVisible(extraRequirement, hasExtra);
             if (levelRequirement != null) levelRequirement.text = hasLevel
-                ? $"• Đạt Lv. {metadata.EvolutionLevelRequirement}"
-                : "• Chưa thiết lập điều kiện";
+                ? $"• Cấp {preview.CurrentLevel}/{preview.RequiredLevel}"
+                : "• Dùng vật phẩm trong Túi đồ";
             if (friendshipRequirement != null) friendshipRequirement.text = $"• Tình bạn ≥ {metadata.EvolutionFriendshipRequirement}";
             if (extraRequirement != null) {
-                extraRequirement.text = usesItem
-                    ? $"• Cần {preview.RequiredItemQuantity} {preview.RequiredItemId} ({preview.OwnedItemQuantity} đang có)"
-                    : "• " + metadata.ExtraEvolutionRequirement.Trim();
+                extraRequirement.text = "• " + metadata.ExtraEvolutionRequirement.Trim();
             }
         }
 
         void RegisterButton(Button button, Action callback) {
             if (button == null || callback == null || buttonCallbacks.ContainsKey(button)) return;
-            button.clicked += callback;
-            buttonCallbacks.Add(button, callback);
+            bool previewOnly=button.name.StartsWith("pets-tab-")||button.name.StartsWith("pets-mode-")||button.name=="pets-swap-button"||button.name=="pets-skills-details";
+            Action guarded = previewOnly?callback:Capstone.Game.UISystem.PlayerActionGate.Guard(this, "button:" + button.name, callback);
+            button.clicked += guarded;
+            buttonCallbacks.Add(button, guarded);
         }
 
         void SubscribeProvider() {
@@ -564,7 +613,8 @@ namespace Capstone.Game.HudSystem {
         }
 
         void HandleHudDataChanged() {
-            Refresh();
+            if (panel != null && panel.resolvedStyle.display != DisplayStyle.None
+                && (inventoryOwner == null || inventoryOwner.IsPetsSectionOpen)) Refresh();
         }
 
         void EnsurePartyCards() {
@@ -575,37 +625,57 @@ namespace Capstone.Game.HudSystem {
 
             for (int i = 0; i < 6; i++) {
                 int slotIndex = i;
-                var card = new Button { name = $"pets-party-card-{i + 1}", text = string.Empty, userData = i };
+                var card = new Capstone.Game.UISystem.AngularButton { name = $"thú-party-card-{i + 1}", text = string.Empty, userData = i };
                 card.AddToClassList("pet-party-card");
                 card.RegisterCallback<ClickEvent>(
-                    evt => HandlePartyCardClick(slotIndex, evt.clickCount),
+                    evt => {
+                        if (evt.target is VisualElement target && (target.ClassListContains("pet-card-favorite")
+                            || target.GetFirstAncestorOfType<Button>()?.ClassListContains("pet-card-favorite") == true)) return;
+                        HandlePartyCardClick(slotIndex, evt.clickCount);
+                    },
                     TrickleDown.TrickleDown);
 
                 var top = new VisualElement();
                 top.AddToClassList("pet-card-top");
                 top.Add(CreateLabel((i + 1).ToString(), "pet-card-slot-number"));
-                top.Add(CreateLabel(i == 0 ? "LEAD" : string.Empty, "pet-card-lead"));
-                top.Add(CreateLabel(string.Empty, "pet-card-favorite"));
-                top.Add(CreateLabel(string.Empty, "pet-card-status"));
+                var elementIcons = new VisualElement();
+                elementIcons.AddToClassList("pet-card-element-icons");
+                elementIcons.Add(CreateLabel(string.Empty, "pet-card-element pet-card-element-primary"));
+                elementIcons.Add(CreateLabel(string.Empty, "pet-card-element pet-card-element-secondary"));
+                top.Add(elementIcons);
+                var favorite = new Button(() => ToggleFavoriteAt(slotIndex)) { name = "favorite", text = "★", tooltip = "Bỏ yêu thích" };
+                favorite.style.display = DisplayStyle.None;
+                favorite.AddToClassList("pet-card-favorite");
+                favorite.RegisterCallback<ClickEvent>(evt => evt.StopPropagation());
+                top.Add(favorite);
                 card.Add(top);
 
                 var content = new VisualElement();
                 content.AddToClassList("pet-card-content");
-                var portrait = new VisualElement { name = "portrait" };
+                var portrait = new Capstone.Game.UISystem.AngularSurface { name = "portrait",NoFill=true,NoBorder=true };
                 portrait.AddToClassList("pet-card-portrait");
-                portrait.Add(CreateLabel("?", "pet-card-portrait-fallback"));
+                portrait.Add(CreateLabel("🐾", "pet-card-portrait-fallback"));
+                portrait.Add(CreateLabel(string.Empty, "pet-card-level"));
+                portrait.Add(CreateLabel(string.Empty, "pet-card-status"));
                 content.Add(portrait);
 
                 var info = new VisualElement();
                 info.AddToClassList("pet-card-info");
-                info.Add(CreateLabel("Empty", "pet-card-name"));
-                info.Add(CreateLabel("Lv. -", "pet-card-level"));
-                info.Add(CreateLabel("-  •  -  •  -", "pet-card-meta"));
-                info.Add(CreateBar("HP", "pet-card-hp-fill", "pet-card-hp-value"));
-                info.Add(CreateBar("EXP", "pet-card-exp-fill", "pet-card-exp-value"));
+                var nameRow = new VisualElement();
+                nameRow.AddToClassList("pet-card-name-row");
+                nameRow.Add(CreateLabel("Trống", "pet-card-name"));
+                nameRow.Add(CreateLabel(string.Empty, "pet-card-gender"));
+                info.Add(nameRow);
+                VisualElement hpRow = CreateBar("HP", "pet-card-hp-fill", "pet-card-hp-value");
+                Label hpValue = hpRow.Q<Label>(className: "pet-card-hp-value");
+                hpValue.RemoveFromHierarchy();
+                info.Add(hpRow);
+                info.Add(hpValue);
                 content.Add(info);
                 card.Add(content);
+                foreach(var decoration in card.Query<VisualElement>().ToList())if(!(decoration is Button))decoration.pickingMode=PickingMode.Ignore;
 
+                BindDockDrag(card,slotIndex);
                 partyCards.Add(card);
                 partyRow.Add(card);
             }
@@ -617,7 +687,7 @@ namespace Capstone.Game.HudSystem {
             skillsRow.Clear();
             skillCards.Clear();
             for (int i = 0; i < 4; i++) {
-                var card = new VisualElement { name = $"pets-skill-card-{i + 1}" };
+                var card = new VisualElement { name = $"thú-kỹ năng-card-{i + 1}" };
                 card.AddToClassList("pet-skill-card");
                 var icon = new VisualElement { name = "skill-icon" };
                 icon.AddToClassList("pet-skill-icon");
@@ -625,7 +695,7 @@ namespace Capstone.Game.HudSystem {
                 card.Add(icon);
                 var text = new VisualElement();
                 text.AddToClassList("pet-skill-text");
-                text.Add(CreateLabel("Locked", "pet-skill-name"));
+                text.Add(CreateLabel("Chưa mở", "pet-skill-name"));
                 text.Add(CreateLabel("-", "pet-skill-meta"));
                 card.Add(text);
                 card.RegisterCallback<PointerEnterEvent>(_ => {
@@ -641,48 +711,58 @@ namespace Capstone.Game.HudSystem {
             card.EnableInClassList("is-empty", !slot.occupied);
             card.EnableInClassList("is-selected", slot.selected);
             card.EnableInClassList("is-summoned", slot.summoned);
+            Button favorite = card.Q<Button>("favorite");
+            if (favorite != null) {
+                favorite.style.display = slot.occupied && slot.favorite ? DisplayStyle.Flex : DisplayStyle.None;
+                favorite.SetEnabled(CommandProvider != null && evolutionSelectionItemId == null);
+                favorite.text = "★";
+                favorite.tooltip = slot.favorite ? "Bỏ yêu thích" : "Thêm vào yêu thích";
+                favorite.EnableInClassList("is-favorite", slot.favorite);
+            }
 
-            SetText(card, "pet-card-name", slot.occupied ? SafeName(slot.displayName) : "Empty");
-            SetText(card, "pet-card-level", slot.occupied && slot.level > 0 ? $"Lv. {slot.level}" : "Lv. -");
-            SetText(card, "pet-card-meta", slot.occupied ? "-  •  -  •  -" : "Empty slot");
-            SetText(card, "pet-card-favorite", slot.occupied && slot.favorite ? "\u2605" : string.Empty);
-            SetText(card, "pet-card-status", slot.summoned ? "ACTIVE" : string.Empty);
+            SetText(card, "pet-card-name", slot.occupied ? SafeName(slot.displayName) : "Trống");
+            card.Q<Label>(className: "pet-card-name").tooltip = slot.occupied ? SafeName(slot.displayName) : string.Empty;
+            SetText(card, "pet-card-level", slot.occupied && slot.level > 0 ? $"Cấp {slot.level}" : string.Empty);
+            Label activeStatus = card.Q<Label>(className: "pet-card-status");
+            if (activeStatus != null) {
+                activeStatus.text = slot.summoned ? "ĐANG DÙNG" : slot.selected ? "ĐANG XEM" : string.Empty;
+                activeStatus.style.display = slot.summoned || slot.selected ? DisplayStyle.Flex : DisplayStyle.None;
+            }
             PetController slotPet = slot.occupied ? CommandProvider?.GetPetControllerAt(index) : null;
-            PetHudRuntimeStats runtimeStats = slotPet != null
-                ? slotPet.GetComponentInChildren<PetHudRuntimeStats>(true)
-                : null;
             PetCollectionMetadata metadata = slotPet != null
                 ? slotPet.GetComponentInChildren<PetCollectionMetadata>(true)
                 : null;
-            SetText(card, "pet-card-hp-value", runtimeStats != null
-                ? FormatPair(runtimeStats.Health, runtimeStats.MaxHealth)
-                : "-");
-            SetText(card, "pet-card-exp-value", metadata != null
-                ? FormatPair(metadata.Experience, metadata.ExperienceToNextLevel)
-                : "-");
-            SetFill(card.Q<VisualElement>("pet-card-hp-fill"), runtimeStats != null
-                ? Percent(runtimeStats.Health, runtimeStats.MaxHealth)
-                : 0f);
-            SetFill(card.Q<VisualElement>("pet-card-exp-fill"), metadata != null
-                ? Percent(metadata.Experience, metadata.ExperienceToNextLevel)
-                : 0f);
+            Label primaryElement = card.Q<Label>(className: "pet-card-element-primary");
+            SetElementIcon(primaryElement, metadata != null ? metadata.Element : PetElement.Unknown, slot.occupied);
+            Label secondaryElement = card.Q<Label>(className: "pet-card-element-secondary");
+            SetElementIcon(secondaryElement, metadata != null ? metadata.SecondaryElement : PetElement.Unknown, slot.occupied);
+            if (evolutionSelectionItemId != null) {
+                PetEvolutionService service = GetComponent<PetEvolutionService>();
+                bool eligible = slotPet != null && service?.CreatePreview(slotPet,
+                    PetEvolutionMethod.Item, evolutionSelectionItemId).CanEvolve == true;
+                card.style.opacity = eligible ? 1f : 0.35f;
+            }
+            else card.style.opacity = 1f;
+            SetGenderIcon(card.Q<Label>(className: "pet-card-gender"), metadata?.Gender, slot.occupied);
+            SetText(card, "pet-card-hp-value", slot.occupied ? FormatPair(slot.health, slot.maxHealth) : string.Empty);
+            SetFill(card.Q<VisualElement>("pet-card-hp-fill"), slot.HealthPercent);
 
             VisualElement portrait = card.Q<VisualElement>("portrait");
             Label fallback = portrait?.Q<Label>(className: "pet-card-portrait-fallback");
-            SetPortrait(portrait, fallback, slot.icon, slot.occupied ? SafeName(slot.displayName) : "?");
+            SetPortrait(portrait, fallback, slot.icon, slot.occupied ? SafeName(slot.displayName) : "🐾");
         }
 
         void RefreshSelectedPet() {
-            PetStatusHudData pet = Provider != null ? Provider.GetSelectedPetStatus() : default;
+            PetStatusHudData pet = ViewedStatus;
             bool hasPet = pet.hasPet;
-            string name = hasPet ? SafeName(pet.displayName) : "Chọn một pet";
-            PetController selectedController = hasPet ? CommandProvider?.GetSelectedPetController() : null;
+            string name = hasPet ? SafeName(pet.displayName) : "Chọn một thú";
+            PetController selectedController = hasPet ? ViewedPet : null;
             PetCollectionMetadata metadata = selectedController != null
                 ? selectedController.GetComponentInChildren<PetCollectionMetadata>(true)
                 : null;
 
             if (selectedName != null) selectedName.text = name;
-            bool favorite = hasPet && CommandProvider != null && CommandProvider.IsSelectedPetFavorite();
+            bool favorite = hasPet && CommandProvider != null && ViewedPet?.GetComponentInChildren<PetCollectionMetadata>(true)?.IsFavorite == true;
             if (renameButton != null) renameButton.SetEnabled(hasPet && CommandProvider != null);
             if (favoriteButton != null) {
                 favoriteButton.SetEnabled(hasPet && CommandProvider != null);
@@ -693,34 +773,67 @@ namespace Capstone.Game.HudSystem {
             if (evolutionButton != null) {
                 PetEvolutionService service = GetComponent<PetEvolutionService>();
                 PetEvolutionPreview evolution = hasPet ? service?.CreatePreview(selectedController) : null;
-                evolutionButton.SetEnabled(evolution?.IsConfigured == true);
+                bool hasNextForm = evolution?.IsConfigured == true
+                    && evolution.Rule.Trigger != PetEvolutionTrigger.Item;
+                evolutionButton.SetEnabled(hasNextForm);
+                if (evolutionSubtitle != null) {
+                    evolutionSubtitle.text = hasNextForm
+                        ? $"Cấp {evolution.CurrentLevel}/{evolution.RequiredLevel}"
+                        : evolution?.IsConfigured == true
+                            ? "Dùng vật phẩm trong Túi đồ"
+                            : evolution?.DisabledReason ?? "Chưa có dữ liệu tiến hóa.";
+                }
             }
-            if (selectedSpecies != null) selectedSpecies.text = $"Loài: {(metadata != null ? DisplayOrDash(metadata.Species) : "-")}";
-            if (selectedLevel != null) selectedLevel.text = hasPet && pet.level > 0 ? $"Lv. {pet.level}" : "Lv. -";
-            if (selectedGender != null) selectedGender.text = $"Giới tính: {(metadata != null ? DisplayOrDash(metadata.Gender) : "-")}";
-            if (selectedRarity != null) selectedRarity.text = $"Độ hiếm: {(metadata != null ? FormatRarity(metadata.Rarity) : "-")}";
-            if (selectedElement != null) selectedElement.text = $"Hệ: {(metadata != null ? FormatElement(metadata.Element) : "-")}";
-            if (selectedHealthValue != null) selectedHealthValue.text = FormatPair(pet.health, pet.maxHealth);
+            if (selectedSpecies != null) selectedSpecies.text = $"Loài: {(metadata != null ? DisplayOrDash(metadata.Species) : "—")}";
+            if (selectedLevel != null) selectedLevel.text = hasPet && pet.level > 0 ? $"Cấp {pet.level}" : "Cấp —";
+            if (selectedGender != null) selectedGender.text = $"Giới tính: {(metadata != null ? Capstone.Game.UISystem.VietnameseUI.Gender(metadata.Gender) : "—")}";
+            if (selectedRarity != null) selectedRarity.text = $"Độ hiếm: {(metadata != null ? FormatRarity(metadata.Rarity) : "—")}";
+            if (selectedElement != null) selectedElement.text = $"Hệ: {(metadata != null ? FormatElements(metadata) : "—")}";
+            if (selectedHealthValue != null) selectedHealthValue.text = hasPet ? FormatPair(pet.health, pet.maxHealth) : "— / —";
             if (selectedExperienceValue != null) selectedExperienceValue.text = metadata != null
-                ? FormatPair(metadata.Experience, metadata.ExperienceToNextLevel)
-                : "- / -";
-            SetFill(selectedHealthFill, pet.HealthPercent);
+                ? FormatPair(pet.experience, pet.experienceToNextLevel)
+                : "— / —";
+            SetFill(selectedHealthFill, hasPet ? pet.HealthPercent : 0f);
             SetFill(selectedExperienceFill, metadata != null
-                ? Percent(metadata.Experience, metadata.ExperienceToNextLevel)
+                ? pet.ExperiencePercent
                 : 0f);
-            SetPortrait(selectedPortrait, selectedPortraitFallback, pet.icon, name);
+            // Keep the live preview texture when data events update HP/stats.
+            // Replacing it with an icon each refresh causes visible flashes.
+            // Large 2D illustration is a separate presentation asset; never enlarge the HUD avatar here.
+            RefreshCompanionPortrait(selectedController);
 
-            if (statHealth != null) statHealth.text = pet.maxHealth > 0f ? Mathf.RoundToInt(pet.maxHealth).ToString() : "-";
-            if (statAttack != null) statAttack.text = metadata != null ? metadata.Attack.ToString() : "-";
-            if (statDefense != null) statDefense.text = metadata != null ? metadata.Defense.ToString() : "-";
-            if (statSpeed != null) statSpeed.text = metadata != null ? metadata.Speed.ToString() : "-";
-            if (feedbackLabel != null && !hasPet) feedbackLabel.text = "Chọn một slot có pet để xem thông tin.";
+            PetStatSnapshot scores = metadata != null ? metadata.CurrentStats : default;
+            if (statHealth != null) statHealth.text = metadata != null ? scores.Hp.ToString() : "—";
+            if (statAttack != null) statAttack.text = metadata != null ? scores.Attack.ToString() : "—";
+            if (statDefense != null) statDefense.text = metadata != null ? scores.Defense.ToString() : "—";
+            if (statSpeed != null) statSpeed.text = metadata != null ? scores.Speed.ToString() : "—";
+            if (statMagicAttack != null) statMagicAttack.text = metadata != null ? scores.MagicAttack.ToString() : "—";
+            if (statMagicDefense != null) statMagicDefense.text = metadata != null ? scores.MagicDefense.ToString() : "—";
+            if (statCriticalRate != null) statCriticalRate.text = metadata != null ? $"{scores.CriticalRate:0.#}%" : "—";
+            if (statCriticalDamage != null) statCriticalDamage.text = metadata != null ? $"{scores.CriticalDamage:0.#}%" : "—";
+
+            SetFill(statHealthFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Hp, pet.level, PetCoreStat.Hp) : 0f);
+            SetFill(statAttackFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Attack, pet.level, PetCoreStat.Attack) : 0f);
+            SetFill(statDefenseFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Defense, pet.level, PetCoreStat.Defense) : 0f);
+            SetFill(statSpeedFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Speed, pet.level, PetCoreStat.Speed) : 0f);
+            SetFill(statMagicAttackFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.MagicAttack, pet.level, PetCoreStat.MagicAttack) : 0f);
+            SetFill(statMagicDefenseFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.MagicDefense, pet.level, PetCoreStat.MagicDefense) : 0f);
+            SetFill(statCriticalRateFill, metadata != null ? scores.CriticalRate / CriticalRateDisplayMaximum : 0f);
+            SetFill(statCriticalDamageFill, metadata != null ? scores.CriticalDamage / CriticalDamageDisplayMaximum : 0f);
+            if (!hasPet) {
+                SetFeedback("Chọn một ô có thú để xem thông tin.");
+            }
+            else if (feedbackLabel != null
+                && feedbackLabel.text == "Chọn một ô có thú để xem thông tin.") {
+                SetFeedback(string.Empty);
+            }
         }
 
         void RefreshSkills() {
-            IReadOnlyList<SkillHudData> skills = Provider?.GetSkills();
-            int slotCount = CommandProvider != null
-                ? CommandProvider.GetEquippedSkillSlotCount()
+            bool hasPet = ViewedStatus.hasPet;
+            IReadOnlyList<SkillHudData> skills = hasPet ? ViewedSkills : null;
+            int slotCount = !hasPet ? 0 : CommandProvider != null
+                ? CommandProvider.SlotCountFor(ViewedPet)
                 : skills != null && skills.Count > 0 ? Mathf.Clamp(skills.Count, 2, 4) : 0;
             for (int i = 0; i < skillCards.Count; i++) {
                 bool visible = i < slotCount;
@@ -733,105 +846,110 @@ namespace Capstone.Game.HudSystem {
                 SkillHudData skill = available ? skills[i] : default;
                 VisualElement card = skillCards[i];
                 card.EnableInClassList("is-locked", !available);
-                SetText(card, "pet-skill-name", available ? SafeName(skill.displayName) : "Locked");
-                SetText(card, "pet-skill-meta", available ? $"Lv. {Mathf.Max(1, skill.skillLevel)}" : "-");
+                SetText(card, "pet-skill-name", available ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Chưa mở");
+                SetText(card, "pet-skill-meta", available ? $"Cấp {Mathf.Max(1, skill.skillLevel)}" : "-");
                 VisualElement icon = card.Q<VisualElement>("skill-icon");
                 Label fallback = icon?.Q<Label>(className: "pet-skill-icon-fallback");
-                SetPortrait(icon, fallback, skill.icon, available ? SafeName(skill.displayName) : (i + 1).ToString());
+                CompanionArt.SetSkillImage(icon, fallback, available ? skill.icon : null, !available);
 
-                string title = available ? SafeName(skill.displayName) : "Kỹ năng chưa mở";
+                string title = available ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Kỹ năng chưa mở";
                 string body = available
                     ? BuildSkillTooltip(skill)
-                    : "Pet này chưa có kỹ năng ở ô này.";
+                    : "Thú này chưa có kỹ năng ở ô này.";
                 card.tooltip = body;
                 card.userData = new TooltipData(title, body);
             }
         }
 
         void SelectSlot(int index) {
-            Provider?.SelectPetSlot(index);
-            Refresh();
+            var pet=CommandProvider?.GetPetControllerAt(index);
+            if(pet==null || pet==ViewedPet)return;
+            CancelViewedInteraction();viewedPet=pet;viewedPetId=PetIdentity(pet);
+            SetFeedback(string.Empty);Refresh();
         }
 
         void HandlePartyCardClick(int index, int clickCount) {
             if (index < 0 || index >= partyCards.Count) return;
 
-            if (pendingSwapSourceIndex >= 0 && clickCount == 1) {
-                TryCompletePartySwap(index);
+            if (evolutionSelectionItemId != null) {
+                PetController pet = CommandProvider?.GetPetControllerAt(index);
+                PetEvolutionService service = GetComponent<PetEvolutionService>();
+                PetEvolutionPreview itemPreview = pet != null ? service?.CreatePreview(pet,
+                    PetEvolutionMethod.Item, evolutionSelectionItemId) : null;
+                if (itemPreview?.CanEvolve != true) {
+                    SetFeedback(itemPreview?.DisabledReason ?? "Ô này chưa có thú phù hợp.");
+                    return;
+                }
+                string itemId = evolutionSelectionItemId;
+                CancelEvolutionItemSelection();
+                SelectSlot(index);
+                MonsterInventoryController controller = GetComponent<MonsterInventoryController>();
+                if (controller == null) controller = FindFirstObjectByType<MonsterInventoryController>();
+                controller?.OpenBagEvolutionConfirmation(pet, itemId);
                 return;
             }
 
+            if(suppressDockClick){suppressDockClick=false;return;}
+            if(pendingSwapSourceIndex>=0){TryCompletePartySwap(index);return;}
             SelectSlot(index);
-            if (clickCount < 2) return;
-
-            IReadOnlyList<PetSlotHudData> slots = Provider?.GetPetSlots();
-            PetSlotHudData slot = slots != null && index < slots.Count ? slots[index] : default;
-            if (!slot.occupied) {
-                if (feedbackLabel != null) feedbackLabel.text = "Hãy double-click một ô đang có pet.";
-                return;
-            }
-
-            pendingSwapSourceIndex = index;
-            UpdateSwapSelectionVisual();
-            if (feedbackLabel != null) {
-                feedbackLabel.text = $"Đã chọn vị trí {index + 1}. Click ô đích để đổi.";
-            }
         }
 
         void TryCompletePartySwap(int targetIndex) {
-            int sourceIndex = pendingSwapSourceIndex;
-            ClearSwapSelection();
-
-            if (targetIndex == sourceIndex) {
-                if (feedbackLabel != null) feedbackLabel.text = "Đã hủy đổi vị trí.";
-                SelectSlot(targetIndex);
-                return;
-            }
-
-            if (Provider is PetCommandHudProvider provider
-                && provider.TrySwapPetSlots(sourceIndex, targetIndex)) {
-                if (feedbackLabel != null) {
-                    feedbackLabel.text = $"Đã đổi vị trí {sourceIndex + 1} và {targetIndex + 1}.";
-                }
-
-                Provider.SelectPetSlot(targetIndex);
-                Refresh();
-                return;
-            }
-
-            if (feedbackLabel != null) feedbackLabel.text = "Không thể đổi hai vị trí này.";
+            if(swapSaving || pendingSwapSourceIndex<0)return;
+            pendingSwapTargetIndex=targetIndex==pendingSwapSourceIndex?-1:targetIndex;
+            swapTargetPet=pendingSwapTargetIndex>=0?CommandProvider?.GetPetControllerAt(pendingSwapTargetIndex):null;
+            UpdateSwapSelectionVisual();
+            SetFeedback(pendingSwapTargetIndex>=0?$"Xem trước: ô {pendingSwapSourceIndex+1} ↔ ô {pendingSwapTargetIndex+1}. Chưa đổi vị trí.":"Chọn ô đích để xem trước.");
         }
 
         void UpdateSwapSelectionVisual() {
-            for (int i = 0; i < partyCards.Count; i++) {
-                partyCards[i].EnableInClassList("is-swap-source", i == pendingSwapSourceIndex);
+            for(int i=0;i<partyCards.Count;i++){
+                var card=partyCards[i];card.EnableInClassList("is-swap-source",i==pendingSwapSourceIndex);card.EnableInClassList("is-swap-target",i==pendingSwapTargetIndex);
+                var marker=card.Q<Label>("r3-swap-marker");if(marker==null){marker=new Label{name="r3-swap-marker",pickingMode=PickingMode.Ignore};marker.AddToClassList("r3-swap-marker");var arrow=new VisualElement{name="r3-swap-arrow",pickingMode=PickingMode.Ignore};marker.Add(arrow);card.Add(marker);}
+                marker.text=i==pendingSwapSourceIndex?"Nguồn":i==pendingSwapTargetIndex?"Đích":"";
+                marker.Q("r3-swap-arrow").style.backgroundImage=new StyleBackground(Capstone.Game.UISystem.InteractionR3Assets.Load(i==pendingSwapSourceIndex?"Assets/Interaction/swap-source":"Assets/Interaction/swap-target"));
+                marker.style.display=string.IsNullOrEmpty(marker.text)?DisplayStyle.None:DisplayStyle.Flex;
+                marker.style.color=i==pendingSwapSourceIndex?Capstone.Game.UISystem.GreenAngularGeometry.Gold:Capstone.Game.UISystem.GreenAngularGeometry.Exp;
+                if(card is Capstone.Game.UISystem.AngularButton b)b.Surface.MarkDirtyRepaint();
             }
+            EnsureSwapActions();swapConfirm?.SetEnabled(pendingSwapTargetIndex>=0&&!swapSaving);
+            if(swapActions!=null)swapActions.style.display=pendingSwapSourceIndex>=0?DisplayStyle.Flex:DisplayStyle.None;
+            var begin=panel?.Q("pets-swap-button");if(begin!=null)begin.style.display=pendingSwapSourceIndex>=0?DisplayStyle.None:DisplayStyle.Flex;
         }
 
         void ClearSwapSelection() {
-            pendingSwapSourceIndex = -1;
+            ReleaseDockDrag();pendingSwapSourceIndex=pendingSwapTargetIndex=-1;swapSourcePet=swapTargetPet=null;swapSaving=false;
             UpdateSwapSelectionVisual();
         }
 
-        void RequestPlaceholderAction(string actionName, string message) {
-            if (feedbackLabel != null) feedbackLabel.text = message;
-            ActionRequested?.Invoke(actionName);
+        void ShowMissingControllerFeedback(string message) {
+            SetFeedback(message);
+        }
+
+        void SetFeedback(string message) {
+            if (feedbackLabel == null) return;
+            feedbackLabel.text = message ?? string.Empty;
+            feedbackLabel.style.display = string.IsNullOrWhiteSpace(message)
+                ? DisplayStyle.None
+                : DisplayStyle.Flex;
         }
 
         void ClosePanel() {
+            CancelEvolutionItemSelection();
             ClearSwapSelection();
             HideRenamePopup();
             MonsterInventoryController inventory = GetComponent<MonsterInventoryController>();
-            if (inventory != null) inventory.Close();
+            if (inventory != null) inventory.RequestClose();
         }
 
         void OpenRenamePopup() {
-            PetStatusHudData status = Provider != null ? Provider.GetSelectedPetStatus() : default;
+            PetStatusHudData status = ViewedStatus;
             if (!status.hasPet || CommandProvider == null || renameOverlay == null) {
-                if (feedbackLabel != null) feedbackLabel.text = "Chưa chọn pet để đổi tên.";
+                SetFeedback("Chọn thú đồng hành để đổi tên.");
                 return;
             }
 
+            renameTarget=ViewedPet;
             renameOriginalName = SafeName(status.displayName);
             if (renameCurrentName != null) renameCurrentName.text = renameOriginalName;
             SetPortrait(renamePortrait, renamePortraitFallback, status.icon, renameOriginalName);
@@ -840,7 +958,7 @@ namespace Capstone.Game.HudSystem {
             HideTooltip();
             renameOverlay.style.display = DisplayStyle.Flex;
             renameOverlay.BringToFront();
-            renameInput?.Focus();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(renameOverlay);
         }
 
         void HideRenamePopup() {
@@ -851,6 +969,7 @@ namespace Capstone.Game.HudSystem {
                 renameInput.Blur();
             }
             renameOriginalName = string.Empty;
+            Capstone.Game.UISystem.PanelFocusUtility.Close(renameOverlay);
         }
 
         public void CloseRenamePopup() {
@@ -858,19 +977,20 @@ namespace Capstone.Game.HudSystem {
         }
 
         void SaveNickname() {
-            if (CommandProvider == null) return;
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "rename")) return;
+            if (CommandProvider == null || renameTarget==null || !CommandProvider.ContainsPet(renameTarget)) { ShowRenameValidationError("Thú không còn trong đội hình.");return; }
             if (!TryGetValidNickname(out string nickname, out string validationError)) {
                 ShowRenameValidationError(validationError);
                 return;
             }
 
-            if (!CommandProvider.TryRenameSelectedPet(nickname, out string error)) {
+            if (!CommandProvider.RenameFor(renameTarget, nickname, out string error)) {
                 ShowRenameValidationError(error);
                 return;
             }
 
             HideRenamePopup();
-            if (feedbackLabel != null) feedbackLabel.text = $"Đã đổi tên pet thành {nickname}.";
+            SetFeedback($"Đã đổi tên thú thành {nickname}.");
             Refresh();
         }
 
@@ -892,6 +1012,8 @@ namespace Capstone.Game.HudSystem {
             renameSaveButton?.SetEnabled(valid);
             if (renameInput != null) renameInput.EnableInClassList("is-invalid", showError && !valid);
             if (renameError != null) renameError.text = showError && !valid ? error : string.Empty;
+            var helper=renameError?.parent?.Q<Label>(className:"ga-rename-helper");
+            if(helper!=null)helper.style.display=showError&&!valid?DisplayStyle.None:DisplayStyle.Flex;
         }
 
         bool TryGetValidNickname(out string nickname, out string error) {
@@ -914,6 +1036,8 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ShowRenameValidationError(string error) {
+            var helper=renameError?.parent?.Q<Label>(className:"ga-rename-helper");
+            if(helper!=null)helper.style.display=DisplayStyle.None;
             if (renameInput != null) renameInput.AddToClassList("is-invalid");
             if (renameError != null) renameError.text = string.IsNullOrWhiteSpace(error)
                 ? "Tên không hợp lệ."
@@ -922,14 +1046,24 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ToggleFavorite() {
-            if (CommandProvider == null || !CommandProvider.TryToggleSelectedPetFavorite(out bool favorite)) {
-                if (feedbackLabel != null) feedbackLabel.text = "Chưa chọn pet để đánh dấu yêu thích.";
+            if (CommandProvider == null || !CommandProvider.FavoriteFor(ViewedPet, out bool favorite)) {
+                SetFeedback("Chưa chọn thú để đánh dấu yêu thích.");
                 return;
             }
 
-            if (feedbackLabel != null) feedbackLabel.text = favorite
-                ? "Đã thêm pet vào danh sách yêu thích."
-                : "Đã bỏ pet khỏi danh sách yêu thích.";
+            SetFeedback(favorite
+                ? "Đã thêm thú vào danh sách yêu thích."
+                : "Đã bỏ thú khỏi danh sách yêu thích.");
+            Refresh();
+        }
+
+        void ToggleFavoriteAt(int slotIndex) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "favorite:" + slotIndex)) return;
+            if (CommandProvider == null || !CommandProvider.TryTogglePetFavoriteAt(slotIndex, out bool favorite)) {
+                SetFeedback("Không thể lưu trạng thái yêu thích của thú.");
+                return;
+            }
+            SetFeedback(favorite ? "Đã thêm thú vào danh sách yêu thích." : "Đã bỏ thú khỏi danh sách yêu thích.");
             Refresh();
         }
 
@@ -945,20 +1079,37 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ShowTooltip(VisualElement anchor, string title, string body) {
-            if (tooltip == null || root == null || anchor == null) return;
-            if (tooltipTitle != null) tooltipTitle.text = title;
-            if (tooltipBody != null) tooltipBody.text = body;
-
-            Rect bounds = anchor.worldBound;
-            Vector2 position = root.WorldToLocal(new Vector2(bounds.xMax + 12f, bounds.yMin));
-            float rootWidth = root.resolvedStyle.width;
-            if (position.x + 320f > rootWidth) position.x = Mathf.Max(12f, position.x - bounds.width - 332f);
-            tooltip.style.left = position.x;
-            tooltip.style.top = Mathf.Max(12f, position.y);
-            tooltip.style.display = DisplayStyle.Flex;
+            if(tooltip==null||root==null||anchor==null||dragGhost!=null)return;
+            tooltipDelay?.Pause();tooltip.style.display=DisplayStyle.None;tooltip.pickingMode=PickingMode.Ignore;
+            tooltipDelay=root.schedule.Execute(()=>{
+                if(anchor.panel==null || !companionVisible)return;
+                if(tooltipTitle!=null)tooltipTitle.text=title;if(tooltipBody!=null)tooltipBody.text=body;
+                tooltip.style.width=Mathf.Min(310,Mathf.Max(80,root.resolvedStyle.width-32));
+                tooltip.style.maxHeight=Mathf.Max(72,root.resolvedStyle.height-32);
+                tooltip.style.visibility=Visibility.Hidden;tooltip.style.display=DisplayStyle.Flex;tooltip.BringToFront();
+                tooltip.schedule.Execute(()=>{if(tooltip.resolvedStyle.display==DisplayStyle.None)return;
+                    var a=root.WorldToLocal(anchor.worldBound.position);var z=root.WorldToLocal(anchor.worldBound.max);float w=tooltip.resolvedStyle.width,h=tooltip.resolvedStyle.height;
+                    float x=Mathf.Clamp((a.x+z.x-w)/2,16,Mathf.Max(16,root.resolvedStyle.width-w-16));float y=a.y-h-10;
+                    bool ClearAt(float left,float top){
+                        if(top<16||top+h>root.resolvedStyle.height-16)return false;
+                        var area=new Rect(left,top,w,h);bool clear=true;
+                        panel.Query<Button>().ForEach(button=>{
+                            if(!clear)return;
+                            for(VisualElement e=button;e!=null;e=e.parent)if(e.resolvedStyle.display==DisplayStyle.None||e.resolvedStyle.visibility==Visibility.Hidden)return;
+                            var min=root.WorldToLocal(button.worldBound.min);var max=root.WorldToLocal(button.worldBound.max);
+                            if(area.Overlaps(Rect.MinMaxRect(min.x,min.y,max.x,max.y)))clear=false;
+                        });
+                        return clear;
+                    }
+                    if(!ClearAt(x,y))y=z.y+10;
+                    if(!ClearAt(x,y)){x=24;y=Mathf.Clamp(112,16,Mathf.Max(16,root.resolvedStyle.height-h-16));} // Dedicated hero helper area when both adjacent rows contain controls.
+                    tooltip.style.left=x;tooltip.style.top=y;tooltip.style.visibility=Visibility.Visible;
+                }).StartingIn(16);
+            }).StartingIn(350);
         }
 
         void HideTooltip() {
+            tooltipDelay?.Pause();
             if (tooltip != null) tooltip.style.display = DisplayStyle.None;
         }
 
@@ -984,7 +1135,7 @@ namespace Capstone.Game.HudSystem {
 
         static string BuildSkillTooltip(SkillHudData skill) {
             string description = string.IsNullOrWhiteSpace(skill.description) ? "Chưa có mô tả." : skill.description.Trim();
-            string cooldown = skill.cooldownSeconds > 0f ? $"Cooldown: {skill.cooldownSeconds:0.#}s" : "Cooldown: -";
+            string cooldown = skill.cooldownSeconds > 0f ? $"Hồi chiêu: {skill.cooldownSeconds:0.#} giây" : "Hồi chiêu: —";
             return $"{description}\nCấp kỹ năng: {Mathf.Max(1, skill.skillLevel)}\n{cooldown}";
         }
 
@@ -997,6 +1148,10 @@ namespace Capstone.Game.HudSystem {
             Label label = rootElement?.Q<Label>(elementName);
             if (label != null) label.text = value ?? string.Empty;
         }
+
+        static string FormatStatValues(PetStatValues values) =>
+            $"HP {values.hp} · ATK {values.attack} · DEF {values.defense} · " +
+            $"SP.ATK {values.magicAttack} · SP.DEF {values.magicDefense} · SPD {values.speed}";
 
         static void SetDetailStat(VisualElement rootElement, string suffix, float value, float percent, bool appendPercent) {
             string valueText = value > 0f
@@ -1012,11 +1167,10 @@ namespace Capstone.Game.HudSystem {
 
         static void SetPortrait(VisualElement portrait, Label fallback, Sprite sprite, string name) {
             if (portrait == null) return;
-            if (sprite != null) portrait.style.backgroundImage = new StyleBackground(sprite);
-            else portrait.style.backgroundImage = StyleKeyword.None;
+            Capstone.Game.UISystem.AngularSurface.SetArt(portrait,sprite);
             portrait.EnableInClassList("has-image", sprite != null);
             if (fallback != null) {
-                fallback.text = FirstLetter(name);
+                fallback.text = name == "🐾" ? name : FirstLetter(name);
                 fallback.style.display = sprite == null ? DisplayStyle.Flex : DisplayStyle.None;
             }
         }
@@ -1035,7 +1189,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         static string DisplayOrDash(string value) {
-            return string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
+            return string.IsNullOrWhiteSpace(value) ? "—" : value.Trim();
         }
 
         static string CleanPetName(string preferred, string fallback) {
@@ -1045,26 +1199,74 @@ namespace Capstone.Game.HudSystem {
                 : value.Replace("(Clone)", string.Empty).Trim();
         }
 
-        static string FormatElement(PetElement element) {
+        static void SetElementIcon(Label label, PetElement element, bool visible) {
+            if (label == null) return;
+            string[] stateClasses = {
+                "is-nature", "is-fire", "is-water", "is-wind", "is-earth",
+                "is-electric", "is-ice", "is-light", "is-dark", "is-dragon", "is-unknown"
+            };
+            for (int i = 0; i < stateClasses.Length; i++) label.RemoveFromClassList(stateClasses[i]);
+
+            label.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!visible) {
+                label.text = string.Empty;
+                return;
+            }
+
             switch (element) {
-                case PetElement.Nature: return "Thảo";
-                case PetElement.Fire: return "Lửa";
-                case PetElement.Water: return "Nước";
-                case PetElement.Wind: return "Gió";
-                case PetElement.Earth: return "Đất";
-                case PetElement.Electric: return "Điện";
-                case PetElement.Ice: return "Băng";
-                case PetElement.Light: return "Ánh sáng";
-                case PetElement.Dark: return "Bóng tối";
-                default: return "-";
+                case PetElement.Nature: label.text = "◆"; label.AddToClassList("is-nature"); break;
+                case PetElement.Fire: label.text = "▲"; label.AddToClassList("is-fire"); break;
+                case PetElement.Water: label.text = "●"; label.AddToClassList("is-water"); break;
+                case PetElement.Wind: label.text = "≈"; label.AddToClassList("is-wind"); break;
+                case PetElement.Earth: label.text = "■"; label.AddToClassList("is-earth"); break;
+                case PetElement.Electric: label.text = "ϟ"; label.AddToClassList("is-electric"); break;
+                case PetElement.Ice: label.text = "✦"; label.AddToClassList("is-ice"); break;
+                case PetElement.Light: label.text = "☀"; label.AddToClassList("is-light"); break;
+                case PetElement.Dark: label.text = "☾"; label.AddToClassList("is-dark"); break;
+                case PetElement.Dragon: label.text = "✥"; label.AddToClassList("is-dragon"); break;
+                default: label.text = "?"; label.AddToClassList("is-unknown"); break;
             }
         }
 
-        static string FormatRarity(PetRarity rarity) {
-            int stars = Mathf.Clamp((int)rarity, 0, 5);
-            if (stars == 0) return "-";
-            return new string('★', stars) + $"  ({rarity})";
+        static void SetGenderIcon(Label label, string value, bool visible) {
+            if (label == null) return;
+            label.RemoveFromClassList("is-male");
+            label.RemoveFromClassList("is-female");
+            label.RemoveFromClassList("is-unknown");
+            label.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!visible) {
+                label.text = string.Empty;
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(value)) {
+                label.text = "○";
+                label.AddToClassList("is-unknown");
+                return;
+            }
+            string normalized = value.Trim().ToLowerInvariant();
+            if (normalized == "f" || normalized.Contains("female") || normalized.Contains("cái")) {
+                label.text = "♀";
+                label.AddToClassList("is-female");
+                return;
+            }
+            if (normalized == "m" || normalized.Contains("male") || normalized.Contains("đực")) {
+                label.text = "♂";
+                label.AddToClassList("is-male");
+                return;
+            }
+            label.text = "○";
+            label.AddToClassList("is-unknown");
         }
+
+        static string FormatElements(PetCollectionMetadata metadata) =>
+            metadata.SecondaryElement == PetElement.Unknown
+                ? FormatElement(metadata.Element)
+                : $"{FormatElement(metadata.Element)} / {FormatElement(metadata.SecondaryElement)}";
+
+        static string FormatElement(PetElement element) => Capstone.Game.UISystem.VietnameseUI.Element(element);
+
+        static string FormatRarity(PetRarity rarity) => Capstone.Game.UISystem.VietnameseUI.Rarity(rarity);
 
         static float Percent(float current, float maximum) {
             return maximum > 0f ? Mathf.Clamp01(current / maximum) : 0f;
@@ -1087,7 +1289,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         static string FormatPair(float current, float maximum) {
-            return maximum > 0f ? $"{Mathf.RoundToInt(current)} / {Mathf.RoundToInt(maximum)}" : "- / -";
+            return maximum > 0f ? $"{Mathf.RoundToInt(current)} / {Mathf.RoundToInt(maximum)}" : "— / —";
         }
     }
 }

@@ -163,7 +163,6 @@ public static class DragonDuskPetSetup
         }
 
         petController.animator = animator;
-        petController.undergroundStates = new[] { "Underground", "Idle" };
         petController.spawnStates = new[] { "Spawn", "Idle" };
         petController.idleStates = new[] { "Idle" };
         petController.moveStates = new[] { "Move", "Fly Forward In Place" };

@@ -1,4 +1,5 @@
 using Capstone.Game.Inventory;
+using GDS.Core;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -6,6 +7,7 @@ namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
     public sealed class PetHealPanelController : MonoBehaviour {
+        bool confirmationRunning;
         [SerializeField] UIDocument document = null;
         [SerializeField] MonoBehaviour petHudProvider = null;
         [SerializeField] MonsterInventoryAdapter inventory = null;
@@ -15,6 +17,7 @@ namespace Capstone.Game.HudSystem {
         VisualElement overlay;
         VisualElement dialog;
         Button closeButton;
+        Button cancelButton;
         Button confirmButton;
         VisualElement portrait;
         Label portraitFallback;
@@ -24,6 +27,7 @@ namespace Capstone.Game.HudSystem {
         Label rarity;
         Label status;
         Label currentHealth;
+        Label resourceTitle;
         Label resultHealth;
         Label healthArrow;
         VisualElement currentFill;
@@ -68,37 +72,53 @@ namespace Capstone.Game.HudSystem {
             Close();
         }
 
-        public void Open(PetController pet = null) {
+        ItemBase exactHealingItem;
+
+        public bool TryOpenFromInventory(InventoryItemSnapshot item) {
+            if (item == null || !item.IsRecoveryItem
+                || !item.UsableFromInventory || !item.Consumable || healService == null || overlay == null) return false;
+            Open(null, item.ItemBase);
+            return true;
+        }
+
+        public void Open(PetController pet = null, ItemBase healingItem = null) {
             if (overlay == null) CacheElements();
             if (overlay == null) return;
 
             ResolveReferences();
             targetPet = pet != null ? pet : CommandProvider?.GetSelectedPetController();
+            exactHealingItem = healingItem;
             transientFeedback = string.Empty;
             overlay.style.display = DisplayStyle.Flex;
             overlay.BringToFront();
             Refresh();
-            dialog?.Focus();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(overlay);
+        }
+
+        void RequestClose() {
+            if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "close")) Close();
         }
 
         public void Close() {
             transientFeedback = string.Empty;
             targetPet = null;
+            exactHealingItem = null;
             if (overlay != null) overlay.style.display = DisplayStyle.None;
+            Capstone.Game.UISystem.PanelFocusUtility.Close(overlay);
         }
 
         public void Refresh() {
             if (overlay == null) CacheElements();
             if (overlay == null || healService == null) return;
 
-            PetHealPreview preview = healService.CreatePreview(targetPet);
+            PetHealPreview preview = healService.CreatePreview(targetPet, exactHealingItem);
             RefreshPet(preview);
             RefreshHealth(preview);
             RefreshItem(preview);
 
             if (confirmButton != null) {
-                confirmButton.text = preview.IsFullHealth ? "FULL HP" : "HEAL";
-                confirmButton.SetEnabled(preview.CanHeal);
+                confirmButton.text = "HỒI PHỤC";
+                confirmButton.SetEnabled(!confirmationRunning && (preview.CanHeal));
             }
             if (feedback != null) {
                 feedback.text = !string.IsNullOrWhiteSpace(transientFeedback)
@@ -128,6 +148,7 @@ namespace Capstone.Game.HudSystem {
             overlay = root.Q<VisualElement>("heal-modal-overlay");
             dialog = root.Q<VisualElement>("heal-modal-dialog");
             closeButton = root.Q<Button>("heal-close-button");
+            cancelButton = root.Q<Button>("heal-cancel-button");
             confirmButton = root.Q<Button>("heal-confirm-button");
             portrait = root.Q<VisualElement>("heal-pet-portrait");
             portraitFallback = root.Q<Label>("heal-pet-portrait-fallback");
@@ -139,6 +160,7 @@ namespace Capstone.Game.HudSystem {
             currentHealth = root.Q<Label>("heal-current-health");
             resultHealth = root.Q<Label>("heal-result-health");
             healthArrow = root.Q<Label>("heal-health-arrow");
+            resourceTitle = root.Q<Label>("heal-resource-title");
             currentFill = root.Q<VisualElement>("heal-current-fill");
             recoveryFill = root.Q<VisualElement>("heal-recovery-fill");
             healedAmount = root.Q<Label>("heal-restored-amount");
@@ -152,14 +174,16 @@ namespace Capstone.Game.HudSystem {
 
         void RegisterControls() {
             if (controlsRegistered || overlay == null) return;
-            if (closeButton != null) closeButton.clicked += Close;
+            if (closeButton != null) closeButton.clicked += RequestClose;
+            if (cancelButton != null) cancelButton.clicked += RequestClose;
             if (confirmButton != null) confirmButton.clicked += ConfirmHeal;
             controlsRegistered = true;
         }
 
         void UnregisterControls() {
             if (!controlsRegistered) return;
-            if (closeButton != null) closeButton.clicked -= Close;
+            if (closeButton != null) closeButton.clicked -= RequestClose;
+            if (cancelButton != null) cancelButton.clicked -= RequestClose;
             if (confirmButton != null) confirmButton.clicked -= ConfirmHeal;
             controlsRegistered = false;
         }
@@ -196,15 +220,23 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ConfirmHeal() {
+            if (confirmationRunning || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "confirm")) return;
+            confirmationRunning = true;
+            confirmButton?.SetEnabled(false);
+            try { ConfirmHealCore(); }
+            finally { confirmationRunning = false; if (IsOpen) Refresh(); }
+        }
+
+        void ConfirmHealCore() {
             if (healService == null) return;
-            bool success = healService.TryHeal(targetPet, out string message);
+            bool success = healService.TryHeal(targetPet, exactHealingItem, out string message);
             if (success) CommandProvider?.NotifyHudDataChanged();
             transientFeedback = message;
             Refresh();
         }
 
         void RefreshPet(PetHealPreview preview) {
-            string baseName = preview.RuntimeStats != null ? preview.RuntimeStats.DisplayName : "Chọn một pet";
+            string baseName = preview.RuntimeStats != null ? preview.RuntimeStats.DisplayName : "Chọn một thú";
             string displayName = preview.Metadata != null ? preview.Metadata.ResolveDisplayName(baseName) : baseName;
             if (petName != null) petName.text = displayName;
             if (species != null) species.text = preview.Metadata != null ? DisplayOrDash(preview.Metadata.Species) : "-";
@@ -215,33 +247,34 @@ namespace Capstone.Game.HudSystem {
         }
 
         void RefreshHealth(PetHealPreview preview) {
-            int current = Mathf.RoundToInt(preview.CurrentHealth);
-            int result = Mathf.RoundToInt(preview.ResultHealth);
-            int maximum = Mathf.RoundToInt(preview.MaxHealth);
+            if (resourceTitle != null) resourceTitle.text = preview.ResourceName + " TRƯỚC / SAU";
+            int current = Mathf.RoundToInt(preview.CurrentValue);
+            int result = Mathf.RoundToInt(preview.ResultValue);
+            int maximum = Mathf.RoundToInt(preview.MaximumValue);
             if (currentHealth != null) currentHealth.text = preview.IsValid ? $"{current:N0} / {maximum:N0}" : "- / -";
             if (resultHealth != null) resultHealth.text = preview.IsValid ? $"{result:N0} / {maximum:N0}" : "- / -";
-            if (healthArrow != null) healthArrow.style.display = preview.IsFullHealth ? DisplayStyle.None : DisplayStyle.Flex;
-            if (resultHealth != null) resultHealth.style.display = preview.IsFullHealth ? DisplayStyle.None : DisplayStyle.Flex;
+            if (healthArrow != null) healthArrow.style.display = preview.IsFullResource ? DisplayStyle.None : DisplayStyle.Flex;
+            if (resultHealth != null) resultHealth.style.display = preview.IsFullResource ? DisplayStyle.None : DisplayStyle.Flex;
 
-            float currentPercent = Percent(preview.CurrentHealth, preview.MaxHealth);
-            float resultPercent = Percent(preview.ResultHealth, preview.MaxHealth);
+            float currentPercent = Percent(preview.CurrentValue, preview.MaximumValue);
+            float resultPercent = Percent(preview.ResultValue, preview.MaximumValue);
             SetFill(currentFill, currentPercent);
             if (recoveryFill != null) {
                 recoveryFill.style.left = Length.Percent(currentPercent * 100f);
                 recoveryFill.style.width = Length.Percent(Mathf.Max(0f, resultPercent - currentPercent) * 100f);
-                recoveryFill.style.display = preview.ActualHealAmount > 0.01f ? DisplayStyle.Flex : DisplayStyle.None;
+                recoveryFill.style.display = preview.ActualRestoreAmount > 0.01f ? DisplayStyle.Flex : DisplayStyle.None;
             }
             if (healedAmount != null) {
-                healedAmount.text = preview.IsFullHealth
-                    ? "HP ĐÃ ĐẦY"
-                    : $"+{Mathf.RoundToInt(preview.ActualHealAmount):N0} HP";
-                healedAmount.EnableInClassList("is-full", preview.IsFullHealth);
+                healedAmount.text = preview.IsFullResource
+                    ? string.Empty
+                    : $"+{Mathf.RoundToInt(preview.ActualRestoreAmount):N0} {preview.ResourceName}";
+                healedAmount.EnableInClassList("is-full", preview.IsFullResource);
             }
         }
 
         void RefreshItem(PetHealPreview preview) {
             if (itemName != null) itemName.text = DisplayOrDash(preview.ItemName);
-            if (itemEffect != null) itemEffect.text = $"Hồi {preview.HealAmount:N0} HP";
+            if (itemEffect != null) itemEffect.text = $"Hồi {preview.RestoreAmount:N0} {preview.ResourceName}";
             if (itemCount != null) {
                 itemCount.text = $"{preview.OwnedQuantity:N0} / {preview.RequiredQuantity:N0}";
                 itemCount.EnableInClassList("is-missing", preview.OwnedQuantity < preview.RequiredQuantity);
@@ -260,11 +293,11 @@ namespace Capstone.Game.HudSystem {
         static void SetPortrait(VisualElement target, Label fallback, Sprite sprite, string fallbackText) {
             if (target == null) return;
             if (sprite != null) {
-                target.style.backgroundImage = new StyleBackground(sprite);
+                Capstone.Game.UISystem.AngularSurface.SetArt(target,sprite);
                 if (fallback != null) fallback.style.display = DisplayStyle.None;
             }
             else {
-                target.style.backgroundImage = StyleKeyword.None;
+                Capstone.Game.UISystem.AngularSurface.SetArt(target,(Sprite)null);
                 if (fallback != null) {
                     string value = string.IsNullOrWhiteSpace(fallbackText) ? "?" : fallbackText.Trim();
                     fallback.text = value.Substring(0, 1).ToUpperInvariant();
@@ -277,19 +310,8 @@ namespace Capstone.Game.HudSystem {
             return string.IsNullOrWhiteSpace(value) ? "-" : value.Trim();
         }
 
-        static string FormatElement(PetElement value) {
-            return value == PetElement.Unknown ? "-" : value.ToString();
-        }
+        static string FormatElement(PetElement value) => Capstone.Game.UISystem.VietnameseUI.Element(value);
 
-        static string FormatRarity(PetRarity value) {
-            switch (value) {
-                case PetRarity.Common: return "★";
-                case PetRarity.Uncommon: return "★★";
-                case PetRarity.Rare: return "★★★";
-                case PetRarity.Epic: return "★★★★";
-                case PetRarity.Legendary: return "★★★★★";
-                default: return "-";
-            }
-        }
+        static string FormatRarity(PetRarity value) => Capstone.Game.UISystem.VietnameseUI.Rarity(value);
     }
 }

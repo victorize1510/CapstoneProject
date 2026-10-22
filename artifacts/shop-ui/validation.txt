@@ -1,0 +1,167 @@
+PASS maximum respects stock
+PASS wallet observer sees committed transaction
+PASS inventory observer sees committed transaction
+PASS successful purchase
+PASS one notification per completed transaction
+PASS immediate repeat rejected
+PASS invalid quantities rejected
+PASS insufficient balance rejected
+PASS stale displayed price rejected
+PASS empty stock rejected
+PASS locked item rejected
+PASS unset price rejected
+PASS unknown listing rejected
+PASS failures preserve wallet, inventory and stock
+PASS inventory rejection refunds reserved gold
+PASS staged delivery failure leaves no partial items
+PASS multiple non-stackables occupy separate slots
+PASS unlimited Bag grows using existing allocation rules
+PASS overflow-scale price cannot exceed wallet
+PASS free item uses configured limit
+PASS free item does not debit currency: True, gold=700, Đã mua 1 × Thuốc hồi phục.
+PASS existing save snapshots contain purchase
+PASS owned count resolves saved definition by stable ID
+PASS purchase merges existing saved identity without duplicate definitions
+PASS evolution item uses existing stable ID and explicit display grouping
+PASS default catalog uses two existing project definitions
+PASS actual item has unset price: potion
+PASS actual item has unset price: dusk-stone
+PASS exactly five categories
+PASS Vietnamese title
+PASS accent-insensitive search within category
+PASS no results clear details
+PASS empty category never falls back to All
+PASS ascending price order 1
+PASS ascending price order 2
+PASS ascending price order 3
+PASS ascending price order 4
+PASS ascending price order 5
+PASS ascending price order 6
+PASS ascending price order 7
+PASS ascending price order 8
+PASS ascending price order 9
+PASS ascending price order 10
+PASS ascending price order 11
+PASS ascending price order 12
+PASS ascending price order 13
+PASS ascending price order 14
+PASS ascending price order 15
+PASS ascending price order 16
+PASS ascending price order 17
+PASS ascending price order 18
+PASS ascending price order 19
+PASS ascending price order 20
+PASS ascending price order 21
+PASS ascending price order 22
+PASS ascending price order 23
+PASS ascending price order 24
+PASS ascending price order 25
+PASS descending price order 1
+PASS descending price order 2
+PASS descending price order 3
+PASS descending price order 4
+PASS descending price order 5
+PASS descending price order 6
+PASS descending price order 7
+PASS descending price order 8
+PASS descending price order 9
+PASS descending price order 10
+PASS descending price order 11
+PASS descending price order 12
+PASS descending price order 13
+PASS descending price order 14
+PASS descending price order 15
+PASS descending price order 16
+PASS descending price order 17
+PASS descending price order 18
+PASS descending price order 19
+PASS descending price order 20
+PASS descending price order 21
+PASS descending price order 22
+PASS descending price order 23
+PASS descending price order 24
+PASS descending price order 25
+PASS name sort fixture-0
+PASS name sort fixture-1
+PASS name sort fixture-10
+PASS name sort fixture-11
+PASS name sort fixture-12
+PASS name sort fixture-13
+PASS name sort fixture-14
+PASS name sort fixture-15
+PASS name sort fixture-16
+PASS name sort fixture-17
+PASS name sort fixture-18
+PASS name sort fixture-19
+PASS name sort fixture-2
+PASS name sort fixture-20
+PASS name sort fixture-21
+PASS name sort fixture-22
+PASS name sort fixture-23
+PASS name sort fixture-24
+PASS name sort fixture-25
+PASS name sort fixture-3
+PASS name sort fixture-4
+PASS name sort fixture-5
+PASS name sort fixture-6
+PASS name sort fixture-7
+PASS name sort fixture-8
+PASS name sort fixture-9
+PASS layout computed (1920.00, 1080.00)
+PASS five columns (1920.00, 1080.00): (x:410.40, y:213.60, width:174.40, height:228.80); (x:1146.40, y:213.60, width:174.40, height:244.80); (x:410.40, y:468.00, width:174.40, height:228.00)
+PASS Back fits (1920.00, 1080.00)
+PASS purchase stays inside viewport (1920.00, 1080.00)
+PASS purchase does not overlap header (1920.00, 1080.00)
+PASS shared title typography (1920.00, 1080.00)
+PASS preview does not enlarge low resolution source (1920.00, 1080.00)
+PASS three columns never overlap (1920.00, 1080.00)
+PASS layout computed (1600.00, 900.00)
+PASS five columns (1600.00, 900.00): (x:349.60, y:213.60, width:140.80, height:228.80); (x:949.60, y:213.60, width:140.80, height:244.80); (x:349.60, y:468.00, width:140.80, height:228.00)
+PASS Back fits (1600.00, 900.00)
+PASS purchase stays inside viewport (1600.00, 900.00)
+PASS purchase does not overlap header (1600.00, 900.00)
+PASS shared title typography (1600.00, 900.00)
+PASS preview does not enlarge low resolution source (1600.00, 900.00)
+PASS three columns never overlap (1600.00, 900.00)
+PASS layout computed (2560.00, 1440.00)
+PASS five columns (2560.00, 1440.00): (x:532.00, y:213.60, width:242.40, height:228.80); (x:1540.00, y:213.60, width:242.40, height:244.80); (x:532.00, y:468.00, width:242.40, height:228.00)
+PASS Back fits (2560.00, 1440.00)
+PASS purchase stays inside viewport (2560.00, 1440.00)
+PASS purchase does not overlap header (2560.00, 1440.00)
+PASS shared title typography (2560.00, 1440.00)
+PASS preview does not enlarge low resolution source (2560.00, 1440.00)
+PASS three columns never overlap (2560.00, 1440.00)
+PASS layout computed (1366.00, 768.00)
+PASS five columns (1366.00, 768.00): (x:305.60, y:213.60, width:115.20, height:228.80); (x:805.60, y:213.60, width:115.20, height:244.80); (x:305.60, y:468.00, width:115.20, height:228.00)
+PASS Back fits (1366.00, 768.00)
+PASS purchase stays inside viewport (1366.00, 768.00)
+PASS purchase does not overlap header (1366.00, 768.00)
+PASS shared title typography (1366.00, 768.00)
+PASS preview does not enlarge low resolution source (1366.00, 768.00)
+PASS three columns never overlap (1366.00, 768.00)
+PASS layout computed (1920.00, 1200.00)
+PASS five columns (1920.00, 1200.00): (x:410.40, y:213.60, width:174.40, height:228.80); (x:1146.40, y:213.60, width:174.40, height:244.80); (x:410.40, y:468.00, width:174.40, height:228.00)
+PASS Back fits (1920.00, 1200.00)
+PASS purchase stays inside viewport (1920.00, 1200.00)
+PASS purchase does not overlap header (1920.00, 1200.00)
+PASS shared title typography (1920.00, 1200.00)
+PASS preview does not enlarge low resolution source (1920.00, 1200.00)
+PASS three columns never overlap (1920.00, 1200.00)
+PASS layout computed (2560.00, 1080.00)
+PASS five columns (2560.00, 1080.00): (x:532.00, y:213.60, width:242.40, height:228.80); (x:1540.00, y:213.60, width:242.40, height:244.80); (x:532.00, y:468.00, width:242.40, height:228.00)
+PASS Back fits (2560.00, 1080.00)
+PASS purchase stays inside viewport (2560.00, 1080.00)
+PASS purchase does not overlap header (2560.00, 1080.00)
+PASS shared title typography (2560.00, 1080.00)
+PASS preview does not enlarge low resolution source (2560.00, 1080.00)
+PASS three columns never overlap (2560.00, 1080.00)
+PASS rebind callback count stable 0
+PASS rebind card count stable 0
+PASS rebind callback count stable 1
+PASS rebind card count stable 1
+PASS rebind callback count stable 2
+PASS rebind card count stable 2
+PASS quantity cannot be negative
+PASS quantity clamps to purchase maximum
+PASS wallet event disables purchase immediately
+PASS hidden Shop remains closed on wallet changes

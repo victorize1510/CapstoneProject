@@ -1,0 +1,26 @@
+PASS actual TestChar components exist
+PASS Trainer Settings opens fullscreen and locks gameplay
+PASS actual composed UI keeps pill background width
+PASS actual AudioListener updates immediately
+PASS rapid slider changes persist once after debounce
+PASS zero master volume silences listener
+PASS maximum master volume restores listener
+PASS actual mute keeps volume
+PASS unmute restores previous volume
+PASS actual vertical input reverses without changing sensitivity
+PASS camera smoothing changes existing controller
+PASS both Cinemachine cameras remove follow damping
+PASS smoothing restores scene-authored damping
+PASS minimap toggle hides its presentation
+PASS minimap reappears without recreation
+PASS interaction prompt preference reaches shared presentation gate
+PASS show tracker does not change tracked quest
+PASS hide tracker keeps quest tracking active
+PASS save event displays feedback outside hidden inventory root
+PASS save indicator can hide without disabling saves
+PASS Editor display controls explain limitation and real MainMenu is available
+PASS guide uses actual visual and pet controls
+PASS Esc closes guide before Settings
+PASS Back returns to originating Trainer Menu
+PASS direct Settings closes back to gameplay
+PASS actual baseline exit action stays fully visible

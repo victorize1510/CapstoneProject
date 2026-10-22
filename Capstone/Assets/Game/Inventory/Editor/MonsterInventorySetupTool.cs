@@ -13,16 +13,19 @@ namespace Capstone.Game.Inventory.Editor {
         const string CreatedPanelSettingsPath = CreatedUiFolder + "/MonsterInventoryPanelSettings.asset";
 
         static readonly string[] MonsterInventoryUxmlPaths = {
+            "Assets/ThangTest/UIThang/Inventory/UI/MonsterInventory.uxml",
             "Assets/Game/Inventory/UI/MonsterInventory.uxml",
             "Assets/ThangTest/Inventory/UI/MonsterInventory.uxml"
         };
 
         static readonly string[] MonsterItemRowUxmlPaths = {
+            "Assets/ThangTest/UIThang/Inventory/UI/MonsterItemRow.uxml",
             "Assets/Game/Inventory/UI/MonsterItemRow.uxml",
             "Assets/ThangTest/Inventory/UI/MonsterItemRow.uxml"
         };
 
         static readonly string[] PanelSettingsPaths = {
+            "Assets/ThangTest/UIThang/Inventory/UI/MonsterInventoryPanelSettings.asset",
             "Assets/Game/Inventory/UI/MonsterInventoryPanelSettings.asset",
             "Assets/ThangTest/Inventory/UI/MonsterInventoryPanelSettings.asset"
         };
@@ -140,9 +143,9 @@ namespace Capstone.Game.Inventory.Editor {
             }
 
             var serializedPanel = new SerializedObject(panelSettings);
-            TrySetEnum(serializedPanel, "m_ScaleMode", 1);
+            TrySetEnum(serializedPanel, "m_ScaleMode", (int)PanelScaleMode.ScaleWithScreenSize);
             TrySetVector2(serializedPanel, "m_ReferenceResolution", new Vector2(1920f, 1080f));
-            TrySetEnum(serializedPanel, "m_ScreenMatchMode", 0);
+            TrySetEnum(serializedPanel, "m_ScreenMatchMode", (int)PanelScreenMatchMode.Expand);
             TrySetFloat(serializedPanel, "m_Match", 0.5f);
             serializedPanel.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(panelSettings);

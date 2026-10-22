@@ -1,0 +1,402 @@
+BoxPanel.uss rules= 136 selectors repeated= 11
+InventoryPanel.uss rules= 74 selectors repeated= 2
+MenuPlaceholderPanel.uss rules= 1 selectors repeated= 0
+MenuScreenHeader.uss rules= 12 selectors repeated= 1
+MonsterInventory.uss rules= 389 selectors repeated= 56
+PetDetailsPanel.uss rules= 77 selectors repeated= 3
+PetEvolutionPanel.uss rules= 26 selectors repeated= 0
+PetHealPanel.uss rules= 47 selectors repeated= 0
+PetLevelUpPanel.uss rules= 75 selectors repeated= 6
+PetReleasePanel.uss rules= 50 selectors repeated= 2
+PetsPanel.uss rules= 315 selectors repeated= 175
+QuestPanel.uss rules= 42 selectors repeated= 0
+SkillsPanel.uss rules= 52 selectors repeated= 0
+.inventory-root
+.menu-backdrop
+.keycap
+.quest-inventory-shell
+.inventory-root .panel-template-host
+.inventory-root.ui-builder-preview .quest-inventory-shell .quest-panel
+.inventory-root.ui-builder-preview .quest-inventory-shell .inventory-panel
+.inventory-root .panel-template-host .pets-panel, .inventory-root .panel-template-host .box-panel, .inventory-root .panel-template-host .menu-placeholder-panel, .inventory-root .panel-template-host .skills-modal-overlay, .inventory-root .panel-template-host .pet-details-overlay, .inventory-root .panel-template-host .level-up-modal-overlay, .inventory-root .panel-template-host .heal-modal-overlay, .inventory-root .panel-template-host .evolution-modal-overlay, .inventory-root .panel-template-host .release-modal-overlay
+.bag-evolution-confirm-overlay
+.bag-evolution-confirm-card
+.bag-evolution-confirm-title
+.bag-evolution-confirm-text
+.bag-evolution-confirm-feedback
+.bag-evolution-confirm-actions
+.bag-evolution-confirm-actions Button
+.inventory-root.ui-builder-preview
+.inventory-root.ui-builder-preview .bottom-hint
+.box-panel
+.box-header
+.box-title-group, .box-section-heading, .box-card-top, .box-selected-top, .box-large-bar-row, .box-stats-row, .box-actions-row, .box-storage-toolbar, .box-capacity-group, .box-purchase-actions
+.box-title-group
+.box-title-mark
+.box-title
+.box-subtitle
+.box-source-label
+.box-back-button
+.box-party-section
+.box-section-heading
+.box-section-title
+.box-section-hint
+.box-party-row
+.box-party-card
+.box-party-card:hover, .box-storage-card:hover
+.box-party-card.is-selected, .box-storage-card.is-selected
+.box-party-card.is-target
+.box-party-card.is-empty
+.box-party-card.is-swap-source, .box-storage-card.is-swap-source
+.box-card-top
+.box-slot-number
+.box-lead-badge
+.box-favorite-badge
+.box-party-portrait
+.box-portrait-fallback
+.box-card-name
+.box-card-meta
+.box-card-rarity
+.box-small-bar-row
+.box-small-bar-label
+.box-small-bar-track
+.box-small-bar-fill
+.box-hp-fill
+.box-exp-fill
+.box-main-content
+.box-selected-panel, .box-storage-panel
+.box-selected-panel
+.box-storage-panel
+.box-selected-top
+.box-selected-portrait
+.box-selected-portrait-fallback
+.box-selected-summary
+.box-selected-name
+.box-selected-meta
+.box-large-bar-row
+.box-large-bar-label
+.box-large-bar-track
+.box-large-bar-fill
+.box-large-bar-value
+.box-subsection-title
+.box-stats-row
+.box-stat-cell
+.box-stat-name
+.box-stat-value
+.box-selected-skills
+.box-skill-chip
+.box-skill-icon
+.box-skill-name
+.box-skill-meta
+.box-actions-row
+.box-action-button
+.box-primary-action
+.box-action-button:disabled
+.box-feedback
+.box-storage-toolbar
+.box-capacity-group
+.box-capacity-label
+.box-expand-button
+.box-search-field
+.box-sort-field
+.box-filter-toggle
+.box-filter-panel
+.box-filter-chip
+.box-filter-chip.is-selected
+.unity-base-dropdown__container-outer
+.unity-base-dropdown__container-inner
+.unity-base-dropdown__container-inner .unity-scroll-view__horizontal-scroller
+.unity-base-dropdown__container-inner .unity-scroll-view__vertical-scroller
+.unity-base-dropdown__item
+.unity-base-dropdown__label
+.box-storage-scroll
+.box-storage-grid
+.box-storage-card
+.box-storage-favorite
+.box-storage-portrait
+.box-storage-name
+.box-storage-meta
+.box-empty-label
+.box-purchase-overlay
+.box-purchase-card
+.box-purchase-title
+.box-purchase-line
+.box-purchase-after
+.box-purchase-actions
+.box-popup-button
+.pets-panel
+.pets-header
+.pets-header-title-group
+.pets-header-mark
+.pets-title
+.pets-back-button
+.pets-back-button:hover
+.pets-party-section
+.pets-section-title
+.pets-party-row
+.pet-party-card
+.pet-party-card:hover
+.pet-party-card.is-selected
+.pet-party-card.is-empty
+.pet-party-card.is-swap-source
+.pet-card-top
+.pet-card-slot-number
+.pet-card-lead
+.pet-card-favorite
+.pet-card-status
+.pet-card-content
+.pet-card-portrait
+.pet-card-portrait-fallback
+.pet-card-info
+.pet-card-name
+.pet-card-level, .pet-card-meta
+.pet-card-meta
+.pet-card-bar-row
+.pet-card-bar-label
+.pet-card-bar-track
+.pet-card-hp-fill, .pet-card-exp-fill
+.pet-card-exp-fill
+.pet-card-hp-value, .pet-card-exp-value
+.pets-party-hint-row
+.pets-party-hint, .pets-lead-hint
+.pets-main-panel
+.pets-preview-panel
+.pets-preview-backdrop
+.pets-selected-portrait
+.pets-selected-portrait-fallback
+.pets-preview-caption
+.pets-information-panel
+.pets-name-row
+.pets-selected-name
+.pets-name-actions
+.pets-small-icon-button
+.pets-small-icon-button:hover
+.pets-meta-row
+.pets-meta-label
+.pets-status-and-stats
+.pets-status-bars
+.pets-large-bar-row
+.pets-large-bar-label
+.pets-large-bar-track
+.pets-large-bar-fill
+.health-fill
+.experience-fill
+.pets-large-bar-value
+.pets-stats-card
+.pets-stats-title
+.pets-stat-row
+.pets-stat-name
+.pets-stat-value
+.pets-skills-title
+.pets-skills-row
+.pet-skill-card
+.pet-skill-card:hover
+.pet-skill-card.is-locked
+.pet-skill-icon
+.pet-skill-icon-fallback
+.pet-skill-text
+.pet-skill-name
+.pet-skill-meta
+.pets-actions-row
+.pets-action-button
+.pets-action-button:hover
+.danger-pet-action
+.pets-feedback-label
+.pets-tooltip
+.pets-tooltip-title
+.pets-tooltip-body
+.menu-panel, .inventory-shell
+.quest-panel
+.inventory-panel
+.inventory-shell
+.panel-title-row
+.inventory-title-row
+.panel-title
+.header-meta
+.meta-caption
+.meta-value
+.quest-content
+.quest-tab-row
+.side-keycap
+.quest-tabs
+.quest-tab
+.quest-tab:hover
+.quest-tab.is-selected
+.quest-main-grid
+.quest-list-column
+.quest-list-scroll
+.quest-card
+.quest-card:hover
+.quest-card.is-selected
+.quest-card.is-tracked
+.quest-card-title
+.quest-card-meta, .quest-card-status
+.quest-card-status
+.quest-sort-row
+.sort-label
+.small-square-button
+.quest-detail-scroll
+.quest-detail-panel
+.quest-detail-heading-row
+.quest-banner-icon
+.quest-detail-heading-text
+.quest-detail-title
+.quest-location-title
+.quest-detail-meta-row
+.quest-pill
+.quest-description, .objective-text, .reward-text
+.quest-description
+.quest-section-title, .detail-section-title, .effect-title
+.objective-list
+.objective-row
+.quest-progress-row
+.quest-progress-label
+.quest-progress-value
+.quest-progress-bar
+.quest-progress-bar .unity-progress-bar__background, .item-list .unity-list-view__item
+.quest-progress-bar .unity-progress-bar__progress
+.quest-state-grid
+.quest-state-row
+.hidden-state-row
+.quest-state-label
+.quest-state-value
+.reward-list
+.reward-row
+.reward-icon
+.quest-actions
+.quest-action-button, .action-button
+.quest-action-button:hover, .action-button:hover
+.quest-action-button:disabled, .action-button:disabled
+.primary-quest-action, .primary-action
+.blue-action
+.gold-action
+.danger-action, .danger-quest-action
+.back-action
+.inventory-body
+.category-panel
+.category-button
+.category-button:hover
+.category-button.is-selected
+.capacity-chip
+.capacity-caption, .capacity-text
+.capacity-text
+.list-panel
+.item-list
+.no-items-label
+.item-row
+.item-row:hover
+.item-list .unity-list-view__item--selected, .item-list .unity-list-view__item--selected:hover, .item-list .unity-list-view__item--selected .item-row, .item-list .unity-list-view__item--selected .item-row:hover
+.inventory-root.keyboard-navigation .item-row:hover
+.item-row-icon
+.item-row-text
+.item-row-name
+.item-row-category
+.item-row-quantity
+.detail-panel
+.detail-name
+.detail-icon
+.detail-info-grid
+.detail-line, .detail-description, .effect-text
+.detail-line
+.detail-description
+.effect-box
+.inventory-footer
+.action-button
+.bottom-hint
+.bottom-keycap
+.hint-divider
+.hint-text
+.is-active-panel
+.is-passive-panel
+.menu-placeholder-panel
+.menu-placeholder-title
+.menu-placeholder-body
+.quantity-popup-overlay
+.quantity-popup-panel
+.quantity-popup-title
+.quantity-popup-icon
+.quantity-popup-item-name
+.quantity-popup-owned
+.quantity-stepper
+.quantity-step-button
+.quantity-field
+.quantity-slider
+.quantity-quick-row
+.quantity-quick-button
+.quantity-action-row
+.quantity-confirm-button, .quantity-cancel-button
+.quantity-confirm-button
+.quantity-cancel-button
+.quest-inventory-shell.journal-mode
+.quest-inventory-shell.journal-mode .quest-panel
+.quest-inventory-shell.bag-mode .inventory-panel
+.quest-inventory-shell.bag-mode, .inventory-root.ui-builder-preview .quest-inventory-shell
+.quest-inventory-shell.bag-mode .inventory-panel, .quest-inventory-shell.journal-mode .quest-panel
+.quest-inventory-shell.bag-mode .quest-panel, .quest-inventory-shell.journal-mode .inventory-panel
+.quest-journal-panel
+.quest-journal-header
+.quest-header-title-group
+.quest-header-mark
+.quest-journal-title
+.quest-journal-tabs
+.quest-journal-tabs .quest-tab
+.quest-journal-tabs .quest-tab:hover
+.quest-journal-tabs .quest-tab.is-selected
+.quest-back-button
+.quest-tracked-strip
+.tracked-quest-label
+.quest-journal-body
+.quest-journal-body .quest-list-column
+.quest-column-title
+.quest-journal-body .quest-list-scroll
+.quest-page-empty
+.quest-detail-column
+.quest-detail-content
+.quest-detail-icon
+.quest-main-icon
+.quest-side-icon
+.quest-daily-icon
+.quest-event-icon
+.quest-companion-icon
+.quest-other-icon
+.quest-detail-heading-row
+.quest-detail-heading-text
+.quest-detail-title
+.quest-inline-row
+.quest-inline-label
+.quest-location-title
+.quest-detail-meta-row
+.quest-pill
+.quest-description
+.quest-section-heading-row
+.quest-section-title
+.quest-progress-value
+.objective-list
+.objective-row
+.objective-row.is-complete .objective-text, .objective-row.is-complete .objective-count
+.objective-text
+.objective-count
+.quest-progress-bar
+.quest-state-grid
+.quest-state-row
+.quest-state-label
+.quest-state-value
+.reward-list
+.reward-row
+.reward-icon
+.reward-text
+.quest-actions
+.quest-action-button
+.primary-quest-action
+.quest-action-button.is-tracked-action
+.danger-quest-action
+.quest-card
+.quest-card:hover
+.quest-card.is-selected
+.quest-card.is-tracked
+.quest-card-icon
+.quest-card-text
+.quest-card-title
+.quest-card-meta
+.quest-card-right
+.quest-card-progress

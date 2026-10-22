@@ -1,0 +1,1734 @@
+{
+  "date": "2026-10-17",
+  "uniqueAssetCount": 50,
+  "components": [
+    {
+      "id": "shell_surface",
+      "file": "shell_surface.png",
+      "svgFile": "shell_surface.svg",
+      "width": 256,
+      "height": 256,
+      "slice": {
+        "left": 32,
+        "top": 32,
+        "right": 32,
+        "bottom": 32
+      },
+      "role": "One colored shell surface; runtime alpha separate from foreground.",
+      "tint": "white",
+      "path": "Assets/Components/shell_surface.png",
+      "source": "Assets/Components/shell_surface.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 3162,
+        "partialPixels": 102
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "ec521eda29fef2c7164d7e0372b421aa8f9b957ee487e1b7dd48c57d3852f5d8",
+      "visibleBoundsAlphaAbove8": {
+        "x": 3,
+        "y": 3,
+        "width": 250,
+        "height": 250
+      }
+    },
+    {
+      "id": "shell_border",
+      "file": "shell_border.png",
+      "svgFile": "shell_border.svg",
+      "width": 256,
+      "height": 256,
+      "slice": {
+        "left": 32,
+        "top": 32,
+        "right": 32,
+        "bottom": 32
+      },
+      "role": "Transparent center outer border, single main frame.",
+      "tint": "white",
+      "path": "Assets/Components/shell_border.png",
+      "source": "Assets/Components/shell_border.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 59744,
+        "partialPixels": 3895
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "6d96ee9e2fdd37c00a74375af139a30f058ffc3be886c45b9cf0b0b2db2b3531",
+      "visibleBoundsAlphaAbove8": {
+        "x": 1,
+        "y": 1,
+        "width": 254,
+        "height": 254
+      }
+    },
+    {
+      "id": "content_surface",
+      "file": "content_surface.png",
+      "svgFile": "content_surface.svg",
+      "width": 128,
+      "height": 128,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Colored inspector/list surface, no baked text/border.",
+      "tint": "white",
+      "path": "Assets/Components/content_surface.png",
+      "source": "Assets/Components/content_surface.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1592,
+        "partialPixels": 92
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "12822a3dc6f42fc54138dbcd6738b99137f22ff795e39f0ed4289d3a263e5963",
+      "visibleBoundsAlphaAbove8": {
+        "x": 3,
+        "y": 3,
+        "width": 122,
+        "height": 122
+      }
+    },
+    {
+      "id": "content_border",
+      "file": "content_border.png",
+      "svgFile": "content_border.svg",
+      "width": 128,
+      "height": 128,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Quiet inner content edge, not a second ornamental frame.",
+      "tint": "white",
+      "path": "Assets/Components/content_border.png",
+      "source": "Assets/Components/content_border.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 15400,
+        "partialPixels": 964
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "c67317d82078a0ebc09c2701168d85ae998415fe70606d20812bf11ffcf894a8",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 124,
+        "height": 124
+      }
+    },
+    {
+      "id": "button_primary",
+      "file": "button_primary.png",
+      "svgFile": "button_primary.svg",
+      "width": 256,
+      "height": 96,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Positive/upgrade/heal actions; label separate.",
+      "tint": "white",
+      "path": "Assets/Components/button_primary.png",
+      "source": "Assets/Components/button_primary.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1512,
+        "partialPixels": 728
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "a0d206d6fefbc370b3e17c12897ac2e1eed10c6c16b9b7f4a57f0f62e1a3ff72",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 252,
+        "height": 92
+      }
+    },
+    {
+      "id": "button_accent",
+      "file": "button_accent.png",
+      "svgFile": "button_accent.svg",
+      "width": 256,
+      "height": 96,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Champagne upgrade action matching the concept; label separate.",
+      "tint": "white",
+      "path": "Assets/Components/button_accent.png",
+      "source": "Assets/Components/button_accent.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1512,
+        "partialPixels": 728
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "dfb1443ff13bc145937458dd08e81f21d22aaab849799d0e94a860700dc82410",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 252,
+        "height": 92
+      }
+    },
+    {
+      "id": "button_secondary",
+      "file": "button_secondary.png",
+      "svgFile": "button_secondary.svg",
+      "width": 256,
+      "height": 96,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Back/cancel/details actions.",
+      "tint": "white",
+      "path": "Assets/Components/button_secondary.png",
+      "source": "Assets/Components/button_secondary.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1512,
+        "partialPixels": 728
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "68bac87e27b36ebd724e038c8fe7deeac3a545e08d194af365b9444e88178def",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 252,
+        "height": 92
+      }
+    },
+    {
+      "id": "button_disabled",
+      "file": "button_disabled.png",
+      "svgFile": "button_disabled.svg",
+      "width": 256,
+      "height": 96,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Unavailable action; foreground style set separately.",
+      "tint": "white",
+      "path": "Assets/Components/button_disabled.png",
+      "source": "Assets/Components/button_disabled.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1512,
+        "partialPixels": 728
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "8849087edb324f13db68a075840600478de51dd3103fe6a0f3290f162fb2e26b",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 252,
+        "height": 92
+      }
+    },
+    {
+      "id": "button_danger",
+      "file": "button_danger.png",
+      "svgFile": "button_danger.svg",
+      "width": 256,
+      "height": 96,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Existing release confirmation only; no new gameplay.",
+      "tint": "white",
+      "path": "Assets/Components/button_danger.png",
+      "source": "Assets/Components/button_danger.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1512,
+        "partialPixels": 728
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "55571b0f9d0f8e707675a06be4338f0de8c73f0ec43d55f76919f9458bd0fdd1",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 252,
+        "height": 92
+      }
+    },
+    {
+      "id": "tab_idle",
+      "file": "tab_idle.png",
+      "svgFile": "tab_idle.svg",
+      "width": 192,
+      "height": 72,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Game tab with chamfered shoulders, label is runtime text. No centered ornament in stretch region.",
+      "tint": "white",
+      "path": "Assets/Components/tab_idle.png",
+      "source": "Assets/Components/tab_idle.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1658,
+        "partialPixels": 498
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "991981cdad3acc371dfa62b7a751a18d1b5ee86359633fedf874f9eadb7a9d8f",
+      "visibleBoundsAlphaAbove8": {
+        "x": 3,
+        "y": 3,
+        "width": 186,
+        "height": 66
+      }
+    },
+    {
+      "id": "tab_selected",
+      "file": "tab_selected.png",
+      "svgFile": "tab_selected.svg",
+      "width": 192,
+      "height": 72,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Game tab with chamfered shoulders, label is runtime text. No centered ornament in stretch region.",
+      "tint": "white",
+      "path": "Assets/Components/tab_selected.png",
+      "source": "Assets/Components/tab_selected.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1172,
+        "partialPixels": 508
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "99aee2408cdefb293d899016961f17accf65a17de654698661f46842fc1392fd",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 188,
+        "height": 68
+      }
+    },
+    {
+      "id": "portrait_slot",
+      "file": "portrait_slot.png",
+      "svgFile": "portrait_slot.svg",
+      "width": 144,
+      "height": 144,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Slot border only; avatar crop fills inner art region.",
+      "tint": "white",
+      "path": "Assets/Components/portrait_slot.png",
+      "source": "Assets/Components/portrait_slot.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 19604,
+        "partialPixels": 1088
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "06233a28f28c2cc41f53c53344d33f1fd6f3267b948d08d24821e88b159cba8b",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 140,
+        "height": 140
+      }
+    },
+    {
+      "id": "portrait_slot_selected",
+      "file": "portrait_slot_selected.png",
+      "svgFile": "portrait_slot_selected.svg",
+      "width": 144,
+      "height": 144,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Viewed/selected slot rim. Does NOT mean active/summoned.",
+      "tint": "white",
+      "path": "Assets/Components/portrait_slot_selected.png",
+      "source": "Assets/Components/portrait_slot_selected.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 18603,
+        "partialPixels": 1057
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "722902b59a3f6e9fdb5c11833b1d5347eefa3a47bf3148298f22a6f6b8cc2c84",
+      "visibleBoundsAlphaAbove8": {
+        "x": 1,
+        "y": 1,
+        "width": 142,
+        "height": 142
+      }
+    },
+    {
+      "id": "skill_slot",
+      "file": "skill_slot.png",
+      "svgFile": "skill_slot.svg",
+      "width": 112,
+      "height": 112,
+      "slice": {
+        "left": 24,
+        "top": 24,
+        "right": 24,
+        "bottom": 24
+      },
+      "role": "Skill icon frame, no new skill illustration/mechanic.",
+      "tint": "white",
+      "path": "Assets/Components/skill_slot.png",
+      "source": "Assets/Components/skill_slot.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 964,
+        "partialPixels": 436
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "55083955295d79c12ccf415187db600eb314ab91f2e9ede45f75af96d9f355fc",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 108,
+        "height": 108
+      }
+    },
+    {
+      "id": "bar_track",
+      "file": "bar_track.png",
+      "svgFile": "bar_track.svg",
+      "width": 192,
+      "height": 24,
+      "slice": {
+        "left": 12,
+        "top": 12,
+        "right": 12,
+        "bottom": 12
+      },
+      "role": "Resource/stat track. Use clipping/width from provider.",
+      "tint": "white",
+      "path": "Assets/Components/bar_track.png",
+      "source": "Assets/Components/bar_track.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 916,
+        "partialPixels": 436
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "60c8888c7d8208e17beb927129290e8c1693dde9bb27a0fc6a6f7ec81982266d",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 188,
+        "height": 20
+      }
+    },
+    {
+      "id": "bar_hp_fill",
+      "file": "bar_hp_fill.png",
+      "svgFile": "bar_hp_fill.svg",
+      "width": 192,
+      "height": 24,
+      "slice": {
+        "left": 12,
+        "top": 12,
+        "right": 12,
+        "bottom": 12
+      },
+      "role": "Resource fill; ratio comes from provider, not this sample length.",
+      "tint": "white",
+      "path": "Assets/Components/bar_hp_fill.png",
+      "source": "Assets/Components/bar_hp_fill.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1292,
+        "partialPixels": 60
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "b26e9d7b914825cf869d486cc1bd80b79514795fa20960220a19647ac2d587fe",
+      "visibleBoundsAlphaAbove8": {
+        "x": 3,
+        "y": 3,
+        "width": 186,
+        "height": 18
+      }
+    },
+    {
+      "id": "bar_exp_fill",
+      "file": "bar_exp_fill.png",
+      "svgFile": "bar_exp_fill.svg",
+      "width": 192,
+      "height": 24,
+      "slice": {
+        "left": 12,
+        "top": 12,
+        "right": 12,
+        "bottom": 12
+      },
+      "role": "Resource fill; ratio comes from provider, not this sample length.",
+      "tint": "white",
+      "path": "Assets/Components/bar_exp_fill.png",
+      "source": "Assets/Components/bar_exp_fill.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1292,
+        "partialPixels": 60
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "4d50d0bb9f645a1608efdeb69897daf76cc92aa14686d4bfe4af1c720d405946",
+      "visibleBoundsAlphaAbove8": {
+        "x": 3,
+        "y": 3,
+        "width": 186,
+        "height": 18
+      }
+    },
+    {
+      "id": "bar_stat_fill",
+      "file": "bar_stat_fill.png",
+      "svgFile": "bar_stat_fill.svg",
+      "width": 192,
+      "height": 24,
+      "slice": {
+        "left": 12,
+        "top": 12,
+        "right": 12,
+        "bottom": 12
+      },
+      "role": "Resource fill; ratio comes from provider, not this sample length.",
+      "tint": "white",
+      "path": "Assets/Components/bar_stat_fill.png",
+      "source": "Assets/Components/bar_stat_fill.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1292,
+        "partialPixels": 60
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "2e76be2002a1ca77c424826a60bfcecb2bb1e27dda474f92762380582ac3c195",
+      "visibleBoundsAlphaAbove8": {
+        "x": 3,
+        "y": 3,
+        "width": 186,
+        "height": 18
+      }
+    },
+    {
+      "id": "popup_surface",
+      "file": "popup_surface.png",
+      "svgFile": "popup_surface.svg",
+      "width": 256,
+      "height": 192,
+      "slice": {
+        "left": 32,
+        "top": 32,
+        "right": 32,
+        "bottom": 32
+      },
+      "role": "Rename/confirm/feedback surface, runtime text/buttons separate.",
+      "tint": "white",
+      "path": "Assets/Components/popup_surface.png",
+      "source": "Assets/Components/popup_surface.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1980,
+        "partialPixels": 120
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "6b7de770fc2a3c72e510e617c839920a8950dcebd767cd138196387bd322d819",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 252,
+        "height": 188
+      }
+    },
+    {
+      "id": "portrait_edge_fade",
+      "file": "portrait_edge_fade.png",
+      "svgFile": "portrait_edge_fade.svg",
+      "width": 256,
+      "height": 256,
+      "slice": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "role": "Optional colored cover-gradient above portrait edge, below inspector text. Not a shader/alpha mask of creature.",
+      "tint": "white",
+      "path": "Assets/Components/portrait_edge_fade.png",
+      "source": "Assets/Components/portrait_edge_fade.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 29440,
+        "partialPixels": 36096
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "8a9cd49a91bff1c5b2e59c699a86ac6c4061c349131202deb34cf93b32f0f601",
+      "visibleBoundsAlphaAbove8": {
+        "x": 120,
+        "y": 0,
+        "width": 136,
+        "height": 256
+      }
+    },
+    {
+      "id": "active_badge",
+      "file": "active_badge.png",
+      "svgFile": "active_badge.svg",
+      "width": 64,
+      "height": 64,
+      "slice": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "role": "Active/summoned diamond, distinct from selected rim and favorite star.",
+      "tint": "white",
+      "path": "Assets/Components/active_badge.png",
+      "source": "Assets/Components/active_badge.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 2112,
+        "partialPixels": 244
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "45ff7dc689ec7ee0f902839539a5dd2f20c1d09018ceb9d7370e3f2658d99850",
+      "visibleBoundsAlphaAbove8": {
+        "x": 1,
+        "y": 1,
+        "width": 62,
+        "height": 62
+      }
+    },
+    {
+      "id": "icon_disc",
+      "file": "icon_disc.png",
+      "svgFile": "icon_disc.svg",
+      "width": 64,
+      "height": 64,
+      "slice": {
+        "left": 0,
+        "top": 0,
+        "right": 0,
+        "bottom": 0
+      },
+      "role": "Background disc only, icon layer separate.",
+      "tint": "white",
+      "path": "Assets/Components/icon_disc.png",
+      "source": "Assets/Components/icon_disc.svg",
+      "kind": "deterministic editable vector UI primitive",
+      "alpha": {
+        "transparentPixels": 1212,
+        "partialPixels": 312
+      },
+      "productionStatus": "Slicing geometry supplied; verify actual Unity import/theme/scale in engine.",
+      "hasAlpha": true,
+      "sha256": "49c1c330f188432566fa11069adb8273043adfe25feae419a5585803a53df9e3",
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 60,
+        "height": 60
+      }
+    }
+  ],
+  "icons": [
+    {
+      "id": "hp",
+      "path": "Assets/Icons/hp.png",
+      "source": "Assets/Icons/hp.svg",
+      "tintMask": "Assets/Icons/Mask/hp.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "1bfc746cba68fa82f5ffec3ff9947d56c37fd0b1c60103f9465fc0f83624343e",
+      "alpha": {
+        "transparentPixels": 2441,
+        "partialPixels": 188
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 7,
+        "y": 10,
+        "width": 51,
+        "height": 44
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/hp.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "34e94817ba185c1b8dfb83cec4818fdcbc92ed3133f13892d66cbf231ee910db",
+        "alpha": {
+          "transparentPixels": 2441,
+          "partialPixels": 188
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 7,
+          "y": 10,
+          "width": 51,
+          "height": 44
+        }
+      }
+    },
+    {
+      "id": "attack",
+      "path": "Assets/Icons/attack.png",
+      "source": "Assets/Icons/attack.svg",
+      "tintMask": "Assets/Icons/Mask/attack.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "057c164b802bc9ed1a7a1ee722dcf86b2e2907d23d7a98963a99b06925f19df3",
+      "alpha": {
+        "transparentPixels": 3382,
+        "partialPixels": 362
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 7,
+        "y": 6,
+        "width": 49,
+        "height": 51
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/attack.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "468676947f1250cb6d8732ccf5f56a9cedad825bdeba9c41199a3640ef711d7c",
+        "alpha": {
+          "transparentPixels": 3382,
+          "partialPixels": 362
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 7,
+          "y": 6,
+          "width": 49,
+          "height": 51
+        }
+      }
+    },
+    {
+      "id": "special_attack",
+      "path": "Assets/Icons/special_attack.png",
+      "source": "Assets/Icons/special_attack.svg",
+      "tintMask": "Assets/Icons/Mask/special_attack.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "3bcc0c4f96df82bf09087edf343a2d0debe749f639a0c26f041624dd8bfc9de4",
+      "alpha": {
+        "transparentPixels": 2817,
+        "partialPixels": 219
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 7,
+        "y": 4,
+        "width": 50,
+        "height": 51
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/special_attack.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "53ae35b5713daf358505ec829649513d8f825bb89d9d626d2771cead2838bd93",
+        "alpha": {
+          "transparentPixels": 2817,
+          "partialPixels": 219
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 7,
+          "y": 4,
+          "width": 50,
+          "height": 51
+        }
+      }
+    },
+    {
+      "id": "defense",
+      "path": "Assets/Icons/defense.png",
+      "source": "Assets/Icons/defense.svg",
+      "tintMask": "Assets/Icons/Mask/defense.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "9fbf7b76766d631b1e176b66d136d506374bdeaadb988ec24846c32a651a4e47",
+      "alpha": {
+        "transparentPixels": 2214,
+        "partialPixels": 157
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 10,
+        "y": 5,
+        "width": 44,
+        "height": 54
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/defense.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "6f454b218c09acc7a85b892e39db817a1813ff117b4675c744480c430da11315",
+        "alpha": {
+          "transparentPixels": 2214,
+          "partialPixels": 157
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 10,
+          "y": 5,
+          "width": 44,
+          "height": 54
+        }
+      }
+    },
+    {
+      "id": "special_defense",
+      "path": "Assets/Icons/special_defense.png",
+      "source": "Assets/Icons/special_defense.svg",
+      "tintMask": "Assets/Icons/Mask/special_defense.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "351a63b8bfeb423bbd6f84260c93ba75c94a5c58457d4a72938c155f6d96501f",
+      "alpha": {
+        "transparentPixels": 2968,
+        "partialPixels": 391
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 10,
+        "y": 5,
+        "width": 44,
+        "height": 54
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/special_defense.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "88d354575343bb2ed315803d6f6b3fef82eb9976c604bf1bcec6da44a47304a7",
+        "alpha": {
+          "transparentPixels": 2968,
+          "partialPixels": 391
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 10,
+          "y": 5,
+          "width": 44,
+          "height": 54
+        }
+      }
+    },
+    {
+      "id": "speed",
+      "path": "Assets/Icons/speed.png",
+      "source": "Assets/Icons/speed.svg",
+      "tintMask": "Assets/Icons/Mask/speed.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "abb05bde47f528298e383769041dc2b14a977f8adda801e3fe0d00a84707f422",
+      "alpha": {
+        "transparentPixels": 3094,
+        "partialPixels": 187
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 4,
+        "y": 10,
+        "width": 51,
+        "height": 47
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/speed.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "d201f32e5e280b490c3a0cf3870170682798713976cd51ba5df2e2d78cdfad6b",
+        "alpha": {
+          "transparentPixels": 3094,
+          "partialPixels": 187
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 4,
+          "y": 10,
+          "width": 51,
+          "height": 47
+        }
+      }
+    },
+    {
+      "id": "crit_rate",
+      "path": "Assets/Icons/crit_rate.png",
+      "source": "Assets/Icons/crit_rate.svg",
+      "tintMask": "Assets/Icons/Mask/crit_rate.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "30fe5fbb6e08fe9b68b012e0ff774034330e699b96cbcab759fe8f5d20d92782",
+      "alpha": {
+        "transparentPixels": 3136,
+        "partialPixels": 375
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 2,
+        "width": 60,
+        "height": 60
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/crit_rate.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "3a5de0a30dc6f4720a65ae42dc1e2257c33b2089946d9230e98a1fc6cb2c76b6",
+        "alpha": {
+          "transparentPixels": 3136,
+          "partialPixels": 375
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 2,
+          "y": 2,
+          "width": 60,
+          "height": 60
+        }
+      }
+    },
+    {
+      "id": "crit_damage",
+      "path": "Assets/Icons/crit_damage.png",
+      "source": "Assets/Icons/crit_damage.svg",
+      "tintMask": "Assets/Icons/Mask/crit_damage.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "ba6d481e50fb52ca6a9e589e4ed8d2c25edc06b8d40114f8bb25faf31e725b5f",
+      "alpha": {
+        "transparentPixels": 2268,
+        "partialPixels": 252
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 4,
+        "y": 3,
+        "width": 57,
+        "height": 58
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/crit_damage.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "3f48e538ec2b4524b38843a463c01deb09f92ce56c17f6e1385063f84a3cf3fb",
+        "alpha": {
+          "transparentPixels": 2268,
+          "partialPixels": 252
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 4,
+          "y": 3,
+          "width": 57,
+          "height": 58
+        }
+      }
+    },
+    {
+      "id": "paw",
+      "path": "Assets/Icons/paw.png",
+      "source": "Assets/Icons/paw.svg",
+      "tintMask": "Assets/Icons/Mask/paw.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "ce323e76751eea4afd661881862fb93b4a6ac836837fed152e9682d1b8d0757a",
+      "alpha": {
+        "transparentPixels": 2109,
+        "partialPixels": 262
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 11,
+        "y": 3,
+        "width": 43,
+        "height": 55
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/paw.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "ebdb41f62b6d04ae62a5258fcc62c6355d50b68e14545f845c2b7fa0e782eccb",
+        "alpha": {
+          "transparentPixels": 2109,
+          "partialPixels": 262
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 11,
+          "y": 3,
+          "width": 43,
+          "height": 55
+        }
+      }
+    },
+    {
+      "id": "favorite",
+      "path": "Assets/Icons/favorite.png",
+      "source": "Assets/Icons/favorite.svg",
+      "tintMask": "Assets/Icons/Mask/favorite.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "e94d20afbbac86d0a44da38df69076f66341bb20218d5956591885606559d101",
+      "alpha": {
+        "transparentPixels": 2434,
+        "partialPixels": 232
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 3,
+        "y": 3,
+        "width": 57,
+        "height": 56
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/favorite.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "43d6b0ba2f4ba5a50954ee6e8c8f5e49cf7d085dda2d55f2157f185885240d97",
+        "alpha": {
+          "transparentPixels": 2434,
+          "partialPixels": 232
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 3,
+          "y": 3,
+          "width": 57,
+          "height": 56
+        }
+      }
+    },
+    {
+      "id": "edit",
+      "path": "Assets/Icons/edit.png",
+      "source": "Assets/Icons/edit.svg",
+      "tintMask": "Assets/Icons/Mask/edit.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "d2187d3abcccdb9e19e37b5be5da840e8369bbcdce6ee9a7720006b98687b47d",
+      "alpha": {
+        "transparentPixels": 3440,
+        "partialPixels": 351
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 8,
+        "y": 10,
+        "width": 47,
+        "height": 47
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/edit.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "70c249f66fe47309b0a4d84659c962f6a9cfb00ae15ee10cb29f9a20c8e30f9e",
+        "alpha": {
+          "transparentPixels": 3440,
+          "partialPixels": 351
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 8,
+          "y": 10,
+          "width": 47,
+          "height": 47
+        }
+      }
+    },
+    {
+      "id": "lock",
+      "path": "Assets/Icons/lock.png",
+      "source": "Assets/Icons/lock.svg",
+      "tintMask": "Assets/Icons/Mask/lock.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "e3217a6121235e7ad0f0e70bcde6fdf8ce21051ea0936c9d4da337c81eaed1dd",
+      "alpha": {
+        "transparentPixels": 3220,
+        "partialPixels": 186
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 12,
+        "y": 5,
+        "width": 40,
+        "height": 54
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/lock.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "053ef9257bb543b8fab7f713958da54ee53fb287c228bbd9a6870ebade57b248",
+        "alpha": {
+          "transparentPixels": 3220,
+          "partialPixels": 186
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 12,
+          "y": 5,
+          "width": 40,
+          "height": 54
+        }
+      }
+    },
+    {
+      "id": "back",
+      "path": "Assets/Icons/back.png",
+      "source": "Assets/Icons/back.svg",
+      "tintMask": "Assets/Icons/Mask/back.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "073d1ba82116fca17fa27bbe2f1d8807d736cdbda38f59e995e1250b1e835577",
+      "alpha": {
+        "transparentPixels": 3642,
+        "partialPixels": 160
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 7,
+        "y": 11,
+        "width": 50,
+        "height": 42
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/back.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "d066f5dbd30c78e0bd60b522cafbd80f0b383908462d62d1ca690dbe7124f345",
+        "alpha": {
+          "transparentPixels": 3642,
+          "partialPixels": 160
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 7,
+          "y": 11,
+          "width": 50,
+          "height": 42
+        }
+      }
+    },
+    {
+      "id": "upgrade",
+      "path": "Assets/Icons/upgrade.png",
+      "source": "Assets/Icons/upgrade.svg",
+      "tintMask": "Assets/Icons/Mask/upgrade.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "dbbdf310bf7574f8e2533c79540edda5faf1af70d9e307f12e9cbd8d54ff477f",
+      "alpha": {
+        "transparentPixels": 3592,
+        "partialPixels": 292
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 13,
+        "y": 17,
+        "width": 38,
+        "height": 36
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/upgrade.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "27ecdba8ffe8c54c9fba5421cb1fdf1247cf50409d28b6575f4e4ea3f275a81b",
+        "alpha": {
+          "transparentPixels": 3592,
+          "partialPixels": 292
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 13,
+          "y": 17,
+          "width": 38,
+          "height": 36
+        }
+      }
+    },
+    {
+      "id": "heal",
+      "path": "Assets/Icons/heal.png",
+      "source": "Assets/Icons/heal.svg",
+      "tintMask": "Assets/Icons/Mask/heal.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "bf939d2e78a2dee98013c7023b1275246a22433637d64cb792125a13a226e3c5",
+      "alpha": {
+        "transparentPixels": 2416,
+        "partialPixels": 24
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 6,
+        "y": 6,
+        "width": 52,
+        "height": 52
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/heal.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "dfe626dc182a23c8aeacd2d0ddd140f8d303755a459bff68e7da13ce3afd04bd",
+        "alpha": {
+          "transparentPixels": 2416,
+          "partialPixels": 24
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 6,
+          "y": 6,
+          "width": 52,
+          "height": 52
+        }
+      }
+    },
+    {
+      "id": "evolve",
+      "path": "Assets/Icons/evolve.png",
+      "source": "Assets/Icons/evolve.svg",
+      "tintMask": "Assets/Icons/Mask/evolve.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "59864722be5d9fdd1c295df9381423804f30bfc1eb5608d344546e833a9dbd20",
+      "alpha": {
+        "transparentPixels": 3486,
+        "partialPixels": 210
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 10,
+        "y": 9,
+        "width": 43,
+        "height": 44
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/evolve.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "c35ab71358c0e9f28cd73863c696877db9e1b6656df082fd77b32aeb17a90725",
+        "alpha": {
+          "transparentPixels": 3486,
+          "partialPixels": 210
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 10,
+          "y": 9,
+          "width": 43,
+          "height": 44
+        }
+      }
+    },
+    {
+      "id": "swap",
+      "path": "Assets/Icons/swap.png",
+      "source": "Assets/Icons/swap.svg",
+      "tintMask": "Assets/Icons/Mask/swap.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "854b4d1d694d9092966e80eb20c759f9389f6daa2fc9fa7b3f221f9b291a8612",
+      "alpha": {
+        "transparentPixels": 3427,
+        "partialPixels": 188
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 7,
+        "y": 9,
+        "width": 50,
+        "height": 47
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/swap.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "26289dc8c8031fb84d326bd964a720dc7574a20d2a0b1ab5fd5edfeddc50f168",
+        "alpha": {
+          "transparentPixels": 3427,
+          "partialPixels": 188
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 7,
+          "y": 9,
+          "width": 50,
+          "height": 47
+        }
+      }
+    },
+    {
+      "id": "details",
+      "path": "Assets/Icons/details.png",
+      "source": "Assets/Icons/details.svg",
+      "tintMask": "Assets/Icons/Mask/details.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "47ead78853d6cc804eed87f7689da7d04a6f79a0a6b320d3b898eceb341d2ac9",
+      "alpha": {
+        "transparentPixels": 3106,
+        "partialPixels": 414
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 5,
+        "y": 5,
+        "width": 54,
+        "height": 54
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/details.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "97c655c9fa1560e02dc9e7fa4c10fdcf07c0b19045c8b84c673728657bfeaecc",
+        "alpha": {
+          "transparentPixels": 3106,
+          "partialPixels": 414
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 5,
+          "y": 5,
+          "width": 54,
+          "height": 54
+        }
+      }
+    },
+    {
+      "id": "close",
+      "path": "Assets/Icons/close.png",
+      "source": "Assets/Icons/close.svg",
+      "tintMask": "Assets/Icons/Mask/close.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "5c6b970199fa9f106b198c67b48a2ae95bb91d83a0a7330543a360dd2c38a0bb",
+      "alpha": {
+        "transparentPixels": 3612,
+        "partialPixels": 276
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 13,
+        "y": 13,
+        "width": 38,
+        "height": 38
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/close.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "b798b9113a682e39037e2f0615ad3b53ff06bd79b9b0afe906dce44d47e804ed",
+        "alpha": {
+          "transparentPixels": 3612,
+          "partialPixels": 276
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 13,
+          "y": 13,
+          "width": 38,
+          "height": 38
+        }
+      }
+    },
+    {
+      "id": "skills",
+      "path": "Assets/Icons/skills.png",
+      "source": "Assets/Icons/skills.svg",
+      "tintMask": "Assets/Icons/Mask/skills.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "3ac6fdca6e256b6c4f289d3d927a2e0bed2ccbb0a8b1dbfe08f6cb53817822f4",
+      "alpha": {
+        "transparentPixels": 3127,
+        "partialPixels": 161
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 12,
+        "y": 3,
+        "width": 40,
+        "height": 58
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/skills.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "60cd16fc656c982beea3dc1808a456d98141f349cc87ee9d2b130f08c4ed9631",
+        "alpha": {
+          "transparentPixels": 3127,
+          "partialPixels": 161
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 12,
+          "y": 3,
+          "width": 40,
+          "height": 58
+        }
+      }
+    },
+    {
+      "id": "portrait",
+      "path": "Assets/Icons/portrait.png",
+      "source": "Assets/Icons/portrait.svg",
+      "tintMask": "Assets/Icons/Mask/portrait.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "d70c0ebb1547493bf5a062471ea74898fd3392598c829d59d497b27a90b77354",
+      "alpha": {
+        "transparentPixels": 2409,
+        "partialPixels": 175
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 8,
+        "y": 8,
+        "width": 48,
+        "height": 51
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/portrait.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "085f0df66c9d982f1c835dd7e88736266d41959bf2c6916efdd77f11bf4f8b67",
+        "alpha": {
+          "transparentPixels": 2409,
+          "partialPixels": 175
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 8,
+          "y": 8,
+          "width": 48,
+          "height": 51
+        }
+      }
+    },
+    {
+      "id": "view3d",
+      "path": "Assets/Icons/view3d.png",
+      "source": "Assets/Icons/view3d.svg",
+      "tintMask": "Assets/Icons/Mask/view3d.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "4b22946596973c0eda453f6d829bdf857a34960a2e4d387c6f589c093db18afb",
+      "alpha": {
+        "transparentPixels": 2828,
+        "partialPixels": 436
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 6,
+        "y": 3,
+        "width": 52,
+        "height": 60
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/view3d.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "121c8648bfc3c480d8b2d18d6e4cc562b2d865f79fe61d9408b65970c697120a",
+        "alpha": {
+          "transparentPixels": 2828,
+          "partialPixels": 436
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 6,
+          "y": 3,
+          "width": 52,
+          "height": 60
+        }
+      }
+    },
+    {
+      "id": "check",
+      "path": "Assets/Icons/check.png",
+      "source": "Assets/Icons/check.svg",
+      "tintMask": "Assets/Icons/Mask/check.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "10d1d630162fe9c951fd14882b7671488fff9514b3bc625590536fde5011e53e",
+      "alpha": {
+        "transparentPixels": 3754,
+        "partialPixels": 180
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 8,
+        "y": 14,
+        "width": 48,
+        "height": 35
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/check.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "67fbf187590b2cd9373dbf9d28c49d0c8f2af63a858718a8caf42db2c6bec5c1",
+        "alpha": {
+          "transparentPixels": 3754,
+          "partialPixels": 180
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 8,
+          "y": 14,
+          "width": 48,
+          "height": 35
+        }
+      }
+    },
+    {
+      "id": "warning",
+      "path": "Assets/Icons/warning.png",
+      "source": "Assets/Icons/warning.svg",
+      "tintMask": "Assets/Icons/Mask/warning.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "b79ae817a469684b7a8768a01fd69140321f5c77d568b2d4995e3148de717d48",
+      "alpha": {
+        "transparentPixels": 3154,
+        "partialPixels": 311
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 2,
+        "y": 4,
+        "width": 60,
+        "height": 53
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/warning.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "f8782d798d4ed8aa2add15103dcee79af2300df33b9bb888f6b2474f0dc2c668",
+        "alpha": {
+          "transparentPixels": 3154,
+          "partialPixels": 311
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 2,
+          "y": 4,
+          "width": 60,
+          "height": 53
+        }
+      }
+    },
+    {
+      "id": "compass",
+      "path": "Assets/Icons/compass.png",
+      "source": "Assets/Icons/compass.svg",
+      "tintMask": "Assets/Icons/Mask/compass.png",
+      "width": 64,
+      "height": 64,
+      "license": "Original basic geometric UI symbol for this project",
+      "tint": "Use navy PNG with white runtime tint; use white alpha mask when runtime tinting to gold/jade/disabled colors.",
+      "hasAlpha": true,
+      "sha256": "12c9b5cedbbf97bed0b5544c7fb0262b23b8c4f6f7efc371b172896b52a291dc",
+      "alpha": {
+        "transparentPixels": 2779,
+        "partialPixels": 445
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 6,
+        "y": 6,
+        "width": 52,
+        "height": 52
+      },
+      "mask": {
+        "path": "Assets/Icons/Mask/compass.png",
+        "width": 64,
+        "height": 64,
+        "hasAlpha": true,
+        "sha256": "f44cfcc0be67bbd7742193f6ad8f8d6fe5d7c93410e16343ead7c8e8e287d03f",
+        "alpha": {
+          "transparentPixels": 2779,
+          "partialPixels": 445
+        },
+        "visibleBoundsAlphaAbove8": {
+          "x": 6,
+          "y": 6,
+          "width": 52,
+          "height": 52
+        }
+      }
+    }
+  ],
+  "art": [
+    {
+      "id": "art01",
+      "file": "portrait-sanctuary-overlay.png",
+      "role": "Transparent background decoration behind the user's large 2D pet portrait",
+      "prompt": "Generate ONE separated 2D UI decoration for the premium fantasy adventure RPG in the provided Menu V4 reference. Blue-slate/jade/mineral-sky surfaces, muted champagne engraved metal accents, restrained leaf-and-compass motif, shallow hand-painted material detail. Calm mid-light value, not white card, not black-heavy, no neon. ZERO text, numerals, labels, keycaps, UI buttons, portraits, creatures or models. TRUE alpha background, no checkerboard/scene/floor, visible full outer margins. Decoration must be independent from structural panels and runtime data. Subject: a subtle wide 3:2 sanctuary backdrop OVERLAY only: thin compass orbit arcs at upper-right, small delicate jade leaves and mineral-sky mist around the lower-left and far lower edge. The broad center and upper-left are empty alpha for a large creature to be supplied separately by the user. Restrained low contrast; no full landscape, no stone platform, no filled rectangle, no frame. Disperse detail at the perimeter only. The mist has soft feathered alpha.",
+      "path": "Assets/Art/portrait-sanctuary-overlay.png",
+      "source": "C:\\Users\\THẮNG\\.codex\\generated_images\\01a13bd4-fe65-7173-8b2a-2bf037c0c97e\\exec-4cdd67ab-c552-45fd-b2a0-dd1c77d5a25a.png",
+      "width": 1536,
+      "height": 1024,
+      "hasAlpha": true,
+      "sha256": "77d2b359f0bcc559ef36a250677fc42e3017553412e8aae1564416d9f0fcc61b",
+      "alpha": {
+        "transparentPixels": 944813,
+        "partialPixels": 628051
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 0,
+        "y": 26,
+        "width": 1536,
+        "height": 998
+      }
+    },
+    {
+      "id": "art02",
+      "file": "champagne-leaf-corner.png",
+      "role": "Optional small corner flourish over clean structural frames; not a frame itself",
+      "prompt": "Generate ONE separated 2D UI decoration for the premium fantasy adventure RPG in the provided Menu V4 reference. Blue-slate/jade/mineral-sky surfaces, muted champagne engraved metal accents, restrained leaf-and-compass motif, shallow hand-painted material detail. Calm mid-light value, not white card, not black-heavy, no neon. ZERO text, numerals, labels, keycaps, UI buttons, portraits, creatures or models. TRUE alpha background, no checkerboard/scene/floor, visible full outer margins. Decoration must be independent from structural panels and runtime data. Subject: ONE small L-shaped top-left decorative corner bracket, two thin champagne engraved rails meeting at a softly cut 90 degree corner and ONE short jade/gold leaf sprig. Full motif fits center of square canvas at 65% size with clean alpha margins. Ornament runs only along top and left arms, no closed border, no medallion and no gemstone. Slim restrained UI-scale detail, do not make a large baroque ornament.",
+      "path": "Assets/Art/champagne-leaf-corner.png",
+      "source": "C:\\Users\\THẮNG\\.codex\\generated_images\\01a13bd4-fe65-7173-8b2a-2bf037c0c97e\\exec-6390e24f-0966-4ad3-842a-3747b944b93b.png",
+      "width": 1254,
+      "height": 1254,
+      "hasAlpha": true,
+      "sha256": "a9bd05c9d0a3826687c188e0776c8bfcf59aebab619f4dd550bbd281ff97daf3",
+      "alpha": {
+        "transparentPixels": 1482960,
+        "partialPixels": 89390
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 220,
+        "y": 178,
+        "width": 880,
+        "height": 824
+      }
+    },
+    {
+      "id": "art03",
+      "file": "companion-title-emblem.png",
+      "role": "Separate compass/paw title emblem; no letters",
+      "prompt": "Generate ONE separated 2D UI decoration for the premium fantasy adventure RPG in the provided Menu V4 reference. Blue-slate/jade/mineral-sky surfaces, muted champagne engraved metal accents, restrained leaf-and-compass motif, shallow hand-painted material detail. Calm mid-light value, not white card, not black-heavy, no neon. ZERO text, numerals, labels, keycaps, UI buttons, portraits, creatures or models. TRUE alpha background, no checkerboard/scene/floor, visible full outer margins. Decoration must be independent from structural panels and runtime data. Subject: ONE elegant compass emblem for companion screen header: slender champagne four-point compass in a muted jade ring, with a very small paw-shaped engraved center and two tiny leaf tips. Original fantasy UI emblem, semi-realistic painted metal but crisp silhouette readable when small. No outer panel/ribbon. Centered square cutout, compact 70% canvas scale, symmetric and not spiky or weapon-like.",
+      "path": "Assets/Art/companion-title-emblem.png",
+      "source": "C:\\Users\\THẮNG\\.codex\\generated_images\\01a13bd4-fe65-7173-8b2a-2bf037c0c97e\\exec-e1f0dda3-dc89-4aba-bfea-df48c8066194.png",
+      "width": 1254,
+      "height": 1254,
+      "hasAlpha": true,
+      "sha256": "1b53caa1dad4d5b2d8ed85d4e0b1a5092e45ab458b81ef17b61f8a47fff61d3b",
+      "alpha": {
+        "transparentPixels": 1155357,
+        "partialPixels": 416262
+      },
+      "visibleBoundsAlphaAbove8": {
+        "x": 135,
+        "y": 110,
+        "width": 983,
+        "height": 1016
+      }
+    }
+  ],
+  "note": "White icon masks are tint variants, not extra unique assets. Structural SVG/PNG has no baked text or creature. Engine import/runtime not verified."
+}

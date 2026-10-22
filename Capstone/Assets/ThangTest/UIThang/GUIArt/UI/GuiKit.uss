@@ -1,0 +1,117 @@
+/* Opt-in components: panel controllers retain their own layout and bindings. */
+.gui-background {
+    background-color: var(--menu-background, #f8f4eb);
+    background-image: url("../Resources/UI/GuiKit/Backgrounds/menu_canvas.png");
+    -unity-background-scale-mode: scale-and-crop;
+}
+.gui-surface {
+    background-image: url("../Resources/UI/GuiKit/Frames/panel.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    -unity-slice-left: 16; -unity-slice-right: 16;
+    -unity-slice-top: 16; -unity-slice-bottom: 16;
+    padding: 16px;
+    min-width: 0;
+}
+.gui-button {
+    height: var(--menu-control-height, 42px);
+    min-height: 42px; min-width: 42px;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 8px 16px;
+    border-width: 2px; border-color: transparent;
+    border-radius: var(--menu-radius, 8px);
+    color: var(--menu-text, #31573d);
+    background-color: transparent;
+    background-image: url("../Resources/UI/GuiKit/Frames/button_secondary.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    -unity-slice-left: 16; -unity-slice-right: 16;
+    -unity-slice-top: 16; -unity-slice-bottom: 16;
+    -unity-font-style: bold;
+    font-size: var(--menu-body-size, 17px);
+    -unity-text-align: middle-center;
+    flex-direction: row; align-items: center; justify-content: center;
+}
+.gui-button--primary { background-image: url("../Resources/UI/GuiKit/Frames/button_primary.png"); color: white; }
+.gui-button--danger { background-image: url("../Resources/UI/GuiKit/Frames/button_danger.png"); color: var(--menu-danger, #a5433c); }
+.gui-button:hover { -unity-background-image-tint-color: var(--menu-back-hover, #e4edda); }
+.gui-button--primary:hover { -unity-background-image-tint-color: #ffffed; }
+.gui-button:active { -unity-background-image-tint-color: var(--menu-pressed, #cbdcc5); }
+.gui-button--primary:active { -unity-background-image-tint-color: #d3e6d3; }
+.gui-button:focus { border-color: var(--menu-focus-border, #c6a34d); }
+.gui-button:disabled { -unity-background-image-tint-color: var(--menu-disabled, #edf0eb); color: var(--menu-muted, #657568); opacity: 1; }
+.gui-button:disabled .gui-icon { -unity-background-image-tint-color: var(--menu-muted, #657568); }
+.gui-button--icon { width: 42px; padding: 6px; }
+.gui-button .gui-icon { margin-right: 8px; }
+.gui-button--icon .gui-icon { margin-right: 0; }
+.gui-button--primary .gui-icon { -unity-background-image-tint-color: white; }
+.gui-icon {
+    width: var(--menu-icon-size, 24px); height: var(--menu-icon-size, 24px);
+    min-width: 24px; flex-shrink: 0;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-background-image-tint-color: var(--menu-title-color, #174a30);
+}
+.gui-icon--back { background-image: url("../Resources/UI/GuiKit/Icons/back.png"); }
+.gui-icon--close { background-image: url("../Resources/UI/GuiKit/Icons/close.png"); }
+.gui-icon--search { background-image: url("../Resources/UI/GuiKit/Icons/search.png"); }
+.gui-icon--filter { background-image: url("../Resources/UI/GuiKit/Icons/filter.png"); }
+.gui-icon--paw { background-image: url("../Resources/UI/GuiKit/Icons/paw.png"); }
+.gui-icon--heart { background-image: url("../Resources/UI/GuiKit/Icons/heart.png"); }
+.gui-icon--star { background-image: url("../Resources/UI/GuiKit/Icons/star.png"); }
+.gui-icon--info { background-image: url("../Resources/UI/GuiKit/Icons/info.png"); }
+.gui-icon--bag { background-image: url("../Resources/UI/GuiKit/Icons/bag.png"); }
+.gui-heading { color: var(--menu-title-color, #174a30); font-size: 24px; -unity-font-style: bold; margin-bottom: 12px; }
+.gui-screen-header { height: var(--menu-header-height, 76px); min-height: 76px; flex-shrink: 0; flex-direction: row; align-items: center; padding: 0 24px; }
+.gui-screen-heading { flex-direction: row; align-items: center; flex-shrink: 0; }
+.gui-screen-heading .gui-icon { margin-right: 16px; }
+.gui-screen-title { color: var(--menu-title-color, #174a30); font-size: var(--menu-title-size, 38px); -unity-font-style: bold; }
+.gui-screen-description { flex-grow: 1; margin: 0 24px; min-width: 0; }
+.gui-screen-header .gui-button { width: var(--menu-back-width, 146px); }
+.gui-caption { color: var(--menu-muted, #657568); font-size: var(--menu-caption-size, 14px); white-space: normal; }
+.gui-search { flex-direction: row; align-items: center; min-height: 42px; }
+.gui-search .gui-icon { margin-right: 8px; }
+.gui-search .gui-field { flex-grow: 1; margin-right: 8px; }
+.gui-field { min-width: 0; margin: 0; font-size: 17px; }
+.gui-field .unity-base-text-field__input,
+.gui-dropdown .unity-base-popup-field__input {
+    min-height: 42px; background-color: white; color: var(--menu-text, #31573d);
+    border-width: 1px; border-color: var(--menu-border, #a9bd9c); border-radius: 8px;
+    padding: 8px 12px;
+}
+.gui-field .unity-base-text-field__input:focus,
+.gui-dropdown .unity-base-popup-field__input:focus { border-color: var(--menu-focus-border, #c6a34d); }
+.gui-dropdown { min-width: 160px; margin: 0; font-size: 17px; }
+.gui-tabs { flex-direction: row; min-width: 0; }
+.gui-tab { flex-grow: 1; min-width: 0; margin-right: 8px; }
+.gui-tab.is-selected { background-image: url("../Resources/UI/GuiKit/Frames/button_primary.png"); color: white; }
+.gui-slot {
+    width: 104px; height: 104px; margin-right: 12px; padding: 12px;
+    background-image: url("../Resources/UI/GuiKit/Frames/slot.png");
+    -unity-background-scale-mode: stretch-to-fill;
+    -unity-slice-left: 16; -unity-slice-right: 16; -unity-slice-top: 16; -unity-slice-bottom: 16;
+    align-items: center; justify-content: center;
+}
+.gui-slot.is-selected { background-image: url("../Resources/UI/GuiKit/Frames/slot_selected.png"); }
+.gui-slot .gui-icon { width: 48px; height: 48px; }
+.gui-slot.is-empty .gui-icon { -unity-background-image-tint-color: #a9bd9c; }
+.gui-slot-portrait { position: absolute; left: 8px; top: 8px; right: 8px; bottom: 8px; -unity-background-scale-mode: scale-to-fit; }
+.gui-slot .gui-slot-favorite { position: absolute; right: 8px; top: 8px; width: 20px; height: 20px; min-width: 20px; display: none; -unity-background-image-tint-color: var(--menu-focus-border, #c6a34d); }
+.gui-slot.is-favorite .gui-slot-favorite { display: flex; }
+.gui-slot-count { position: absolute; bottom: 8px; right: 8px; color: #174a30; background-color: white; padding: 2px 4px; font-size: 14px; }
+.gui-badge { border-radius: 12px; background-color: var(--menu-back-hover, #e4edda); color: var(--menu-text, #31573d); padding: 4px 10px; font-size: 14px; }
+.gui-progress { min-height: 24px; }
+.gui-progress .unity-progress-bar__background { background-color: var(--menu-disabled, #edf0eb); border-radius: 8px; border-width: 1px; border-color: var(--menu-border, #a9bd9c); }
+.gui-progress .unity-progress-bar__progress { background-color: var(--menu-heading-accent, #54825b); border-radius: 8px; }
+.gui-progress .unity-progress-bar__title { color: var(--menu-title-color, #174a30); font-size: 14px; -unity-font-style: bold; }
+.gui-slider { min-height: 32px; }
+.gui-slider .unity-base-slider__tracker { height: 6px; background-color: #a9bd9c; }
+.gui-slider .unity-base-slider__dragger { width: 18px; height: 18px; border-radius: 9px; background-color: white; border-width: 2px; border-color: #54825b; }
+.gui-slider:focus .unity-base-slider__dragger { border-color: #c6a34d; }
+.gui-toggle { color: #31573d; min-height: 32px; font-size: 17px; }
+.gui-toggle .unity-toggle__input { background-color: #edf0eb; border-width: 1px; border-color: #a9bd9c; border-radius: 6px; }
+.gui-toggle:focus .unity-toggle__input { border-color: #c6a34d; }
+.gui-popup { max-width: 540px; padding: 24px; }
+.gui-popup-actions { flex-direction: row; justify-content: flex-end; margin-top: 16px; }
+.gui-popup-actions .gui-button { margin-left: 8px; }
+.gui-tooltip { background-color: white; color: #31573d; border-width: 1px; border-color: #a9bd9c; border-radius: 8px; padding: 8px 12px; white-space: normal; }
+.gui-decor { width: 48px; height: 48px; background-image: url("../Resources/UI/GuiKit/Decor/corner_leaf.png"); -unity-background-scale-mode: scale-to-fit; }
+.gui-separator { height: 16px; background-image: url("../Resources/UI/GuiKit/Decor/separator.png"); -unity-background-scale-mode: scale-to-fit; }

@@ -1,5 +1,12 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Capstone.Game.PetSummon;
+using Capstone.Game.HudSystem;
+using Capstone.Game.Inventory;
+using Capstone.Game.SaveSystem;
+using UIDocument = UnityEngine.UIElements.UIDocument;
+using VisualElement = UnityEngine.UIElements.VisualElement;
+using TextField = UnityEngine.UIElements.TextField;
 
 [DisallowMultipleComponent]
 public class PetCommandInput : MonoBehaviour
@@ -29,26 +36,31 @@ public class PetCommandInput : MonoBehaviour
     public PetController[] petSlots = new PetController[6];
     public Camera commandCamera;
     public BasicCameraFollow cameraLock;
+    [SerializeField] private PetSummonDirector summonDirector;
 
     [Header("Input")]
     public int commandMouseButton = 0;
     public KeyCode withdrawKey = KeyCode.Backspace;
     public bool ignoreWhileRightMouseHeld = false;
     public bool allowCommandsWhileRightMouseHeld = true;
-    public bool commandLockedEnemyFirst = true;
     public int aimMouseButton = 1;
     public bool ignoreWhenPointerOverUI = true;
 
     [Header("Raycast")]
     public float rayDistance = 250f;
     public LayerMask commandMask = ~0;
-    public bool moveToGroundWhenNoEnemy = true;
-    public float enemySearchRadius = 1.25f;
     public bool useScreenCenterWhenCursorLocked = true;
     public bool useScreenCenterWhileAiming = false;
 
     private readonly RaycastHit[] hits = new RaycastHit[16];
-    private readonly Collider[] nearbyColliders = new Collider[24];
+
+    public bool CanUsePetSkills => activePet != null && activePet.isActiveAndEnabled
+        && activePet.CanReceiveCommands && (summonDirector == null || !summonDirector.IsSequenceRunning);
+
+    public event System.Action<int> PetSlotSummonRequested;
+
+    private void OnEnable() => ResolveCameraLock(commandCamera != null ? commandCamera : Camera.main);
+
     private void Awake()
     {
         if (commandCamera == null)
@@ -57,6 +69,11 @@ public class PetCommandInput : MonoBehaviour
         }
 
         ResolveCameraLock(commandCamera);
+
+        if (summonDirector == null)
+        {
+            summonDirector = GetComponent<PetSummonDirector>();
+        }
 
         EnsureSlots();
 
@@ -72,17 +89,15 @@ public class PetCommandInput : MonoBehaviour
                 }
             }
 
-            if (activePet == null && candidates.Length > 0)
-            {
-                activePet = candidates[0];
-            }
-
             EnsureSlots();
         }
     }
 
     private void Update()
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        HandleDevelopmentLevelKeys();
+#endif
         if (Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked)
         {
             return;
@@ -90,20 +105,17 @@ public class PetCommandInput : MonoBehaviour
 
         HandlePetSlotInput();
 
-        if (!Input.GetMouseButtonDown(commandMouseButton) || activePet == null)
+        if (summonDirector != null && summonDirector.IsSequenceRunning)
         {
             return;
         }
 
-        if (!allowCommandsWhileRightMouseHeld && ignoreWhileRightMouseHeld && Input.GetMouseButton(aimMouseButton))
+        if (!Input.GetMouseButtonDown(commandMouseButton) || !CanUsePetSkills)
         {
             return;
         }
 
-        if (ignoreWhenPointerOverUI && EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-        {
-            return;
-        }
+        if (!CanSendPointerCommand()) return;
 
         Camera cameraToUse = commandCamera != null ? commandCamera : Camera.main;
         if (cameraToUse == null)
@@ -112,9 +124,9 @@ public class PetCommandInput : MonoBehaviour
         }
 
         ResolveCameraLock(cameraToUse);
-        if (commandLockedEnemyFirst && cameraLock != null && cameraLock.TryGetLockedEnemy(out DummyEnemy lockedEnemy))
+        if (cameraLock != null && cameraLock.TryGetLockedEnemy(out DummyEnemy pinnedEnemy))
         {
-            activePet.CommandAttack(lockedEnemy);
+            TryCommandAttack(pinnedEnemy);
             return;
         }
 
@@ -125,28 +137,73 @@ public class PetCommandInput : MonoBehaviour
             return;
         }
 
-        DummyEnemy enemy = FindNearestEnemy(hitCount);
-        if (enemy != null)
+        if (TryFindClickedEnemy(hitCount, out DummyEnemy clickedEnemy))
         {
-            activePet.CommandAttack(enemy);
-            return;
-        }
-
-        if (TryFindNearestHit(hitCount, out RaycastHit nearestHit))
-        {
-            DummyEnemy nearbyEnemy = FindEnemyNearPoint(nearestHit.point);
-            if (nearbyEnemy != null)
-            {
-                activePet.CommandAttack(nearbyEnemy);
-                return;
-            }
-
-            if (moveToGroundWhenNoEnemy)
-            {
-                activePet.CommandMove(nearestHit.point);
-            }
+            TryCommandAttack(clickedEnemy);
         }
     }
+
+    private bool CanSendPointerCommand() =>
+        (allowCommandsWhileRightMouseHeld || !ignoreWhileRightMouseHeld || !Input.GetMouseButton(aimMouseButton))
+        && (!ignoreWhenPointerOverUI || Cursor.lockState == CursorLockMode.Locked
+            || EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject());
+
+    public bool TryCommandAttack(DummyEnemy enemy)
+    {
+        if (InventoryInputController.GameplayInputBlocked || !CanUsePetSkills
+            || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsAlive) return false;
+        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "attack")) return false;
+        activePet.CommandAttack(enemy);
+        return true;
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void HandleDevelopmentLevelKeys()
+    {
+        int delta = Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus) ? 1
+            : Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus) ? -1 : 0;
+        if (delta == 0 || (summonDirector != null && summonDirector.IsSequenceRunning)) return;
+        foreach (UIDocument document in FindObjectsByType<UIDocument>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            VisualElement focused = document.rootVisualElement?.focusController?.focusedElement as VisualElement;
+            for (VisualElement current = focused; current != null; current = current.parent)
+                if (current is TextField) return;
+        }
+
+        MonsterInventoryController menu = FindFirstObjectByType<MonsterInventoryController>();
+        PetController pet = activePet;
+        if (menu != null && menu.IsPetsSectionOpen)
+            pet = FindFirstObjectByType<PetCommandHudProvider>()?.GetSelectedPetController();
+        else if (menu != null && menu.IsBoxSectionOpen)
+            pet = FindFirstObjectByType<PetBoxPanelController>()?.SelectedPet;
+        if (pet == null) return;
+        PetHudRuntimeStats stats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+        PetCollectionMetadata metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
+        PlayerSaveController save = FindFirstObjectByType<PlayerSaveController>();
+        if (stats == null || metadata == null || save == null) return;
+        int nextLevel = Mathf.Clamp(stats.Level + delta, 1, PetStatCalculator.MaxLevel);
+        if (nextLevel == stats.Level) return;
+        PetRuntimeStatsSaveData oldStats = stats.CreateSaveData();
+        PetCustomizationSaveData oldMetadata = metadata.CreateSaveData();
+        float newMax = metadata.GetStatsAtLevel(nextLevel).MaxHealth;
+        float health = stats.MaxHealth > 0f ? newMax * stats.Health / stats.MaxHealth : newMax;
+        stats.SetIdentity(stats.DisplayName, nextLevel, stats.Icon);
+        stats.SetStatus(health, newMax, stats.Energy, stats.MaxEnergy);
+        metadata.SetProgress(0, nextLevel >= PetStatCalculator.MaxLevel
+            ? 0 : PetLevelUpService.CalculateDefaultExperienceRequirement(nextLevel));
+        if (delta > 0) stats.UnlockSkillsUpToLevel(nextLevel, out _);
+        if (!save.SaveNow())
+        {
+            metadata.RestoreFromSaveData(oldMetadata);
+            stats.RestoreFromSaveData(oldStats);
+            Debug.LogWarning("Debug level change could not be saved; rolled back.", pet);
+            return;
+        }
+        FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();
+        if (delta > 0) FindFirstObjectByType<PetLevelUpService>()?.NotifyDebugLevelChange(pet);
+        Debug.Log($"Debug pet level: {metadata.ResolveDisplayName(stats.DisplayName)} Lv. {nextLevel}", pet);
+    }
+#endif
 
     public void SetActivePet(PetController pet)
     {
@@ -159,6 +216,8 @@ public class PetCommandInput : MonoBehaviour
 
     private void HandlePetSlotInput()
     {
+        EnsureSlots();
+
         for (int i = 0; i < petSlots.Length && i < NumberKeys.Length; i++)
         {
             if (Input.GetKeyDown(NumberKeys[i]) || Input.GetKeyDown(KeypadKeys[i]))
@@ -174,6 +233,11 @@ public class PetCommandInput : MonoBehaviour
         }
     }
 
+    public void RequestSummonSlot(int slotIndex)
+    {
+        if (!InventoryInputController.GameplayInputBlocked) SummonSlot(slotIndex);
+    }
+
     private void SummonSlot(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= petSlots.Length)
@@ -181,8 +245,14 @@ public class PetCommandInput : MonoBehaviour
             return;
         }
 
-        PetController selectedPet = petSlots[slotIndex];
-        if (selectedPet == null)
+        if (summonDirector != null)
+        {
+            if (summonDirector.RequestSummonSlot(slotIndex)) PetSlotSummonRequested?.Invoke(slotIndex);
+            return;
+        }
+
+        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "summon:" + slotIndex)) return;
+        if (!TryGetPetInSlot(slotIndex, out PetController selectedPet))
         {
             return;
         }
@@ -195,15 +265,36 @@ public class PetCommandInput : MonoBehaviour
         activePet = selectedPet;
         activePet.AssignOwner(transform);
         activePet.Summon();
+        PetSlotSummonRequested?.Invoke(slotIndex);
+    }
+
+    public bool TryGetPetInSlot(int slotIndex, out PetController pet)
+    {
+        EnsureSlots();
+        pet = null;
+        if (slotIndex < 0 || slotIndex >= petSlots.Length)
+        {
+            return false;
+        }
+
+        pet = petSlots[slotIndex];
+        return pet != null;
     }
 
     private void WithdrawActivePet()
     {
+        if (summonDirector != null)
+        {
+            summonDirector.RequestRecall();
+            return;
+        }
+
         if (activePet == null)
         {
             return;
         }
 
+        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "recall")) return;
         activePet.Withdraw();
     }
 
@@ -223,7 +314,7 @@ public class PetCommandInput : MonoBehaviour
             }
         }
 
-        if (activePet != null && petSlots[0] == null)
+        if (activePet != null && petSlots[0] == null && System.Array.IndexOf(petSlots, activePet) < 0)
         {
             petSlots[0] = activePet;
         }
@@ -259,100 +350,39 @@ public class PetCommandInput : MonoBehaviour
 
     private void ResolveCameraLock(Camera cameraToUse)
     {
-        if (cameraLock != null && cameraLock.isActiveAndEnabled)
+        if (cameraLock == null || !cameraLock.isActiveAndEnabled)
         {
-            return;
+            cameraLock = cameraToUse != null ? cameraToUse.GetComponent<BasicCameraFollow>() : null;
+            if (cameraLock == null) cameraLock = FindFirstObjectByType<BasicCameraFollow>();
         }
-
-        cameraLock = null;
-
-        if (cameraToUse != null)
-        {
-            cameraLock = cameraToUse.GetComponent<BasicCameraFollow>();
-            if (cameraLock != null)
-            {
-                return;
-            }
-        }
-
-        cameraLock = FindFirstObjectByType<BasicCameraFollow>();
     }
 
-    private DummyEnemy FindNearestEnemy(int hitCount)
+    private bool TryFindClickedEnemy(int hitCount, out DummyEnemy clickedEnemy)
     {
-        DummyEnemy bestEnemy = null;
+        clickedEnemy = null;
         float bestDistance = float.PositiveInfinity;
 
         for (int i = 0; i < hitCount; i++)
         {
-            DummyEnemy enemy = hits[i].collider.GetComponentInParent<DummyEnemy>();
-            if (enemy == null || !enemy.IsAlive)
+            Collider candidate = hits[i].collider;
+            if (candidate == null || hits[i].distance >= bestDistance)
             {
                 continue;
             }
 
-            if (hits[i].distance < bestDistance)
-            {
-                bestDistance = hits[i].distance;
-                bestEnemy = enemy;
-            }
-        }
-
-        return bestEnemy;
-    }
-
-    private bool TryFindNearestHit(int hitCount, out RaycastHit nearestHit)
-    {
-        int bestIndex = -1;
-        float bestDistance = float.PositiveInfinity;
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            if (hits[i].distance < bestDistance)
-            {
-                bestIndex = i;
-                bestDistance = hits[i].distance;
-            }
-        }
-
-        nearestHit = bestIndex >= 0 ? hits[bestIndex] : default;
-        return bestIndex >= 0;
-    }
-
-    private DummyEnemy FindEnemyNearPoint(Vector3 point)
-    {
-        if (enemySearchRadius <= 0f)
-        {
-            return null;
-        }
-
-        int count = Physics.OverlapSphereNonAlloc(point, enemySearchRadius, nearbyColliders, commandMask, QueryTriggerInteraction.Collide);
-        DummyEnemy bestEnemy = null;
-        float bestDistance = float.PositiveInfinity;
-
-        for (int i = 0; i < count; i++)
-        {
-            Collider targetCollider = nearbyColliders[i];
-            nearbyColliders[i] = null;
-            if (targetCollider == null)
+            DummyEnemy enemy = candidate.GetComponentInParent<DummyEnemy>();
+            if (candidate.transform.IsChildOf(transform)
+                || candidate.GetComponentInParent<PetController>() != null
+                || (candidate.isTrigger && enemy == null))
             {
                 continue;
             }
 
-            DummyEnemy enemy = targetCollider.GetComponentInParent<DummyEnemy>();
-            if (enemy == null || !enemy.IsAlive)
-            {
-                continue;
-            }
-
-            float distance = Vector3.SqrMagnitude(enemy.TargetPosition - point);
-            if (distance < bestDistance)
-            {
-                bestDistance = distance;
-                bestEnemy = enemy;
-            }
+            bestDistance = hits[i].distance;
+            clickedEnemy = enemy != null && enemy.IsAlive ? enemy : null;
         }
 
-        return bestEnemy;
+        return clickedEnemy != null;
     }
+
 }

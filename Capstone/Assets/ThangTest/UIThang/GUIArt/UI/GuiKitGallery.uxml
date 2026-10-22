@@ -1,0 +1,71 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:Style src="../../Inventory/UI/MenuTheme.uss" />
+    <ui:Style src="GuiKit.uss" />
+    <ui:Style src="GuiKitGallery.uss" />
+    <ui:VisualElement class="gui-gallery gui-background menu-theme">
+        <ui:VisualElement class="gui-gallery-header">
+            <ui:Label text="BỘ GUI DÙNG CHUNG" class="gui-gallery-title" />
+            <ui:Button name="gallery-back" tooltip="Trở lại" class="gui-button">
+                <ui:VisualElement class="gui-icon gui-icon--back" picking-mode="Ignore" />
+                <ui:Label text="Trở lại" picking-mode="Ignore" />
+            </ui:Button>
+        </ui:VisualElement>
+        <ui:ScrollView class="gui-gallery-scroll" horizontal-scroller-visibility="Hidden">
+            <ui:VisualElement class="gui-surface gui-gallery-section">
+                <ui:Label text="Nút và trạng thái" class="gui-heading" />
+                <ui:Label text="Di chuột, nhấn và dùng Tab để xem trạng thái. Nút khóa vẫn giữ chữ dễ đọc." class="gui-caption" />
+                <ui:VisualElement class="gui-gallery-row">
+                    <ui:Button name="gallery-primary" text="Xác nhận" class="gui-button gui-button--primary" />
+                    <ui:Button name="gallery-secondary" text="Hủy" class="gui-button" />
+                    <ui:Button name="gallery-danger" text="Thả thú" class="gui-button gui-button--danger" />
+                    <ui:Button name="gallery-disabled" text="Chưa đủ điều kiện" enabled="false" tooltip="Mẫu trạng thái khóa; không thực hiện thao tác game." class="gui-button" />
+                    <ui:Button name="gallery-icon" tooltip="Yêu thích" class="gui-button gui-button--icon">
+                        <ui:VisualElement class="gui-icon gui-icon--star" picking-mode="Ignore" />
+                    </ui:Button>
+                </ui:VisualElement>
+                <ui:VisualElement class="gui-search">
+                    <ui:VisualElement class="gui-icon gui-icon--search" picking-mode="Ignore" />
+                    <ui:TextField name="gallery-search" tooltip="Nhập tên để kiểm tra bố cục." class="gui-field" />
+                    <ui:Button name="gallery-clear" tooltip="Xóa tìm kiếm" class="gui-button gui-button--icon">
+                        <ui:VisualElement class="gui-icon gui-icon--close" picking-mode="Ignore" />
+                    </ui:Button>
+                    <ui:DropdownField name="gallery-sort" class="gui-dropdown" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="gui-gallery-columns">
+                <ui:VisualElement class="gui-surface">
+                    <ui:Label text="Thẻ, ô và huy hiệu" class="gui-heading" />
+                    <ui:VisualElement class="gui-gallery-row">
+                        <ui:VisualElement class="gui-slot"><ui:VisualElement class="gui-icon gui-icon--bag" picking-mode="Ignore" /></ui:VisualElement>
+                        <ui:VisualElement class="gui-slot is-selected"><ui:VisualElement class="gui-icon gui-icon--paw" picking-mode="Ignore" /></ui:VisualElement>
+                        <ui:VisualElement class="gui-slot is-empty"><ui:Label text="Trống" class="gui-caption" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:Label text="Đang xem" class="gui-badge" />
+                    <ui:Label text="Tên sinh vật rất dài có dấu tiếng Việt vẫn cần giữ đầy đủ thông tin khi hiển thị nhiều dòng." class="gui-caption" />
+                    <ui:ProgressBar name="gallery-progress" value="72" title="HP 72 / 100" class="gui-progress" />
+                    <ui:VisualElement class="gui-separator" picking-mode="Ignore" />
+                    <ui:VisualElement class="gui-tabs">
+                        <ui:Button name="gallery-tab-all" text="Tất cả" class="gui-button gui-tab is-selected" />
+                        <ui:Button name="gallery-tab-favorite" text="Yêu thích" class="gui-button gui-tab" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="gui-surface">
+                    <ui:Label text="Điều khiển và thông báo" class="gui-heading" />
+                    <ui:Toggle name="gallery-toggle" text="Hiển thị gợi ý tương tác" value="true" class="gui-toggle" />
+                    <ui:Slider name="gallery-slider" label="Âm lượng" low-value="0" high-value="100" value="60" class="gui-slider" />
+                    <ui:Label text="Chưa có thông tin. Khung nội dung luôn có nền trắng." class="gui-tooltip" />
+                    <ui:VisualElement class="gui-popup-actions">
+                        <ui:Button name="gallery-cancel" text="Hủy" class="gui-button" />
+                        <ui:Button name="gallery-confirm" text="Xác nhận" class="gui-button gui-button--primary" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="gui-decor" picking-mode="Ignore" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement class="gui-surface gui-gallery-section">
+                <ui:Label text="Icon dùng chung" class="gui-heading" />
+                <ui:VisualElement name="gallery-icons" class="gui-gallery-row" />
+            </ui:VisualElement>
+        </ui:ScrollView>
+        <ui:Label name="gallery-status" text="Màn mẫu giao diện; không sử dụng dữ liệu hoặc save gameplay." class="gui-gallery-status" />
+    </ui:VisualElement>
+</ui:UXML>

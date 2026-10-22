@@ -2,6 +2,22 @@
 
 Thu muc tich hop moi nam o `Assets/Game/MapSystem`. Package goc `Assets/ThangTest/AA Map and Minimap System` khong bi sua.
 
+## World Map UI (TestChar, 2026-10-10)
+
+`Tools > ToolCuaThang > Game Map > Remake World Map UI` rebuilds the cream/green full-screen UGUI/TMP presentation and binds it to the existing WorldMapController. Save TestChar afterward. Complete Map Setup also uses this presentation. The live top-down map remains the map source.
+
+The AA Map package requires Map Mask to remain a direct child of WorldMapPanel. Its sibling World Map Overlay/MapScreen contains TopHeader, MapFrame, CompassN/E/S/W, MarkerContainer, TrackedQuestOverlay, RegionPanel, ZoomButtonGroup, BottomFilterBar and ClearWaypointButton. Uniform scaling uses a 1920×1080 design; map camera aspect and marker coordinates match the inset 1832×818 viewport.
+
+- WorldMapUITheme in Generated/UI holds the TMP Vietnamese font, sliced panels/rings, sprites and palette.
+- WorldMapUIController projects registered markers into normalized viewport coordinates and handles selection. AA 3D icon renderers are temporarily suppressed only while Map Camera renders; renderer states are then restored.
+- MapFilterToggle exposes seven groups: NPC/Pet/Enemy/Boss/Quest/Shop/Travel. Quest includes Available/Target/Main/Side; Travel includes FastTravel/Travel. Existing marker enum values are unchanged; Co-op has no UI entry.
+- TrackedQuestBanner subscribes to the actual tracked quest and hides when no quest is tracked. SetTrackedQuestTitle(string) and UpdateRegion(Vector3) allow presentation overrides.
+- RenderMarker(MapMarkerData) adds or updates by ID, including normalized position, category, title and visibility. RemoveMarker(id) removes it. MarkerSelected and FilterChanged expose UI events; core zoom, center, waypoint and back actions stay in WorldMapController.
+- Setup adds missing world-map-only markers to existing Shop/Box interactables.
+- Drag/waypoint input is restricted to the map surface and skips buttons/filters. Wheel zoom works over the map; M/Escape and existing keyboard zoom keys remain available.
+
+Enter TestChar Play Mode and run Tools > ToolCuaThang > Game Map > Validate World Map UI in Play Mode to check camera binding, aspect, button target graphics, viewport alignment, grouped filters and marker updates. Open Map to inspect marker selection, drag, zoom and waypoint placement/clear.
+
 ## Cach chay setup
 
 1. Mo scene can dung map, vi du `Assets/Scenes/TestChar.unity`.
@@ -13,9 +29,9 @@ Thu muc tich hop moi nam o `Assets/Game/MapSystem`. Package goc `Assets/ThangTes
 ## Hierarchy tool tao/sua
 
 - `Canvas`
-  - `MinimapPanel`: mini map goc tren ben phai.
+  - `MinimapPanel`: giu vi tri va kich thuoc minimap hien co trong TestChar.
   - `WorldMapPanel`: map lon, mac dinh dong.
-    - `Map Mask`: viewport chu nhat mac dinh 1280x720, cat phan map nam ngoai khung.
+    - `Map Mask`: viewport 1832x818 theo thiet ke 1920x1080, cat phan map nam ngoai khung.
     - `World Map Overlay`: region, zoom, filter va clear waypoint.
 - `Minimap Camera`: camera nhin tu tren xuong theo Player.
 - `Map Camera`: camera nhin tu tren xuong cho world map.
@@ -71,7 +87,7 @@ Gan `MapMarker` hoac `MapIcon` vao object can hien tren map:
 
 ## Sprite GUI custom
 
-Setup hien uu tien bo sprite custom trong:
+World Map moi dung theme trong `Assets/Game/MapSystem/Generated/UI`, tai su dung icon custom co san. Cac thanh phan legacy va minimap van uu tien bo sprite trong:
 
 `Assets/Game/MapSystem/Sprites/MapMinimap`
 

@@ -1,0 +1,53 @@
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.3/staging' branch; Version is '6000.3.16f1 (a56f230f6470) revision 10841891'; Using compiler version '194234433'; Build Type 'Release'
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-THẮNG" at "2026-10-10T20:20:54.745733Z"
+OS: 'Windows 11  (10.0.26300) CoreSingleLanguage' Language: 'vi' Physical Memory: 16004 MB
+BatchMode: 0, IsHumanControllingUs: 1, StartBugReporterOnCrash: 1, Is64bit: 1
+System  architecture: x64
+Process architecture: x64
+Date: 2026-10-10T20:20:54Z
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 27696, path: "C:/Program Files/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              6f9f98a4cef54882a2a26d2cac13f0a5
+  Correlation Id:          727852c813e01ca4a41c3a6897af084d
+  External correlation Id: 442509611720829445
+  Machine Id:              iUXeFUlEPoZRkvPSuGZoNMcsA80=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-THẮNG" (connect: 0.00s, validation: 0.00s, handshake: 0.05s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-THẮNG-notifications" at "2026-10-10T20:20:54.7973567Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-UT87-UYUD-S3D3-H2XR-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: 2026-11-16T21:19:38Z
+[Licensing::Module] License group:
+  Id: 18968096271896-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: F4-UT87-UYUD-S3D3-H2XR-XXXX
+  Product: Unity Personal
+  Type: ULF
+  Expiration: 2026-11-16T21:19:38Z
+[Licensing::Module] License group:
+  Id: 18968096271896-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Module] Licensing Background thread has ended after 0.06s
+
+COMMAND LINE ARGUMENTS:
+D:\VTC\6000.3.16f1\Editor\Unity.exe
+-projectPath
+D:\Download\ProjectVTC\CapstoneProject\Capstone
+-logFile
+D:\Download\ProjectVTC\CapstoneProject\artifacts\ui-completion\unity-editor.log
+Successfully changed project path to: D:\Download\ProjectVTC\CapstoneProject\Capstone
+D:/Download/ProjectVTC/CapstoneProject/Capstone
+Exiting without the bug reporter. Application will terminate with return code 0

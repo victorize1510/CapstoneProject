@@ -1,0 +1,1029 @@
+{
+  "canvas": [
+    1600,
+    900
+  ],
+  "tab": {
+    "width": 864,
+    "height": 620,
+    "tabWidth": 272,
+    "step": 280,
+    "start": 16,
+    "top": 12,
+    "navHeight": 48,
+    "bodyTop": 84,
+    "fixedPanel": true
+  },
+  "angle": 12,
+  "screens": {
+    "01_Menu": [
+      {
+        "id": "pet-card",
+        "x": 768,
+        "y": 184,
+        "width": 380,
+        "height": 232,
+        "role": "illustrated-primary-nav",
+        "artwork": {
+          "x": 6,
+          "y": 6,
+          "width": 368,
+          "height": 168
+        },
+        "textSafe": {
+          "x": 23,
+          "y": 178,
+          "width": 298,
+          "height": 42
+        },
+        "chevron": {
+          "x": 336,
+          "y": 168,
+          "width": 44,
+          "height": 64
+        },
+        "userCreature": true
+      },
+      {
+        "id": "bag-card",
+        "x": 1164,
+        "y": 184,
+        "width": 380,
+        "height": 232,
+        "role": "illustrated-primary-nav",
+        "artwork": {
+          "x": 6,
+          "y": 6,
+          "width": 368,
+          "height": 168
+        },
+        "textSafe": {
+          "x": 23,
+          "y": 178,
+          "width": 298,
+          "height": 42
+        },
+        "chevron": {
+          "x": 336,
+          "y": 168,
+          "width": 44,
+          "height": 64
+        },
+        "userCreature": false
+      },
+      {
+        "id": "profile-button",
+        "x": 768,
+        "y": 432,
+        "width": 380,
+        "height": 120,
+        "role": "illustrated-secondary-nav",
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        },
+        "textSafe": {
+          "x": 99,
+          "y": 39,
+          "width": 133,
+          "height": 44
+        },
+        "badge": {
+          "x": 25,
+          "y": 30,
+          "width": 60,
+          "height": 60
+        },
+        "chevron": {
+          "x": 336,
+          "y": 0,
+          "width": 44,
+          "height": 120
+        },
+        "mask": "M27.2314,3L377,3L352.7686,117L3,117Z"
+      },
+      {
+        "id": "quest-button",
+        "x": 1164,
+        "y": 432,
+        "width": 380,
+        "height": 120,
+        "role": "illustrated-secondary-nav",
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        },
+        "textSafe": {
+          "x": 99,
+          "y": 39,
+          "width": 133,
+          "height": 44
+        },
+        "badge": {
+          "x": 25,
+          "y": 30,
+          "width": 60,
+          "height": 60
+        },
+        "chevron": {
+          "x": 336,
+          "y": 0,
+          "width": 44,
+          "height": 120
+        },
+        "mask": "M27.2314,3L377,3L352.7686,117L3,117Z"
+      },
+      {
+        "id": "map-button",
+        "x": 768,
+        "y": 568,
+        "width": 380,
+        "height": 120,
+        "role": "illustrated-secondary-nav",
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        },
+        "textSafe": {
+          "x": 99,
+          "y": 39,
+          "width": 133,
+          "height": 44
+        },
+        "badge": {
+          "x": 25,
+          "y": 30,
+          "width": 60,
+          "height": 60
+        },
+        "chevron": {
+          "x": 336,
+          "y": 0,
+          "width": 44,
+          "height": 120
+        },
+        "mask": "M27.2314,3L377,3L352.7686,117L3,117Z"
+      },
+      {
+        "id": "codex-button",
+        "x": 1164,
+        "y": 568,
+        "width": 380,
+        "height": 120,
+        "role": "illustrated-secondary-nav",
+        "artwork": {
+          "x": 160,
+          "y": 0,
+          "width": 176,
+          "height": 120
+        },
+        "textSafe": {
+          "x": 99,
+          "y": 39,
+          "width": 133,
+          "height": 44
+        },
+        "badge": {
+          "x": 25,
+          "y": 30,
+          "width": 60,
+          "height": 60
+        },
+        "chevron": {
+          "x": 336,
+          "y": 0,
+          "width": 44,
+          "height": 120
+        },
+        "mask": "M27.2314,3L377,3L352.7686,117L3,117Z"
+      },
+      {
+        "id": "player-avatar-fixed",
+        "x": 784,
+        "y": 66,
+        "width": 88,
+        "height": 88,
+        "role": "display-only-avatar",
+        "editable": false,
+        "picking": false,
+        "aperture": [
+          [
+            22,
+            12
+          ],
+          [
+            66,
+            12
+          ],
+          [
+            76,
+            22
+          ],
+          [
+            76,
+            66
+          ],
+          [
+            66,
+            76
+          ],
+          [
+            22,
+            76
+          ],
+          [
+            12,
+            66
+          ],
+          [
+            12,
+            22
+          ]
+        ]
+      },
+      {
+        "id": "shell",
+        "x": 744,
+        "y": 28,
+        "width": 824,
+        "height": 844,
+        "role": "component"
+      },
+      {
+        "id": "profile",
+        "x": 768,
+        "y": 52,
+        "width": 776,
+        "height": 116,
+        "role": "component"
+      },
+      {
+        "id": "status",
+        "x": 768,
+        "y": 704,
+        "width": 776,
+        "height": 48,
+        "role": "component"
+      },
+      {
+        "id": "settings",
+        "x": 768,
+        "y": 768,
+        "width": 380,
+        "height": 80,
+        "role": "component"
+      },
+      {
+        "id": "back",
+        "x": 1164,
+        "y": 768,
+        "width": 380,
+        "height": 80,
+        "role": "component"
+      }
+    ],
+    "02_Tong_Quan": [
+      {
+        "id": "stats",
+        "x": 728,
+        "y": 336,
+        "width": 812,
+        "height": 172,
+        "role": "eight-stats"
+      },
+      {
+        "id": "skills",
+        "x": 728,
+        "y": 520,
+        "width": 812,
+        "height": 104,
+        "role": "equipped-skills"
+      },
+      {
+        "id": "actions",
+        "x": 728,
+        "y": 632,
+        "width": 812,
+        "height": 52,
+        "role": "provider-actions"
+      },
+      {
+        "id": "slot-1",
+        "x": 40,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": true,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-2",
+        "x": 262,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": true,
+        "summoned": false,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-3",
+        "x": 484,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-4",
+        "x": 706,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-5",
+        "x": 928,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-6",
+        "x": 1150,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "roster",
+        "x": 24,
+        "y": 736,
+        "width": 1552,
+        "height": 140,
+        "role": "six-full-bleed-slots"
+      },
+      {
+        "id": "hero",
+        "x": 32,
+        "y": 112,
+        "width": 648,
+        "height": 600,
+        "role": "user-supplied-large-2d"
+      },
+      {
+        "id": "inspector-fixed",
+        "x": 704,
+        "y": 96,
+        "width": 864,
+        "height": 620,
+        "role": "fixed-panel",
+        "activeTab": 0,
+        "navigation": {
+          "x": 16,
+          "y": 12,
+          "width": 832,
+          "height": 48,
+          "itemWidth": 272,
+          "gap": 8
+        }
+      },
+      {
+        "id": "mode-2d",
+        "x": 54,
+        "y": 668,
+        "width": 88,
+        "height": 44,
+        "role": "default-2d"
+      },
+      {
+        "id": "mode-3d",
+        "x": 150,
+        "y": 668,
+        "width": 88,
+        "height": 44,
+        "role": "explicit-3d"
+      }
+    ],
+    "03_Ky_Nang": [
+      {
+        "id": "equipped",
+        "x": 728,
+        "y": 278,
+        "width": 812,
+        "height": 112,
+        "role": "four-equipped-slots"
+      },
+      {
+        "id": "learned",
+        "x": 728,
+        "y": 434,
+        "width": 468,
+        "height": 229,
+        "role": "learned-list"
+      },
+      {
+        "id": "skill-inspector",
+        "x": 1216,
+        "y": 434,
+        "width": 324,
+        "height": 229,
+        "role": "skill-details-action"
+      },
+      {
+        "id": "slot-1",
+        "x": 40,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": true,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-2",
+        "x": 262,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": true,
+        "summoned": false,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-3",
+        "x": 484,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-4",
+        "x": 706,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-5",
+        "x": 928,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-6",
+        "x": 1150,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "roster",
+        "x": 24,
+        "y": 736,
+        "width": 1552,
+        "height": 140,
+        "role": "six-full-bleed-slots"
+      },
+      {
+        "id": "hero",
+        "x": 32,
+        "y": 112,
+        "width": 648,
+        "height": 600,
+        "role": "user-supplied-large-2d"
+      },
+      {
+        "id": "inspector-fixed",
+        "x": 704,
+        "y": 96,
+        "width": 864,
+        "height": 620,
+        "role": "fixed-panel",
+        "activeTab": 1,
+        "navigation": {
+          "x": 16,
+          "y": 12,
+          "width": 832,
+          "height": 48,
+          "itemWidth": 272,
+          "gap": 8
+        }
+      },
+      {
+        "id": "mode-2d",
+        "x": 54,
+        "y": 668,
+        "width": 88,
+        "height": 44,
+        "role": "default-2d"
+      },
+      {
+        "id": "mode-3d",
+        "x": 150,
+        "y": 668,
+        "width": 88,
+        "height": 44,
+        "role": "explicit-3d"
+      }
+    ],
+    "04_Phat_Trien": [
+      {
+        "id": "growth-0",
+        "x": 728,
+        "y": 251,
+        "width": 812,
+        "height": 132,
+        "role": "preview-reason-action"
+      },
+      {
+        "id": "growth-1",
+        "x": 728,
+        "y": 396,
+        "width": 812,
+        "height": 132,
+        "role": "preview-reason-action"
+      },
+      {
+        "id": "growth-2",
+        "x": 728,
+        "y": 541,
+        "width": 812,
+        "height": 132,
+        "role": "preview-reason-action"
+      },
+      {
+        "id": "slot-1",
+        "x": 40,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": true,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-2",
+        "x": 262,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": true,
+        "summoned": false,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-3",
+        "x": 484,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": true,
+        "empty": false,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-4",
+        "x": 706,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-5",
+        "x": 928,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "slot-6",
+        "x": 1150,
+        "y": 750,
+        "width": 210,
+        "height": 112,
+        "role": "full-bleed-avatar",
+        "viewed": false,
+        "summoned": false,
+        "favorite": false,
+        "empty": true,
+        "cover": true,
+        "overlayHeight": 26,
+        "overlayAlpha": 0.18,
+        "localTextPlateAlpha": 0.84
+      },
+      {
+        "id": "roster",
+        "x": 24,
+        "y": 736,
+        "width": 1552,
+        "height": 140,
+        "role": "six-full-bleed-slots"
+      },
+      {
+        "id": "hero",
+        "x": 32,
+        "y": 112,
+        "width": 648,
+        "height": 600,
+        "role": "user-supplied-large-2d"
+      },
+      {
+        "id": "inspector-fixed",
+        "x": 704,
+        "y": 96,
+        "width": 864,
+        "height": 620,
+        "role": "fixed-panel",
+        "activeTab": 2,
+        "navigation": {
+          "x": 16,
+          "y": 12,
+          "width": 832,
+          "height": 48,
+          "itemWidth": 272,
+          "gap": 8
+        }
+      },
+      {
+        "id": "mode-2d",
+        "x": 54,
+        "y": 668,
+        "width": 88,
+        "height": 44,
+        "role": "default-2d"
+      },
+      {
+        "id": "mode-3d",
+        "x": 150,
+        "y": 668,
+        "width": 88,
+        "height": 44,
+        "role": "explicit-3d"
+      }
+    ],
+    "05_Thong_Tin_Thu": [
+      {
+        "id": "scrollbar",
+        "x": 1331.5,
+        "y": 290,
+        "width": 3,
+        "height": 489,
+        "role": "scroll-body"
+      },
+      {
+        "id": "header-meters",
+        "x": 916,
+        "y": 192,
+        "width": 380,
+        "height": 70,
+        "role": "existing-hp-exp-provider"
+      },
+      {
+        "id": "modal",
+        "x": 248,
+        "y": 80,
+        "width": 1104,
+        "height": 740,
+        "role": "fixed-header-scroll-body"
+      },
+      {
+        "id": "summary",
+        "x": 272,
+        "y": 170,
+        "width": 1056,
+        "height": 96,
+        "role": "provider-content"
+      },
+      {
+        "id": "metadata",
+        "x": 272,
+        "y": 282,
+        "width": 514,
+        "height": 266,
+        "role": "provider-content"
+      },
+      {
+        "id": "stats",
+        "x": 802,
+        "y": 282,
+        "width": 526,
+        "height": 266,
+        "role": "provider-content"
+      },
+      {
+        "id": "advanced",
+        "x": 272,
+        "y": 564,
+        "width": 1056,
+        "height": 90,
+        "role": "provider-content"
+      },
+      {
+        "id": "skills",
+        "x": 272,
+        "y": 670,
+        "width": 1056,
+        "height": 126,
+        "role": "provider-content"
+      }
+    ],
+    "06_Tang_Cap": [
+      {
+        "id": "modal",
+        "x": 300,
+        "y": 102,
+        "width": 1000,
+        "height": 696,
+        "role": "provider-preview"
+      },
+      {
+        "id": "summary",
+        "x": 324,
+        "y": 192,
+        "width": 952,
+        "height": 96,
+        "role": "provider-preview"
+      },
+      {
+        "id": "stats-before-after",
+        "x": 324,
+        "y": 304,
+        "width": 952,
+        "height": 226,
+        "role": "provider-preview"
+      },
+      {
+        "id": "new-skills",
+        "x": 324,
+        "y": 546,
+        "width": 468,
+        "height": 88,
+        "role": "provider-preview"
+      },
+      {
+        "id": "evolution",
+        "x": 808,
+        "y": 546,
+        "width": 468,
+        "height": 88,
+        "role": "provider-preview"
+      },
+      {
+        "id": "resources",
+        "x": 324,
+        "y": 668,
+        "width": 550,
+        "height": 92,
+        "role": "provider-preview"
+      },
+      {
+        "id": "confirm",
+        "x": 896,
+        "y": 684,
+        "width": 380,
+        "height": 60,
+        "role": "provider-preview"
+      }
+    ],
+    "07_Hoi_Phuc": [
+      {
+        "id": "modal",
+        "x": 448,
+        "y": 168,
+        "width": 704,
+        "height": 564,
+        "role": "provider-heal"
+      },
+      {
+        "id": "summary",
+        "x": 472,
+        "y": 258,
+        "width": 656,
+        "height": 96,
+        "role": "provider-heal"
+      },
+      {
+        "id": "preview",
+        "x": 472,
+        "y": 370,
+        "width": 656,
+        "height": 112,
+        "role": "provider-heal"
+      },
+      {
+        "id": "item",
+        "x": 472,
+        "y": 530,
+        "width": 656,
+        "height": 96,
+        "role": "provider-heal"
+      },
+      {
+        "id": "cancel",
+        "x": 472,
+        "y": 666,
+        "width": 320,
+        "height": 46,
+        "role": "provider-heal"
+      },
+      {
+        "id": "confirm",
+        "x": 808,
+        "y": 666,
+        "width": 320,
+        "height": 46,
+        "role": "provider-heal"
+      }
+    ],
+    "08_Doi_Ten_Thu": [
+      {
+        "id": "modal",
+        "x": 448,
+        "y": 238,
+        "width": 704,
+        "height": 424,
+        "role": "rename-validation"
+      },
+      {
+        "id": "summary",
+        "x": 472,
+        "y": 328,
+        "width": 656,
+        "height": 88,
+        "role": "rename-validation"
+      },
+      {
+        "id": "input",
+        "x": 472,
+        "y": 460,
+        "width": 656,
+        "height": 56,
+        "role": "rename-validation"
+      },
+      {
+        "id": "helper",
+        "x": 472,
+        "y": 547,
+        "width": 656,
+        "height": 32,
+        "role": "rename-validation"
+      },
+      {
+        "id": "cancel",
+        "x": 472,
+        "y": 594,
+        "width": 320,
+        "height": 48,
+        "role": "rename-validation"
+      },
+      {
+        "id": "confirm",
+        "x": 808,
+        "y": 594,
+        "width": 320,
+        "height": 48,
+        "role": "rename-validation"
+      }
+    ]
+  }
+}

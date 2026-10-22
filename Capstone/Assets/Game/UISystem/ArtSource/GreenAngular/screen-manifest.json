@@ -1,0 +1,90 @@
+[
+  {
+    "id": "01_Menu",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/01_Menu.png",
+    "svg": "Screens/01_Menu.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/01_Menu.png",
+    "preview1366": "Preview/1366/01_Menu.png"
+  },
+  {
+    "id": "02_Tong_Quan",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/02_Tong_Quan.png",
+    "svg": "Screens/02_Tong_Quan.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/02_Tong_Quan.png",
+    "preview1366": "Preview/1366/02_Tong_Quan.png"
+  },
+  {
+    "id": "03_Ky_Nang",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/03_Ky_Nang.png",
+    "svg": "Screens/03_Ky_Nang.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/03_Ky_Nang.png",
+    "preview1366": "Preview/1366/03_Ky_Nang.png"
+  },
+  {
+    "id": "04_Phat_Trien",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/04_Phat_Trien.png",
+    "svg": "Screens/04_Phat_Trien.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/04_Phat_Trien.png",
+    "preview1366": "Preview/1366/04_Phat_Trien.png"
+  },
+  {
+    "id": "05_Thong_Tin_Thu",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/05_Thong_Tin_Thu.png",
+    "svg": "Screens/05_Thong_Tin_Thu.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/05_Thong_Tin_Thu.png",
+    "preview1366": "Preview/1366/05_Thong_Tin_Thu.png"
+  },
+  {
+    "id": "06_Tang_Cap",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/06_Tang_Cap.png",
+    "svg": "Screens/06_Tang_Cap.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/06_Tang_Cap.png",
+    "preview1366": "Preview/1366/06_Tang_Cap.png"
+  },
+  {
+    "id": "07_Hoi_Phuc",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/07_Hoi_Phuc.png",
+    "svg": "Screens/07_Hoi_Phuc.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/07_Hoi_Phuc.png",
+    "preview1366": "Preview/1366/07_Hoi_Phuc.png"
+  },
+  {
+    "id": "08_Doi_Ten_Thu",
+    "width": 1600,
+    "height": 900,
+    "png": "Screens/08_Doi_Ten_Thu.png",
+    "svg": "Screens/08_Doi_Ten_Thu.svg",
+    "content": "concept UI, not engine screenshot",
+    "data": "provider placeholders; no official stats or cost",
+    "preview1920": "Preview/1920/08_Doi_Ten_Thu.png",
+    "preview1366": "Preview/1366/08_Doi_Ten_Thu.png"
+  }
+]

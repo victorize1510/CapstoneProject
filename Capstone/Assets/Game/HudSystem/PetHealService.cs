@@ -1,6 +1,7 @@
 using System;
 using Capstone.Game.Inventory;
 using Capstone.Game.SaveSystem;
+using GDS.Core;
 using GDS.Core.Events;
 using UnityEngine;
 
@@ -21,34 +22,39 @@ namespace Capstone.Game.HudSystem {
             inventory = targetInventory != null ? targetInventory : inventory;
         }
 
-        public PetHealPreview CreatePreview(PetController pet) {
+        public PetHealPreview CreatePreview(PetController pet) => CreatePreview(pet, null);
+
+        public PetHealPreview CreatePreview(PetController pet, ItemBase exactItem) {
             var preview = new PetHealPreview { Pet = pet };
             if (pet == null) {
-                preview.DisabledReason = "Chưa chọn pet để hồi phục.";
+                preview.DisabledReason = "Chưa chọn thú để hồi phục.";
                 return preview;
             }
 
             preview.RuntimeStats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
             preview.Metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
             if (preview.RuntimeStats == null) {
-                preview.DisabledReason = "Pet chưa có dữ liệu HP.";
+                preview.DisabledReason = "Thú chưa có dữ liệu HP.";
                 return preview;
             }
 
             ResolveInventory();
             ResolveSaveController();
-            preview.Item = FindHealingItem();
+            preview.Item = exactItem == null ? FindHealingItem() : FindExactHealingItem(exactItem);
             preview.ItemName = preview.Item != null ? preview.Item.Name : preferredHealingItemId;
             preview.ItemIcon = preview.Item?.Icon;
             preview.OwnedQuantity = preview.Item != null ? preview.Item.Quantity : 0;
             preview.RequiredQuantity = Mathf.Max(1, requiredQuantity);
-            preview.HealAmount = preview.Item != null && preview.Item.HealAmount > 0
-                ? preview.Item.HealAmount
-                : Mathf.Max(1, fallbackHealAmount);
+            preview.HealAmount = preview.Item != null ? preview.Item.HealAmount : Mathf.Max(1, fallbackHealAmount);
+            preview.EnergyRestoreAmount = preview.Item?.EnergyRestoreAmount ?? 0;
 
             preview.CurrentHealth = preview.RuntimeStats.Health;
             preview.MaxHealth = preview.RuntimeStats.MaxHealth;
-            preview.IsValid = preview.MaxHealth > 0f;
+            preview.CurrentEnergy = preview.RuntimeStats.Energy;
+            preview.MaxEnergy = preview.RuntimeStats.MaxEnergy;
+            preview.ResultEnergy = Mathf.Min(preview.MaxEnergy, preview.CurrentEnergy + preview.EnergyRestoreAmount);
+            preview.ActualEnergyRestore = Mathf.Max(0f,preview.ResultEnergy - preview.CurrentEnergy);
+            preview.IsValid = preview.RestoresEnergy ? preview.MaxEnergy > 0f : preview.MaxHealth > 0f;
             preview.IsFullHealth = preview.IsValid
                 && preview.CurrentHealth >= preview.MaxHealth - 0.01f;
             preview.ResultHealth = preview.IsValid
@@ -57,13 +63,13 @@ namespace Capstone.Game.HudSystem {
             preview.ActualHealAmount = Mathf.Max(0f, preview.ResultHealth - preview.CurrentHealth);
 
             if (!preview.IsValid) {
-                preview.DisabledReason = "Pet chưa có Max HP hợp lệ.";
+                preview.DisabledReason = preview.RestoresEnergy ? "Thú này chưa sử dụng MP." : "Thú chưa có Max HP hợp lệ.";
             }
-            else if (preview.IsFullHealth) {
-                preview.DisabledReason = "HP ĐÃ ĐẦY";
+            else if (preview.IsFullResource) {
+                preview.DisabledReason = preview.ResourceName + " ĐÃ ĐẦY";
             }
             else if (preview.Item == null) {
-                preview.DisabledReason = $"Không có {preview.ItemName} trong Bag.";
+                preview.DisabledReason = $"Không có {preview.ItemName} trong Túi đồ.";
             }
             else if (preview.OwnedQuantity < preview.RequiredQuantity) {
                 preview.DisabledReason = $"Không đủ {preview.ItemName}.";
@@ -76,8 +82,15 @@ namespace Capstone.Game.HudSystem {
             return preview;
         }
 
-        public bool TryHeal(PetController pet, out string message) {
-            PetHealPreview preview = CreatePreview(pet);
+        public bool TryHeal(PetController pet, out string message) => TryHeal(pet, null, out message);
+
+        public bool TryHeal(PetController pet, ItemBase exactItem, out string message) {
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryBegin(this, "heal", out var operation)) { message = string.Empty; return false; }
+            using (operation) return TryHealCore(pet, exactItem, out message);
+        }
+
+        bool TryHealCore(PetController pet, ItemBase exactItem, out string message) {
+            PetHealPreview preview = CreatePreview(pet, exactItem);
             if (!preview.CanHeal) {
                 message = preview.DisabledReason;
                 return false;
@@ -87,12 +100,12 @@ namespace Capstone.Game.HudSystem {
 
             Result removeResult = inventory.RemoveItem(preview.Item.ItemBase, preview.RequiredQuantity);
             if (removeResult is Fail) {
-                message = $"Không thể dùng {preview.ItemName}. Hãy kiểm tra lại Bag.";
+                message = $"Không thể dùng {preview.ItemName}. Hãy kiểm tra lại Túi đồ.";
                 return false;
             }
 
             PetHudRuntimeStats stats = preview.RuntimeStats;
-            stats.SetStatus(preview.ResultHealth, stats.MaxHealth, stats.Energy, stats.MaxEnergy);
+            stats.SetStatus(preview.ResultHealth, stats.MaxHealth, preview.ResultEnergy, stats.MaxEnergy);
 
             if (saveController == null || !saveController.SaveNow()) {
                 stats.RestoreFromSaveData(statsSnapshot);
@@ -106,7 +119,7 @@ namespace Capstone.Game.HudSystem {
             string displayName = preview.Metadata != null
                 ? preview.Metadata.ResolveDisplayName(baseName)
                 : baseName;
-            message = $"{displayName} đã hồi {Mathf.RoundToInt(preview.ActualHealAmount):N0} HP.";
+            message = $"{displayName} đã hồi {Mathf.RoundToInt(preview.ActualRestoreAmount):N0} {preview.ResourceName}.";
             return true;
         }
 
@@ -120,13 +133,21 @@ namespace Capstone.Game.HudSystem {
             if (saveController == null) saveController = FindFirstObjectByType<PlayerSaveController>();
         }
 
+        InventoryItemSnapshot FindExactHealingItem(ItemBase itemBase) {
+            if (inventory == null) return null;
+            foreach (InventoryItemSnapshot item in inventory.GetItems()) {
+                if (item.ItemBase == itemBase && item.IsRecoveryItem) return item;
+            }
+            return null;
+        }
+
         InventoryItemSnapshot FindHealingItem() {
             if (inventory == null) return null;
 
             var items = inventory.GetItems();
             for (int i = 0; i < items.Count; i++) {
                 InventoryItemSnapshot item = items[i];
-                if (item == null) continue;
+                if (item == null || !item.IsRecoveryItem || item.HealAmount <= 0) continue;
                 if (string.Equals(item.ItemId, preferredHealingItemId, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(item.Name, preferredHealingItemId, StringComparison.OrdinalIgnoreCase)) {
                     return item;
@@ -135,14 +156,9 @@ namespace Capstone.Game.HudSystem {
 
             for (int i = 0; i < items.Count; i++) {
                 InventoryItemSnapshot item = items[i];
-                if (item != null && item.Category == GameItemCategory.Medicine && item.HealAmount > 0) {
+                if (item != null && item.IsRecoveryItem && item.HealAmount > 0) {
                     return item;
                 }
-            }
-
-            for (int i = 0; i < items.Count; i++) {
-                InventoryItemSnapshot item = items[i];
-                if (item != null && item.Category == GameItemCategory.Medicine) return item;
             }
 
             return null;
@@ -169,6 +185,16 @@ namespace Capstone.Game.HudSystem {
         public float MaxHealth;
         public float ResultHealth;
         public float ActualHealAmount;
+        public float CurrentEnergy, MaxEnergy, ResultEnergy, ActualEnergyRestore;
+        public int EnergyRestoreAmount;
+        public bool RestoresEnergy => EnergyRestoreAmount > 0;
+        public string ResourceName => RestoresEnergy ? "MP" : "HP";
+        public float CurrentValue => RestoresEnergy ? CurrentEnergy : CurrentHealth;
+        public float MaximumValue => RestoresEnergy ? MaxEnergy : MaxHealth;
+        public float ResultValue => RestoresEnergy ? ResultEnergy : ResultHealth;
+        public float ActualRestoreAmount => RestoresEnergy ? ActualEnergyRestore : ActualHealAmount;
+        public int RestoreAmount => RestoresEnergy ? EnergyRestoreAmount : HealAmount;
+        public bool IsFullResource => RestoresEnergy ? MaxEnergy > 0 && CurrentEnergy >= MaxEnergy - .01f : IsFullHealth;
         public int HealAmount;
         public int OwnedQuantity;
         public int RequiredQuantity;

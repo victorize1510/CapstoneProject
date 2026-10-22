@@ -1,0 +1,11 @@
+const path=require('path');
+module.exports=async function(H){
+ const {C,sharp,doc,txt,img,put,root}=H;
+ let body='<rect width="1680" height="2140" fill="#28334C"/>'+txt('MENU & THÚ ĐỒNG HÀNH · BẢN TỔNG HỢP MỚI NHẤT',24,50,29,C.light,700)+txt('20/10/2026 · Avatar cố định · Ba tab liền panel · Skill vuông vát 8 cạnh · CRIT RATE / CRIT DMG',24,91,18,C.light,550);
+ const names=['Menu Huấn luyện viên','Tổng quan','Kỹ năng','Phát triển','Thông tin thú','Tăng cấp','Hồi phục','Đổi tên thú'];
+ for(let i=0;i<H.SCREEN_FNS.length;i++){const id=H.SCREEN_FNS[i][0],x=24+i%2*828,y=148+Math.floor(i/2)*482,buffer=await sharp(path.join(root,'Screens/'+id+'.png')).resize(804,452).png().toBuffer();body+=txt(String(i+1).padStart(2,'0')+' · '+names[i],x,y-12,20,C.light,650)+img(buffer.toString('base64'),x,y,804,452);}
+ body+=txt('8 mockup 1600×900 + asset SVG/PNG alpha + prompt · Concept thiết kế, chưa sửa hoặc chạy Unity',24,2100,18,C.light,550);
+ await sharp(Buffer.from(doc(1680,2140,body))).png().toFile(path.join(root,'GALLERY.png'));
+ const cards=H.SCREEN_FNS.map(([id],i)=>'<a href="Screens/'+id+'.png"><figure><img src="Screens/'+id+'.png" alt="'+names[i]+'"><figcaption>'+names[i]+'</figcaption></figure></a>').join('');
+ put('gallery.html','<!doctype html><html lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Menu & Companion — 20/10/2026</title><style>body{margin:24px;background:#28334c;color:#ede9e1;font:18px system-ui}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(480px,1fr));gap:20px}a{color:inherit}figure{margin:0}img{width:100%;height:auto}figcaption{padding:8px 0}nav{display:flex;flex-wrap:wrap;gap:18px}</style><h1>Menu & Thú đồng hành — bản mới nhất 20/10/2026</h1><p>8 mockup hiện hành; avatar chỉ hiển thị, ba tab liền panel, skill vuông vát tám cạnh. Đây là gallery cục bộ, không phải UI runtime.</p><nav><a href="00_DOC_TRUOC.md">Đọc trước</a><a href="01_BAN_CHOT_THIET_KE.md">Bản chốt</a><a href="Prompts/00_Prompt_Unity_Tong_Hop.md">Prompt Unity tổng</a><a href="Boards/06_Avatar_Tab_Skill.png">Avatar / tab / skill</a><a href="Reference/COMPARE_R1_R2.png">Lịch sử đối chiếu</a></nav><br><main>'+cards+'</main></html>');
+};

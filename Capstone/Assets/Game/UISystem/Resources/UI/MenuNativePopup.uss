@@ -1,0 +1,6 @@
+/* Native menus live outside the document template, so give the popup its own theme. */
+.menu-native-popup { -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf"); font-size: 17px; color: #244d34; background-color: #fffdf6; border-width: 1px; border-color: #a9bd9c; border-radius: 6px; }
+.menu-native-popup .unity-base-dropdown__container-inner { background-color: #fffdf6; border-width: 0; }
+.menu-native-popup .unity-base-dropdown__item { min-height: 32px; color: #244d34; background-color: #fffdf6; }
+.menu-native-popup .unity-base-dropdown__item:hover { background-color: #e4edda; }
+.menu-native-popup .unity-base-dropdown__label { color: #244d34; font-size: 17px; -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf"); }

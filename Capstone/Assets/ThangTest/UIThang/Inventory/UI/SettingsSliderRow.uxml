@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="settings-row settings-slider-row">
+        <ui:Label name="setting-label" class="settings-row-label" picking-mode="Ignore" />
+        <ui:Slider name="setting-slider" low-value="0" high-value="100" class="settings-slider" />
+        <ui:Label name="setting-value" class="settings-percent" picking-mode="Ignore" />
+    </ui:VisualElement>
+</ui:UXML>

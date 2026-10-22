@@ -1,0 +1,28 @@
+/* Generated from GUI_Source/tokens.json by create_gui_kit.cjs. */
+.menu-theme {
+    -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf");
+    --menu-header-height: 76px;
+    --menu-background: #f8f4eb;
+    --menu-surface: #ffffff;
+    --menu-title-size: 38px;
+    --menu-title-color: #174a30;
+    --menu-heading-accent: #54825b;
+    --menu-back-width: 146px;
+    --menu-back-height: 42px;
+    --menu-back-text: #31573d;
+    --menu-back-surface: #ffffff;
+    --menu-back-border: #a9bd9c;
+    --menu-back-hover: #e4edda;
+    --menu-focus-border: #c6a34d;
+    --menu-text: #31573d;
+    --menu-muted: #657568;
+    --menu-border: #a9bd9c;
+    --menu-pressed: #cbdcc5;
+    --menu-danger: #a5433c;
+    --menu-disabled: #edf0eb;
+    --menu-body-size: 17px;
+    --menu-caption-size: 14px;
+    --menu-control-height: 42px;
+    --menu-radius: 8px;
+    --menu-icon-size: 24px;
+}

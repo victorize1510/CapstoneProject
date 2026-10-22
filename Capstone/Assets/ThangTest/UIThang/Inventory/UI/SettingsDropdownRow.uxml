@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement class="settings-row settings-dropdown-row">
+        <ui:Label name="setting-label" class="settings-row-label" picking-mode="Ignore" />
+        <ui:DropdownField name="setting-dropdown" class="settings-dropdown" />
+    </ui:VisualElement>
+</ui:UXML>

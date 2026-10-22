@@ -1,0 +1,4315 @@
+{
+  "version": "Green Angular 2026-10-18",
+  "assets": [
+    {
+      "file": "Assets/Art/backpack.png",
+      "bytes": 2672913,
+      "sha256": "0ffe10da4ebd1704467c516e1c415682e69c1cfab746365bcbd556a14256c21f",
+      "width": 1254,
+      "height": 1254,
+      "hasAlpha": true,
+      "origin": "byte-identical reuse of Menu/Assets/01-backpack.png",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/box_empty_reference.png",
+      "bytes": 2031,
+      "sha256": "70ee46ab7ae49c39b57c67d2e4ca980b3525a6f7a710e01b0264329c24a892f0",
+      "width": 100,
+      "height": 100,
+      "hasAlpha": true,
+      "origin": "reference render of BOX U+1F43E and original style; runtime BOX control is canonical",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/box_empty_reference.svg",
+      "bytes": 542,
+      "sha256": "66fb14fc7b6d23df1d35145c2f2817012b50a2bf48c3daaa5355cfb6bdddee87",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "reference render of BOX U+1F43E and original style; runtime BOX control is canonical",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/corner_leaf.png",
+      "bytes": 2365,
+      "sha256": "e6d4401b300de396798b2b0a21e6cffabea1c898240c90435021db71fe824e10",
+      "width": 80,
+      "height": 80,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/corner_leaf.svg",
+      "bytes": 390,
+      "sha256": "60e2a31d3c23f95a8f75d19a641355da7093bc0a960017a39a2eddc74b7339bb",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_book.png",
+      "bytes": 9594,
+      "sha256": "c69672acfa47894c55c88a85314025350a3561fb46cb4fda97305e2c3c43170b",
+      "width": 296,
+      "height": 224,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_book.svg",
+      "bytes": 606,
+      "sha256": "60171db5ece84ad639edd534d59eccfe31e0b149f8c8caf1e031cc8dd373cf00",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_map.png",
+      "bytes": 12153,
+      "sha256": "484e2ebb5161e1ee3b7cdf127697dc1d284566b4b9ff7ba7a0ccfbed58b8bbee",
+      "width": 296,
+      "height": 224,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_map.svg",
+      "bytes": 595,
+      "sha256": "deeca4e0e2d93d76dad13df69bb84ee200071a0b393dc96dffbd9b5a164ab5b5",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_profile.png",
+      "bytes": 7901,
+      "sha256": "a0c3e985a817c2c002ec71931a22f043d59b76b27ab13623268e2f8c490fd736",
+      "width": 296,
+      "height": 224,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_profile.svg",
+      "bytes": 592,
+      "sha256": "3556df11c49fab786019669eef2b7e97673cf1e873aa1965a6230c9c6a9b2694",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_quest.png",
+      "bytes": 5816,
+      "sha256": "e78237e9afb3ba00466e9c9805631ac7384093c3af76aa40b0de7b92d49cb040",
+      "width": 296,
+      "height": 224,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/etching_quest.svg",
+      "bytes": 532,
+      "sha256": "c144504ae9907ac53ac10dce618c8fa9b891e881399705a61d8de3a2a5901b5b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/portrait_alpha_fade_mask.png",
+      "bytes": 1516,
+      "sha256": "e9d7cff751411b90bb69640747db48fadb1465e45af235f190838608991a0682",
+      "width": 256,
+      "height": 256,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/portrait_alpha_fade_mask.svg",
+      "bytes": 361,
+      "sha256": "00cda6bc5dc20f539c7212bb45606318457e14d6aba223fe264d47f05b864bfc",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Art/sanctuary-backdrop.png",
+      "bytes": 2960360,
+      "sha256": "68271cb0c9cad21ad497fabd87b5ca8f01e859b739746687c112da3950cb64a2",
+      "width": 1672,
+      "height": 941,
+      "hasAlpha": false,
+      "origin": "built-in image_gen, generated 2026-10-18; prompt in Prompts/05_Imagegen_Actual_Prompts.md",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__border.png",
+      "bytes": 315,
+      "sha256": "69b5ca91ad77e3908c96fab06429623ca3d025e5494a889fb739f06555fa8c8d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__border.svg",
+      "bytes": 260,
+      "sha256": "9fa3c5c509fc642d140c8adc26d5701414a46d4f6eec029834da4123c1ec684c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__disabled.png",
+      "bytes": 375,
+      "sha256": "304faa13875802abe9c227756d748297dc6a82fe8289b3c4a02a51c391c4f65e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__disabled.svg",
+      "bytes": 340,
+      "sha256": "f2d26596f2540915e67442a21b07b4ff373b6e36442b9f12de4aeae1b8646296",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__fill.png",
+      "bytes": 288,
+      "sha256": "e357470a4844e5a506ef40254ec7a8e5108aa3dd58885bc0766a9fa8c52ac7b6",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__fill.svg",
+      "bytes": 373,
+      "sha256": "fa8d2beb63f69b65b982af7391d5ab6991aaebb8ebaba890b4d075e500e55b82",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__focus.png",
+      "bytes": 307,
+      "sha256": "c063050f93751f925b27ad5f70bd6ea1944458570939b8cda09b8358aa0debc4",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__focus.svg",
+      "bytes": 260,
+      "sha256": "8c55952520ac6e39e0b61af1f52643cfc257a2025105d9cffd3192972d2dfcea",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__hover.png",
+      "bytes": 247,
+      "sha256": "faf81b127d109151ebbf197428192c582657fa5695de1a179039ca1b9003db0d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__hover.svg",
+      "bytes": 241,
+      "sha256": "ea6ef3bc2c2dde3c8326fc2ced4723a7b8448f80411bf00a185a0462fc766290",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__mask.png",
+      "bytes": 174,
+      "sha256": "9ae8e9d09eda693cdbf41872df1afd4f60b2c70722e548f592fc2043293d8766",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__mask.svg",
+      "bytes": 225,
+      "sha256": "e45832f45f761bba6a0e8820a807de42ee599fbfc3eb2583359acc514738a693",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__pressed.png",
+      "bytes": 240,
+      "sha256": "71d6008badd31c68591f534816814c6fea597728c51cee2a230e0ebdd552aa5e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__pressed.svg",
+      "bytes": 241,
+      "sha256": "4c8e067a0d20815013a1cf075a95b7253fca1c2523e3c1219b33f7c9f519db41",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__selected.png",
+      "bytes": 377,
+      "sha256": "80418675dc2fb1baa55b7869d5a3ac03ddd64be1b9f23c3fbdd26225d9bbf34b",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_exp__selected.svg",
+      "bytes": 258,
+      "sha256": "975f8c5650934946d04e624516faa04ce90c91477f52b156a703d543cc06a763",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__border.png",
+      "bytes": 315,
+      "sha256": "69b5ca91ad77e3908c96fab06429623ca3d025e5494a889fb739f06555fa8c8d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__border.svg",
+      "bytes": 260,
+      "sha256": "9fa3c5c509fc642d140c8adc26d5701414a46d4f6eec029834da4123c1ec684c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__disabled.png",
+      "bytes": 375,
+      "sha256": "304faa13875802abe9c227756d748297dc6a82fe8289b3c4a02a51c391c4f65e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__disabled.svg",
+      "bytes": 340,
+      "sha256": "f2d26596f2540915e67442a21b07b4ff373b6e36442b9f12de4aeae1b8646296",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__fill.png",
+      "bytes": 284,
+      "sha256": "c8617e23601b7a55d79bf05c913087af4f95e7529d07ff90fd845d00b4a4cb6b",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__fill.svg",
+      "bytes": 373,
+      "sha256": "722210228188446f46271910a50d602608e701008f60798a266bf727b2c1969e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__focus.png",
+      "bytes": 307,
+      "sha256": "c063050f93751f925b27ad5f70bd6ea1944458570939b8cda09b8358aa0debc4",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__focus.svg",
+      "bytes": 260,
+      "sha256": "8c55952520ac6e39e0b61af1f52643cfc257a2025105d9cffd3192972d2dfcea",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__hover.png",
+      "bytes": 247,
+      "sha256": "faf81b127d109151ebbf197428192c582657fa5695de1a179039ca1b9003db0d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__hover.svg",
+      "bytes": 241,
+      "sha256": "ea6ef3bc2c2dde3c8326fc2ced4723a7b8448f80411bf00a185a0462fc766290",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__mask.png",
+      "bytes": 174,
+      "sha256": "9ae8e9d09eda693cdbf41872df1afd4f60b2c70722e548f592fc2043293d8766",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__mask.svg",
+      "bytes": 225,
+      "sha256": "e45832f45f761bba6a0e8820a807de42ee599fbfc3eb2583359acc514738a693",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__pressed.png",
+      "bytes": 240,
+      "sha256": "71d6008badd31c68591f534816814c6fea597728c51cee2a230e0ebdd552aa5e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__pressed.svg",
+      "bytes": 241,
+      "sha256": "4c8e067a0d20815013a1cf075a95b7253fca1c2523e3c1219b33f7c9f519db41",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__selected.png",
+      "bytes": 377,
+      "sha256": "80418675dc2fb1baa55b7869d5a3ac03ddd64be1b9f23c3fbdd26225d9bbf34b",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_hp__selected.svg",
+      "bytes": 258,
+      "sha256": "975f8c5650934946d04e624516faa04ce90c91477f52b156a703d543cc06a763",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__border.png",
+      "bytes": 315,
+      "sha256": "69b5ca91ad77e3908c96fab06429623ca3d025e5494a889fb739f06555fa8c8d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__border.svg",
+      "bytes": 260,
+      "sha256": "9fa3c5c509fc642d140c8adc26d5701414a46d4f6eec029834da4123c1ec684c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__disabled.png",
+      "bytes": 375,
+      "sha256": "304faa13875802abe9c227756d748297dc6a82fe8289b3c4a02a51c391c4f65e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__disabled.svg",
+      "bytes": 340,
+      "sha256": "f2d26596f2540915e67442a21b07b4ff373b6e36442b9f12de4aeae1b8646296",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__fill.png",
+      "bytes": 291,
+      "sha256": "36ca673a3be40a8ae92bc975a9e041ece3375c25aa11431e1bc2de50ba85acd3",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__fill.svg",
+      "bytes": 373,
+      "sha256": "b74d98d5fea8bae0b560992d7b9282b070718147b746b77ab28669e17900c01a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__focus.png",
+      "bytes": 307,
+      "sha256": "c063050f93751f925b27ad5f70bd6ea1944458570939b8cda09b8358aa0debc4",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__focus.svg",
+      "bytes": 260,
+      "sha256": "8c55952520ac6e39e0b61af1f52643cfc257a2025105d9cffd3192972d2dfcea",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__hover.png",
+      "bytes": 247,
+      "sha256": "faf81b127d109151ebbf197428192c582657fa5695de1a179039ca1b9003db0d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__hover.svg",
+      "bytes": 241,
+      "sha256": "ea6ef3bc2c2dde3c8326fc2ced4723a7b8448f80411bf00a185a0462fc766290",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__mask.png",
+      "bytes": 174,
+      "sha256": "9ae8e9d09eda693cdbf41872df1afd4f60b2c70722e548f592fc2043293d8766",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__mask.svg",
+      "bytes": 225,
+      "sha256": "e45832f45f761bba6a0e8820a807de42ee599fbfc3eb2583359acc514738a693",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__pressed.png",
+      "bytes": 240,
+      "sha256": "71d6008badd31c68591f534816814c6fea597728c51cee2a230e0ebdd552aa5e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__pressed.svg",
+      "bytes": 241,
+      "sha256": "4c8e067a0d20815013a1cf075a95b7253fca1c2523e3c1219b33f7c9f519db41",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__selected.png",
+      "bytes": 377,
+      "sha256": "80418675dc2fb1baa55b7869d5a3ac03ddd64be1b9f23c3fbdd26225d9bbf34b",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_stat__selected.svg",
+      "bytes": 258,
+      "sha256": "975f8c5650934946d04e624516faa04ce90c91477f52b156a703d543cc06a763",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__border.png",
+      "bytes": 315,
+      "sha256": "69b5ca91ad77e3908c96fab06429623ca3d025e5494a889fb739f06555fa8c8d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__border.svg",
+      "bytes": 260,
+      "sha256": "9fa3c5c509fc642d140c8adc26d5701414a46d4f6eec029834da4123c1ec684c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__disabled.png",
+      "bytes": 375,
+      "sha256": "304faa13875802abe9c227756d748297dc6a82fe8289b3c4a02a51c391c4f65e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__disabled.svg",
+      "bytes": 340,
+      "sha256": "f2d26596f2540915e67442a21b07b4ff373b6e36442b9f12de4aeae1b8646296",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__fill.png",
+      "bytes": 287,
+      "sha256": "3a4d7a537b219e6f62883f6b325693ca132f9d70c7354b4b3a66494b08a67536",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__fill.svg",
+      "bytes": 373,
+      "sha256": "80c5f4de56fbf69d3d8ac936fe0dc007986cdb682bf08ecdf78d8a17232877ee",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__focus.png",
+      "bytes": 307,
+      "sha256": "c063050f93751f925b27ad5f70bd6ea1944458570939b8cda09b8358aa0debc4",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__focus.svg",
+      "bytes": 260,
+      "sha256": "8c55952520ac6e39e0b61af1f52643cfc257a2025105d9cffd3192972d2dfcea",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__hover.png",
+      "bytes": 247,
+      "sha256": "faf81b127d109151ebbf197428192c582657fa5695de1a179039ca1b9003db0d",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__hover.svg",
+      "bytes": 241,
+      "sha256": "ea6ef3bc2c2dde3c8326fc2ced4723a7b8448f80411bf00a185a0462fc766290",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__mask.png",
+      "bytes": 174,
+      "sha256": "9ae8e9d09eda693cdbf41872df1afd4f60b2c70722e548f592fc2043293d8766",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__mask.svg",
+      "bytes": 225,
+      "sha256": "e45832f45f761bba6a0e8820a807de42ee599fbfc3eb2583359acc514738a693",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__pressed.png",
+      "bytes": 240,
+      "sha256": "71d6008badd31c68591f534816814c6fea597728c51cee2a230e0ebdd552aa5e",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__pressed.svg",
+      "bytes": 241,
+      "sha256": "4c8e067a0d20815013a1cf075a95b7253fca1c2523e3c1219b33f7c9f519db41",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__selected.png",
+      "bytes": 377,
+      "sha256": "80418675dc2fb1baa55b7869d5a3ac03ddd64be1b9f23c3fbdd26225d9bbf34b",
+      "width": 320,
+      "height": 14,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/bar_track__selected.svg",
+      "bytes": 258,
+      "sha256": "975f8c5650934946d04e624516faa04ce90c91477f52b156a703d543cc06a763",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__border.png",
+      "bytes": 1294,
+      "sha256": "d6b05cffbfacad3f99fecae56402bce0d9e06d9d1aca30cff7705fb19641a0bf",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__border.svg",
+      "bytes": 231,
+      "sha256": "b26f73b6cad9e0ef77b5e220f61e882e1d3f774d36bec3a33c828ef5196d4783",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__disabled.png",
+      "bytes": 1842,
+      "sha256": "39b35dd27c5b151095db5f2887ceacba1ba46a329a23de76d0da7d41f85a89bd",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__disabled.svg",
+      "bytes": 282,
+      "sha256": "a4c880e407f95f3c10c4b52a9082f9fdcd3c105920d3b448c6a170fb503e6842",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__fill.png",
+      "bytes": 1499,
+      "sha256": "dd97d6ec3cfdb392f3b7c5529dedac3a8d6420ebcb3e4e3132a3a7ff19a63fa8",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__fill.svg",
+      "bytes": 344,
+      "sha256": "023f0ec222d956e27aea7f0661e1ca9e91a117dc2c2f7d3dbc2370ae915fb960",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__focus.png",
+      "bytes": 479,
+      "sha256": "1bf1b13cb9be428da1f8cb19e9aba3e4cc0ddbeb29395cb9c7cf10df142110e0",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__focus.svg",
+      "bytes": 231,
+      "sha256": "90982ef2f7e4968b30d9ac8d06267f1a2bd11e24768c0c0a34e21aa53a02e959",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__hover.png",
+      "bytes": 1364,
+      "sha256": "fde9576a510d4c844eb277506ebfcaa270efd972d084042fea624e3ae861050f",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__hover.svg",
+      "bytes": 212,
+      "sha256": "3a521cae8876e0d6fad6a6dfeb6af8ede37ec58dc323650b48e1a14804f566cf",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__mask.png",
+      "bytes": 830,
+      "sha256": "41b6089494f9ff3a6f0675eeb43d37c77ac5b14092da36e7cf64828b757b83ee",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__mask.svg",
+      "bytes": 196,
+      "sha256": "cca4126470fe3ea0be3e7ddb0e3af1b45db10ca9f4c5fae851b6b984bd931bff",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__pressed.png",
+      "bytes": 1323,
+      "sha256": "f7dc320fb6fa7c6a13af80702b9c559256a2e0713e4e8aeae31ab872cc1d0601",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__pressed.svg",
+      "bytes": 212,
+      "sha256": "478536520f95b66cd07de824c0ea57439d9e05343bc9a2d55facad582fce08d1",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__selected.png",
+      "bytes": 1528,
+      "sha256": "3c3bed82693ef31d6aea5a8c15fb011b2f7055cdf31efe367c07f47d88824fed",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_primary__selected.svg",
+      "bytes": 229,
+      "sha256": "05d88f639e05b36f08000cbbf55ee365754bf8f243476c10f11aeace4fed8738",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__border.png",
+      "bytes": 1294,
+      "sha256": "d6b05cffbfacad3f99fecae56402bce0d9e06d9d1aca30cff7705fb19641a0bf",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__border.svg",
+      "bytes": 231,
+      "sha256": "b26f73b6cad9e0ef77b5e220f61e882e1d3f774d36bec3a33c828ef5196d4783",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__disabled.png",
+      "bytes": 1842,
+      "sha256": "39b35dd27c5b151095db5f2887ceacba1ba46a329a23de76d0da7d41f85a89bd",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__disabled.svg",
+      "bytes": 282,
+      "sha256": "a4c880e407f95f3c10c4b52a9082f9fdcd3c105920d3b448c6a170fb503e6842",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__fill.png",
+      "bytes": 1476,
+      "sha256": "75f70cf83fc01034b75a9e92e07017735d0b2ee468c6b0fcb8cd1b9ae92c9b74",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__fill.svg",
+      "bytes": 344,
+      "sha256": "fd248e5d4586465318505aca25f049f7017c02d03354f82411b1e51f3773954b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__focus.png",
+      "bytes": 479,
+      "sha256": "1bf1b13cb9be428da1f8cb19e9aba3e4cc0ddbeb29395cb9c7cf10df142110e0",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__focus.svg",
+      "bytes": 231,
+      "sha256": "90982ef2f7e4968b30d9ac8d06267f1a2bd11e24768c0c0a34e21aa53a02e959",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__hover.png",
+      "bytes": 1364,
+      "sha256": "fde9576a510d4c844eb277506ebfcaa270efd972d084042fea624e3ae861050f",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__hover.svg",
+      "bytes": 212,
+      "sha256": "3a521cae8876e0d6fad6a6dfeb6af8ede37ec58dc323650b48e1a14804f566cf",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__mask.png",
+      "bytes": 830,
+      "sha256": "41b6089494f9ff3a6f0675eeb43d37c77ac5b14092da36e7cf64828b757b83ee",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__mask.svg",
+      "bytes": 196,
+      "sha256": "cca4126470fe3ea0be3e7ddb0e3af1b45db10ca9f4c5fae851b6b984bd931bff",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__pressed.png",
+      "bytes": 1323,
+      "sha256": "f7dc320fb6fa7c6a13af80702b9c559256a2e0713e4e8aeae31ab872cc1d0601",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__pressed.svg",
+      "bytes": 212,
+      "sha256": "478536520f95b66cd07de824c0ea57439d9e05343bc9a2d55facad582fce08d1",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__selected.png",
+      "bytes": 1528,
+      "sha256": "3c3bed82693ef31d6aea5a8c15fb011b2f7055cdf31efe367c07f47d88824fed",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_quiet__selected.svg",
+      "bytes": 229,
+      "sha256": "05d88f639e05b36f08000cbbf55ee365754bf8f243476c10f11aeace4fed8738",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__border.png",
+      "bytes": 1294,
+      "sha256": "d6b05cffbfacad3f99fecae56402bce0d9e06d9d1aca30cff7705fb19641a0bf",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__border.svg",
+      "bytes": 231,
+      "sha256": "b26f73b6cad9e0ef77b5e220f61e882e1d3f774d36bec3a33c828ef5196d4783",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__disabled.png",
+      "bytes": 1842,
+      "sha256": "39b35dd27c5b151095db5f2887ceacba1ba46a329a23de76d0da7d41f85a89bd",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__disabled.svg",
+      "bytes": 282,
+      "sha256": "a4c880e407f95f3c10c4b52a9082f9fdcd3c105920d3b448c6a170fb503e6842",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__fill.png",
+      "bytes": 1501,
+      "sha256": "46b414b7b8a5d76cc51f5c2f8ad6ffa022f4ba31223cb815194b58285a203741",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__fill.svg",
+      "bytes": 344,
+      "sha256": "f9b87093c7acc9d262a1b79ac08382c279390a32882b452f39ba4001e4d39491",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__focus.png",
+      "bytes": 479,
+      "sha256": "1bf1b13cb9be428da1f8cb19e9aba3e4cc0ddbeb29395cb9c7cf10df142110e0",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__focus.svg",
+      "bytes": 231,
+      "sha256": "90982ef2f7e4968b30d9ac8d06267f1a2bd11e24768c0c0a34e21aa53a02e959",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__hover.png",
+      "bytes": 1364,
+      "sha256": "fde9576a510d4c844eb277506ebfcaa270efd972d084042fea624e3ae861050f",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__hover.svg",
+      "bytes": 212,
+      "sha256": "3a521cae8876e0d6fad6a6dfeb6af8ede37ec58dc323650b48e1a14804f566cf",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__mask.png",
+      "bytes": 830,
+      "sha256": "41b6089494f9ff3a6f0675eeb43d37c77ac5b14092da36e7cf64828b757b83ee",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__mask.svg",
+      "bytes": 196,
+      "sha256": "cca4126470fe3ea0be3e7ddb0e3af1b45db10ca9f4c5fae851b6b984bd931bff",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__pressed.png",
+      "bytes": 1323,
+      "sha256": "f7dc320fb6fa7c6a13af80702b9c559256a2e0713e4e8aeae31ab872cc1d0601",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__pressed.svg",
+      "bytes": 212,
+      "sha256": "478536520f95b66cd07de824c0ea57439d9e05343bc9a2d55facad582fce08d1",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__selected.png",
+      "bytes": 1528,
+      "sha256": "3c3bed82693ef31d6aea5a8c15fb011b2f7055cdf31efe367c07f47d88824fed",
+      "width": 352,
+      "height": 68,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/button_secondary__selected.svg",
+      "bytes": 229,
+      "sha256": "05d88f639e05b36f08000cbbf55ee365754bf8f243476c10f11aeace4fed8738",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__border.png",
+      "bytes": 1300,
+      "sha256": "51e19d8e9535c6446d970f10f021c0b753f73b1519d017955603029f4b423500",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__border.svg",
+      "bytes": 262,
+      "sha256": "90b770bfbbf80bc7930c85b63fccd08f97f7ae2ddb80ff48994b20ca69ac4986",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__disabled.png",
+      "bytes": 3272,
+      "sha256": "8f00f3b7c876157dcde108ea3669ce0ff60c6d07da9aa9be4b44db1711c1f09f",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__disabled.svg",
+      "bytes": 342,
+      "sha256": "25e966467bc4386e245abe003c5ca394ecd53952cb2d2584de37aa73e0b9a441",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__fill.png",
+      "bytes": 3194,
+      "sha256": "76302ec59ad6643b7e1c98fe5842090eee7ee654d566a615ca20074258ad1113",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__fill.svg",
+      "bytes": 375,
+      "sha256": "e83d3ffec060ee1ae6afc3bf8a2fd9d57f438b3940ebf7b8515683f7026258ea",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__focus.png",
+      "bytes": 1281,
+      "sha256": "3f20fde5f68cde75416b0b2b213f592cbac79be88f3319cf58f5feb5159188a6",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__focus.svg",
+      "bytes": 262,
+      "sha256": "c338838da122f31424cd1008957631b4d04f2c24fd20c734f2e8d75be5b09db0",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__hover.png",
+      "bytes": 3095,
+      "sha256": "cb69626e5ffef0c492b58fc5d29de395d9e3668ef4259824e8ffaa6103806089",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__hover.svg",
+      "bytes": 243,
+      "sha256": "2f6454cfe271ad819fac09c6ad34be63ecf38a3ba0bd781ddcdfe0ac99b6346c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__mask.png",
+      "bytes": 1031,
+      "sha256": "58c11d204a3918fcbeb05fc4ab1c321135e17dbd7000dac4969353f63e3f2118",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__mask.svg",
+      "bytes": 227,
+      "sha256": "3f2b27475c9af5c83238652f1fd1a2b2b2ba58839a43fcccf9e1e05f84a309fc",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__pressed.png",
+      "bytes": 3091,
+      "sha256": "768cb609c1613220f0cdd91181233b37992b0374d7085b8ffde9d63b7b9ac591",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__pressed.svg",
+      "bytes": 243,
+      "sha256": "2708dbcff83f96c214fd789a3c54b61979bd47d91ca456c6d012700c73e2cace",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__selected.png",
+      "bytes": 1396,
+      "sha256": "1a83c8a82d90cffe17b98ec510e1a345565986f716ee5ac051b05f40bf2fb9dc",
+      "width": 728,
+      "height": 169,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/content_panel__selected.svg",
+      "bytes": 260,
+      "sha256": "52bedb6e9b1cfb96724fed0b6b47929e30e011993ff026ed664e2208bff4ee09",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__border.png",
+      "bytes": 1676,
+      "sha256": "a425d5e0c349e51d0ff620d5e35084fc6e3c343117a5443e3b858da316ffb86d",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__border.svg",
+      "bytes": 231,
+      "sha256": "a18217ad5e386f95370abc4e435d6e794210ed06bd9dac54d1e2b92c3fa68d0b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__disabled.png",
+      "bytes": 2146,
+      "sha256": "ad3f60d494020005aac912ace9cbff4c6f3253f1cbda44fea210a0f42f951b4d",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__disabled.svg",
+      "bytes": 282,
+      "sha256": "1a70a53714508caa6491ae7335478242498393c7f2684a7aee00b646cfa1e703",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__fill.png",
+      "bytes": 1717,
+      "sha256": "17280c9e2cb205341a1297aa00a3dabb506f07dd086115f97b52652154b618bf",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__fill.svg",
+      "bytes": 344,
+      "sha256": "ba8b0f199ea004e7d265c33019b5a35b783f75c21d874b392c728ae7e3cee192",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__focus.png",
+      "bytes": 1248,
+      "sha256": "161a32bf83a19bbba2fec58d59b10884265d74db7ebd3107c14b17ec3f12fe97",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__focus.svg",
+      "bytes": 231,
+      "sha256": "a8c9460fcf25b56fe9872aeb4b113495dc3e21283b94135af9c2342cdaa59f20",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__hover.png",
+      "bytes": 1593,
+      "sha256": "a5f40d8da8c10db16897de3f8281e608a66a92110fa590ef6bafc0eaec12fd8e",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__hover.svg",
+      "bytes": 212,
+      "sha256": "6c478b48781ff7b8f0cfb5655dc68ae0ccfce6946c7cbb9a991a937dce703929",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__mask.png",
+      "bytes": 823,
+      "sha256": "2f92701350004ee24a96b2af1536aa5f7f446dc0f13c310a9ee600d5acf4360d",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__mask.svg",
+      "bytes": 196,
+      "sha256": "f149163225a0435d4629334a8298205f088cb00b1f8e82e53d6492ac964e9e4c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__pressed.png",
+      "bytes": 1553,
+      "sha256": "0a71dec40febc13c5d2e27b32f28134259ad2dc706f77b10248a8858a6060c5b",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__pressed.svg",
+      "bytes": 212,
+      "sha256": "74c2f482be3cf51b1e74de2a6c7cd5a03095c24d28f6c12e6298ed694a3d65e2",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__selected.png",
+      "bytes": 1834,
+      "sha256": "84476dd691b38ba3abb368c8078fc6d9667ff85746258f538d47209ca6e8cb33",
+      "width": 616,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/header__selected.svg",
+      "bytes": 229,
+      "sha256": "4b4b6dcbb855b0828365486acb9f45a16a469e35fb316fb40fe270dafcf69164",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__border.png",
+      "bytes": 318,
+      "sha256": "7d0783dfe14244145cd03ae22a803d6e21b9d597998db950eae8e01f6d9cd9f0",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__border.svg",
+      "bytes": 228,
+      "sha256": "3cf288e30b1d91df3e58942fefc7b4480bf6c4494f0aa48a4fb5d7d4b4925500",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__disabled.png",
+      "bytes": 332,
+      "sha256": "b037c5b7e78c35e7f18fecc8d7e5fcddc88527d8b79fc98d0ec4463512bac546",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__disabled.svg",
+      "bytes": 278,
+      "sha256": "68b7e1acd89dbc974f7f04fe68c25cfd2430b72fc4b10a3955f58cbf1738f859",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__fill.png",
+      "bytes": 391,
+      "sha256": "17d76a988fa769fbf5b9194478b6464b096e98a443596e643e02edc8f41cb7ea",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__fill.svg",
+      "bytes": 341,
+      "sha256": "0019231343c2ec57be93303a843a6248a91e9ab2c08fea5cc0ea379c5564cf6b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__focus.png",
+      "bytes": 282,
+      "sha256": "45c09fb71c945fea90237c2c0f73dbf5a41134028ba15da1a665ea6404c85319",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__focus.svg",
+      "bytes": 228,
+      "sha256": "892d91af73a2ca205a4abb39825fa9cecf1f92ff2a261e2f468252c824bfc48c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__hover.png",
+      "bytes": 306,
+      "sha256": "c140f5b6d0c65b857ba70915ad1cc84051e3c1c33d06d40c66d5e59553ca4cb7",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__hover.svg",
+      "bytes": 209,
+      "sha256": "f2b43008763c1ec2a682376fc8148e6ce4c3d9da7f147b9eba7f36d35451f4e9",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__mask.png",
+      "bytes": 274,
+      "sha256": "cc4f07e3442bfae86dcf19e7e6e4e2a9493161466776fb4cb2f73f4bd8788a91",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__mask.svg",
+      "bytes": 193,
+      "sha256": "7478d95b31e274a9f7714c05a7a117af0c1ce83b8210232d7a3d0f51e394c547",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__pressed.png",
+      "bytes": 302,
+      "sha256": "47733d2c69d850a6b582ca4a4b39a567f1bbba7e43962f1bc3c320f97f396af2",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__pressed.svg",
+      "bytes": 209,
+      "sha256": "e30e41de58ef84422e06197a174e8a52336ed49b3e85a2360722cfa8cc27b0a3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__selected.png",
+      "bytes": 338,
+      "sha256": "0521ce84b52e6a5ec245dd07c58b2ac31a13dac0edc738a85f41afce9a4ed6e1",
+      "width": 44,
+      "height": 44,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/icon_button__selected.svg",
+      "bytes": 226,
+      "sha256": "a0636c1277cbe211057a2c13c8f75595207f03a1bc49cbf2125fb38da9325a9b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__border.png",
+      "bytes": 683,
+      "sha256": "55ddf6747b048653b9c76e8e6d336f2ba7a24b9523a58c48df412c4acf6df7e7",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__border.svg",
+      "bytes": 256,
+      "sha256": "1a63aad00b5320e70d69b8ac2e5f1d268640d16dcb1e1546d1ebd323a37e1124",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__disabled.png",
+      "bytes": 1141,
+      "sha256": "a3cc54fae9c582de185dee5c62252f004fd3df3d7448d264075d5b8c82c50b88",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__disabled.svg",
+      "bytes": 332,
+      "sha256": "361fb1a9cc06f68796b29d56048c8b649703d7d54a6295ccd6c5fdd2d7705fd8",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__fill.png",
+      "bytes": 1050,
+      "sha256": "377b2e12a27d516881f14b8512998c2bcaf2aed660c8c950f841108bda18cf2e",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__fill.svg",
+      "bytes": 369,
+      "sha256": "15d86ef61d3aa3f9fc465e39930e5cc9a10c4dda29a26d134c37962e947eaf48",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__focus.png",
+      "bytes": 632,
+      "sha256": "25b4e3b81903ca6bc5b574e76fd461d9611d0c26c0f78e4c1fe50179af60fcb9",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__focus.svg",
+      "bytes": 256,
+      "sha256": "29dcf2ae5fcb9b442ef555979840117df4ae9e388dea2d170e5ab31acf9c11ff",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__hover.png",
+      "bytes": 984,
+      "sha256": "7b11aba5ddffefde3fff7516d0cf865b1c67e8a3b683c57ea43ec306e3ea0964",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__hover.svg",
+      "bytes": 237,
+      "sha256": "e918ce9e69a6b79db967205a2198661870b7aea9d2efb3146a40eb823b2fc70b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__mask.png",
+      "bytes": 450,
+      "sha256": "68ce998b751c3da0b86cc892a4b7d1367b3de313fe5aa339c92bab3fa4aad200",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__mask.svg",
+      "bytes": 221,
+      "sha256": "3cb84d6283111751df93b6f3f6c94ee33f2a0f3b2c3539b193a0493b27b83ddc",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__pressed.png",
+      "bytes": 978,
+      "sha256": "5a60b47f68e58fbe94fa0a64538bb8a857e37f59cb835ca3c34bd2f672837985",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__pressed.svg",
+      "bytes": 237,
+      "sha256": "037cafab198d85fb1578fb4f459ca502a2fa5fc9e19dc0f82bd904d828033ceb",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__selected.png",
+      "bytes": 767,
+      "sha256": "2789c47bff2a46ae1d8d4fc1b82fc530df42326cd405cbf6ae72b5f3624d3111",
+      "width": 592,
+      "height": 56,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/input__selected.svg",
+      "bytes": 254,
+      "sha256": "2b7aab06c04f3f23a10e2e697de45e09c55deeb066161bf8ea306d6e32e62ad0",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__border.png",
+      "bytes": 4908,
+      "sha256": "c5c83a259592ae36a559800182730db3d110d4abfac90117f88e00b9958178ab",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__border.svg",
+      "bytes": 288,
+      "sha256": "f034d5b7370ef4a20df71a172902010bbf85f539c1dd2c825cd9b32bda401af8",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__fill.png",
+      "bytes": 11209,
+      "sha256": "4a5f708f95406599263a5aa76622a4a33e479eae0062f408ed90fc4aa8402862",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__fill.svg",
+      "bytes": 255,
+      "sha256": "0519440fe8bd4ddf25c823d93a7912318f8164bd5054eb0361108415d353fc86",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__focus.png",
+      "bytes": 2849,
+      "sha256": "02f60502387b9cd088aa255b7a06b4ad9a619de2f35228f965ac10311fbeb768",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__focus.svg",
+      "bytes": 231,
+      "sha256": "4f033cb4b3e4cfd38cec6cb96f0bd718f9eed08221a39cc0a1e702dd6fa9924f",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__mask.png",
+      "bytes": 3890,
+      "sha256": "838134453d96a225a8cba2524c80b6054f3cf526c777e90a5a829df1a69b7962",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_0__mask.svg",
+      "bytes": 253,
+      "sha256": "a24004149b93f8e29d7f98128a069d98424dea6c15408e8c02eb120042e7544a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__border.png",
+      "bytes": 4859,
+      "sha256": "40e57ffc6bf6c577070033d856584ebeb0931107e5f719192949d9f16881078e",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__border.svg",
+      "bytes": 290,
+      "sha256": "2cbcfb5f5ffe169a155f2f527caf80c6b2aaeb5d69b872be9660515816676859",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__fill.png",
+      "bytes": 11168,
+      "sha256": "de642617907fe3b5707970b9c3648b1c5c2d0394e76d998e4823c9f5783fca76",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__fill.svg",
+      "bytes": 257,
+      "sha256": "2df3900ecc807e492e6514b98ca5a28de6162c4b143132249485028e7e2027e0",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__focus.png",
+      "bytes": 2848,
+      "sha256": "eb677e5fab5dd640b66b5f797db95653bd077f6804efa929ba9275a7b2e87087",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__focus.svg",
+      "bytes": 233,
+      "sha256": "f6215bce69b4a6a3a9b613a2b0079f8b0895673f26568b6ed7df1ed84ccb63f0",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__mask.png",
+      "bytes": 3853,
+      "sha256": "153ecb625ad0314987a65e63fdc61c20a0002316000e421a2c6b79be0f54bbec",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_1__mask.svg",
+      "bytes": 255,
+      "sha256": "8a04b7cfdc5e19696a710e219132b0ca7ddc4fe60e11648fec9977e5082671a8",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__border.png",
+      "bytes": 4910,
+      "sha256": "4b16e090434ce603ef753d7a9ddb24449c2c5a61014c2894c096dbd33170af0f",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__border.svg",
+      "bytes": 290,
+      "sha256": "b36cc58f6eed0e5242eb60040c11585a78d089cd2a15f4852b5e04839555a07e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__fill.png",
+      "bytes": 11208,
+      "sha256": "699b50a8e32c7d06eb01a19fc3dbb7434e6c240c9956b55290b9427812276858",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__fill.svg",
+      "bytes": 257,
+      "sha256": "b8770b33c9e801586a5f778a3634a52156f3430d5bd5c4db40ea24c45f0c5a44",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__focus.png",
+      "bytes": 2861,
+      "sha256": "74a0dbebf4603a68bf5d034e2a89958ed4c56ccdb10b9584e1ed2816324c19ef",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__focus.svg",
+      "bytes": 233,
+      "sha256": "bf6e6da2d10ac008d47c2d59a06768c0af9245f9306179d302f786adc014ef62",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__mask.png",
+      "bytes": 3892,
+      "sha256": "5c9a58d2ab1cf9409fd0af0a90e61354067fbf63e04ed9f58a4eb005458002af",
+      "width": 768,
+      "height": 620,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/inspector_join_2__mask.svg",
+      "bytes": 255,
+      "sha256": "292bb22302ee026b1731ade98d28170528c2e65e82a9517f1a529211ba04c446",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__border.png",
+      "bytes": 1261,
+      "sha256": "f420b2a1ef311101eadb4ca97137f1cdac8007c2183e441fa661c1a98bb231a3",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__border.svg",
+      "bytes": 262,
+      "sha256": "2deb00b8710d873e49e4bb53494a5f3cd65fadad4187e0fd74cb127b1df55dcd",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__disabled.png",
+      "bytes": 2736,
+      "sha256": "9e46f9def0ca620cbecd0a9af8d81e1508db80b5bc0925b6062857b4818a8738",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__disabled.svg",
+      "bytes": 342,
+      "sha256": "7982eb61a40375c838810a89da46c8049f01010499cac7b4fa8d95766ec515af",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__fill.png",
+      "bytes": 2827,
+      "sha256": "6cbea4f48703aee4d118f8c74a0e514ad5956ca18acae5594c616b8b12f38d27",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__fill.svg",
+      "bytes": 375,
+      "sha256": "15e42bb6f00df5f367f2a8aed5f1b72b8957335d4687cc78b8be2f4f006cb3bb",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__focus.png",
+      "bytes": 1265,
+      "sha256": "6cdee417a8f8c65312f2044e273b5b01fc8ffcce3e288edf82d6825adce18e01",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__focus.svg",
+      "bytes": 262,
+      "sha256": "a39ead0b4900d0a2fc85b000fe774855d9a53727dc4b6868c375976c36c14926",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__hover.png",
+      "bytes": 2639,
+      "sha256": "c556f9ae77a3f2e3ec637a67e9062a36f75918774061bbd740e51f90e425ea19",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__hover.svg",
+      "bytes": 243,
+      "sha256": "64723a8485ef5e3aff27a30c94ab4f75cf9e26b54602fb844720fc58a72ae736",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__mask.png",
+      "bytes": 1041,
+      "sha256": "3c9eb3a4c444029322b049ef4b351b3c87dcbc4cac23d110b9440b1a83eb3954",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__mask.svg",
+      "bytes": 227,
+      "sha256": "8d24dc566fbdc907dd0a5e64214f70fe1f170f1cd705ec00ff90fae79cbfa648",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__pressed.png",
+      "bytes": 2634,
+      "sha256": "0c2a885386e59eaa96728d35d0b1c089bfa0b6d6ff28354a8e08338a3df908bf",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__pressed.svg",
+      "bytes": 243,
+      "sha256": "d895709388a557d7a55044e7eef9a081e7f5fc367baf6bfaec4c08e515205626",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__selected.png",
+      "bytes": 1317,
+      "sha256": "36a54ecaa3de9c87f8511f07f781b8b3c68ebb754536b80bb7158e872099d42f",
+      "width": 352,
+      "height": 260,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_card__selected.svg",
+      "bytes": 260,
+      "sha256": "fa459a66ba1c78b6eb8cd9c241ede4306dd7acbd095656ef5f6529702f8c5636",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__border.png",
+      "bytes": 1865,
+      "sha256": "77a64a31b64ae8251e5376bcf7d4a2618ff7790b57bde6e6410823d5081433ad",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__border.svg",
+      "bytes": 231,
+      "sha256": "510a9688b174e74f9802a66c6d83cf60db2fa0024a3e0e73a6542c0a275b5f1c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__disabled.png",
+      "bytes": 2580,
+      "sha256": "943178f97a78d7e319bf7e0761c3f8a13613e62c9b2610822fbeac281417d2f4",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__disabled.svg",
+      "bytes": 282,
+      "sha256": "292715af3fafa6430573628c4ab5e7e1e501487d211b0e1feee5b5de3eeb7d9c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__fill.png",
+      "bytes": 2017,
+      "sha256": "309a1ce6ed68e0409a6902cc40d8b8a1f26a2cfe1764786c12f5a3cb27349f29",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__fill.svg",
+      "bytes": 344,
+      "sha256": "3a6646225bfd7a6d4f89462f87a79568fe2c38e19e09d9e609a5b50074c8e40f",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__focus.png",
+      "bytes": 894,
+      "sha256": "966ba120563f5e9a2a2c0ba9aabb4f66786b1636c866bc4c20a4ba41d74f02c5",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__focus.svg",
+      "bytes": 231,
+      "sha256": "8749bc60f7ced1c179ca828ed2604babffa2e5f28abf2fdd6af31ba1611ccbd8",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__hover.png",
+      "bytes": 1830,
+      "sha256": "161fcf88763b500cc117d52d02cec0b6cea4257e0aa5bc6cec33fd92118e4a39",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__hover.svg",
+      "bytes": 212,
+      "sha256": "d2c447069469eb61caf8e9f3ba1d3e760085bab69cb8dc9cbaf7d234decadb21",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__mask.png",
+      "bytes": 1113,
+      "sha256": "b9c4e70319ab0a34ac4e02223a55255929bff6ff8484a0e7c93a077a0ddf227f",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__mask.svg",
+      "bytes": 196,
+      "sha256": "eb71adf38491f31e0f6f4139e3784721fa5de03deb4d113d49c14f280f835a08",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__pressed.png",
+      "bytes": 1837,
+      "sha256": "855c3c1ac14a902581039915f17299bf4c832581e0b6adadf6e77d76a302ce7a",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__pressed.svg",
+      "bytes": 212,
+      "sha256": "c5a812191aa24a3d209b54f30e60703159c8588f0c08fbb34c58e4f6912d4e19",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__selected.png",
+      "bytes": 1955,
+      "sha256": "1930f4ce5325ca496e0f54609fec75e3e1bdb02b854b83337572f8f6f052e3b0",
+      "width": 352,
+      "height": 98,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/menu_secondary__selected.svg",
+      "bytes": 229,
+      "sha256": "a1ca8027574220e67c4a88efe9b1891bf2f7c0fc072bf3ea3e6078175dd85504",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__border.png",
+      "bytes": 5245,
+      "sha256": "132a0a2703faa814a4d0c8ce9387bb9d141b6eef398fe055c74ae72b55ae2d47",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__border.svg",
+      "bytes": 268,
+      "sha256": "8c801a4feaf08aed8ac055810f72babf54481677ac700a1479802eff6b6c8956",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__disabled.png",
+      "bytes": 17771,
+      "sha256": "a308444372b0830527aa6515d82541245a6b154af86eba17920a29e9b2d12058",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__disabled.svg",
+      "bytes": 352,
+      "sha256": "34a618d664ff2ac4fe29fa9822ebe1a90baf47ae4674220c19d649b985a7370c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__fill.png",
+      "bytes": 17776,
+      "sha256": "f6c00b6d3f4b8f4e8295592f80b5ef7eaccf851a951f21c9225fc4e274c2a751",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__fill.svg",
+      "bytes": 381,
+      "sha256": "e90074a77935f2d2c8579fd2c24d9b7b6c5091235c6a536ba86a984dcee05c1d",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__focus.png",
+      "bytes": 5209,
+      "sha256": "e03c54fb504643ccc314a972891519955d1a460433ce6678aa91bf5adda68002",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__focus.svg",
+      "bytes": 268,
+      "sha256": "deea1142b43771290b9f29f42638648a9b521b208023cdf06a58ca5a044c76f6",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__hover.png",
+      "bytes": 17566,
+      "sha256": "867083ca968a0fb69092b46623b22efd80d1431e1890f73f49b6469c0f926e52",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__hover.svg",
+      "bytes": 249,
+      "sha256": "49c086fa51ae7a10229a42ecbc3f582232bea6963d1a4d7a4767324f4b50a55a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__mask.png",
+      "bytes": 4982,
+      "sha256": "700f3948ab16d43e38eea6a078d4b8df30d3099a0b9e45c79bb82f1c72e5d478",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__mask.svg",
+      "bytes": 233,
+      "sha256": "714dc3b0d89e872c7142b46f8da4d1a76d0369632577c75729cc245da08682e3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__pressed.png",
+      "bytes": 17560,
+      "sha256": "8966becf575a2a6bedefe086da6d73a235760213c7a8affbdf8640ada0168953",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__pressed.svg",
+      "bytes": 249,
+      "sha256": "c04bb58bc744f03822a0df958884144081df25017a7899fe74f86258a548a0f4",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__selected.png",
+      "bytes": 5421,
+      "sha256": "35f762fe3c76a3f1fa30fdc124925853389238ad6cc919b303232a03f67c1923",
+      "width": 1080,
+      "height": 740,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/popup__selected.svg",
+      "bytes": 266,
+      "sha256": "0c3abaa064ea422c834bd556dcad215683e454cccfdc2dc327df22797e016235",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__border.png",
+      "bytes": 756,
+      "sha256": "9515531fd9ab5e1a378d965b5f5512c808c7eab58073068efd803c161fa87f9d",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__border.svg",
+      "bytes": 262,
+      "sha256": "c3eb0cbda22c85c562a6b3e60ce2407f114de3bc7c2a29a93c36895c027129bc",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__disabled.png",
+      "bytes": 1188,
+      "sha256": "355ac897960daae94fac251803f87497be9253bd0bb2093b29108c21995c32d3",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__disabled.svg",
+      "bytes": 342,
+      "sha256": "07091f9ab6b5c7c14237e1f59c9b5b77e9c8012304b8e7bb028a66d6385c9df8",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__fill.png",
+      "bytes": 1118,
+      "sha256": "6eefa3fe6ba49adab999e69fe5c703cd38270169e35a6504cd7e467a09c5fcc8",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__fill.svg",
+      "bytes": 375,
+      "sha256": "b1c5155c478406bf25a4e46a84a8030c92b2a9c27dc7a4ce2d1d0187bac2a79b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__focus.png",
+      "bytes": 730,
+      "sha256": "20126d88b8069b2872b089a01c3d5f92c386a57839eb8976f67b0be550c7b4ff",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__focus.svg",
+      "bytes": 262,
+      "sha256": "bfeab487e5d3b68a06fdadef5bb020167ca88cb7b6e51bbb8626ecf4d01152fb",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__hover.png",
+      "bytes": 1037,
+      "sha256": "8be970cbbb5da15931798c12a705bdebcb1fe3ac8e296268dd7d0ad7e317c658",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__hover.svg",
+      "bytes": 243,
+      "sha256": "b6c8a491d78e62396fad2fb0c120796273d09299ca9adb8c406987822d079620",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__mask.png",
+      "bytes": 542,
+      "sha256": "414d732bca953f9b9d2113c59a12458ad4e3889ecf6ad6bbe82d84d72106260d",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__mask.svg",
+      "bytes": 227,
+      "sha256": "2d2db8f6691a567414b725e0b7031dc6315112ad368a3457528b427f9ccd2aff",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__pressed.png",
+      "bytes": 1033,
+      "sha256": "2b0d0e24c28d7f2fcabd7f72fce941903705086d51dc9f4af49103115c781c66",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__pressed.svg",
+      "bytes": 243,
+      "sha256": "5c679e097367a5dca6603c3cacb41b8a8fd8ed88574b9c4f191499400c16b4b5",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__selected.png",
+      "bytes": 798,
+      "sha256": "f248e0a1beef4b0aadc4a0e39c0e19e11414c305cb68e47f60fe9d4a74d4f4cb",
+      "width": 208,
+      "height": 132,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/portrait_slot__selected.svg",
+      "bytes": 260,
+      "sha256": "550a36251bc0f992dfcb0d504817904a1bce2d3856bccaa7d55d33e60ec23c61",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__border.png",
+      "bytes": 1163,
+      "sha256": "8dd2627c48d09f5e3eaf7b634ca81f4350422853b5ad5804fa6d91fcb20e87d7",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__border.svg",
+      "bytes": 262,
+      "sha256": "a0377ac35498d642619cbc119f6b126180633c0d8a2b7fc20d8f4cda8d0ef93c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__disabled.png",
+      "bytes": 2802,
+      "sha256": "749faea3664879d7ea561485dc370de040c731dbc2230c54fff5e2fa8dd27f64",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__disabled.svg",
+      "bytes": 342,
+      "sha256": "fbcc14c2cfb18569696b6e604ad5e005870364d65e455a0c9dd3dbe117527ec2",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__fill.png",
+      "bytes": 2651,
+      "sha256": "f871db6ef7561118d0f81feb367c1ab8f9c583105b40aeccca12a1ef93325b65",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__fill.svg",
+      "bytes": 375,
+      "sha256": "38a4a15eab3b697616385028fde01d2b49e0044d0b1b9ab0c597288a22453da1",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__focus.png",
+      "bytes": 1122,
+      "sha256": "9afab54d35b0fec35a139e333c43bec77f3271b2288f2b314282b9e8a60a7187",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__focus.svg",
+      "bytes": 262,
+      "sha256": "98a6932394b38ceea0054f30885137b945fd1a10101fc220c81ece0c7d247d82",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__hover.png",
+      "bytes": 2631,
+      "sha256": "a915dc429b02e84d9590a2732f3fa86204c81ace38182c5060fb465df2b3b50e",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__hover.svg",
+      "bytes": 243,
+      "sha256": "2a353bd7b51c4656c7d8ffad877658d25a52494d9715810428aa5e09caa7f880",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__mask.png",
+      "bytes": 905,
+      "sha256": "e2c67a767e3ed3dfafa7c7fe6eeacbedc2c4febc29983a7366ec0affd2d1ed01",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__mask.svg",
+      "bytes": 227,
+      "sha256": "a7ddf4d7a83a34394debc293667686ce926858a3d9be31ad0c599e8d0de945ca",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__pressed.png",
+      "bytes": 2625,
+      "sha256": "f1dfb967c0d2291df77ddb2b0b09ee7affbcac877c209202913b00070acb8b81",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__pressed.svg",
+      "bytes": 243,
+      "sha256": "39bb8c766fe8fbb9c6408f0b3fe836ef3df3deeeb0a6ef4b2859f7cde72e1b39",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__selected.png",
+      "bytes": 1260,
+      "sha256": "0266aa5854919435efae9d39c6aa59d8a33de752eb4088080bd027d44bfed15f",
+      "width": 720,
+      "height": 142,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/profile_panel__selected.svg",
+      "bytes": 260,
+      "sha256": "a9d7ea371bc218f834f0a7569fc899bd6579224e33aa50761f889d86a462e940",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__border.png",
+      "bytes": 1879,
+      "sha256": "37888cf17affec9a7659e4b6f65c0bfbe0f73e5b4f78662bc344eda38e44d436",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__border.svg",
+      "bytes": 268,
+      "sha256": "5dcac2e545840ebf240a52dc2dabfe9b7f29e55a227616f795b901de57f06b19",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__disabled.png",
+      "bytes": 5763,
+      "sha256": "69c12c7afe86d13d2a4a8a658cb05d31bdbbdbc76382a8b6b0528a7d6edb04b0",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__disabled.svg",
+      "bytes": 352,
+      "sha256": "b5717bbed9593d074c319019430aed0ad4020a1cf22c2064f4d446829364306e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__fill.png",
+      "bytes": 5671,
+      "sha256": "9b8193e2f33e2db70faf7a939df841077d42728a917e6068a14a081509a4791e",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__fill.svg",
+      "bytes": 381,
+      "sha256": "5a879a811e7da95b71b6ae9b16b64c1d2036ffeebc45c0bec14e8c1e6423363c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__focus.png",
+      "bytes": 1861,
+      "sha256": "4ff2f61fa7920f2bf057057c471efadd50de5292d67fb580d6a593754de9a925",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__focus.svg",
+      "bytes": 268,
+      "sha256": "3ea1766d2d7309a9a0d89ff598508fee6ce2adf4f6c7255ed360f2efbb7242c5",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__hover.png",
+      "bytes": 5569,
+      "sha256": "65ff8fce639c6d5bee54fc8b770b4778954137b1290e5bad62e52d90c7f33648",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__hover.svg",
+      "bytes": 249,
+      "sha256": "5dfe1be85858733a80c39a10660992d07b99acbfb90768ca2a5249314a60267d",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__mask.png",
+      "bytes": 1547,
+      "sha256": "c9a392d18fe0b4ee51f505d48c9482a50ba26f5206081b9aec052eb273fb3d59",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__mask.svg",
+      "bytes": 233,
+      "sha256": "265ec07841ecef7e4dda1e07f2361591caca5b85c2c0d60c2f56cb4033778f7f",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__pressed.png",
+      "bytes": 5568,
+      "sha256": "5f23522c0efc291ea8450da28fc909e7179e202ea62de24b968469276734d6a1",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__pressed.svg",
+      "bytes": 249,
+      "sha256": "f80155a6378799ea523ae45a83d1dfffe84b9073ab795ae4af85a4f59506132a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__selected.png",
+      "bytes": 2043,
+      "sha256": "943d860cce58336f97fac0496a04d6ab904fe8d6244fcd714e8cf5ba26c00988",
+      "width": 1568,
+      "height": 162,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/roster_dock__selected.svg",
+      "bytes": 266,
+      "sha256": "2ff241511fd8aca4f3adb54984c1c3da467f42cc7ea04cf921fb7fed12577d6a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__border.png",
+      "bytes": 4754,
+      "sha256": "68cd6b63a369c0fe9e4569555227bdbe3614b0fc4d131b88e187f17ca7c1f008",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__border.svg",
+      "bytes": 262,
+      "sha256": "6486a96f0a13e8c313ed269224fbf120df4c4196a97c6313717dd95e74e8f809",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__disabled.png",
+      "bytes": 14718,
+      "sha256": "f59f83e2354afa1f35a855bb5907592e7989e054fe42f417e7b8dbc405c330a2",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__disabled.svg",
+      "bytes": 342,
+      "sha256": "6dd92dab56d7c0846a93eadecb55beb0aec7bc949817d508ee3394d44f779d7d",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__fill.png",
+      "bytes": 14911,
+      "sha256": "c4c1d5ad50ed24e115dcce59c6ca88d855d0e47a10e74e64d129a710664981ed",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__fill.svg",
+      "bytes": 375,
+      "sha256": "a630a3f1b5df737d77931c01b31061a684143567657e004fd0f417cb7daeb265",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__focus.png",
+      "bytes": 5029,
+      "sha256": "c4ecab036ba16d44a19076dfe404db910bd20d10d603f74fde5711d1a8af7acb",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__focus.svg",
+      "bytes": 262,
+      "sha256": "44d53fc5d4b8ab719972499127b0c463de3abe330667fd1fe310629ca39c15e6",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__hover.png",
+      "bytes": 14499,
+      "sha256": "164ac9ebdf313fca88202a32dc3793be502ac54a35ce5e80f71362be7df639e6",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__hover.svg",
+      "bytes": 243,
+      "sha256": "5c76aa1d5e50e11c5d8785deb7c95852f53a8d93368a09981c813f923b4b13b3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__mask.png",
+      "bytes": 4496,
+      "sha256": "6fae30ffc30558985a1940bccc7d8a7a343ee1cb539e8f445c5065933b6d2455",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__mask.svg",
+      "bytes": 227,
+      "sha256": "37ae68300611917e51559abdbf9d793bbe40c04957f6b1e8e01faaa9e22cadba",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__pressed.png",
+      "bytes": 14496,
+      "sha256": "14cbaf34386ef89c516f5e0b811982b30fec2bde150808d0e889bf1977bc0e28",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__pressed.svg",
+      "bytes": 243,
+      "sha256": "5c5ceb656c261183ebbb7a1eac3122af00cf640666695671835a7804a21eea68",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__selected.png",
+      "bytes": 4912,
+      "sha256": "fe5cdbb4858e1a3225550024093f17b9750a76a90f46d46892fba69990c4a3d9",
+      "width": 768,
+      "height": 844,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/shell__selected.svg",
+      "bytes": 260,
+      "sha256": "4f47c825dfed6cfa4daec5c2156ea5dbb96a93646ec5c28294f0875f26f56841",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__border.png",
+      "bytes": 448,
+      "sha256": "54d793d6d802d0a6efc8fab473a6432e41b3b9b72863c37c7d58e2f69d04c8fd",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__border.svg",
+      "bytes": 250,
+      "sha256": "d8a36f5f4ced12b8f1c44e02e5033a67332c13954ac624f8e64b19a303be6813",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__disabled.png",
+      "bytes": 474,
+      "sha256": "b186f1ec6e83764dcee3eed8fd76d3b88732659de6a978a8a095d8f1c69d8d70",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__disabled.svg",
+      "bytes": 322,
+      "sha256": "1ed43373f1e2cf5fea98fe8824ca305da4ddc407b1012a13fa0bf1606946076e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__fill.png",
+      "bytes": 466,
+      "sha256": "0855303f42f1d06edf5e44064c80c9ab575e94742953ed31323d8d2fe7c52bc6",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__fill.svg",
+      "bytes": 363,
+      "sha256": "16b5b0de114a90575d7ff366219530936c9ad5605e570f1b391dd4660b00967e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__focus.png",
+      "bytes": 414,
+      "sha256": "a022ee4abaf41717756fba094610b9144337533c9674a7a25b90af93f03df41c",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__focus.svg",
+      "bytes": 266,
+      "sha256": "15d31c724f619df9e87ce791b5fa5e0da076608c6cc0f600d32e47c03db53cb0",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__hover.png",
+      "bytes": 398,
+      "sha256": "e7c625b3d2b6d3d18c45bacce0eec9e969bd92bf37d1c5902fc656024d9ecedc",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__hover.svg",
+      "bytes": 231,
+      "sha256": "06b651b2dfff7e23d7b085b027d51779e496da81cf0d0fec9c4fd1c56a955bb4",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__mask.png",
+      "bytes": 344,
+      "sha256": "d036b7a16997a39749f38174a166b82b876b6f2f98b63c9957890d7893599e8f",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__mask.svg",
+      "bytes": 215,
+      "sha256": "de3fa2bef31e2fb645a4c771025e86186039127dc493edcea5007516497e85b3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__pressed.png",
+      "bytes": 394,
+      "sha256": "880c248ef3ef0c223afee0e850c9a6e7bd799757404397ad2e986df2692119d7",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__pressed.svg",
+      "bytes": 231,
+      "sha256": "8b74ed7ee658b970a6eb5f45199bf21b8aaf6df8a4413fe91778f939b006d8cd",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__selected.png",
+      "bytes": 485,
+      "sha256": "644b52d9ece3a809248008e86e0c4aea15bf5ee0adabb121183cdf97b39a493c",
+      "width": 72,
+      "height": 72,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/skill_slot__selected.svg",
+      "bytes": 248,
+      "sha256": "a1884b9eb3dd35089d156622dc8796326538e5da63e94acaf676f1234d998324",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__border.png",
+      "bytes": 849,
+      "sha256": "cf5d79b93280d5d07139dcf27e2b70eb695ad165f9ca816aec776dc85789ad31",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__border.svg",
+      "bytes": 231,
+      "sha256": "6b410887cd2061478ab522aef82185eb0799a4f83d31e702695bb2f09a4274cb",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__disabled.png",
+      "bytes": 1107,
+      "sha256": "d95688b799182340f230b4be6f29f611d2c8f3d837209142632c81dca45eb1bd",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__disabled.svg",
+      "bytes": 282,
+      "sha256": "78c11c81b4d306847b82daa8c1973831f70b8f2fab66e79d323fa8811299c82a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__fill.png",
+      "bytes": 994,
+      "sha256": "3e8d204828dd6f765448c50859880c2be8d189bd1bc496947068a2d2209190dc",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__fill.svg",
+      "bytes": 344,
+      "sha256": "78552d4b2dc25c2fbedba55b397ce783693d8370692b87b57a8b7b7f55e9cec9",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__focus.png",
+      "bytes": 763,
+      "sha256": "de9d067fe5d464a2e9e37e557c573aa7196037a6b54774d237127ee81f529442",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__focus.svg",
+      "bytes": 231,
+      "sha256": "9e5eaec5fe8d14729b973cf40089e442ba974fc6792abb5c95b373e9465ad217",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__hover.png",
+      "bytes": 747,
+      "sha256": "da85bf550a30ca56821091c855bfd719be6edb0a5d78a6d0161ba52ddb243094",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__hover.svg",
+      "bytes": 212,
+      "sha256": "42166ac02713cf0ecc12b51b0e7a25b1a347e59c8d786b4dda0403d7c7ea3b52",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__mask.png",
+      "bytes": 504,
+      "sha256": "3b29fa2b9286c7bb49e50202fee7b0ffacd33d70dfd1966b49d863d0e13c9377",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__mask.svg",
+      "bytes": 196,
+      "sha256": "c328705b4933bc48b31790fa9ecf3922a87715c28cd9893f6c57848c93c4f498",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__pressed.png",
+      "bytes": 736,
+      "sha256": "9eaf2ec6fe52d27d9a80d78aee8b14edca9840b6e5ed04f2cf19d4f44e881017",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__pressed.svg",
+      "bytes": 212,
+      "sha256": "38a56d25abce7c64d770d64b30f5a034cc974ccc57c06a491ef70915c4b828c3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__selected.png",
+      "bytes": 914,
+      "sha256": "07ee5fc21a9ec0467792fa0fb4953ff7c04e673bb57ed38daaca871ff0488885",
+      "width": 240,
+      "height": 52,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Components/tab__selected.svg",
+      "bytes": 229,
+      "sha256": "c18a9c679a525966c90d8ab2ec1432754b7e1ae2e5c8af4a3c7ac759d7671c4d",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Fonts/NOTO-LICENSE.txt",
+      "bytes": 4377,
+      "sha256": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "existing project NotoSerif font and license",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Fonts/NotoSerif-Regular.ttf",
+      "bytes": 616196,
+      "sha256": "c8f669ceb2c9c60ccf55198b305e08a997ffca79a38cc7eeb551e643cbe66505",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "existing project NotoSerif font and license",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Fonts/OFL.txt",
+      "bytes": 4396,
+      "sha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "existing project NotoSerif font and license",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/attack.png",
+      "bytes": 1103,
+      "sha256": "3d353eec73fb3cc4447c5be282bcc3f1ee4c3b16ad11827b9933d6cf06dfd5fa",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/attack.svg",
+      "bytes": 321,
+      "sha256": "df7105b579523f29a8e7dda88d150c041b8de19cbfb2596adb9531753d9f7671",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/back.png",
+      "bytes": 302,
+      "sha256": "b1786b97941ab62d7f2b365a6bde6e16f25dce7a9b57d44a27cda7683e960004",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/back.svg",
+      "bytes": 295,
+      "sha256": "b20ad621ae5e78f4720810fa6117280fa75af16c05aadd4259f241e9dae7b37e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/bag.png",
+      "bytes": 856,
+      "sha256": "298cebf85280f4e1a729dc301040296bde8db157a874d87a13dcb7cbf84ebf89",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/bag.svg",
+      "bytes": 339,
+      "sha256": "143a54f43fbf656a37ac354648b3b6bac536693970b0911480b5bf756e42c5f1",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/book.png",
+      "bytes": 939,
+      "sha256": "86c0d9fa4eb8a5faf605f899d1977c41e5cc5edae0263c003766ed9f9d974110",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/book.svg",
+      "bytes": 350,
+      "sha256": "2e1669a057b30e398dfd123bcb8e8272051c44f3bd40ea29822ec07bea4e08ae",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/check.png",
+      "bytes": 471,
+      "sha256": "27eaaec14d9a86c4692ca2bc652de15e5ce2c3a265b8d4afa72f74047507c52e",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/check.svg",
+      "bytes": 288,
+      "sha256": "6868a00209b5aed71aa4ebea4bda9447774716fd7871675a2683636bec55ad5e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/chevron.png",
+      "bytes": 260,
+      "sha256": "2bfa6cf5ae1d94f387415aded4e0add55b571522a7bd516f782ee5993f8201b7",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/chevron.svg",
+      "bytes": 288,
+      "sha256": "0c5f01e9e16f8cf3dd28e8fd83cb53a883a691be66d8e7fa37a035929bcf7eda",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/close.png",
+      "bytes": 308,
+      "sha256": "589d955b86dff2cb5446e2e059bc225187dd00703cf495276c487d8b5f66ae72",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/close.svg",
+      "bytes": 294,
+      "sha256": "5730bcc3dfeb901b37dde2ec971b013d86cd9d62b6dd0ce9ba91177c220d2ad3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/compass.png",
+      "bytes": 1661,
+      "sha256": "d9ed963c01112f948c70f2e12bfcdd6013a2f373242fe64933e027d5083f4386",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/compass.svg",
+      "bytes": 343,
+      "sha256": "22e2eff27e74bc57c11805ee2d1ac6b4bea192dbf84ac983050a04ef94f3e9a4",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/crit_damage.png",
+      "bytes": 1641,
+      "sha256": "15c7a1161f0f150dab4461fdac6cd9545a2ec187abb6d54035a7eeb92714cd08",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/crit_damage.svg",
+      "bytes": 345,
+      "sha256": "4446719887563b391ff9d024c38fb6f3c90a31f38c9d4a43bff30b94c0bc291f",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/crit_rate.png",
+      "bytes": 1296,
+      "sha256": "63d00d34dfcab62c9d2e5caa3c10b157344d403ceb861965c9f72b7e69f47e29",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/crit_rate.svg",
+      "bytes": 367,
+      "sha256": "cf539dbff47650e733246aa21ca17d713fdc89d0698f499baa2b0d7f1cca9836",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/defense.png",
+      "bytes": 806,
+      "sha256": "58cb9c276bab33a3557780613076b3d2bd486a2682469ee202366280b9eceea1",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/defense.svg",
+      "bytes": 322,
+      "sha256": "f1feb61dcf893130c1c65141ab878b8938c2d88f606130fb16b2057df16f1fad",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/edit.png",
+      "bytes": 504,
+      "sha256": "ef8927457b2d024d2a8cc4ca5dd9cfc7830e4e3ec07ae800ff2df76ba414aef4",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/edit.svg",
+      "bytes": 312,
+      "sha256": "321438d81201eb364e6d708a44ed4e31821f956a2f723ffe21e87c00dec015a2",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/evolve.png",
+      "bytes": 960,
+      "sha256": "1ae4bfdda22e225bd5bed1608c8bda32935925b920fd77673b70202efca21570",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/evolve.svg",
+      "bytes": 349,
+      "sha256": "8763d784c4393bbfa0403e79a6bf1d0e48194c2dc3237a0d5a49cbb0b5e47877",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/exp.png",
+      "bytes": 1040,
+      "sha256": "0146c0a287d313578983f910fe3efb59ee4a7529e635db86f9dc3d9c225f621a",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/exp.svg",
+      "bytes": 338,
+      "sha256": "b8989d05d9cb9c6cc53ac4befe7a554e88aa34e40332ec9f80fb75ee4ec8b2b3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/favorite.png",
+      "bytes": 786,
+      "sha256": "eb3f6e49c500df71de99e98a727b6666f78280c641f70335bd9ec39dfb5f549d",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/favorite.svg",
+      "bytes": 356,
+      "sha256": "2a1a5970f35c2637e37969398ce671c7920ed86e41f9daad0711eb1cc4e4341c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/grow.png",
+      "bytes": 566,
+      "sha256": "48b689226de5351f627a3ce269586758a121a2d3b3cdfc522d573d6846a3b1eb",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/grow.svg",
+      "bytes": 320,
+      "sha256": "3c499f2bbb1a4f3329f6665e8b193d780a5e756b34b94d8b1ea2d9e468978a2c",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/heal.png",
+      "bytes": 216,
+      "sha256": "8dcc8fa06bf8ac1ecbec07d72f3baf7fd7a1c3e544c1985b2435b61dc142ee41",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/heal.svg",
+      "bytes": 342,
+      "sha256": "7c28be89cf0dc9376f182674c97337dc4417de99223e1ef7e4a71fd9da7148a8",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/hp.png",
+      "bytes": 648,
+      "sha256": "413c79858d0cd6813c91cfc74a4fa07ed1e69793c05a45e10c3a2944b8461018",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/hp.svg",
+      "bytes": 372,
+      "sha256": "450e61d3b94938eca8ed8e9a136095f246aafbb286b5fa981c9504f2f9d30b19",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/location.png",
+      "bytes": 1392,
+      "sha256": "ff3eb2338b40c63efff5d30998f79ee7d6772f5d60ebf99170de13bdf5b6119c",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/location.svg",
+      "bytes": 359,
+      "sha256": "06a978c7932f8befeedce2495d8653f0b86e3c77dfe7a06a1f021d72fbed9bdf",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/lock.png",
+      "bytes": 579,
+      "sha256": "c055494bb07c165bc8b0404ba24b7cb932dfbd6a3c70102648e1e7453b647690",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/lock.svg",
+      "bytes": 322,
+      "sha256": "7d21d23b6387d261149a9d9567fe64bbf1de7830170effc426803ed03ac62661",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/map.png",
+      "bytes": 713,
+      "sha256": "7f048dcf1a77251a71f728c334e33b43f527b7376d245ac9b02d1d7e78ad6bb2",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/map.svg",
+      "bytes": 327,
+      "sha256": "bce4fc2437c7e2fa10a62e1aa3815179382d15ddb22dfec6708db917c12c04b7",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/portrait.png",
+      "bytes": 938,
+      "sha256": "93045b970f18c0d61d06d0767d11a8462a474d1647630d07d31216ba879f0003",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/portrait.svg",
+      "bytes": 342,
+      "sha256": "a90d0ef20350fede1879ce9913cdd456fce329ef308e3dd193b6ed15321b3837",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/profile.png",
+      "bytes": 799,
+      "sha256": "9b6c77fa16c6891f24a62e76081e147b91237aeeade4c4a53c2cedb83536197b",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/profile.svg",
+      "bytes": 375,
+      "sha256": "dfc4c1be72cefbad0f8defe18960316a287b266b96a0ac0874056437fada7e56",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/quest.png",
+      "bytes": 542,
+      "sha256": "8ac78823276bf54824bf8bd227b83f0a00e2b0b93be598b23c7adf070efef17b",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/quest.svg",
+      "bytes": 347,
+      "sha256": "d69534c42bea50e653e85b6b4101cb94ada9da216da2b2da2a9a8d5807dcb854",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/settings.png",
+      "bytes": 1436,
+      "sha256": "a449274942d94ae154004192e219e942f0320d60b0c8cacea87c22c73d285876",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/settings.svg",
+      "bytes": 368,
+      "sha256": "4421126961014f04664c10cca18ac45889453715172d4966e8f1281b91802ba5",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/skills.png",
+      "bytes": 634,
+      "sha256": "5a2e396b75c4ce95884a179db9cc75d6e9d03a9ffb5e1b1e4ecc6d9277313353",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/skills.svg",
+      "bytes": 334,
+      "sha256": "1180463032c13de8be2e22eaa806a112ee2d238fae75495e44676b0945d7fdf9",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/special_attack.png",
+      "bytes": 1000,
+      "sha256": "bad7a7c4d6255b614a6111c452b05b2635bd97161140ab4d79b3be132589fece",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/special_attack.svg",
+      "bytes": 324,
+      "sha256": "50b9e16f58f434428470fe8fb47e3279e60b520b6bee113019a8754522e7a3a4",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/special_defense.png",
+      "bytes": 851,
+      "sha256": "d12fc0c0c3268163509a5f3c0afdd5341c85023fed459d3383d645622fe099f6",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/special_defense.svg",
+      "bytes": 352,
+      "sha256": "47aba55a26849fbb22f238eaacc530e7d0df0436797dddd8dbb82f409e85289b",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/speed.png",
+      "bytes": 980,
+      "sha256": "851d10b880ddde69b4da52c579e471c9c463f8dd076538d316086a140d859538",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/speed.svg",
+      "bytes": 314,
+      "sha256": "f38f904c4d759c1e9e0d3706af55ef636e034da2dd8121e2a7e6b54a7d1aa5eb",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/swap.png",
+      "bytes": 370,
+      "sha256": "0bc6c2ad5c697bc1471ce845e772a1c242b92feefa87481b4c62817c9ef63f42",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/swap.svg",
+      "bytes": 323,
+      "sha256": "4947ab93b2c0be192c76e151ff043b04350e0a3c5909a6e65b2f05afa46f460a",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/time.png",
+      "bytes": 1248,
+      "sha256": "a7fb1f537721c073596ee213858d921d6cd152955b42801422cec20dbb3ef5dd",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/time.svg",
+      "bytes": 316,
+      "sha256": "0615c48e1d8579913b44581353e99820424128895bdc4c4f5867bf8d7af6c133",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/upgrade.png",
+      "bytes": 393,
+      "sha256": "a0e3b13378b545b7d82aad6b53ae29b95a425ed05025c0bb19c843ea41224b09",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/upgrade.svg",
+      "bytes": 304,
+      "sha256": "1cc87116e237941d87fe94d06d2a44d0c1a57fabc965f81f60d60479ab522ce3",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/view3d.png",
+      "bytes": 1002,
+      "sha256": "972b8a4ea6a674b42eccae72a3218a40cf619713f8a04f37a27928df5c5be1af",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/view3d.svg",
+      "bytes": 337,
+      "sha256": "facc00a8c7f38ffc77f334014a6b5cfadd8ff94e405d138976e89fc1e8d5614d",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/warning.png",
+      "bytes": 869,
+      "sha256": "97e4745085aed580d5eff2674d8a3eec157b067853edb49eab695247e981e8bd",
+      "width": 64,
+      "height": 64,
+      "hasAlpha": true,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    },
+    {
+      "file": "Assets/Icons/warning.svg",
+      "bytes": 301,
+      "sha256": "1fb75fd870c2f518e5fe1a671d715bec81c8e83664b016a06ecc86065adf589e",
+      "width": null,
+      "height": null,
+      "hasAlpha": null,
+      "origin": "native SVG authored in Tools/build-design.cjs",
+      "productionStatus": "concept source; Unity integration not verified"
+    }
+  ]
+}
