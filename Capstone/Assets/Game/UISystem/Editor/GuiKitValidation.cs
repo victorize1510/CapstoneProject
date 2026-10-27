@@ -17,7 +17,7 @@ namespace Capstone.Game.UISystem.Editor {
     /// <summary>Isolated art fixture. No gameplay provider, active scene or save changes.</summary>
     public static class GuiKitValidation {
         const string Root = "Assets/ThangTest/UIThang/GUIArt/";
-        const string Output = "../artifacts/gui-production/stages-1-2/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "gui-production/stages-1-2/";
         static readonly List<string> results = new List<string>();
         static bool running;
         static double nextPoll;

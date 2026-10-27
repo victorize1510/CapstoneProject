@@ -18,6 +18,12 @@ namespace Capstone.Game.UISystem {
             if(shape=="union")shape="panel"; // R3: fixed inspector, no tab-dependent geometry.
             float raw=shape=="parallel"||shape=="tab"?Mathf.Tan(Mathf.PI/15)*(h-2*p):shape=="skill-oct"?Mathf.Min(10,Mathf.Max(5,Mathf.Min(w,h)*.13f)):shape=="avatar"?10:w>=650&&h>=400?18:h<=64?8:12;
             float cut=Mathf.Max(0,Mathf.Min(raw,(w-2*p)/4,(h-2*p)/3));
+            if(shape.StartsWith("nav-")){
+                float c=8;
+                if(shape=="nav-first")return new[]{new Vector2(p+c,p),new Vector2(w-p,p),new Vector2(w-p,h-p),new Vector2(p+c,h-p),new Vector2(p,h-p-c),new Vector2(p,p+c)};
+                if(shape=="nav-last")return new[]{new Vector2(p,p),new Vector2(w-p-c,p),new Vector2(w-p,p+c),new Vector2(w-p,h-p-c),new Vector2(w-p-c,h-p),new Vector2(p,h-p)};
+                return new[]{new Vector2(p,p),new Vector2(w-p,p),new Vector2(w-p,h-p),new Vector2(p,h-p)};
+            }
             if(shape=="diamond")return new[]{new Vector2(w/2,p),new Vector2(w-p,h/2),new Vector2(w/2,h-p),new Vector2(p,h/2)};
             if(shape=="parallel")return new[]{new Vector2(p+cut,p),new Vector2(w-p,p),new Vector2(w-p-cut,h-p),new Vector2(p,h-p)};
             if(shape=="tab")return new[]{new Vector2(p+cut,p),new Vector2(w-p-cut,p),new Vector2(w-p,h-p),new Vector2(p,h-p)};

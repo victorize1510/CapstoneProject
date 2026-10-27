@@ -16,7 +16,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.UISystem.Editor {
     /// <summary>Runtime layout regression; no inventory or save mutations.</summary>
     public static class PanelConsistencyValidation {
-        const string Output = "../artifacts/panel-consistency/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "panel-consistency/";
         const string AutoStop = "Capstone.PanelConsistencyValidation.AutoStop";
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
         static readonly List<string> results = new List<string>();

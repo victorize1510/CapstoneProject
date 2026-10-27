@@ -19,7 +19,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.UISystem.Editor {
     /// <summary>Menu-only fixtures and non-consuming routing checks. Never saves a scene or uses items.</summary>
     public static class TrainerMenuValidation {
-        const string Output = "../artifacts/trainer-menu-v4/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "trainer-menu-v4/";
         const string Request = "Temp/RunTrainerMenu.request";
         const string StartedPlay = "TrainerMenuValidation.StartedPlay";
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;

@@ -1,0 +1,2473 @@
+{
+  "version": "BAG 2026-10-22",
+  "canvas": [
+    1600,
+    900
+  ],
+  "palette": {
+    "primary": "#3C4772",
+    "shell": "#66748E",
+    "panel": "#AEB8CD",
+    "raised": "#C1C3D3",
+    "ink": "#202B45",
+    "muted": "#39455E",
+    "gold": "#CCAD83",
+    "lavender": "#A596BB",
+    "disabled": "#9298AA",
+    "light": "#EDE9E1",
+    "edge": "#8996B0",
+    "hp": "#C47D8B",
+    "mp": "#76A6C3"
+  },
+  "components": [
+    {
+      "id": "shell",
+      "width": 1552,
+      "height": 748,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#66748E",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          1531,
+          3
+        ],
+        [
+          1549,
+          21
+        ],
+        [
+          1549,
+          727
+        ],
+        [
+          1531,
+          745
+        ],
+        [
+          21,
+          745
+        ],
+        [
+          3,
+          727
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/shell__fill.svg",
+        "png": "Assets/Components/shell__fill.png",
+        "width": 1552,
+        "height": 748
+      },
+      "border": {
+        "svg": "Assets/Components/shell__border.svg",
+        "png": "Assets/Components/shell__border.png",
+        "width": 1552,
+        "height": 748
+      },
+      "mask": {
+        "svg": "Assets/Components/shell__mask.svg",
+        "png": "Assets/Components/shell__mask.png",
+        "width": 1552,
+        "height": 748
+      },
+      "motif": {
+        "svg": "Assets/Components/shell__motif.svg",
+        "png": "Assets/Components/shell__motif.png",
+        "width": 1552,
+        "height": 748
+      },
+      "safeInset": 24,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "category-panel",
+      "width": 240,
+      "height": 628,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          225,
+          3
+        ],
+        [
+          237,
+          15
+        ],
+        [
+          237,
+          613
+        ],
+        [
+          225,
+          625
+        ],
+        [
+          15,
+          625
+        ],
+        [
+          3,
+          613
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/category-panel__fill.svg",
+        "png": "Assets/Components/category-panel__fill.png",
+        "width": 240,
+        "height": 628
+      },
+      "border": {
+        "svg": "Assets/Components/category-panel__border.svg",
+        "png": "Assets/Components/category-panel__border.png",
+        "width": 240,
+        "height": 628
+      },
+      "mask": {
+        "svg": "Assets/Components/category-panel__mask.svg",
+        "png": "Assets/Components/category-panel__mask.png",
+        "width": 240,
+        "height": 628
+      },
+      "motif": {
+        "svg": "Assets/Components/category-panel__motif.svg",
+        "png": "Assets/Components/category-panel__motif.png",
+        "width": 240,
+        "height": 628
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "category-row",
+      "width": 212,
+      "height": 56,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          11,
+          3
+        ],
+        [
+          201,
+          3
+        ],
+        [
+          209,
+          11
+        ],
+        [
+          209,
+          45
+        ],
+        [
+          201,
+          53
+        ],
+        [
+          11,
+          53
+        ],
+        [
+          3,
+          45
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/category-row__fill.svg",
+        "png": "Assets/Components/category-row__fill.png",
+        "width": 212,
+        "height": 56
+      },
+      "border": {
+        "svg": "Assets/Components/category-row__border.svg",
+        "png": "Assets/Components/category-row__border.png",
+        "width": 212,
+        "height": 56
+      },
+      "mask": {
+        "svg": "Assets/Components/category-row__mask.svg",
+        "png": "Assets/Components/category-row__mask.png",
+        "width": 212,
+        "height": 56
+      },
+      "motif": {
+        "svg": "Assets/Components/category-row__motif.svg",
+        "png": "Assets/Components/category-row__motif.png",
+        "width": 212,
+        "height": 56
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "browser",
+      "width": 784,
+      "height": 628,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          763,
+          3
+        ],
+        [
+          781,
+          21
+        ],
+        [
+          781,
+          607
+        ],
+        [
+          763,
+          625
+        ],
+        [
+          21,
+          625
+        ],
+        [
+          3,
+          607
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/browser__fill.svg",
+        "png": "Assets/Components/browser__fill.png",
+        "width": 784,
+        "height": 628
+      },
+      "border": {
+        "svg": "Assets/Components/browser__border.svg",
+        "png": "Assets/Components/browser__border.png",
+        "width": 784,
+        "height": 628
+      },
+      "mask": {
+        "svg": "Assets/Components/browser__mask.svg",
+        "png": "Assets/Components/browser__mask.png",
+        "width": 784,
+        "height": 628
+      },
+      "motif": {
+        "svg": "Assets/Components/browser__motif.svg",
+        "png": "Assets/Components/browser__motif.png",
+        "width": 784,
+        "height": 628
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "inspector",
+      "width": 440,
+      "height": 628,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          425,
+          3
+        ],
+        [
+          437,
+          15
+        ],
+        [
+          437,
+          613
+        ],
+        [
+          425,
+          625
+        ],
+        [
+          15,
+          625
+        ],
+        [
+          3,
+          613
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/inspector__fill.svg",
+        "png": "Assets/Components/inspector__fill.png",
+        "width": 440,
+        "height": 628
+      },
+      "border": {
+        "svg": "Assets/Components/inspector__border.svg",
+        "png": "Assets/Components/inspector__border.png",
+        "width": 440,
+        "height": 628
+      },
+      "mask": {
+        "svg": "Assets/Components/inspector__mask.svg",
+        "png": "Assets/Components/inspector__mask.png",
+        "width": 440,
+        "height": 628
+      },
+      "motif": {
+        "svg": "Assets/Components/inspector__motif.svg",
+        "png": "Assets/Components/inspector__motif.png",
+        "width": 440,
+        "height": 628
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "item-row",
+      "width": 744,
+      "height": 88,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          729,
+          3
+        ],
+        [
+          741,
+          15
+        ],
+        [
+          741,
+          73
+        ],
+        [
+          729,
+          85
+        ],
+        [
+          15,
+          85
+        ],
+        [
+          3,
+          73
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/item-row__fill.svg",
+        "png": "Assets/Components/item-row__fill.png",
+        "width": 744,
+        "height": 88
+      },
+      "border": {
+        "svg": "Assets/Components/item-row__border.svg",
+        "png": "Assets/Components/item-row__border.png",
+        "width": 744,
+        "height": 88
+      },
+      "mask": {
+        "svg": "Assets/Components/item-row__mask.svg",
+        "png": "Assets/Components/item-row__mask.png",
+        "width": 744,
+        "height": 88
+      },
+      "motif": {
+        "svg": "Assets/Components/item-row__motif.svg",
+        "png": "Assets/Components/item-row__motif.png",
+        "width": 744,
+        "height": 88
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "item-square",
+      "width": 136,
+      "height": 136,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          121,
+          3
+        ],
+        [
+          133,
+          15
+        ],
+        [
+          133,
+          121
+        ],
+        [
+          121,
+          133
+        ],
+        [
+          15,
+          133
+        ],
+        [
+          3,
+          121
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/item-square__fill.svg",
+        "png": "Assets/Components/item-square__fill.png",
+        "width": 136,
+        "height": 136
+      },
+      "border": {
+        "svg": "Assets/Components/item-square__border.svg",
+        "png": "Assets/Components/item-square__border.png",
+        "width": 136,
+        "height": 136
+      },
+      "mask": {
+        "svg": "Assets/Components/item-square__mask.svg",
+        "png": "Assets/Components/item-square__mask.png",
+        "width": 136,
+        "height": 136
+      },
+      "motif": {
+        "svg": "Assets/Components/item-square__motif.svg",
+        "png": "Assets/Components/item-square__motif.png",
+        "width": 136,
+        "height": 136
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "icon-slot",
+      "width": 72,
+      "height": 72,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "skill-oct",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          12.36,
+          3
+        ],
+        [
+          59.64,
+          3
+        ],
+        [
+          69,
+          12.36
+        ],
+        [
+          69,
+          59.64
+        ],
+        [
+          59.64,
+          69
+        ],
+        [
+          12.36,
+          69
+        ],
+        [
+          3,
+          59.64
+        ],
+        [
+          3,
+          12.36
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/icon-slot__fill.svg",
+        "png": "Assets/Components/icon-slot__fill.png",
+        "width": 72,
+        "height": 72
+      },
+      "border": {
+        "svg": "Assets/Components/icon-slot__border.svg",
+        "png": "Assets/Components/icon-slot__border.png",
+        "width": 72,
+        "height": 72
+      },
+      "mask": {
+        "svg": "Assets/Components/icon-slot__mask.svg",
+        "png": "Assets/Components/icon-slot__mask.png",
+        "width": 72,
+        "height": 72
+      },
+      "motif": {
+        "svg": "Assets/Components/icon-slot__motif.svg",
+        "png": "Assets/Components/icon-slot__motif.png",
+        "width": 72,
+        "height": 72
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "detail-art",
+      "width": 392,
+      "height": 172,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          377,
+          3
+        ],
+        [
+          389,
+          15
+        ],
+        [
+          389,
+          157
+        ],
+        [
+          377,
+          169
+        ],
+        [
+          15,
+          169
+        ],
+        [
+          3,
+          157
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/detail-art__fill.svg",
+        "png": "Assets/Components/detail-art__fill.png",
+        "width": 392,
+        "height": 172
+      },
+      "border": {
+        "svg": "Assets/Components/detail-art__border.svg",
+        "png": "Assets/Components/detail-art__border.png",
+        "width": 392,
+        "height": 172
+      },
+      "mask": {
+        "svg": "Assets/Components/detail-art__mask.svg",
+        "png": "Assets/Components/detail-art__mask.png",
+        "width": 392,
+        "height": 172
+      },
+      "motif": {
+        "svg": "Assets/Components/detail-art__motif.svg",
+        "png": "Assets/Components/detail-art__motif.png",
+        "width": 392,
+        "height": 172
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "action-primary",
+      "width": 392,
+      "height": 56,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "parallel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          13.6278,
+          3
+        ],
+        [
+          389,
+          3
+        ],
+        [
+          378.3722,
+          53
+        ],
+        [
+          3,
+          53
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/action-primary__fill.svg",
+        "png": "Assets/Components/action-primary__fill.png",
+        "width": 392,
+        "height": 56
+      },
+      "border": {
+        "svg": "Assets/Components/action-primary__border.svg",
+        "png": "Assets/Components/action-primary__border.png",
+        "width": 392,
+        "height": 56
+      },
+      "mask": {
+        "svg": "Assets/Components/action-primary__mask.svg",
+        "png": "Assets/Components/action-primary__mask.png",
+        "width": 392,
+        "height": 56
+      },
+      "motif": {
+        "svg": "Assets/Components/action-primary__motif.svg",
+        "png": "Assets/Components/action-primary__motif.png",
+        "width": 392,
+        "height": 56
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "action-danger",
+      "width": 320,
+      "height": 56,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "parallel",
+      "color": "#6D4D67",
+      "polygon": [
+        [
+          13.6278,
+          3
+        ],
+        [
+          317,
+          3
+        ],
+        [
+          306.3722,
+          53
+        ],
+        [
+          3,
+          53
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/action-danger__fill.svg",
+        "png": "Assets/Components/action-danger__fill.png",
+        "width": 320,
+        "height": 56
+      },
+      "border": {
+        "svg": "Assets/Components/action-danger__border.svg",
+        "png": "Assets/Components/action-danger__border.png",
+        "width": 320,
+        "height": 56
+      },
+      "mask": {
+        "svg": "Assets/Components/action-danger__mask.svg",
+        "png": "Assets/Components/action-danger__mask.png",
+        "width": 320,
+        "height": 56
+      },
+      "motif": {
+        "svg": "Assets/Components/action-danger__motif.svg",
+        "png": "Assets/Components/action-danger__motif.png",
+        "width": 320,
+        "height": 56
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "action-small",
+      "width": 190,
+      "height": 44,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "parallel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          11.0771,
+          3
+        ],
+        [
+          187,
+          3
+        ],
+        [
+          178.9229,
+          41
+        ],
+        [
+          3,
+          41
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/action-small__fill.svg",
+        "png": "Assets/Components/action-small__fill.png",
+        "width": 190,
+        "height": 44
+      },
+      "border": {
+        "svg": "Assets/Components/action-small__border.svg",
+        "png": "Assets/Components/action-small__border.png",
+        "width": 190,
+        "height": 44
+      },
+      "mask": {
+        "svg": "Assets/Components/action-small__mask.svg",
+        "png": "Assets/Components/action-small__mask.png",
+        "width": 190,
+        "height": 44
+      },
+      "motif": {
+        "svg": "Assets/Components/action-small__motif.svg",
+        "png": "Assets/Components/action-small__motif.png",
+        "width": 190,
+        "height": 44
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "search",
+      "width": 292,
+      "height": 48,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          11,
+          3
+        ],
+        [
+          281,
+          3
+        ],
+        [
+          289,
+          11
+        ],
+        [
+          289,
+          37
+        ],
+        [
+          281,
+          45
+        ],
+        [
+          11,
+          45
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/search__fill.svg",
+        "png": "Assets/Components/search__fill.png",
+        "width": 292,
+        "height": 48
+      },
+      "border": {
+        "svg": "Assets/Components/search__border.svg",
+        "png": "Assets/Components/search__border.png",
+        "width": 292,
+        "height": 48
+      },
+      "mask": {
+        "svg": "Assets/Components/search__mask.svg",
+        "png": "Assets/Components/search__mask.png",
+        "width": 292,
+        "height": 48
+      },
+      "motif": {
+        "svg": "Assets/Components/search__motif.svg",
+        "png": "Assets/Components/search__motif.png",
+        "width": 292,
+        "height": 48
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "sort",
+      "width": 176,
+      "height": 48,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          11,
+          3
+        ],
+        [
+          165,
+          3
+        ],
+        [
+          173,
+          11
+        ],
+        [
+          173,
+          37
+        ],
+        [
+          165,
+          45
+        ],
+        [
+          11,
+          45
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/sort__fill.svg",
+        "png": "Assets/Components/sort__fill.png",
+        "width": 176,
+        "height": 48
+      },
+      "border": {
+        "svg": "Assets/Components/sort__border.svg",
+        "png": "Assets/Components/sort__border.png",
+        "width": 176,
+        "height": 48
+      },
+      "mask": {
+        "svg": "Assets/Components/sort__mask.svg",
+        "png": "Assets/Components/sort__mask.png",
+        "width": 176,
+        "height": 48
+      },
+      "motif": {
+        "svg": "Assets/Components/sort__motif.svg",
+        "png": "Assets/Components/sort__motif.png",
+        "width": 176,
+        "height": 48
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "filter",
+      "width": 148,
+      "height": 48,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          11,
+          3
+        ],
+        [
+          137,
+          3
+        ],
+        [
+          145,
+          11
+        ],
+        [
+          145,
+          37
+        ],
+        [
+          137,
+          45
+        ],
+        [
+          11,
+          45
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/filter__fill.svg",
+        "png": "Assets/Components/filter__fill.png",
+        "width": 148,
+        "height": 48
+      },
+      "border": {
+        "svg": "Assets/Components/filter__border.svg",
+        "png": "Assets/Components/filter__border.png",
+        "width": 148,
+        "height": 48
+      },
+      "mask": {
+        "svg": "Assets/Components/filter__mask.svg",
+        "png": "Assets/Components/filter__mask.png",
+        "width": 148,
+        "height": 48
+      },
+      "motif": {
+        "svg": "Assets/Components/filter__motif.svg",
+        "png": "Assets/Components/filter__motif.png",
+        "width": 148,
+        "height": 48
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "view-toggle",
+      "width": 52,
+      "height": 48,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          11,
+          3
+        ],
+        [
+          41,
+          3
+        ],
+        [
+          49,
+          11
+        ],
+        [
+          49,
+          37
+        ],
+        [
+          41,
+          45
+        ],
+        [
+          11,
+          45
+        ],
+        [
+          3,
+          37
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/view-toggle__fill.svg",
+        "png": "Assets/Components/view-toggle__fill.png",
+        "width": 52,
+        "height": 48
+      },
+      "border": {
+        "svg": "Assets/Components/view-toggle__border.svg",
+        "png": "Assets/Components/view-toggle__border.png",
+        "width": 52,
+        "height": 48
+      },
+      "mask": {
+        "svg": "Assets/Components/view-toggle__mask.svg",
+        "png": "Assets/Components/view-toggle__mask.png",
+        "width": 52,
+        "height": 48
+      },
+      "motif": {
+        "svg": "Assets/Components/view-toggle__motif.svg",
+        "png": "Assets/Components/view-toggle__motif.png",
+        "width": 52,
+        "height": 48
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "chip",
+      "width": 88,
+      "height": 28,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          10.3333,
+          3
+        ],
+        [
+          77.6667,
+          3
+        ],
+        [
+          85,
+          10.3333
+        ],
+        [
+          85,
+          17.6667
+        ],
+        [
+          77.6667,
+          25
+        ],
+        [
+          10.3333,
+          25
+        ],
+        [
+          3,
+          17.6667
+        ],
+        [
+          3,
+          10.3333
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/chip__fill.svg",
+        "png": "Assets/Components/chip__fill.png",
+        "width": 88,
+        "height": 28
+      },
+      "border": {
+        "svg": "Assets/Components/chip__border.svg",
+        "png": "Assets/Components/chip__border.png",
+        "width": 88,
+        "height": 28
+      },
+      "mask": {
+        "svg": "Assets/Components/chip__mask.svg",
+        "png": "Assets/Components/chip__mask.png",
+        "width": 88,
+        "height": 28
+      },
+      "motif": {
+        "svg": "Assets/Components/chip__motif.svg",
+        "png": "Assets/Components/chip__motif.png",
+        "width": 88,
+        "height": 28
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "popup-quantity",
+      "width": 704,
+      "height": 568,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#66748E",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          683,
+          3
+        ],
+        [
+          701,
+          21
+        ],
+        [
+          701,
+          547
+        ],
+        [
+          683,
+          565
+        ],
+        [
+          21,
+          565
+        ],
+        [
+          3,
+          547
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/popup-quantity__fill.svg",
+        "png": "Assets/Components/popup-quantity__fill.png",
+        "width": 704,
+        "height": 568
+      },
+      "border": {
+        "svg": "Assets/Components/popup-quantity__border.svg",
+        "png": "Assets/Components/popup-quantity__border.png",
+        "width": 704,
+        "height": 568
+      },
+      "mask": {
+        "svg": "Assets/Components/popup-quantity__mask.svg",
+        "png": "Assets/Components/popup-quantity__mask.png",
+        "width": 704,
+        "height": 568
+      },
+      "motif": {
+        "svg": "Assets/Components/popup-quantity__motif.svg",
+        "png": "Assets/Components/popup-quantity__motif.png",
+        "width": 704,
+        "height": 568
+      },
+      "safeInset": 24,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "popup-assignment",
+      "width": 792,
+      "height": 568,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#66748E",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          771,
+          3
+        ],
+        [
+          789,
+          21
+        ],
+        [
+          789,
+          547
+        ],
+        [
+          771,
+          565
+        ],
+        [
+          21,
+          565
+        ],
+        [
+          3,
+          547
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/popup-assignment__fill.svg",
+        "png": "Assets/Components/popup-assignment__fill.png",
+        "width": 792,
+        "height": 568
+      },
+      "border": {
+        "svg": "Assets/Components/popup-assignment__border.svg",
+        "png": "Assets/Components/popup-assignment__border.png",
+        "width": 792,
+        "height": 568
+      },
+      "mask": {
+        "svg": "Assets/Components/popup-assignment__mask.svg",
+        "png": "Assets/Components/popup-assignment__mask.png",
+        "width": 792,
+        "height": 568
+      },
+      "motif": {
+        "svg": "Assets/Components/popup-assignment__motif.svg",
+        "png": "Assets/Components/popup-assignment__motif.png",
+        "width": 792,
+        "height": 568
+      },
+      "safeInset": 24,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "popup-heal-reference",
+      "width": 792,
+      "height": 608,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#66748E",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          771,
+          3
+        ],
+        [
+          789,
+          21
+        ],
+        [
+          789,
+          587
+        ],
+        [
+          771,
+          605
+        ],
+        [
+          21,
+          605
+        ],
+        [
+          3,
+          587
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/popup-heal-reference__fill.svg",
+        "png": "Assets/Components/popup-heal-reference__fill.png",
+        "width": 792,
+        "height": 608
+      },
+      "border": {
+        "svg": "Assets/Components/popup-heal-reference__border.svg",
+        "png": "Assets/Components/popup-heal-reference__border.png",
+        "width": 792,
+        "height": 608
+      },
+      "mask": {
+        "svg": "Assets/Components/popup-heal-reference__mask.svg",
+        "png": "Assets/Components/popup-heal-reference__mask.png",
+        "width": 792,
+        "height": 608
+      },
+      "motif": {
+        "svg": "Assets/Components/popup-heal-reference__motif.svg",
+        "png": "Assets/Components/popup-heal-reference__motif.png",
+        "width": 792,
+        "height": 608
+      },
+      "safeInset": 24,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "popup-evolution",
+      "width": 792,
+      "height": 552,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#66748E",
+      "polygon": [
+        [
+          21,
+          3
+        ],
+        [
+          771,
+          3
+        ],
+        [
+          789,
+          21
+        ],
+        [
+          789,
+          531
+        ],
+        [
+          771,
+          549
+        ],
+        [
+          21,
+          549
+        ],
+        [
+          3,
+          531
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/popup-evolution__fill.svg",
+        "png": "Assets/Components/popup-evolution__fill.png",
+        "width": 792,
+        "height": 552
+      },
+      "border": {
+        "svg": "Assets/Components/popup-evolution__border.svg",
+        "png": "Assets/Components/popup-evolution__border.png",
+        "width": 792,
+        "height": 552
+      },
+      "mask": {
+        "svg": "Assets/Components/popup-evolution__mask.svg",
+        "png": "Assets/Components/popup-evolution__mask.png",
+        "width": 792,
+        "height": 552
+      },
+      "motif": {
+        "svg": "Assets/Components/popup-evolution__motif.svg",
+        "png": "Assets/Components/popup-evolution__motif.png",
+        "width": 792,
+        "height": 552
+      },
+      "safeInset": 24,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "tooltip",
+      "width": 320,
+      "height": 112,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#3C4772",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          305,
+          3
+        ],
+        [
+          317,
+          15
+        ],
+        [
+          317,
+          97
+        ],
+        [
+          305,
+          109
+        ],
+        [
+          15,
+          109
+        ],
+        [
+          3,
+          97
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/tooltip__fill.svg",
+        "png": "Assets/Components/tooltip__fill.png",
+        "width": 320,
+        "height": 112
+      },
+      "border": {
+        "svg": "Assets/Components/tooltip__border.svg",
+        "png": "Assets/Components/tooltip__border.png",
+        "width": 320,
+        "height": 112
+      },
+      "mask": {
+        "svg": "Assets/Components/tooltip__mask.svg",
+        "png": "Assets/Components/tooltip__mask.png",
+        "width": 320,
+        "height": 112
+      },
+      "motif": {
+        "svg": "Assets/Components/tooltip__motif.svg",
+        "png": "Assets/Components/tooltip__motif.png",
+        "width": 320,
+        "height": 112
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "integer-field",
+      "width": 456,
+      "height": 52,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          11,
+          3
+        ],
+        [
+          445,
+          3
+        ],
+        [
+          453,
+          11
+        ],
+        [
+          453,
+          41
+        ],
+        [
+          445,
+          49
+        ],
+        [
+          11,
+          49
+        ],
+        [
+          3,
+          41
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/integer-field__fill.svg",
+        "png": "Assets/Components/integer-field__fill.png",
+        "width": 456,
+        "height": 52
+      },
+      "border": {
+        "svg": "Assets/Components/integer-field__border.svg",
+        "png": "Assets/Components/integer-field__border.png",
+        "width": 456,
+        "height": 52
+      },
+      "mask": {
+        "svg": "Assets/Components/integer-field__mask.svg",
+        "png": "Assets/Components/integer-field__mask.png",
+        "width": 456,
+        "height": 52
+      },
+      "motif": {
+        "svg": "Assets/Components/integer-field__motif.svg",
+        "png": "Assets/Components/integer-field__motif.png",
+        "width": 456,
+        "height": 52
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "quick-choice",
+      "width": 364,
+      "height": 140,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#AEB8CD",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          349,
+          3
+        ],
+        [
+          361,
+          15
+        ],
+        [
+          361,
+          125
+        ],
+        [
+          349,
+          137
+        ],
+        [
+          15,
+          137
+        ],
+        [
+          3,
+          125
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/quick-choice__fill.svg",
+        "png": "Assets/Components/quick-choice__fill.png",
+        "width": 364,
+        "height": 140
+      },
+      "border": {
+        "svg": "Assets/Components/quick-choice__border.svg",
+        "png": "Assets/Components/quick-choice__border.png",
+        "width": 364,
+        "height": 140
+      },
+      "mask": {
+        "svg": "Assets/Components/quick-choice__mask.svg",
+        "png": "Assets/Components/quick-choice__mask.png",
+        "width": 364,
+        "height": 140
+      },
+      "motif": {
+        "svg": "Assets/Components/quick-choice__motif.svg",
+        "png": "Assets/Components/quick-choice__motif.png",
+        "width": 364,
+        "height": 140
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    },
+    {
+      "id": "dropdown",
+      "width": 320,
+      "height": 264,
+      "pivot": [
+        0,
+        1
+      ],
+      "coordinates": "top-left logical px",
+      "type": "panel",
+      "color": "#C1C3D3",
+      "polygon": [
+        [
+          15,
+          3
+        ],
+        [
+          305,
+          3
+        ],
+        [
+          317,
+          15
+        ],
+        [
+          317,
+          249
+        ],
+        [
+          305,
+          261
+        ],
+        [
+          15,
+          261
+        ],
+        [
+          3,
+          249
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "fill": {
+        "svg": "Assets/Components/dropdown__fill.svg",
+        "png": "Assets/Components/dropdown__fill.png",
+        "width": 320,
+        "height": 264
+      },
+      "border": {
+        "svg": "Assets/Components/dropdown__border.svg",
+        "png": "Assets/Components/dropdown__border.png",
+        "width": 320,
+        "height": 264
+      },
+      "mask": {
+        "svg": "Assets/Components/dropdown__mask.svg",
+        "png": "Assets/Components/dropdown__mask.png",
+        "width": 320,
+        "height": 264
+      },
+      "motif": {
+        "svg": "Assets/Components/dropdown__motif.svg",
+        "png": "Assets/Components/dropdown__motif.png",
+        "width": 320,
+        "height": 264
+      },
+      "safeInset": 12,
+      "stretch": {
+        "policy": "rebuild mesh/SVG at target size; do not stretch corner diagonals or decorative motif",
+        "nineSlice": false
+      },
+      "layerOrder": [
+        "fill",
+        "motif",
+        "sprite clipped to same mask",
+        "border",
+        "glyph-caption-count",
+        "interaction"
+      ],
+      "picking": "decoration false; control hit uses this polygon"
+    }
+  ],
+  "states": [
+    {
+      "component": "row",
+      "state": "normal",
+      "svg": "Assets/Components/row__state_normal.svg",
+      "png": "Assets/Components/row__state_normal.png",
+      "width": 744,
+      "height": 88,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "row",
+      "state": "hover",
+      "svg": "Assets/Components/row__state_hover.svg",
+      "png": "Assets/Components/row__state_hover.png",
+      "width": 744,
+      "height": 88,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "row",
+      "state": "pressed",
+      "svg": "Assets/Components/row__state_pressed.svg",
+      "png": "Assets/Components/row__state_pressed.png",
+      "width": 744,
+      "height": 88,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "row",
+      "state": "selected",
+      "svg": "Assets/Components/row__state_selected.svg",
+      "png": "Assets/Components/row__state_selected.png",
+      "width": 744,
+      "height": 88,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "row",
+      "state": "focus",
+      "svg": "Assets/Components/row__state_focus.svg",
+      "png": "Assets/Components/row__state_focus.png",
+      "width": 744,
+      "height": 88,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "row",
+      "state": "selected+focus",
+      "svg": "Assets/Components/row__state_selected-focus.svg",
+      "png": "Assets/Components/row__state_selected-focus.png",
+      "width": 744,
+      "height": 88,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "row",
+      "state": "disabled",
+      "svg": "Assets/Components/row__state_disabled.svg",
+      "png": "Assets/Components/row__state_disabled.png",
+      "width": 744,
+      "height": 88,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "square",
+      "state": "normal",
+      "svg": "Assets/Components/square__state_normal.svg",
+      "png": "Assets/Components/square__state_normal.png",
+      "width": 136,
+      "height": 136,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "square",
+      "state": "hover",
+      "svg": "Assets/Components/square__state_hover.svg",
+      "png": "Assets/Components/square__state_hover.png",
+      "width": 136,
+      "height": 136,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "square",
+      "state": "pressed",
+      "svg": "Assets/Components/square__state_pressed.svg",
+      "png": "Assets/Components/square__state_pressed.png",
+      "width": 136,
+      "height": 136,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "square",
+      "state": "selected",
+      "svg": "Assets/Components/square__state_selected.svg",
+      "png": "Assets/Components/square__state_selected.png",
+      "width": 136,
+      "height": 136,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "square",
+      "state": "focus",
+      "svg": "Assets/Components/square__state_focus.svg",
+      "png": "Assets/Components/square__state_focus.png",
+      "width": 136,
+      "height": 136,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "square",
+      "state": "selected+focus",
+      "svg": "Assets/Components/square__state_selected-focus.svg",
+      "png": "Assets/Components/square__state_selected-focus.png",
+      "width": 136,
+      "height": 136,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "square",
+      "state": "disabled",
+      "svg": "Assets/Components/square__state_disabled.svg",
+      "png": "Assets/Components/square__state_disabled.png",
+      "width": 136,
+      "height": 136,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "action",
+      "state": "normal",
+      "svg": "Assets/Components/action__state_normal.svg",
+      "png": "Assets/Components/action__state_normal.png",
+      "width": 392,
+      "height": 56,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "action",
+      "state": "hover",
+      "svg": "Assets/Components/action__state_hover.svg",
+      "png": "Assets/Components/action__state_hover.png",
+      "width": 392,
+      "height": 56,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "action",
+      "state": "pressed",
+      "svg": "Assets/Components/action__state_pressed.svg",
+      "png": "Assets/Components/action__state_pressed.png",
+      "width": 392,
+      "height": 56,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "action",
+      "state": "selected",
+      "svg": "Assets/Components/action__state_selected.svg",
+      "png": "Assets/Components/action__state_selected.png",
+      "width": 392,
+      "height": 56,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "action",
+      "state": "focus",
+      "svg": "Assets/Components/action__state_focus.svg",
+      "png": "Assets/Components/action__state_focus.png",
+      "width": 392,
+      "height": 56,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "action",
+      "state": "selected+focus",
+      "svg": "Assets/Components/action__state_selected-focus.svg",
+      "png": "Assets/Components/action__state_selected-focus.png",
+      "width": 392,
+      "height": 56,
+      "kind": "decoration layer only; no text or icon"
+    },
+    {
+      "component": "action",
+      "state": "disabled",
+      "svg": "Assets/Components/action__state_disabled.svg",
+      "png": "Assets/Components/action__state_disabled.png",
+      "width": 392,
+      "height": 56,
+      "kind": "decoration layer only; no text or icon"
+    }
+  ],
+  "icons": [
+    {
+      "id": "bag",
+      "svg": "Assets/Icons/bag.svg",
+      "png": "Assets/Icons/bag.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "grid",
+      "svg": "Assets/Icons/grid.svg",
+      "png": "Assets/Icons/grid.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "list",
+      "svg": "Assets/Icons/list.svg",
+      "png": "Assets/Icons/list.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "search",
+      "svg": "Assets/Icons/search.svg",
+      "png": "Assets/Icons/search.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "filter",
+      "svg": "Assets/Icons/filter.svg",
+      "png": "Assets/Icons/filter.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "sort",
+      "svg": "Assets/Icons/sort.svg",
+      "png": "Assets/Icons/sort.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "capture",
+      "svg": "Assets/Icons/capture.svg",
+      "png": "Assets/Icons/capture.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "food",
+      "svg": "Assets/Icons/food.svg",
+      "png": "Assets/Icons/food.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "questitem",
+      "svg": "Assets/Icons/questitem.svg",
+      "png": "Assets/Icons/questitem.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "material",
+      "svg": "Assets/Icons/material.svg",
+      "png": "Assets/Icons/material.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "keyitem",
+      "svg": "Assets/Icons/keyitem.svg",
+      "png": "Assets/Icons/keyitem.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "minus",
+      "svg": "Assets/Icons/minus.svg",
+      "png": "Assets/Icons/minus.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "plus",
+      "svg": "Assets/Icons/plus.svg",
+      "png": "Assets/Icons/plus.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "heal",
+      "svg": "Assets/Icons/heal.svg",
+      "png": "Assets/Icons/heal.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "evolve",
+      "svg": "Assets/Icons/evolve.svg",
+      "png": "Assets/Icons/evolve.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "back",
+      "svg": "Assets/Icons/back.svg",
+      "png": "Assets/Icons/back.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "close",
+      "svg": "Assets/Icons/close.svg",
+      "png": "Assets/Icons/close.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "defense",
+      "svg": "Assets/Icons/defense.svg",
+      "png": "Assets/Icons/defense.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    },
+    {
+      "id": "grow",
+      "svg": "Assets/Icons/grow.svg",
+      "png": "Assets/Icons/grow.png",
+      "width": 48,
+      "height": 48,
+      "use": "tintable navigation silhouette, not replacement item sprite"
+    }
+  ],
+  "itemSprites": [
+    {
+      "file": "Assets/Items/potion.png",
+      "preserve": "original RGB/alpha; no tint",
+      "sha256": "ce5e7853290d09dec8f95fcf0381ab4cf3038421d21af97a6c38eb26a414a0eb"
+    },
+    {
+      "file": "Assets/Items/mana.png",
+      "preserve": "original RGB/alpha; no tint",
+      "sha256": "b469c9d9e0beb5e3a18981a127d7d233a69335362910b11fbcb583eb4f74810c"
+    },
+    {
+      "file": "Assets/Items/apple.png",
+      "preserve": "original RGB/alpha; no tint",
+      "sha256": "1dc1a1ce098d674834b276ed0308b2e84aa2de1e852a6f016ba374271c3a84b5"
+    },
+    {
+      "file": "Assets/Items/gem.png",
+      "preserve": "original RGB/alpha; no tint",
+      "sha256": "776044da3dac1761cebaf9e485223aaec1c1770171ca99dd217c5e3341143bac"
+    }
+  ],
+  "surfaceState": {
+    "hover": {
+      "milliseconds": 140,
+      "lightFace": {
+        "tint": "#3C4772",
+        "alpha": 0.1
+      },
+      "darkCTA": {
+        "tint": "#66748E",
+        "alpha": 0.16
+      }
+    },
+    "pressed": {
+      "milliseconds": 80,
+      "tint": "#202B45",
+      "alpha": 0.12
+    },
+    "keyboardFocus": {
+      "lightFaceTint": "#3C4772",
+      "darkCTATint": "#66748E",
+      "alpha": 0.16,
+      "polygon": true,
+      "noGoldSquareBracket": true
+    },
+    "selected": "#A596BB",
+    "layoutMutation": false,
+    "disabledWholeTreeOpacity": false
+  },
+  "runtime": "not implemented or run",
+  "referencePriority": "after captures 2026-10-22 plus current implementation; old R3 hover-edge-only prompt is superseded"
+}

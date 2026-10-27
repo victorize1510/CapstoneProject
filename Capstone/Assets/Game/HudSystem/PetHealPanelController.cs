@@ -73,15 +73,19 @@ namespace Capstone.Game.HudSystem {
         }
 
         ItemBase exactHealingItem;
+        Capstone.Game.Inventory.Bag.BagHealPresentation bagPresentation;
 
         public bool TryOpenFromInventory(InventoryItemSnapshot item) {
             if (item == null || !item.IsRecoveryItem
                 || !item.UsableFromInventory || !item.Consumable || healService == null || overlay == null) return false;
             Open(null, item.ItemBase);
+            bagPresentation = new Capstone.Game.Inventory.Bag.BagHealPresentation(overlay, RequestClose, ConfirmHeal);
+            Refresh();
             return true;
         }
 
         public void Open(PetController pet = null, ItemBase healingItem = null) {
+            bagPresentation?.Dispose(); bagPresentation = null;
             if (overlay == null) CacheElements();
             if (overlay == null) return;
 
@@ -100,6 +104,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         public void Close() {
+            bagPresentation?.Dispose(); bagPresentation = null;
             transientFeedback = string.Empty;
             targetPet = null;
             exactHealingItem = null;
@@ -123,9 +128,10 @@ namespace Capstone.Game.HudSystem {
             if (feedback != null) {
                 feedback.text = !string.IsNullOrWhiteSpace(transientFeedback)
                     ? transientFeedback
-                    : preview.DisabledReason;
+                    : Capstone.Game.UISystem.VietnameseUI.SystemText(preview.DisabledReason);
                 feedback.EnableInClassList("is-success", !string.IsNullOrWhiteSpace(transientFeedback));
             }
+            bagPresentation?.Refresh(!confirmationRunning && preview.CanHeal);
         }
 
         void ResolveReferences() {
@@ -273,7 +279,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void RefreshItem(PetHealPreview preview) {
-            if (itemName != null) itemName.text = DisplayOrDash(preview.ItemName);
+            if (itemName != null) itemName.text = DisplayOrDash(Capstone.Game.UISystem.VietnameseUI.ItemName(preview.ItemName));
             if (itemEffect != null) itemEffect.text = $"Hồi {preview.RestoreAmount:N0} {preview.ResourceName}";
             if (itemCount != null) {
                 itemCount.text = $"{preview.OwnedQuantity:N0} / {preview.RequiredQuantity:N0}";

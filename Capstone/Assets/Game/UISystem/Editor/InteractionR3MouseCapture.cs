@@ -56,11 +56,11 @@ namespace Capstone.Game.UISystem.Editor {
                         var button=root.Q<UnityEngine.UIElements.Button>("pets-tab-"+id);var label=button?.Query<Label>().ToList().FirstOrDefault(l=>!string.IsNullOrEmpty(l.text));if(label==null)continue;
                         var r=label.worldBound;var s=label.resolvedStyle;var font=s.unityFontDefinition.font??s.unityFont;metrics.AppendLine(FormattableString.Invariant($"{Time.frameCount},{pos.x},{pos.y},{mouse?.leftButton.isPressed},{id},{label.text},{r.x},{r.y},{r.width},{r.height},{font?.name},{s.fontSize},{s.unityFontStyleAndWeight}"));
                     }
-                    ScreenCapture.CaptureScreenshot(Path.Combine(path,$"frame-{frame++:D4}.png"));
+                    ScreenCapture.CaptureScreenshot(Path.Combine(path,$"frame-{(frame++%QaArtifactPaths.MaxRetainedFrames):D2}.png"));
                     File.WriteAllText(Path.Combine(path,"mouse-events.csv"),events.ToString());File.WriteAllText(Path.Combine(path,"text-metrics.csv"),metrics.ToString());
                     await Task.Delay(250);
                 }
-                File.WriteAllText(Path.Combine(path,"capture.txt"),"Actual Game view PNG sequence at nominal 4fps. Native input via Computer Use; not handler invocation. "+DateTime.UtcNow.ToString("O"));
+                File.WriteAllText(Path.Combine(path,"capture.txt"),"Actual Game view rolling snapshots (last 10 only), nominal 4fps. Not a complete video. Native input via Computer Use; not handler invocation. "+DateTime.UtcNow.ToString("O"));
             }catch(Exception e){File.WriteAllText(Path.Combine(path,"error.txt"),e.ToString());Debug.LogException(e);}
             finally{root.UnregisterCallback(down,TrickleDown.TrickleDown);root.UnregisterCallback(up,TrickleDown.TrickleDown);root.UnregisterCallback(move,TrickleDown.TrickleDown);if(File.Exists("Temp/R3MouseCapture.stop"))File.Delete("Temp/R3MouseCapture.stop");view.maximized=max;running=false;EditorApplication.ExitPlaymode();}
         }

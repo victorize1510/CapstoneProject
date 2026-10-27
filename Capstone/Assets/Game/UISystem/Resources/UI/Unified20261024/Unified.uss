@@ -1,0 +1,30 @@
+/* Scoped revision 24/10. Other menus, BOX, HUD and modal owners retain their theme. */
+.unified-panel .unified-back #unified-back-caption {color:#EDE9E1;}
+.unified-panel .unified-back #unified-back-icon {-unity-background-image-tint-color:white;}
+.unified-panel .unified-back:disabled #unified-back-caption {color:#202B45;}
+.unified-panel .unified-back:disabled #unified-back-icon {-unity-background-image-tint-color:#202B45;}
+.unified-panel .companion-hero {left:24px;top:112px;width:656px;height:604px;}
+.unified-panel .companion-tabs {left:720px;top:124px;width:832px;height:44px;}
+.unified-panel .companion-tab {height:44px;min-height:44px;}
+.unified-panel .companion-inspector {left:704px;top:164px;width:864px;height:552px;}
+.unified-panel .companion-dock {left:24px;top:748px;width:1552px;height:128px;}
+.unified-panel.pets-panel.companion-panel .pets-party-row {top:8px;height:112px;min-height:0;}
+.unified-panel .companion-missing-art {top:476px;}
+.unified-panel .companion-mode {left:28px;top:532px;}
+.unified-panel .companion-swap {top:24px;}
+.unified-panel .r3-swap-actions {top:12px;}
+.unified-panel .companion-footer {height:80px;bottom:8px;}
+.unified-panel .companion-details-link {top:52px;height:28px;}
+#quest-panel.unified-panel .quest-detail-heading-row {min-height:148px;}
+#quest-panel.unified-panel .quest-detail-title {font-size:30px;}
+#quest-panel.unified-panel .quest-detail-section {margin-top:8px;padding-top:8px;}
+#quest-panel.unified-panel .quest-section-title {min-height:28px;font-size:20px;margin-bottom:6px;}
+#quest-panel.unified-panel .quest-description {font-size:18px;min-height:44px;}
+#quest-panel.unified-panel .objective-entry {min-height:80px;padding:12px 16px;}
+#quest-panel.unified-panel .objective-text {font-size:20px;}
+#quest-panel.unified-panel .objective-count {font-size:22px;}
+#quest-panel.unified-panel .quest-actions {height:56px;min-height:56px;padding-top:8px;}
+#quest-panel.unified-panel .quest-extra-info-note {font-size:18px;}
+#quest-panel.unified-panel .quest-column-title {font-size:17px;}
+#quest-panel.unified-panel .quest-journal-body {display:none;}
+#quest-panel.unified-panel #quest-detail-title {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}

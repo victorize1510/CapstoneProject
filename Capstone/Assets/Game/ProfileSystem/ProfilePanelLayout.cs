@@ -6,7 +6,7 @@ using Icon = Capstone.Game.ProfileSystem.ProfileIconGraphic.Symbol;
 
 namespace Capstone.Game.ProfileSystem {
     public sealed partial class ProfilePanelController {
-        static readonly Color Gold = new Color(.79f, .68f, .39f, .65f);
+        static readonly Color Gold = new Color(.8f, .68f, .51f, .48f);
         static Sprite roundedSprite;
         RectTransform designSurface;
         Vector2 fittedSize;
@@ -22,6 +22,7 @@ namespace Capstone.Game.ProfileSystem {
             public ProfileIconGraphic empty;
             public AspectRatioFitter portraitFit;
             public Outline outline;
+            public ProfileR2Feedback feedback;
         }
 
         void LateUpdate() {
@@ -33,6 +34,7 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void BuildDesignSurface() {
+            modalCanvases.Clear();
             designSurface = CreatePanel(root, "ProfileScreen", Color.clear, false);
             SetCenter(designSurface, 0, 0, 1920, 1080);
             fittedSize = Vector2.zero;
@@ -43,38 +45,34 @@ namespace Capstone.Game.ProfileSystem {
             fittedSize = root.rect.size;
             float scale = Mathf.Min(fittedSize.x / 1920f, fittedSize.y / 1080f);
             designSurface.localScale = Vector3.one * Mathf.Max(.01f, scale);
+            FitR2Modals();
         }
 
         void BuildHeader() {
-            RectTransform header = CreatePanel(designSurface, "HeaderBar", Color.clear, false);
-            SetTopStretch(header, 0, 0, 0, MenuTypography.HeaderHeight);
-            var emblem = CreatePanel(header, "Emblem", MenuPalette.HeadingAccent, false);
-            SetTopLeft(emblem, 24, 26, 24, 24);
-            emblem.pivot = new Vector2(.5f,.5f);
-            emblem.anchoredPosition = new Vector2(36,-38);
-            emblem.GetComponent<Image>().sprite = SolidSprite;
-            emblem.localRotation = Quaternion.Euler(0, 0, 45);
-            var title = CreateText(header, "Title", "HỒ SƠ", MenuTypography.TitleSize, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(title.rectTransform, 66, 8, 245, 60);
-            var subtitle = CreateText(header, "Subtitle", "Xem thông tin và tiến trình phiêu lưu của bạn", 18, FontStyle.Normal, Muted, TextAnchor.MiddleLeft);
-            SetTopLeft(subtitle.rectTransform, 370, 12, 950, 52);
-            Diamond(header, 338, 38);
-            Button back = CreateOutlinedButton(header, "BackButton", VietnameseUI.Back, MenuTypography.BackSize);
-            SetTopRight(back.GetComponent<RectTransform>(), 22, 17, MenuTypography.BackWidth, MenuTypography.BackHeight);
-            MenuTypography.StyleBack(back);
-            back.onClick.AddListener(RequestBack);
-            var divider = CreatePanel(header, "Divider", Border, false);
-            SetBottomStretch(divider, 24, 0, 24, 1);
+            BuildUnifiedHeader();
         }
+
+        void BuildUnifiedHeader() {
+            RectTransform header=CreatePanel(designSurface,"HeaderBar",Color.clear,false);SetTopLeft(header,0,0,1920,124.8f);
+            var ribbon=Graphic(header,"UnifiedTitleRibbon","parallel",UnifiedPanelHeader.Texture("Components/title-ribbon__fill"),Color.white);UnifiedRect(ribbon.rectTransform,UnifiedPanelHeader.Ribbon);ribbon.LogicalScale=1.2f;
+            var edge=Graphic(header,"UnifiedRibbonBorder","parallel",UnifiedPanelHeader.Texture("Components/title-ribbon__border"),Color.white);UnifiedRect(edge.rectTransform,UnifiedPanelHeader.Ribbon);edge.LogicalScale=1.2f;
+            var emblem=Graphic(header,"Emblem","rect",UnifiedPanelHeader.Texture("Art/emblem"),Color.white);UnifiedRect(emblem.rectTransform,UnifiedPanelHeader.Emblem);
+            var title=CreateText(header,"Title","HỒ SƠ",36,FontStyle.Bold,Forest,TextAnchor.MiddleLeft);title.font=TrainerMenuArt.Serif;UnifiedRect(title.rectTransform,UnifiedPanelHeader.Title);
+            var subtitle = CreateText(header, "Subtitle", "Xem thông tin và tiến trình phiêu lưu của bạn", 18, FontStyle.Normal, Muted, TextAnchor.MiddleLeft);
+            SetTopLeft(subtitle.rectTransform,873.6f,40.8f,777.6f,55.2f);subtitle.color=GreenAngularGeometry.Light;
+            Button back=CreateOutlinedButton(header,"BackButton","",25);UnifiedRect((RectTransform)back.transform,UnifiedPanelHeader.Back);
+            back.onClick.AddListener(RequestBack);
+        }
+        static void UnifiedRect(RectTransform target,Rect logical)=>SetTopLeft(target,logical.x*1.2f,logical.y*1.2f,logical.width*1.2f,logical.height*1.2f);
 
         void BuildProfileSummary() {
             RectTransform panel = Surface(designSurface, "MainProfilePanel");
-            SetTopStretch(panel, 32, 104, 32, 436);
+            SetTopStretch(panel,28.8f,134.4f,28.8f,415.2f);
             var avatarSection = CreatePanel(panel, "AvatarSection", Color.clear, false);
             SetTopLeft(avatarSection, 24, 16, 448, 404);
             var outer = CreatePanel(avatarSection, "AvatarOuter", Border, false);
             outer.GetComponent<Image>().sprite = CircleSprite;
-            SetTopLeft(outer, 65, 8, 310, 310);
+            SetTopLeft(outer, 65, 47, 310, 310);
             var inner = CreatePanel(outer, "AvatarMask", Pale, true);
             inner.GetComponent<Image>().sprite = CircleSprite; SetInset(inner, 3);
             inner.gameObject.AddComponent<Mask>().showMaskGraphic = true;
@@ -82,15 +80,14 @@ namespace Capstone.Game.ProfileSystem {
             SetInset(avatarImage.rectTransform, 18); avatarImage.preserveAspect = true;
             avatarPlaceholder = CreateText(inner, "AvatarPlaceholder", "?", 80, FontStyle.Normal, Accent, TextAnchor.MiddleCenter);
             Stretch(avatarPlaceholder.rectTransform);
-            Diamond(avatarSection, 220, 7);
+            Diamond(avatarSection, 220, 46);
             avatarCameraButton = CreateOutlinedButton(avatarSection, "AvatarCameraButton", "", 1);
-            SetTopLeft(avatarCameraButton.GetComponent<RectTransform>(), 302, 254, 68, 68);
+            SetTopLeft(avatarCameraButton.GetComponent<RectTransform>(), 302, 293, 68, 68);
             avatarCameraButton.image.sprite = CircleSprite;
             AddIcon(avatarCameraButton.transform, "CameraIcon", Icon.Camera, 18, 18, 32, Forest);
             avatarCameraButton.onClick.AddListener(ChangeAvatar);
-            changeAvatarButton = CreateOutlinedButton(avatarSection, "ChangeAvatarButton", "THAY ĐỔI ẢNH ĐẠI DIỆN", 18);
-            SetTopLeft(changeAvatarButton.GetComponent<RectTransform>(), 26, 348, 388, 48);
-            changeAvatarButton.onClick.AddListener(ChangeAvatar);
+            changeAvatarButton = null;
+            avatarCameraButton.gameObject.AddComponent<ProfileCameraTooltip>().Text = "Đổi ảnh đại diện";
 
             var basic = CreatePanel(panel, "BasicInfoSection", Color.clear, false);
             SetTopLeft(basic, 506, 32, 742, 370);
@@ -145,14 +142,14 @@ namespace Capstone.Game.ProfileSystem {
 
         void BuildLowerPanels() {
             var info = Surface(designSurface, "PlayerInfoPanel");
-            SetTopLeft(info, 32, 560, 780, 488);
+            SetTopLeft(info,28.8f,573.6f,780,477.6f);
             BuildSectionHeader(info, "THÔNG TIN NGƯỜI CHƠI", Icon.Identity);
             playerIdValue = BuildInfoRow(info, "PlayerId", Icon.Identity, "Mã người chơi", 92);
             playTimeValue = BuildInfoRow(info, "PlayTime", Icon.Clock, "Thời gian chơi", 188);
             currentAreaValue = BuildInfoRow(info, "CurrentArea", Icon.Location, "Khu vực hiện tại", 284);
             dateStartedValue = BuildInfoRow(info, "DateStarted", Icon.Calendar, "Ngày bắt đầu chơi", 380);
             var stats = Surface(designSurface, "StatsOverviewPanel");
-            SetTopLeft(stats, 832, 560, 1056, 488);
+            SetTopLeft(stats,832.8f,573.6f,1058.4f,477.6f);
             BuildSectionHeader(stats, "TỔNG QUAN THỐNG KÊ", Icon.Chart);
             creaturesSeenValue = BuildStatCard(stats, "CreaturesSeen", Icon.Paw, "Sinh vật đã gặp", 0);
             speciesCapturedValue = BuildStatCard(stats, "SpeciesCaptured", Icon.Leaf, "Loài đã thu phục", 1);
@@ -184,7 +181,7 @@ namespace Capstone.Game.ProfileSystem {
 
         Text BuildStatCard(RectTransform parent, string name, Icon symbol, string caption, int index) {
             var card = Surface(parent, "StatsCard_"+name);
-            SetTopLeft(card, 28+(index%3)*340, 96+(index/3)*186, 320, 164);
+            SetTopLeft(card,28.8f+(index%3)*336,96+(index/3)*170.4f,316.8f,158.4f);
             var circle = CreatePanel(card, "IconCircle", Pale, false);
             circle.GetComponent<Image>().sprite = CircleSprite; SetTopLeft(circle, 18, 30, 88, 88);
             AddIcon(circle, "Icon", symbol, 22, 22, 44, Accent);
@@ -231,6 +228,8 @@ namespace Capstone.Game.ProfileSystem {
                 if(data.icon!=null) view.portraitFit.aspectRatio=data.icon.rect.width/data.icon.rect.height;
                 view.outline.effectColor=data.occupied && i==selectedTeamIndex ? Accent : Border;
                 view.outline.effectDistance=Vector2.one*(data.occupied && i==selectedTeamIndex ? 2 : 1);
+                view.feedback?.SetSelected(data.occupied && i==selectedTeamIndex);
+                view.feedback?.RefreshDisabled();
             }
         }
 
@@ -238,7 +237,11 @@ namespace Capstone.Game.ProfileSystem {
         static ProfileIconGraphic AddIcon(Transform parent,string name,Icon symbol,float x,float y,float size,Color color) {
             var obj=new GameObject(name,typeof(RectTransform),typeof(ProfileIconGraphic)); obj.transform.SetParent(parent,false);
             SetTopLeft((RectTransform)obj.transform,x,y,size,size);
-            var icon=obj.GetComponent<ProfileIconGraphic>(); icon.Configure(symbol,color); return icon;
+            var icon=obj.GetComponent<ProfileIconGraphic>(); icon.Configure(symbol,color);
+            string key=symbol==Icon.Identity?"profile":symbol==Icon.Clock?"time":symbol.ToString().ToLowerInvariant();
+            var sprite=ProfileR2Art.Sprite("Icons/"+key);
+            if(sprite!=null){icon.enabled=false;var art=SpriteImage(obj.transform,"R2Icon",sprite);Stretch(art.rectTransform);}
+            return icon;
         }
         static void Line(Transform parent,string name,float x,float y,float width,Color color) { var line=CreatePanel(parent,name,color,false); SetTopLeft(line,x,y,width,1); }
         static void Diamond(Transform parent,float x,float y) { var obj=CreatePanel(parent,"Diamond",Gold,false); obj.GetComponent<Image>().sprite=SolidSprite; SetTopLeft(obj,x-4,y-4,8,8); obj.localRotation=Quaternion.Euler(0,0,45); }

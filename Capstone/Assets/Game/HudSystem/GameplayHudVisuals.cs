@@ -3,11 +3,11 @@ using UnityEngine.UI;
 
 namespace Capstone.Game.HudSystem {
     internal static class GameplayHudVisuals {
-        public static readonly Color Paper = new Color(.97f, .98f, .95f, .94f);
-        public static readonly Color Forest = new Color(.14f, .29f, .22f, 1f);
-        public static readonly Color Sage = new Color(.56f, .67f, .59f, 1f);
-        public static readonly Color Line = new Color(.27f, .43f, .34f, .85f);
-        public static readonly Color Gold = new Color(.82f, .57f, .15f, 1f);
+        public static readonly Color Paper = new Color(.68f, .72f, .80f, .94f);
+        public static readonly Color Forest = Capstone.Game.UISystem.GreenAngularGeometry.Ink;
+        public static readonly Color Sage = Capstone.Game.UISystem.GreenAngularGeometry.Edge;
+        public static readonly Color Line = new Color(.40f, .45f, .56f, .85f);
+        public static readonly Color Gold = Capstone.Game.UISystem.GreenAngularGeometry.Gold;
         public const float PetStatusScale = .65f;
         public const float PetRowWidth = 680f * PetStatusScale;
         public static Font Font;
@@ -38,7 +38,7 @@ namespace Capstone.Game.HudSystem {
             RectTransform rect = Rect(parent, name);
             var text = rect.gameObject.AddComponent<Text>();
             text.font = Font != null ? Font : Capstone.Game.UISystem.MenuTypography.Font;
-            text.text = value; text.fontSize = size; text.color = Forest; text.alignment = align;
+            text.text = value; text.fontSize = size;var frame=parent.GetComponentInParent<HudFrameGraphic>();text.color=frame!=null&&frame.IsDarkReading?Capstone.Game.UISystem.GreenAngularGeometry.Light:Forest; text.alignment = align;
             text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate;
             text.raycastTarget = false; return text;
         }

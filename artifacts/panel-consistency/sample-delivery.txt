@@ -1,5 +1,0 @@
-PASS recovery samples delivered and saved
-Potion | Bình hồi máu | 5
-mana-potion | Bình mana | 5
-healing-apple | Táo hồi phục | 5
-dusk-stone | Dusk Stone | 97

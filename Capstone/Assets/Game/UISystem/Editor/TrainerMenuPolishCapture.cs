@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.UISystem.Editor {
     /// <summary>Captures the real Game view; restores its size and any Play session it starts.</summary>
     public static class TrainerMenuPolishCapture {
-        public const string Output = "../artifacts/trainer-menu-v4/";
+        public const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "trainer-menu-v4/";
         const string Request = "Temp/CaptureTrainerMenu.request";
         const string OwnPlay = "TrainerMenuPolishCapture.OwnPlay";
         static bool running;

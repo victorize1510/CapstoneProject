@@ -48,7 +48,7 @@ namespace Capstone.Game.SettingsSystem.Editor {
         }
         static readonly List<string> results = new List<string>();
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-        const string Output = "../artifacts/settings-ui/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "settings-ui/";
         static bool running;
         static double nextPoll;
         static void Check(bool condition, string label) { if (!condition) throw new InvalidOperationException(label); results.Add("PASS " + label); }

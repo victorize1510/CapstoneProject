@@ -38,7 +38,7 @@ namespace Capstone.Game.HudSystem {
         }
         void CancelViewedInteraction(){HideTooltip();ClearSwapSelection();companionSkills?.CancelEquipPreview();}
         void HideTooltipOnPointer(PointerDownEvent _)=>HideTooltip();
-        void SuppressNativeTooltip(TooltipEvent e){if(companionVisible)e.StopImmediatePropagation();}
+        void SuppressNativeTooltip(TooltipEvent e){if(companionVisible&&!IsDetailsOpen)e.StopImmediatePropagation();}
         void ShowNameTooltip(PointerEnterEvent _){ShowTooltip(selectedName,selectedName?.text,"Tên thú đang xem");}
         void ShowValueTooltip(PointerEnterEvent e){if(e.currentTarget is Label label)ShowTooltip(label,"Giá trị đầy đủ",label.text);}
         internal bool TryCancelInteraction(){

@@ -52,7 +52,7 @@ namespace Capstone.Game.ShopSystem.Editor {
         static bool running;
         static double nextPoll;
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-        static readonly string Output = "../artifacts/shop-ui/";
+        static readonly string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "shop-ui/";
         static void Check(bool condition, string label) { if (!condition) throw new InvalidOperationException(label); results.Add("PASS " + label); }
         static void Submit(Button button) { using (var evt = NavigationSubmitEvent.GetPooled()) { evt.target = button; button.SendEvent(evt); } }
         static T Field<T>(object value, string field) => (T)value.GetType().GetField(field, Private).GetValue(value);

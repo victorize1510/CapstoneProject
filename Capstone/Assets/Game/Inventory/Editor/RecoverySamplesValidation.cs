@@ -95,8 +95,8 @@ namespace Capstone.Game.Inventory.Editor {
                     Check(f.stats.Health == 100 && f.bag.GetQuantity(mana) == 3, "no-MP pet keeps health and potion");
                 }
             } catch (Exception error) { results.Add("FAIL " + error); Debug.LogException(error); }
-            Directory.CreateDirectory("../artifacts/panel-consistency");
-            File.WriteAllLines("../artifacts/panel-consistency/recovery-validation.txt", results);
+            Directory.CreateDirectory(Capstone.Game.UISystem.QaArtifactPaths.Root + "panel-consistency");
+            File.WriteAllLines(Capstone.Game.UISystem.QaArtifactPaths.Root + "panel-consistency/recovery-validation.txt", results);
             Debug.Log("Recovery sample validation: " + results.Count + " results.");
         }
         [InitializeOnLoadMethod] static void Initialize() {

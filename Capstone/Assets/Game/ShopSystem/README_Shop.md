@@ -62,7 +62,7 @@ Menu **Game Tools > GameToolThang > HUD**:
 - **Validate Shop in Play Mode**: mở/đóng, khóa gameplay, Back và disable/rebind owner trong TestChar. Không mua bằng save thật.
 - **Preview Shop (Editor fixture)**: xem nhiều ô bằng dữ liệu minh họa riêng.
 
-Kết quả được lưu trong `artifacts/shop-ui` ở gốc repository.
+Kết quả được lưu trong `E:/UnityWork/CapstoneProjectData/Artifacts/shop-ui` ở ngoài repository.
 
 ## Giới hạn đã chốt
 

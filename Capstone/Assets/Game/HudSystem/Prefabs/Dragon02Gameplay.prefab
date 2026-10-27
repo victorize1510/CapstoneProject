@@ -640,6 +640,7 @@ GameObject:
   - component: {fileID: 267808670092860092}
   - component: {fileID: 4555586626223894497}
   - component: {fileID: 6882549686214179151}
+  - component: {fileID: 6056992854978278189}
   m_Layer: 0
   m_Name: Dragon02Gameplay
   m_TagString: Untagged
@@ -820,6 +821,8 @@ MonoBehaviour:
   maxHealth: 0
   energy: 0
   maxEnergy: 0
+  speciesSkillSet: {fileID: 11400000, guid: 6bc01a0d401bc3c458b2452ee9b5ce47, type: 2}
+  autoResolveSpeciesSkillSet: 1
   equippedSkillSlotCount: 4
   usePrototypeSkillsWhenEmpty: 1
   skills:
@@ -1119,6 +1122,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetEvolutionVisualController
   visualRoot: {fileID: 0}
   baseVisual: {fileID: 0}
+--- !u!114 &6056992854978278189
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4304348002892361780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77e327733fb1a46469a21d05df50fa72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillPresentationPlayer
+  sockets:
+  - key: Body
+    anchor: {fileID: 6220824323163806516}
+  - key: Ground
+    anchor: {fileID: 6220824323163806516}
+  - key: Mouth
+    anchor: {fileID: 0}
+  maxLiveEffects: 12
+  maxPooledEffects: 8
 --- !u!1 &4877312488395689883
 GameObject:
   m_ObjectHideFlags: 0

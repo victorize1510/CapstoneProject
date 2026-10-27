@@ -1,0 +1,121 @@
+/* Quest-only skin. Root and all data/controller hooks remain unchanged. */
+#quest-panel { width:100%; height:100%; min-width:0; min-height:0; padding:0; margin:0; border-width:0; border-radius:0; background-color:#66748E; color:#202B45; }
+#quest-panel #quest-canvas { position:absolute; width:1600px; height:900px; transform-origin:0 0; flex-direction:column; }
+#quest-panel Label { margin:0; padding:0; color:#202B45; -unity-text-outline-width:0; }
+#quest-panel .quest-journal-header { position:relative; height:72px; min-height:72px; flex-shrink:0; padding:0; margin:0; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-header-title-group { position:absolute; left:20px; top:16px; width:232px; height:40px; margin:0; padding:0; flex-direction:row; align-items:center; }
+#quest-panel .quest-header-mark { width:36px; height:36px; min-width:36px; margin-right:12px; border-width:0; background-color:rgba(0,0,0,0); rotate:0; -unity-background-scale-mode:scale-to-fit; }
+#quest-panel #quest-title-label { font-size:30px; color:#EDE9E1; -unity-font-style:bold; white-space:nowrap; }
+#quest-panel #quest-tabs { position:absolute; left:264px; top:17px; width:1100px; height:48px; min-width:0; flex-grow:0; flex-shrink:0; flex-direction:row; align-items:center; margin:0; padding:0; }
+#quest-panel .side-keycap { width:26px; min-width:26px; height:26px; flex-shrink:0; padding:0; margin:0; border-width:0; background-color:rgba(0,0,0,0); align-items:center; justify-content:center; }
+#quest-panel .side-keycap Label { color:#EDE9E1; font-size:14px; -unity-font-style:bold; }
+#quest-panel .quest-q-key { margin-right:14px; }
+#quest-panel .quest-e-key { margin-left:19px; }
+#quest-panel .quest-tab { position:relative; height:48px; min-height:48px; min-width:0; flex-grow:0; flex-shrink:0; margin:0 5px 0 0; padding:0; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); font-size:16px; color:#EDE9E1; -unity-font-style:bold; }
+#quest-panel #quest-tab-progress { width:234px; }
+#quest-panel #quest-tab-main { width:224px; }
+#quest-panel #quest-tab-side { width:208px; }
+#quest-panel #quest-tab-event { width:174px; }
+#quest-panel #quest-tab-other { width:150px; }
+#quest-panel .quest-tab:hover, #quest-panel .quest-tab:active, #quest-panel .quest-tab:focus, #quest-panel .quest-tab.is-selected { background-color:rgba(0,0,0,0); border-width:0; }
+#quest-panel .quest-button-surface { position:absolute; left:0; top:0; right:0; bottom:0; }
+#quest-panel .quest-button-caption { position:absolute; left:12px; top:0; right:12px; bottom:0; color:#EDE9E1; -unity-text-align:middle-center; font-size:18px; -unity-font-style:bold; white-space:nowrap; }
+#quest-panel .quest-tab .quest-button-caption { font-size:16px; }
+#quest-panel .quest-tab.is-selected .quest-button-caption, #quest-panel .is-tracked-action .quest-button-caption { color:#202B45; }
+#quest-panel #quest-back-button { position:absolute; left:1432px; top:16px; width:144px; height:42px; min-width:0; margin:0; padding:0; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-tracked-strip { height:30px; min-height:30px; flex-shrink:0; margin:4px 16px 0 16px; padding:0 16px; border-width:0; background-color:rgba(0,0,0,0); justify-content:center; }
+#quest-panel .tracked-quest-label { color:#EDE9E1; font-size:17px; -unity-font-style:bold; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#quest-panel .quest-journal-body { flex-grow:1; min-height:0; flex-direction:row; margin:8px 16px 16px 16px; padding:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-list-column { width:250px; min-width:250px; flex-grow:0; flex-shrink:0; flex-basis:auto; margin-right:16px; padding:14px 12px; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-column-title { height:34px; min-height:34px; font-size:17px; -unity-font-style:bold; border-bottom-width:1px; border-bottom-color:rgba(204,173,131,.6); }
+#quest-panel .quest-list-scroll { flex-grow:1; min-height:0; border-width:0; padding-top:10px; background-color:rgba(0,0,0,0); }
+#quest-panel .unity-scroll-view__content-container { background-color:rgba(0,0,0,0); }
+#quest-panel .quest-list-section { margin-bottom:12px; }
+#quest-panel .quest-list-section-header { min-height:38px; flex-shrink:0; flex-direction:row; align-items:center; padding:4px 2px; border-width:0; border-bottom-width:1px; border-bottom-color:rgba(32,43,69,.16); background-color:rgba(0,0,0,0); }
+#quest-panel .quest-list-section-heading { min-width:0; flex-grow:1; flex-direction:row; align-items:center; }
+#quest-panel .quest-list-section-arrow { width:18px; min-width:18px; margin-right:4px; font-size:14px; color:#3C4772; }
+#quest-panel .quest-list-section-title { font-size:16px; color:#202B45; white-space:normal; -unity-font-style:bold; }
+#quest-panel .quest-list-section-count { min-width:24px; font-size:16px; color:#202B45; -unity-text-align:middle-right; }
+#quest-panel .quest-list-section-empty, #quest-panel .quest-list-flat-empty { min-height:66px; padding:12px 6px; color:#39455E; font-size:16px; white-space:normal; }
+#quest-panel .quest-card { position:relative; min-height:104px; flex-shrink:0; flex-direction:column; margin:8px 0 0 0; padding:12px; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-card:hover, #quest-panel .quest-card.is-selected, #quest-panel .quest-card.is-tracked { border-width:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-card-icon { position:absolute; left:12px; top:14px; width:28px; height:28px; min-width:28px; margin:0; padding:0; border-width:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-card-text { margin-left:38px; min-width:0; min-height:54px; flex-grow:0; }
+#quest-panel .quest-card-title { font-size:18px; color:#202B45; -unity-font-style:bold; white-space:normal; }
+#quest-panel .quest-card-meta { margin-top:4px; font-size:15px; color:#39455E; white-space:normal; }
+#quest-panel .quest-card-status { margin-top:8px; padding-right:66px; font-size:15px; color:#39455E; white-space:normal; }
+#quest-panel .quest-card-right { position:absolute; right:12px; bottom:12px; width:62px; flex-grow:0; margin:0; align-items:flex-end; }
+#quest-panel .quest-card-progress { font-size:16px; color:#202B45; -unity-font-style:bold; }
+#quest-panel .quest-tracked-pin { position:absolute; right:9px; top:43px; width:20px; height:20px; -unity-background-scale-mode:scale-to-fit; }
+#quest-panel .quest-detail-column { flex-grow:1; min-width:0; min-height:0; border-width:0; border-radius:0; padding:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-detail-scroll { flex-grow:1; min-height:0; margin:12px; border-width:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-detail-content { flex-grow:1; flex-shrink:0; padding:12px 14px 12px 12px; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-detail-heading-row { min-height:162px; flex-shrink:0; flex-direction:row; align-items:flex-start; margin:0; padding:0 0 12px 0; border-width:0; }
+#quest-panel .quest-detail-icon { width:72px; height:72px; min-width:72px; min-height:72px; flex-shrink:0; margin-right:20px; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-icon-art { position:absolute; left:0; top:0; right:0; bottom:0; -unity-background-scale-mode:scale-to-fit; }
+#quest-panel .quest-detail-icon .quest-icon-art, #quest-panel .quest-empty-emblem .quest-icon-art, #quest-panel #quest-list-seal .quest-icon-art { left:12px; top:12px; right:12px; bottom:12px; }
+#quest-panel .quest-detail-heading-text { flex-grow:1; min-width:0; margin:0; padding:0; }
+#quest-panel .quest-detail-title-row { min-height:48px; flex-shrink:0; flex-direction:row; align-items:flex-start; }
+#quest-panel .quest-detail-title { min-width:0; flex-grow:1; font-size:32px; padding-top:0; color:#202B45; -unity-font-style:bold; white-space:normal; }
+#quest-panel .quest-header-track-button { position:relative; width:228px; height:46px; min-width:228px; flex-shrink:0; margin:0 0 0 16px; padding:0; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-basic-info-grid { flex-direction:row; margin-top:10px; }
+#quest-panel .quest-basic-info-column { width:50%; min-width:0; padding-right:16px; }
+#quest-panel .quest-basic-info-row { min-height:30px; flex-direction:row; align-items:flex-start; }
+#quest-panel .quest-basic-info-label { width:116px; min-width:116px; flex-shrink:0; color:#39455E; font-size:16px; }
+#quest-panel .quest-basic-info-value { flex-grow:1; min-width:0; color:#202B45; font-size:18px; -unity-font-style:bold; white-space:normal; }
+#quest-panel .quest-detail-meta-row { min-height:28px; flex-direction:row; margin-top:10px; align-items:center; }
+#quest-panel .quest-pill-frame { min-width:76px; height:28px; margin-right:12px; padding:3px 16px; justify-content:center; }
+#quest-panel .quest-pill { min-height:0; padding:0; margin:0; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); color:#EDE9E1; font-size:16px; white-space:nowrap; }
+#quest-panel #quest-status-row { margin-left:auto; margin-right:0; }
+#quest-panel .quest-detail-section { flex-shrink:0; margin-top:14px; padding-top:12px; border-width:0; border-top-width:1px; border-top-color:rgba(204,173,131,.55); }
+#quest-panel .quest-section-title { position:relative; min-height:32px; margin:0 0 8px 0; padding-left:38px; font-size:22px; color:#202B45; -unity-font-style:bold; }
+#quest-panel .quest-section-glyph { position:absolute; left:0; top:2px; width:24px; height:24px; -unity-background-scale-mode:scale-to-fit; }
+#quest-panel .quest-description { min-height:48px; margin:0; padding:0; font-size:20px; color:#202B45; white-space:normal; }
+#quest-panel #quest-objectives-section { margin-top:0; padding-top:6px; border-top-width:0; }
+#quest-panel .objective-list { border-width:0; background-color:rgba(0,0,0,0); padding:0; }
+#quest-panel .objective-entry { min-height:100px; padding:16px 20px 16px 16px; margin-bottom:10px; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .objective-entry .objective-row { min-height:32px; flex-direction:row; align-items:center; margin:0; padding:0; border-width:0; background-color:rgba(0,0,0,0); }
+#quest-panel .objective-state-icon { position:relative; width:28px; height:28px; min-width:28px; margin-right:14px; }
+#quest-panel .objective-text { flex-grow:1; min-width:0; font-size:22px; -unity-font-style:bold; color:#202B45; white-space:normal; }
+#quest-panel .objective-count { min-width:90px; flex-shrink:0; padding-left:16px; font-size:24px; color:#202B45; -unity-text-align:middle-right; }
+#quest-panel .objective-entry.is-complete .objective-text, #quest-panel .objective-entry.is-complete .objective-count { color:#202B45; }
+#quest-panel .objective-progress-bar { position:relative; height:14px; min-height:14px; margin:12px 0 0 4px; padding:0; }
+#quest-panel .objective-progress-bar .unity-progress-bar__background { background-color:rgba(0,0,0,0); border-width:0; border-radius:0; }
+#quest-panel .objective-progress-bar .unity-progress-bar__progress { background-color:rgba(0,0,0,0); border-radius:0; }
+#quest-panel .objective-progress-bar .unity-progress-bar__title-container { display:none; }
+#quest-panel .reward-list { flex-direction:row; flex-wrap:wrap; background-color:rgba(0,0,0,0); }
+#quest-panel #quest-rewards-section .reward-row { width:230px; min-width:230px; max-width:none; min-height:68px; flex-direction:row; align-items:center; margin:0 14px 8px 0; padding:12px 14px; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .reward-icon { width:42px; height:42px; flex-shrink:0; margin:0 16px 0 0; padding:0; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .reward-text { flex-grow:1; min-width:0; font-size:19px; color:#202B45; white-space:normal; }
+#quest-panel .quest-extra-info-list { padding:0; background-color:rgba(0,0,0,0); }
+#quest-panel #quest-extra-info-section { margin-top:8px; padding-top:7px; }
+#quest-panel #quest-extra-info-section .quest-section-title { margin-bottom:4px; }
+#quest-panel #quest-extra-info-section .quest-extra-info-row { min-height:36px; }
+#quest-panel .quest-extra-info-row { min-height:40px; flex-direction:row; align-items:flex-start; }
+#quest-panel .quest-extra-info-icon { width:28px; min-width:28px; margin-right:12px; font-size:19px; color:#3C4772; }
+#quest-panel .quest-extra-info-note { flex-grow:1; min-width:0; font-size:19px; color:#39455E; white-space:normal; }
+#quest-panel .quest-extra-info-label, #quest-panel .quest-extra-info-value { font-size:18px; color:#39455E; white-space:normal; }
+#quest-panel .quest-reward-feedback { min-height:44px; padding:10px 12px; margin-top:10px; border-width:0; border-radius:0; background-color:#C1C3D3; color:#202B45; font-size:18px; white-space:normal; }
+#quest-panel .quest-actions { flex-direction:row; flex-shrink:0; height:60px; min-height:60px; margin-top:auto; padding:12px 0 0 0; align-items:flex-end; justify-content:flex-end; }
+#quest-panel .quest-action-button { position:relative; width:288px; height:48px; min-width:176px; margin:0 0 0 12px; padding:0; border-width:0; border-radius:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-action-button:hover, #quest-panel .quest-action-button:active, #quest-panel .quest-action-button:focus, #quest-panel .quest-action-button:disabled, #quest-panel .quest-header-track-button:hover, #quest-panel .quest-header-track-button.is-tracked-action { border-width:0; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-action-button:disabled .quest-button-caption, #quest-panel .quest-header-track-button:disabled .quest-button-caption { color:#202B45; }
+#quest-panel #abandon-quest-button { width:176px; }
+#quest-panel #quest-list-seal { position:absolute; left:68px; bottom:54px; width:110px; height:110px; }
+#quest-panel #quest-list-empty-hint { padding:36px 20px 0 20px; align-items:center; }
+#quest-panel #quest-list-empty-hint Label { font-size:18px; white-space:normal; -unity-text-align:middle-center; color:#39455E; }
+#quest-panel .quest-empty-emblem { width:120px; height:120px; margin-bottom:32px; }
+#quest-panel #quest-list-empty-hint .quest-empty-emblem { width:88px; height:88px; }
+#quest-panel #quest-detail-empty-wrapper { flex-grow:1; min-height:0; align-items:center; justify-content:center; padding:24px; }
+#quest-panel .menu-detail-empty { flex-grow:0; flex-shrink:0; height:auto; min-height:44px; padding:0; font-size:28px; -unity-font-style:bold; -unity-text-align:middle-center; white-space:normal; color:#202B45; background-color:rgba(0,0,0,0); }
+#quest-panel .quest-empty-help { margin-top:20px; font-size:20px; color:#39455E; white-space:normal; -unity-text-align:middle-center; }
+/* Task sheet: fixed ruled fields stay full width when their value changes. */
+#quest-panel #quest-canvas .quest-detail-heading-row {min-height:208px;padding:16px 20px 16px 24px;margin-bottom:8px;}
+#quest-panel #quest-canvas .quest-detail-title-row {min-height:48px;padding-bottom:8px;border-bottom-width:1px;border-bottom-color:rgba(110,126,153,.45);}
+#quest-panel .quest-basic-info-grid {margin-top:12px;}
+#quest-panel .quest-basic-info-column {padding-right:24px;}
+#quest-panel .quest-basic-info-row {height:38px;min-height:38px;align-items:center;}
+#quest-panel .quest-basic-info-label {width:124px;min-width:124px;font-size:16px;}
+#quest-panel .quest-form-field {height:32px;min-height:32px;min-width:0;flex-basis:0;flex-grow:1;border-bottom-width:1px;border-bottom-color:rgba(83,100,131,.72);padding:0 4px 4px 4px;}
+#quest-panel .quest-form-field .quest-basic-info-value {width:100%;height:27px;min-height:27px;flex-shrink:0;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-unity-text-align:middle-left;}
+#quest-panel .quest-detail-meta-row {margin-top:12px;}

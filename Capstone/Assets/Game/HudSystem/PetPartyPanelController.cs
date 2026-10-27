@@ -27,7 +27,7 @@ namespace Capstone.Game.HudSystem {
         VisualElement layoutPanel;
         VisualElement partyRow;
         Label partyTitle;
-        readonly PetPortraitPreview portraitPreview = new PetPortraitPreview { BackgroundColor = new Color32(82,118,106,255) };
+        readonly PetPortraitPreview portraitPreview = new PetPortraitPreview { BackgroundColor = Color.clear };
         VisualElement selectedPortrait;
         Label selectedPortraitFallback;
         Label selectedName;
@@ -150,6 +150,10 @@ namespace Capstone.Game.HudSystem {
                 var texture = (RenderTexture)portraitPreview.Texture;
                 Capstone.Game.UISystem.AngularSurface.SetArt(selectedPortrait,texture);
                 if (selectedPortraitFallback != null) selectedPortraitFallback.style.display = DisplayStyle.None;
+            } else {
+                portraitPreview.Clear();
+                SetPreview3D(false);
+                SetFeedback("Không thể tạo bản xem 3D cho thú này. Đã chuyển về ảnh 2D.");
             }
         }
         public void Bind(UIDocument targetDocument) {
@@ -490,11 +494,9 @@ namespace Capstone.Game.HudSystem {
             SetNamedText(documentRoot, "pet-details-capture-location", DisplayOrDash(metadata.CaptureLocation));
             SetNamedText(documentRoot, "pet-details-trainer", DisplayOrDash(metadata.TrainerName));
             SetNamedText(documentRoot, "pet-details-personality", Capstone.Game.UISystem.VietnameseUI.Personality(metadata.Personality));
-            SetNamedText(documentRoot, "pet-details-nature", metadata.Nature);
+            SetNamedText(documentRoot, "pet-details-nature", Capstone.Game.UISystem.VietnameseUI.Nature(metadata.Nature));
             SetNamedText(documentRoot, "pet-details-bst", metadata.BaseStatTotal.ToString());
-            SetNamedText(documentRoot, "pet-details-iv", FormatStatValues(metadata.IndividualValues));
-            SetNamedText(documentRoot, "pet-details-ev",
-                $"{FormatStatValues(metadata.EffortValues)}  ({metadata.EffortValues.Total}/510)");
+            RefreshGeneticsTable(documentRoot, metadata);
             string codexState = metadata.CodexRegistered ? "Đã đăng ký" : "Chưa đăng ký";
             SetNamedText(documentRoot, "pet-details-codex-state-basic", codexState);
 
@@ -515,9 +517,7 @@ namespace Capstone.Game.HudSystem {
             SetNamedText(documentRoot, "pet-details-codex-state", codexState);
             SetNamedText(documentRoot, "pet-details-codex-number", DisplayOrDash(metadata.CodexNumber));
             SetNamedText(documentRoot, "pet-details-codex-description",
-                string.IsNullOrWhiteSpace(metadata.CodexDescription)
-                    ? "Chưa có mô tả Codex cho thú này."
-                    : metadata.CodexDescription.Trim());
+                Capstone.Game.UISystem.VietnameseUI.PetDescription(metadata.CodexDescription));
             RefreshEvolution(documentRoot, metadata, source?.Icon, displayName);
         }
 
@@ -543,7 +543,7 @@ namespace Capstone.Game.HudSystem {
                 text.AddToClassList("pet-details-skill-text");
                 text.Add(CreateLabel(hasSkill ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Chưa mở", "pet-details-skill-name"));
                 text.Add(CreateLabel(hasSkill ? FormatElement(skill.element) : "Hệ: -", "pet-details-skill-element"));
-                text.Add(CreateLabel("PP - / -", "pet-details-skill-pp"));
+                text.Add(CreateLabel("Lượt dùng: chưa có dữ liệu", "pet-details-skill-pp"));
                 card.Add(text);
                 detailsSkillsRow.Add(card);
             }
@@ -1146,7 +1146,7 @@ namespace Capstone.Game.HudSystem {
 
         static void SetNamedText(VisualElement rootElement, string elementName, string value) {
             Label label = rootElement?.Q<Label>(elementName);
-            if (label != null) label.text = value ?? string.Empty;
+            if (label != null) { label.text = value ?? string.Empty; label.tooltip = label.text; }
         }
 
         static string FormatStatValues(PetStatValues values) =>

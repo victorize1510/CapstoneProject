@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Capstone.Game.SaveSystem;
+using Capstone.Game.Skills;
 using UnityEngine;
 
 namespace Capstone.Game.HudSystem {
@@ -20,6 +21,9 @@ namespace Capstone.Game.HudSystem {
         [SerializeField, Min(0f)] float maxEnergy;
 
         [Header("Skills")]
+        [Tooltip("Shared species learnset. Existing ID-based save/progress stays on this pet.")]
+        [SerializeField] PetSpeciesSkillSet speciesSkillSet = null;
+        [SerializeField] bool autoResolveSpeciesSkillSet = true;
         [SerializeField, Range(2, 4)] int equippedSkillSlotCount = 4;
         [SerializeField] bool usePrototypeSkillsWhenEmpty = true;
         [SerializeField] List<SkillHudData> skills = new List<SkillHudData>();
@@ -40,6 +44,9 @@ namespace Capstone.Game.HudSystem {
         bool cooldownHudDirty;
         float nextCooldownHudRefreshAt;
         bool restoredLoadout;
+        PetSpeciesSkillSet initializedSkillSet;
+        public PetSpeciesSkillSet SpeciesSkillSet => speciesSkillSet;
+        public Animator VisualAnimator => animator;
         public event Action PersistentDataChanged;
 
         public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? gameObject.name : displayName;
@@ -51,11 +58,13 @@ namespace Capstone.Game.HudSystem {
         public Sprite Icon => icon;
         public void BindVisualAnimator(Animator nextAnimator) {
             if (nextAnimator != null) animator = nextAnimator;
+            GetComponent<PetSkillPresentationPlayer>()?.BindAnimator(animator);
         }
         public int EquippedSkillSlotCount => Mathf.Clamp(equippedSkillSlotCount, 2, 4);
 
         public event Action HudDataChanged;
         public event Action<int> SkillRequested;
+        public event Action<SkillHudData> SkillAnimationAccepted;
 
         void Reset() {
             ResolveAnimationReferences();
@@ -64,8 +73,15 @@ namespace Capstone.Game.HudSystem {
 
         void Awake() {
             ResolveAnimationReferences();
+            if (speciesSkillSet == null && autoResolveSpeciesSkillSet) {
+                var metadata = GetComponentInParent<PetCollectionMetadata>(true);
+                var catalog = metadata != null ? Resources.Load<PetSkillCatalog>("PetSkills/PetSkillCatalog") : null;
+                speciesSkillSet = catalog != null ? catalog.FindSpecies(metadata.Species) : null;
+            }
             EnsureSkillList();
             EnsureLearnedSkillList();
+            if (speciesSkillSet != null && GetComponent<PetSkillPresentationPlayer>() == null)
+                gameObject.AddComponent<PetSkillPresentationPlayer>();
             GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
         }
 
@@ -353,7 +369,7 @@ namespace Capstone.Game.HudSystem {
             SkillHudData skill = skills[skillIndex];
             if (!skill.unlocked || !skill.usable || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
             SkillRequested?.Invoke(skillIndex);
-            PlaySkillAnimation(skill);
+            if (PlaySkillAnimation(skill)) SkillAnimationAccepted?.Invoke(skill);
 
             if (skill.cooldownSeconds > 0f && skillIndex < cooldownRemaining.Count) {
                 cooldownRemaining[skillIndex] = skill.cooldownSeconds;
@@ -372,13 +388,14 @@ namespace Capstone.Game.HudSystem {
         }
 
         void EnsureSkillList(bool sendChangeEvent = true) {
+            EnsureSpeciesSkills();
             bool changed = false;
             int slotCount = EquippedSkillSlotCount;
             for (int i = 0; i < skills.Count && i < slotCount; i++) {
                 skills[i] = NormalizeSkill(skills[i], i);
             }
 
-            while (usePrototypeSkillsWhenEmpty && !restoredLoadout && skills.Count < slotCount) {
+            while (speciesSkillSet == null && usePrototypeSkillsWhenEmpty && !restoredLoadout && skills.Count < slotCount) {
                 skills.Add(DefaultSkill(skills.Count));
                 changed = true;
             }
@@ -393,6 +410,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void EnsureLearnedSkillList(bool sendChangeEvent = true) {
+            EnsureSpeciesSkills();
             bool changed = false;
 
             for (int i = 0; i < learnedSkills.Count; i++) {
@@ -536,19 +554,19 @@ namespace Capstone.Game.HudSystem {
             if (animator == null) animator = GetComponentInChildren<Animator>();
         }
 
-        void PlaySkillAnimation(SkillHudData skill) {
+        bool PlaySkillAnimation(SkillHudData skill) {
             ResolveAnimationReferences();
-            if (skill.animatorStates == null || skill.animatorStates.Length == 0) return;
+            if (skill.animatorStates == null || skill.animatorStates.Length == 0) return false;
 
             float duration = skill.animationDuration > 0f ? skill.animationDuration : 0.85f;
             float fade = skill.animationFade > 0f ? skill.animationFade : 0.08f;
             float windup = Mathf.Max(0f, skill.windupSeconds);
             float recovery = Mathf.Max(0f, skill.recoverySeconds);
             if (petController != null && petController.PlaySkillAnimation(skill.animatorStates, duration, fade, stopMovementDuringSkill, faceTargetDuringSkill, windup, recovery)) {
-                return;
+                return true;
             }
 
-            if (animator == null) return;
+            if (animator == null) return false;
             foreach (string stateName in skill.animatorStates) {
                 if (string.IsNullOrWhiteSpace(stateName)) continue;
 
@@ -556,8 +574,9 @@ namespace Capstone.Game.HudSystem {
                 if (!TryGetAnimatorStateHash(stateName, out hash)) continue;
 
                 animator.CrossFadeInFixedTime(hash, fade, 0, 0f);
-                return;
+                return true;
             }
+            return false;
         }
 
         bool TryGetAnimatorStateHash(string stateName, out int hash) {
@@ -570,6 +589,13 @@ namespace Capstone.Game.HudSystem {
         }
 
         SkillHudData NormalizeSkill(SkillHudData skill, int index) {
+            if (speciesSkillSet != null && speciesSkillSet.TryGet(ResolveSkillId(skill), out var entry)) {
+                var data = entry.CreateHudData(Level);
+                data.skillLevel = Mathf.Max(1, skill.skillLevel);
+                data.unlocked = skill.unlocked;
+                data.usable = skill.usable;
+                return data;
+            }
             SkillHudData fallback = DefaultSkill(index);
             if (!HasUsefulSkillData(skill)) return restoredLoadout || !usePrototypeSkillsWhenEmpty ? default : fallback;
             if (string.IsNullOrWhiteSpace(skill.skillId)) {
@@ -609,6 +635,7 @@ namespace Capstone.Game.HudSystem {
 
         [ContextMenu("Use Dragon Prototype Skills")]
         void EnsurePrototypeSkills() {
+            if (speciesSkillSet != null) return;
             AddPrototypeSkills();
             cooldownRemaining.Clear();
             EnsureCooldownStorage();
@@ -669,6 +696,58 @@ namespace Capstone.Game.HudSystem {
             if (skill.recoverySeconds > 0f) return true;
             if (skill.animatorStates != null && skill.animatorStates.Length > 0) return true;
             return skill.unlocked || skill.usable;
+        }
+
+        /// <summary>Explicit binding for authoring/new pets. The default preserves individual progress and slot order.</summary>
+        public void ConfigureSkillSet(PetSpeciesSkillSet set, bool preserveProgress = true) {
+            GetComponent<PetSkillPresentationPlayer>()?.CancelPresentation();
+            speciesSkillSet = set; initializedSkillSet = null;
+            if (!preserveProgress) { skills.Clear(); learnedSkills.Clear(); restoredLoadout = false; }
+            EnsureSkillList(false); EnsureLearnedSkillList(false);
+            cooldownRemaining.Clear(); EnsureCooldownStorage();
+            if (Application.isPlaying && set != null && GetComponent<PetSkillPresentationPlayer>() == null)
+                gameObject.AddComponent<PetSkillPresentationPlayer>();
+            HudDataChanged?.Invoke();
+        }
+
+        public PetSkillPresentationProfile GetSkillPresentation(string id) => speciesSkillSet != null && speciesSkillSet.TryGet(id, out var entry) ? entry.Presentation : null;
+
+        [ContextMenu("Apply Species Defaults (New Pet Authoring Only)")]
+        void ApplySpeciesDefaultsForAuthoring() {
+            if (Application.isPlaying || speciesSkillSet == null) {
+                Debug.LogWarning("Stop Play Mode and assign a Species Skill Set first. This command is for a NEW pet prefab, not a player's saved pet.", this);
+                return;
+            }
+            ConfigureSkillSet(speciesSkillSet, false);
+        }
+
+        void EnsureSpeciesSkills() {
+            if (speciesSkillSet == null || initializedSkillSet == speciesSkillSet) return;
+            initializedSkillSet = speciesSkillSet;
+            // Upgrade copied legacy authoring data without dropping IDs used by an existing save.
+            var progress = new Dictionary<string, SkillHudData>(StringComparer.OrdinalIgnoreCase);
+            foreach (var data in skills) { string id = ResolveSkillId(data); if (!string.IsNullOrWhiteSpace(id)) progress[id] = data; }
+            foreach (var data in learnedSkills) { string id = ResolveSkillId(data); if (!string.IsNullOrWhiteSpace(id)) progress[id] = data; }
+            var oldLearned = learnedSkills.ToArray(); learnedSkills.Clear();
+            if (speciesSkillSet.learnset != null) foreach (var entry in speciesSkillSet.learnset) {
+                if (entry?.skill == null) continue;
+                var data = entry.CreateHudData(Level);
+                if (!progress.TryGetValue(data.skillId, out var old)) {
+                    foreach (var pair in progress) if (MatchesSkillId(data, pair.Key)) { old = pair.Value; break; }
+                }
+                if (HasUsefulSkillData(old)) { data.skillLevel = Mathf.Max(1, old.skillLevel); data.unlocked = old.unlocked; data.usable = old.usable; }
+                if (FindLearnedSkill(data) < 0) learnedSkills.Add(data);
+            }
+            // Legacy progress is kept for compatibility; the setup validator reports unmapped IDs.
+            foreach (var data in oldLearned) if (HasUsefulSkillData(data) && FindLearnedSkill(data) < 0) learnedSkills.Add(data);
+            if (skills.Count == 0 && !restoredLoadout && speciesSkillSet.defaultLoadout != null) {
+                foreach (var definition in speciesSkillSet.defaultLoadout) {
+                    if (skills.Count >= EquippedSkillSlotCount) break;
+                    if (definition == null || !speciesSkillSet.TryGet(definition.Id, out var entry)) continue;
+                    var data = entry.CreateHudData(Level);
+                    if (data.unlocked && FindEquippedSkill(data) < 0) skills.Add(data);
+                }
+            }
         }
     }
 }

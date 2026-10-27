@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:bag="Capstone.Game.Inventory.Bag" editor-extension-mode="False">
     <!-- Load theme, shared controls, panel styles, then the shared header. -->
     <ui:Style src="MenuTheme.uss" />
     <ui:Style src="MenuCommon.uss" />
@@ -41,13 +41,13 @@
         <ui:Instance template="PetLevelUpPanel" class="panel-template-host" picking-mode="Ignore" />
         <ui:Instance template="PetHealPanel" class="panel-template-host" picking-mode="Ignore" />
         <ui:VisualElement name="bag-evolution-confirm-overlay" class="bag-evolution-confirm-overlay">
-            <ui:VisualElement class="bag-evolution-confirm-card">
-                <ui:Label text="DÙNG DUSK STONE" class="bag-evolution-confirm-title" />
+            <ui:VisualElement name="bag-evolution-card" class="bag-evolution-confirm-card">
+                <ui:Label name="bag-evolution-title" text="VẬT PHẨM TIẾN HÓA" class="bag-evolution-confirm-title" />
                 <ui:Label name="bag-evolution-confirm-text" text="Chọn thú để tiến hóa" class="bag-evolution-confirm-text" />
                 <ui:Label name="bag-evolution-confirm-feedback" text="" class="bag-evolution-confirm-feedback" />
                 <ui:VisualElement class="bag-evolution-confirm-actions">
-                    <ui:Button name="bag-evolution-cancel" text="HỦY" />
-                    <ui:Button name="bag-evolution-confirm" text="DÙNG ĐÁ" />
+                    <bag:BagButton name="bag-evolution-cancel" text="Hủy" kind="action-small" />
+                    <bag:BagButton name="bag-evolution-confirm" text="Dùng đá" kind="action-primary" class="bag-dark" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

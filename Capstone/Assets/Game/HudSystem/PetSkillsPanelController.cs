@@ -19,6 +19,8 @@ namespace Capstone.Game.HudSystem {
         readonly Dictionary<PetElement, Button> filterButtons = new Dictionary<PetElement, Button>();
         readonly HashSet<PetElement> selectedElements = new HashSet<PetElement>();
         readonly Dictionary<Button, Action> buttonCallbacks = new Dictionary<Button, Action>();
+        readonly Dictionary<Button, EventCallback<KeyDownEvent>> filterKeyCallbacks = new Dictionary<Button, EventCallback<KeyDownEvent>>();
+        readonly Dictionary<Button, EventCallback<PointerDownEvent>> filterFocusCallbacks = new Dictionary<Button, EventCallback<PointerDownEvent>>();
         readonly Dictionary<Button, EventCallback<PointerEnterEvent>> equippedTooltipCallbacks = new Dictionary<Button, EventCallback<PointerEnterEvent>>();
 
         VisualElement overlay;
@@ -260,6 +262,9 @@ namespace Capstone.Game.HudSystem {
         void HandleTooltipLeave(PointerLeaveEvent _) => HideTooltip();
 
         void UnregisterControls() {
+            foreach(var pair in filterKeyCallbacks)pair.Key.UnregisterCallback(pair.Value,TrickleDown.TrickleDown);
+            foreach(var pair in filterFocusCallbacks)pair.Key.UnregisterCallback(pair.Value);
+            filterKeyCallbacks.Clear();filterFocusCallbacks.Clear();
             foreach (var pair in equippedTooltipCallbacks) {
                 pair.Key.UnregisterCallback(pair.Value);
                 pair.Key.UnregisterCallback<PointerLeaveEvent>(HandleTooltipLeave);
@@ -275,6 +280,16 @@ namespace Capstone.Game.HudSystem {
             Action guarded = Capstone.Game.UISystem.PlayerActionGate.Guard(this, "button:" + button.name, callback);
             button.clicked += guarded;
             buttonCallbacks.Add(button, guarded);
+            if(button.ClassListContains("skills-filter-button")){
+                button.focusable=true;
+                EventCallback<PointerDownEvent> focus=_=>button.Focus();
+                EventCallback<KeyDownEvent> submit=evt=>{
+                    if(!button.enabledInHierarchy||(evt.keyCode!=KeyCode.Return&&evt.keyCode!=KeyCode.KeypadEnter&&evt.keyCode!=KeyCode.Space))return;
+                    guarded();evt.StopImmediatePropagation();
+                };
+                button.RegisterCallback(focus);button.RegisterCallback(submit,TrickleDown.TrickleDown);
+                filterFocusCallbacks.Add(button,focus);filterKeyCallbacks.Add(button,submit);
+            }
         }
 
         void SubscribeProvider() {
@@ -473,16 +488,43 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ToggleElement(PetElement element) {
+            if (!filterButtons.ContainsKey(element)) return;
             if (!selectedElements.Add(element)) selectedElements.Remove(element);
+            // Empty is the canonical unfiltered state, including selecting every type.
+            if (selectedElements.Count == filterButtons.Count) selectedElements.Clear();
             RefreshFilterState();
             RebuildLearnedGrid();
         }
 
         void RefreshFilterState() {
             bool allSelected = selectedElements.Count == 0;
-            allFilterButton?.EnableInClassList("is-selected", allSelected);
+            SetFilterSelected(allFilterButton, allSelected, "Hiện kỹ năng của tất cả các hệ");
             foreach (KeyValuePair<PetElement, Button> pair in filterButtons) {
-                pair.Value.EnableInClassList("is-selected", selectedElements.Contains(pair.Key));
+                bool selected = selectedElements.Contains(pair.Key);
+                SetFilterSelected(pair.Value, selected, selected ? "Đang lọc hệ này · Bấm để bỏ chọn" : "Bấm để thêm hệ này vào bộ lọc");
+            }
+        }
+
+        static void SetFilterSelected(Button button, bool selected, string hint) {
+            if (button == null) return;
+            button.EnableInClassList("is-selected", selected);
+            button.tooltip = hint;
+            var mark = button.Q<Label>("filter-selection-mark");
+            if (mark == null) {
+                mark = new Label { name = "filter-selection-mark", pickingMode = PickingMode.Ignore };
+                mark.AddToClassList("filter-selection-mark");
+                button.Add(mark);
+            }
+            mark.text = selected ? "✓" : "";
+            if (button is Capstone.Game.UISystem.AngularButton angular) {
+                string role = selected ? "filter-selected" : "raised";
+                if(angular.Surface.Role!=role || angular.Surface.Material){
+                    angular.Surface.Role = role;
+                    angular.Surface.Material = false;
+                    angular.Surface.MarkDirtyRepaint();
+                }
+                var caption=angular.Q<Label>(className:"angular-button-caption");
+                if(caption!=null){caption.style.left=24;caption.style.right=6;}
             }
         }
 
@@ -508,7 +550,7 @@ namespace Capstone.Game.HudSystem {
             if (tooltipElement != null) tooltipElement.text = FormatElement(EffectiveElement(skill));
             if (tooltipLevel != null) tooltipLevel.text = Mathf.Max(1, skill.skillLevel).ToString();
             if (tooltipCooldown != null) tooltipCooldown.text = skill.cooldownSeconds > 0f ? $"{skill.cooldownSeconds:0.#} giây" : "-";
-            if (tooltipDescription != null) tooltipDescription.text = string.IsNullOrWhiteSpace(skill.description) ? "Chưa có mô tả." : skill.description.Trim();
+            if (tooltipDescription != null) tooltipDescription.text = Capstone.Game.UISystem.VietnameseUI.SkillDescription(skill.description);
 
             if(IsEmbedded){tooltip.style.display=DisplayStyle.Flex;return;}
 

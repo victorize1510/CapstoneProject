@@ -1,3 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:Label class="codex-type-badge" picking-mode="Ignore" />
-</ui:UXML>

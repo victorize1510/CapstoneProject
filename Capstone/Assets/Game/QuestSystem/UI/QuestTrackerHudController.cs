@@ -73,6 +73,7 @@ namespace Capstone.Game.QuestSystem.UI {
 
         void CacheElements() {
             if (document == null || document.rootVisualElement == null) return;
+            Capstone.Game.UISystem.UiReadability.Bind(document.rootVisualElement);
 
             root = document.rootVisualElement.Q<VisualElement>("quest-tracker-root") ?? document.rootVisualElement;
             scrollView = root.Q<ScrollView>("quest-tracker-scroll");
@@ -138,6 +139,7 @@ namespace Capstone.Game.QuestSystem.UI {
             var card = new VisualElement();
             card.AddToClassList("quest-tracker-card");
             card.AddToClassList("is-tracked");
+            Capstone.Game.UISystem.UiReadability.Add(card,true,"panel");
 
             var titleRow = new VisualElement();
             titleRow.AddToClassList("quest-tracker-title-row");

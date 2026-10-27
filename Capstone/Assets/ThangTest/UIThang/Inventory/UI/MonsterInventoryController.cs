@@ -8,6 +8,7 @@ using Capstone.Game.SaveSystem;
 using Capstone.Game.QuestSystem.UI;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Capstone.Game.Inventory.Bag;
 
 namespace Capstone.Game.Inventory {
     [RequireComponent(typeof(UIDocument))]
@@ -78,6 +79,7 @@ namespace Capstone.Game.Inventory {
         DropdownField filterField;
         Button viewButton;
         bool listView;
+        BagPresentation bagPresentation;
         int filterIndex;
         ItemQuantityPopup quantityPopup;
         PetPartyPanelController petPartyPanelController;
@@ -314,6 +316,8 @@ namespace Capstone.Game.Inventory {
             filterField = rootElement.Q<DropdownField>("inventory-filter-field");
             viewButton = rootElement.Q<Button>("inventory-view-button");
             if (root != null) quantityPopup = new ItemQuantityPopup(root);
+            bagPresentation = BagPresentation.Attach(rootElement, inventoryPanel);
+            bagPresentation?.SetMode(listView);
         }
 
         void RegisterCategoryButtons() {
@@ -365,17 +369,20 @@ namespace Capstone.Game.Inventory {
             }
 
             if (filterField != null) {
-                filterField.choices = new List<string> { "Lọc: không lọc", "Dùng được", "Rare trở lên", "Có thể bỏ" };
+                filterField.choices = new List<string> { "Không lọc", "Dùng được", "Rare trở lên", "Có thể bỏ" };
                 filterField.SetValueWithoutNotify(filterField.choices[Mathf.Clamp(filterIndex, 0, 3)]);
                 VerticalDropdownPopup.Bind(filterField);
                 filterField.RegisterValueChangedCallback(HandleFilterChanged);
             }
             RegisterControl(viewButton, Capstone.Game.UISystem.PlayerActionGate.Guard(this, "view", () => {
+                int anchor = selectedItemIndex >= 0 ? selectedItemIndex : Mathf.FloorToInt((itemScroll?.scrollOffset.y ?? 0) / (listView ? ItemRowPitch : ItemGridPitch)) * (listView ? 1 : ItemGridColumns(itemGrid?.resolvedStyle.width ?? 744));
                 listView = !listView;
+                bagPresentation?.SetMode(listView);
                 itemGrid?.EnableInClassList("is-list", listView);
-                viewButton.text = listView ? "▦" : "☷";
+                viewButton.text = bagPresentation != null ? string.Empty : listView ? "▦" : "☷";
                 viewButton.tooltip = listView ? "Chuyển sang lưới" : "Chuyển sang danh sách";
                 LayoutItemCards();
+                if (anchor >= 0 && anchor < filteredItems.Count) itemScroll?.schedule.Execute(() => itemScroll.ScrollTo(itemCards[anchor]));
             }));
             itemGrid?.EnableInClassList("is-list", listView);
             itemGrid?.RegisterCallback<GeometryChangedEvent>(HandleGridGeometryChanged);
@@ -448,9 +455,9 @@ namespace Capstone.Game.Inventory {
                     BindItemCard(existing, item);
                     continue;
                 }
-                var card = new Button { name = $"inventory-item-{index}" };
+                var card = new BagButton { name = $"inventory-item-{index}", Kind = "item-square" };
                 card.AddToClassList("inventory-item-card");
-                card.tooltip = item.Name;
+                card.tooltip = Capstone.Game.UISystem.VietnameseUI.ItemName(item.Name);
 
                 var icon = new VisualElement { name = "card-icon" };
                 icon.AddToClassList("inventory-item-icon");
@@ -474,6 +481,9 @@ namespace Capstone.Game.Inventory {
                 card.Add(icon);
                 card.Add(nameLabel);
                 card.Add(quantityLabel);
+                var categoryLabel = new Label { name = "card-category", pickingMode = PickingMode.Ignore }; categoryLabel.AddToClassList("bag-item-category"); card.Add(categoryLabel);
+                var quickKey = new Label { name = "card-key", pickingMode = PickingMode.Ignore }; quickKey.AddToClassList("bag-item-key"); card.Add(quickKey);
+                BindItemCard(card, item);
                 card.clicked += Capstone.Game.UISystem.PlayerActionGate.Guard(this, "item-select:" + itemIndex, () => SelectItem(itemIndex, true));
                 itemGrid.Add(card);
                 itemCards.Add(card);
@@ -485,33 +495,49 @@ namespace Capstone.Game.Inventory {
             RefreshItemCardSelection();
         }
 
-        static void BindItemCard(Button card, InventoryItemSnapshot item) {
-            card.tooltip = item.Name;
+        void BindItemCard(Button card, InventoryItemSnapshot item) {
+            card.tooltip = Capstone.Game.UISystem.VietnameseUI.ItemName(item.Name);
             SetIcon(card.Q<VisualElement>("card-icon"), item.Icon, Color.clear);
             Label placeholder = card.Q<Label>("card-placeholder");
             placeholder.text = GetItemPlaceholder(item);
             placeholder.style.display = item.Icon == null ? DisplayStyle.Flex : DisplayStyle.None;
-            card.Q<Label>("card-name").text = item.Name;
+            card.Q<Label>("card-name").text = Capstone.Game.UISystem.VietnameseUI.ItemName(item.Name);
             card.Q<Label>("card-quantity").text = item.Quantity.ToString();
+            var category = card.Q<Label>("card-category"); if (category != null) category.text = FormatCategory(item.Category);
+            var key = card.Q<Label>("card-key"); if (key != null) {
+                bool r = adapter != null && string.Equals(adapter.GetQuickItemId(0), item.ItemId, StringComparison.OrdinalIgnoreCase);
+                bool t = adapter != null && string.Equals(adapter.GetQuickItemId(1), item.ItemId, StringComparison.OrdinalIgnoreCase);
+                key.text = r && t ? "R/T" : r ? "R" : t ? "T" : string.Empty;
+            }
         }
 
         void LayoutItemCards() {
             LayoutItemGrid(itemGrid, listView);
+            bagPresentation?.SetMode(listView);
         }
 
         // The Editor preview uses this same sizing rule as the live Bag.
+        const float ItemSquareSize = 102f; // 136 × 75%.
+        const float ItemGridPitch = ItemSquareSize + 8f;
+        const float ItemRowHeight = 57.2f; // 88 × 65%; width stays unchanged.
+        const float ItemRowPitch = ItemRowHeight + 6f;
+        static int ItemGridColumns(float available) => Mathf.Clamp(Mathf.FloorToInt(((float.IsFinite(available) ? available : 744) + 8.5f) / ItemGridPitch), 1, 6);
         public static void LayoutItemGrid(VisualElement grid, bool listView) {
             if (grid == null || !float.IsFinite(grid.resolvedStyle.width) || grid.resolvedStyle.width <= 0) return;
             float available = grid.resolvedStyle.width;
-            int columns = Mathf.Clamp(Mathf.FloorToInt(available / 142f), 5, 7);
-            float width = Mathf.Max(1f, available / columns - 10f);
+            int columns = ItemGridColumns(available);
+            int index = 0;
             foreach (VisualElement card in grid.Children()) {
-                card.style.width = listView ? available - 10f : width;
-                card.style.height = listView ? 76f : width;
+                if (card.style.display.value == DisplayStyle.None) continue;
+                BagPresentation.Place(card, listView ? 0 : (index % columns) * ItemGridPitch, listView ? index * ItemRowPitch : (index / columns) * ItemGridPitch, listView ? available : ItemSquareSize, listView ? ItemRowHeight : ItemSquareSize);
+                if (card is BagButton button) button.Kind = listView ? "item-row" : "item-square";
+                index++;
             }
+            grid.style.height = Mathf.Max(488, listView ? index * ItemRowPitch - 6 : Mathf.CeilToInt(index / (float)columns) * ItemGridPitch - 8);
         }
 
         void SelectItem(int index, bool scrollIntoView) {
+            bagPresentation?.Feedback(string.Empty);
             if (index < 0 || index >= filteredItems.Count) {
                 selectedItemIndex = -1;
                 selectedItem = null;
@@ -531,6 +557,7 @@ namespace Capstone.Game.Inventory {
         void RefreshItemCardSelection() {
             for (int index = 0; index < itemCards.Count; index++) {
                 itemCards[index].EnableInClassList("is-selected", index == selectedItemIndex);
+                if (itemCards[index] is BagButton button) button.Surface.MarkDirtyRepaint();
             }
         }
 
@@ -649,6 +676,7 @@ namespace Capstone.Game.Inventory {
             bagEvolutionComplete = false;
             PetEvolutionPreview preview = GetComponent<PetEvolutionService>()?.CreatePreview(
                 pet, PetEvolutionMethod.Item, itemId);
+            BagPresentation.Evolution(document.rootVisualElement, preview, adapter?.GetItems().FirstOrDefault(i => string.Equals(i.ItemId,itemId,StringComparison.OrdinalIgnoreCase)));
             if (bagEvolutionText != null) bagEvolutionText.text = preview?.IsConfigured == true
                 ? $"Dùng 1 {itemId} để tiến hóa {preview.CurrentName} thành {preview.TargetName}?"
                 : "Thú này không thể dùng vật phẩm tiến hóa.";
@@ -660,6 +688,7 @@ namespace Capstone.Game.Inventory {
             }
             bagEvolutionOverlay.style.display = DisplayStyle.Flex;
             bagEvolutionOverlay.BringToFront();
+            Capstone.Game.UISystem.PanelFocusUtility.Open(bagEvolutionOverlay);
         }
 
         void ConfirmBagEvolution() {
@@ -688,6 +717,8 @@ namespace Capstone.Game.Inventory {
         }
 
         void CloseBagEvolutionConfirmation() {
+            BagTooltip.HideAll(document?.rootVisualElement);
+            Capstone.Game.UISystem.PanelFocusUtility.Close(bagEvolutionOverlay);
             if (bagEvolutionOverlay != null) bagEvolutionOverlay.style.display = DisplayStyle.None;
             bagEvolutionPet = null;
             bagEvolutionItemId = null;
@@ -748,6 +779,7 @@ namespace Capstone.Game.Inventory {
         }
 
         public void Close() {
+            bagPresentation?.Suspend();
             if (root == null) CacheElements();
             if (root == null) return;
             Capstone.Game.UISystem.PanelFocusUtility.TryCloseNativeDropdown(document?.rootVisualElement);
@@ -841,6 +873,8 @@ namespace Capstone.Game.Inventory {
         }
 
         void SetActiveSection(MenuSection section) {
+            if(section != MenuSection.Bag) bagPresentation?.Suspend();
+            root?.EnableInClassList("bag-active", section == MenuSection.Bag);
             petPartyPanelController?.CloseRenamePopup();
             petPartyPanelController?.CloseDetails();
             if (section != MenuSection.Party) petPartyPanelController?.CancelEvolutionItemSelection();
@@ -1007,7 +1041,7 @@ namespace Capstone.Game.Inventory {
 
         static bool MatchesSearch(InventoryItemSnapshot item, string expected) {
             if (item == null || string.IsNullOrWhiteSpace(expected)) return true;
-            return ContainsIgnoreCase(item.Name, expected)
+            return ContainsIgnoreCase(Capstone.Game.UISystem.VietnameseUI.ItemName(item.Name), expected) || ContainsIgnoreCase(item.Name, expected)
                 || ContainsIgnoreCase(item.ItemId, expected)
                 || ContainsIgnoreCase(FormatCategory(item.Category), expected);
         }
@@ -1055,6 +1089,7 @@ namespace Capstone.Game.Inventory {
 
         void RefreshDetails() {
             var hasItem = selectedItem != null;
+            bagPresentation?.Refresh(filteredItems.Count, hasItem, filteredItems.Count > 0);
             RefreshActionButtons();
             SetVisible(detailEmpty, !hasItem);
             SetVisible(detailPanel, hasItem);
@@ -1073,14 +1108,14 @@ namespace Capstone.Game.Inventory {
                 detailIconPlaceholder.text = GetItemPlaceholder(selectedItem);
                 detailIconPlaceholder.style.display = selectedItem.Icon == null ? DisplayStyle.Flex : DisplayStyle.None;
             }
-            if (detailName != null) detailName.text = selectedItem.Name;
+            if (detailName != null) detailName.text = Capstone.Game.UISystem.VietnameseUI.ItemName(selectedItem.Name);
             if (detailRarity != null) detailRarity.text = FormatRarity(selectedItem.Rarity).ToUpperInvariant();
             if (detailCategory != null) detailCategory.text = FormatCategory(selectedItem.Category);
             if (detailQuantity != null) {
                 detailQuantity.text = $"Số lượng sở hữu: {selectedItem.Quantity}";
             }
-            if (detailDescription != null) detailDescription.text = string.IsNullOrWhiteSpace(selectedItem.Description) ? "Chưa có mô tả." : selectedItem.Description;
-            if (detailEffect != null) detailEffect.text = string.IsNullOrWhiteSpace(selectedItem.Effect) ? string.Empty : selectedItem.Effect;
+            if (detailDescription != null) detailDescription.text = string.IsNullOrWhiteSpace(selectedItem.Description) ? "Chưa có mô tả." : Capstone.Game.UISystem.VietnameseUI.ItemText(selectedItem.Description);
+            if (detailEffect != null) detailEffect.text = string.IsNullOrWhiteSpace(selectedItem.Effect) ? string.Empty : Capstone.Game.UISystem.VietnameseUI.ItemText(selectedItem.Effect);
             if (detailSource != null) detailSource.text = selectedItem.Source;
             if (detailFlavor != null) detailFlavor.text = string.IsNullOrWhiteSpace(selectedItem.FlavorText) ? string.Empty : $"\"{selectedItem.FlavorText}\"";
         }
@@ -1170,7 +1205,12 @@ namespace Capstone.Game.Inventory {
             SetButtonVisible(button, true);
             button.text = label;
             button.SetEnabled(available);
-            button.tooltip = available ? label : GetUnavailableActionReason(actionType, selectedItem);
+            button.tooltip = !available ? GetUnavailableActionReason(actionType, selectedItem)
+                : actionType == InventoryActionType.AssignQuickSlot ? "Gán vào R/T. Chọn phím sẽ lưu ngay và không tiêu hao vật phẩm."
+                : actionType == InventoryActionType.DropItem ? "Chọn số lượng để bỏ. Chỉ trừ vật phẩm sau khi xác nhận."
+                : actionType == InventoryActionType.UseItem && IsHealingItem(selectedItem) ? "Mở hồi phục cho thú đang xuất chiến bằng " + selectedItem.Name + "."
+                : actionType == InventoryActionType.UseItem && IsSelectedPetEvolutionItem(selectedItem) ? "Chọn thú đủ điều kiện trong Thú đồng hành để tiến hóa."
+                : label;
         }
 
         string GetUnavailableActionReason(InventoryActionType actionType, InventoryItemSnapshot item) {
@@ -1246,7 +1286,7 @@ namespace Capstone.Game.Inventory {
                     actionType = InventoryActionType.DropItem;
                     return true;
                 case GameItemCategory.Equipment:
-                    actionType = InventoryActionType.EquipItem;
+                    actionType = InventoryActionType.DropItem;
                     return true;
                 case GameItemCategory.KeyItem:
                     if (!SupportsUse(item)) return false;
@@ -1299,7 +1339,17 @@ namespace Capstone.Game.Inventory {
                 quantityPopup = new ItemQuantityPopup(root);
             }
 
-            quantityPopup.Show(GetQuantityPopupTitle(actionType), selectedItem, quantity => RequestAction(actionType, quantity));
+            // A delayed confirmation belongs to the item shown in the dialog.
+            // Inventory refresh can change selection while a transaction is pending.
+            var dialogItem = selectedItem.ItemBase;
+            quantityPopup.Show(GetQuantityPopupTitle(actionType), selectedItem, quantity => {
+                if(selectedItem?.ItemBase != dialogItem || adapter == null || adapter.GetQuantity(dialogItem) < quantity) {
+                    RefreshFromAdapter();
+                    bagPresentation?.Feedback("Vật phẩm hoặc số lượng đã thay đổi. Hãy chọn lại thao tác.");
+                    return;
+                }
+                RequestAction(actionType, quantity);
+            });
         }
 
         void RequestAction(InventoryActionType actionType, int quantity) {
@@ -1332,11 +1382,13 @@ namespace Capstone.Game.Inventory {
 
             if (!request.IsCompleted) {
                 Debug.LogWarning($"Inventory action did not report a result: {FormatAction(actionType)} / {selectedItem.Name}. Item quantity was not changed.");
+                bagPresentation?.Feedback("Thao tác chưa trả kết quả. Số lượng chưa được thay đổi.");
                 return;
             }
 
             if (!request.Success) {
                 if (!string.IsNullOrWhiteSpace(request.Message)) Debug.Log(request.Message);
+                bagPresentation?.Feedback(string.IsNullOrWhiteSpace(request.Message) ? "Không thể thực hiện thao tác." : request.Message);
                 return;
             }
 
@@ -1525,11 +1577,11 @@ namespace Capstone.Game.Inventory {
         static string FormatRarity(InventoryItemRarity rarity) => Capstone.Game.UISystem.VietnameseUI.Rarity(rarity.ToString());
 
         static readonly List<string> SortChoices = new List<string> {
-            "Sắp xếp: Loại",
-            "Sắp xếp: Tên A-Z",
-            "Sắp xếp: Tên Z-A",
-            "Sắp xếp: Số lượng",
-            "Sắp xếp: Độ hiếm"
+            "Loại",
+            "Tên A–Z",
+            "Tên Z–A",
+            "Số lượng",
+            "Độ hiếm"
         };
         static readonly List<GameItemCategory> CategoryOrder = new List<GameItemCategory> {
             GameItemCategory.All,

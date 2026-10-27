@@ -341,8 +341,10 @@ namespace Capstone.Game.HudSystem {
         void CacheElements() {
             if (document == null || document.rootVisualElement == null) return;
             VisualElement docRoot = document.rootVisualElement;
+            Capstone.Game.UISystem.UiReadability.Bind(docRoot);
             root = docRoot.Q<VisualElement>("monster-inventory-root");
             panel = docRoot.Q<VisualElement>("box-panel");
+            if(panel!=null)Capstone.Game.UISystem.UiReadability.SoftenGroups(panel,"box-stat-cell","box-skill-chip","box-selected-meta");
             partyRow = docRoot.Q<VisualElement>("box-party-row");
             storageGrid = docRoot.Q<VisualElement>("box-storage-grid");
             storageScroll = docRoot.Q<ScrollView>("box-storage-scroll");

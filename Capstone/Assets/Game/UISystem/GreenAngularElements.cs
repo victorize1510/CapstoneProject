@@ -14,7 +14,7 @@ namespace Capstone.Game.UISystem {
         public Func<Color> SelectionColor;
         public void InvalidateFeedback(){MarkDirtyRepaint();FeedbackOverlay?.MarkDirtyRepaint();}
         public float HoverAmount,PressAmount;
-        (string,string,int,int,int) skinKey;
+        (string,string,int,int,int,bool,bool) skinKey;
         Texture cachedSkin;
         IVisualElementScheduledItem stateAnimation;
         public void AnimateState(){
@@ -29,17 +29,22 @@ namespace Capstone.Game.UISystem {
         public Rect ArtUv=new Rect(0,0,1,1);
         public bool ArtCrop=true,IsFocused,Hovered,Pressed,Selected,CapFocus,NoBorder,NoFill;
         public float ArtFadeRight,ArtInset;
-        public bool Material=true;
+        public bool Material=true,SelectionOutline=true;
+        public bool ReadingOnly,HighContrastReading;
+        readonly SoftReadingMesh readingMesh=new SoftReadingMesh();
+        public void StopFeedback(){stateAnimation?.Pause();Hovered=Pressed=IsFocused=false;HoverAmount=PressAmount=0;}
         public Func<AngularSurface,bool> StateSelected;
-        public AngularSurface(){pickingMode=PickingMode.Ignore;generateVisualContent+=Draw;RegisterCallback<GeometryChangedEvent>(_=>MarkDirtyRepaint());}
+        public AngularSurface(){pickingMode=PickingMode.Ignore;generateVisualContent+=Draw;RegisterCallback<GeometryChangedEvent>(_=>MarkDirtyRepaint());RegisterCallback<DetachFromPanelEvent>(_=>StopFeedback());}
         public override bool ContainsPoint(Vector2 p)=>GreenAngularGeometry.Contains(GreenAngularGeometry.Polygon(Shape,layout.width,layout.height,3,ActiveTab),p);
         public void Draw(MeshGenerationContext ctx){
+            if(ReadingOnly){if(!NoFill)readingMesh.Paint(ctx,layout.width,layout.height,Shape,false,HighContrastReading);return;}
             if(FeedbackSource!=null){HoverAmount=FeedbackSource.HoverAmount;PressAmount=FeedbackSource.PressAmount;IsFocused=FeedbackSource.IsFocused;}
             float w=layout.width,h=layout.height;if(w<=0||h<=0)return;var pts=GreenAngularGeometry.Polygon(Shape,w,h,h<12||w<12?0:3,ActiveTab);bool selected=Selected||(StateSelected?.Invoke(this)??false);
             Color fill=Role=="mode"?(selected?GreenAngularGeometry.Lavender:GreenAngularGeometry.Shell):Role=="primary"?GreenAngularGeometry.Primary:Role=="shell"?GreenAngularGeometry.Shell:Role=="raised"?GreenAngularGeometry.Raised:Role=="lavender"?GreenAngularGeometry.Lavender:Role=="hp"?GreenAngularGeometry.Hp:Role=="exp"?GreenAngularGeometry.Exp:Role=="track"?GreenAngularGeometry.Edge:GreenAngularGeometry.Panel;
+            if(Role=="filter-selected")fill=new Color32(222,227,242,255);
             if(!enabledInHierarchy)fill=GreenAngularGeometry.Disabled;
             if(enabledInHierarchy)fill=Color.Lerp(fill,GreenAngularGeometry.Ink,PressAmount*InteractionFeedback.PressedInkAlpha);
-            var key=(Shape,Role,Mathf.RoundToInt(w),Mathf.RoundToInt(h),ActiveTab);
+            var key=(Shape,Role,Mathf.RoundToInt(w),Mathf.RoundToInt(h),ActiveTab,Material,NoFill);
             if(!key.Equals(skinKey)){skinKey=key;cachedSkin=Material&&!NoFill?LatestMenuCompanionAssets.Surface(Shape,Role,w,h,ActiveTab):null;}
             var skin=SkinTexture!=null?SkinTexture:cachedSkin;
             if(skin!=null)PaintTexture(ctx,pts,skin,w,h,Color.white);
@@ -47,13 +52,11 @@ namespace Capstone.Game.UISystem {
                 var painted=Art!=null?GreenAngularGeometry.ClipRect(pts,display):pts;
                 if(Art!=null&&ArtFadeRight>0){float edge=w-ArtFadeRight;Paint(ctx,GreenAngularGeometry.ClipRect(painted,new Rect(0,0,edge,h)),uv,display,fill,h,w);Paint(ctx,GreenAngularGeometry.ClipRect(painted,new Rect(edge,0,ArtFadeRight,h)),uv,display,fill,h,w);}else Paint(ctx,painted,uv,display,fill,h,w);}
             if(Material&&!NoFill&&Art==null&&skin==null&&w>=110&&h>=40){var grain=LatestMenuCompanionAssets.Load("Assets/Art/steel-enamel-r2");if(grain!=null)PaintTexture(ctx,pts,grain.texture,w,h,new Color(1,1,1,.13f));string motif=Role=="shell"?"shell":Role=="primary"?"button":"content";var engraving=LatestMenuCompanionAssets.Load("Assets/Motifs/"+motif);if(engraving!=null)PaintTexture(ctx,pts,engraving.texture,w,h,Color.white);}
-            if((!NoBorder&&(skin==null||selected))||(FeedbackSource!=null&&selected))Stroke(ctx,pts,selected?(SelectionColor?.Invoke()??GreenAngularGeometry.Lavender):GreenAngularGeometry.Edge,selected?2.6f:1.35f);
+            if((!NoBorder&&(skin==null||selected))||(SelectionOutline&&FeedbackSource!=null&&selected))Stroke(ctx,pts,selected?(SelectionColor?.Invoke()??(Role=="filter-selected"?GreenAngularGeometry.Gold:GreenAngularGeometry.Lavender)):GreenAngularGeometry.Edge,selected?2.6f:1.35f);
             if(FeedbackOverlay!=null)return; // State contour must be above full-bleed child artwork.
-            if(enabledInHierarchy&&HoverAmount>.001f)Stroke(ctx,GreenAngularGeometry.Polygon(Shape,w,h,6),InteractionFeedback.Edge(HoverAmount),1.5f);
-            if(enabledInHierarchy&&PressAmount>.001f){var ink=GreenAngularGeometry.Ink;ink.a=PressAmount*InteractionFeedback.PressedInkAlpha;PaintTexture(ctx,pts,null,w,h,ink);}
+            if(enabledInHierarchy){var wash=InteractionFeedback.Wash(HoverAmount,PressAmount,IsFocused);if(wash.a>.001f)PaintTexture(ctx,pts,null,w,h,wash);}
             if(skin!=null&&!enabledInHierarchy){var overlay=GreenAngularGeometry.Disabled;overlay.a=.3f;PaintTexture(ctx,pts,null,w,h,overlay);}
-            if(IsFocused&&enabledInHierarchy){var p=ctx.painter2D;p.strokeColor=GreenAngularGeometry.Gold;p.lineWidth=2;
-                foreach(float side in new[]{0f,1f}){float x=side==0?10:w-10,dir=side==0?1:-1;p.BeginPath();p.MoveTo(new Vector2(x+dir*12,10));p.LineTo(new Vector2(x,10));p.LineTo(new Vector2(x,Mathf.Min(23,h/2)));p.Stroke();p.BeginPath();p.MoveTo(new Vector2(x,h-Mathf.Min(23,h/2)));p.LineTo(new Vector2(x,h-10));p.LineTo(new Vector2(x+dir*12,h-10));p.Stroke();}}
+
 
         }
         static void PaintTexture(MeshGenerationContext ctx,Vector2[] pts,Texture texture,float w,float h,Color tint){var tri=GreenAngularGeometry.Triangles(pts);if(tri.Length==0)return;var mesh=ctx.Allocate(pts.Length,tri.Length,texture);foreach(var p in pts)mesh.SetNextVertex(new Vertex{position=new Vector3(p.x,p.y,Vertex.nearZ),tint=tint,uv=new Vector2(p.x/w,1-p.y/h)});foreach(int i in tri)mesh.SetNextIndex((ushort)i);}
@@ -82,7 +85,7 @@ namespace Capstone.Game.UISystem {
             RegisterCallback<NavigationMoveEvent>(_=>{InteractionFeedback.KeyboardNavigation=true;},TrickleDown.TrickleDown);
             RegisterCallback<FocusEvent>(_=>{Surface.IsFocused=InteractionFeedback.KeyboardNavigation;Surface.InvalidateFeedback();});
             RegisterCallback<BlurEvent>(_=>{Surface.IsFocused=false;Surface.InvalidateFeedback();});
-            RegisterCallback<DetachFromPanelEvent>(_=>{Surface.Hovered=Surface.Pressed=Surface.IsFocused=false;Surface.HoverAmount=Surface.PressAmount=0;});
+            RegisterCallback<DetachFromPanelEvent>(_=>{Surface.StopFeedback();});
         }
         public void SetAngularContext(bool angular){if(contextConfigured&&angularContext==angular)return;contextConfigured=true;angularContext=angular;base.text=angular?string.Empty:logicalText;caption.text=angular?logicalText:string.Empty;Surface.style.display=angular?DisplayStyle.Flex:DisplayStyle.None;caption.style.display=angular&&!string.IsNullOrEmpty(logicalText)?DisplayStyle.Flex:DisplayStyle.None;}
         public AngularButton(Action click):this(){clicked+=click;}

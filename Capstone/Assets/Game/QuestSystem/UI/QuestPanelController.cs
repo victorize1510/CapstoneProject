@@ -22,6 +22,7 @@ namespace Capstone.Game.QuestSystem.UI {
 
         VisualElement rootElement;
         VisualElement panelElement;
+        QuestPresentation presentation;
         MonsterInventoryController inventoryOwner;
         ScrollView questListScroll;
         VisualElement questListColumn;
@@ -127,12 +128,14 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void OnDisable() {
+            presentation?.SetForeground(false);
             UnregisterControls();
             UnsubscribeFromQuestManager();
             UnsubscribeFromRewardService();
         }
 
         void Update() {
+            presentation?.SetForeground(IsPanelVisible);
             if (selectedQuest == null) return;
             if (!IsPanelVisible) return;
             if (Time.unscaledTime < nextLiveValueRefreshTime) return;
@@ -208,6 +211,7 @@ namespace Capstone.Game.QuestSystem.UI {
 
             rootElement = document.rootVisualElement;
             panelElement = rootElement.Q<VisualElement>("quest-panel");
+            presentation = QuestPresentation.Attach(panelElement, document);
             questListScroll = rootElement.Q<ScrollView>("quest-list-scroll");
             questListColumn = rootElement.Q<VisualElement>("quest-list-column");
             questDetailColumn = rootElement.Q<VisualElement>("quest-detail-column");
@@ -412,14 +416,14 @@ namespace Capstone.Game.QuestSystem.UI {
 
                     AddQuestSection(
                         questListScroll.contentContainer,
-                        "NHIỆM VỤ ĐANG TIẾN HÀNH",
+                        "ĐANG TIẾN HÀNH",
                         "Không có nhiệm vụ đang tiến hành",
                         inProgressQuests,
                         inProgressSectionExpanded,
                         expanded => inProgressSectionExpanded = expanded);
                     AddQuestSection(
                         questListScroll.contentContainer,
-                        "NHIỆM VỤ ĐÃ HOÀN THÀNH",
+                        "ĐÃ HOÀN THÀNH",
                         "Chưa có nhiệm vụ hoàn thành",
                         completedQuests,
                         completedSectionExpanded,
@@ -533,7 +537,7 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         VisualElement CreateQuestCard(QuestRuntimeState quest) {
-            var card = new VisualElement();
+            var card = new QuestFrame { Kind = "card" };
             card.AddToClassList("quest-card");
             if (quest == selectedQuest) card.AddToClassList("is-selected");
             if (quest != null && quest.IsTracked) card.AddToClassList("is-tracked");
@@ -544,6 +548,7 @@ namespace Capstone.Game.QuestSystem.UI {
             if (quest != null && quest.Definition != null && quest.Definition.Icon != null) {
                 icon.style.backgroundImage = new StyleBackground(quest.Definition.Icon);
             }
+            QuestSkinArt.Icon(icon, quest?.Definition?.Icon, quest?.Status == QuestStatus.Completed ? "check" : "quest");
             card.Add(icon);
 
             var textGroup = new VisualElement();
@@ -557,6 +562,11 @@ namespace Capstone.Game.QuestSystem.UI {
             var meta = new Label(FormatQuestCardMeta(quest));
             meta.AddToClassList("quest-card-meta");
             textGroup.Add(meta);
+
+            var status = new Label(FormatStatus(quest != null ? quest.Status : QuestStatus.Active));
+            status.AddToClassList("quest-card-status");
+            card.Add(status);
+            QuestPresentation.AddTrackedPin(card);
 
             var right = new VisualElement();
             right.AddToClassList("quest-card-right");
@@ -601,11 +611,13 @@ namespace Capstone.Game.QuestSystem.UI {
         void RefreshQuestCardSelection() {
             foreach (var card in questCardsById.Values) {
                 card.RemoveFromClassList("is-selected");
+                card.MarkDirtyRepaint();
             }
 
             if (selectedQuest == null || string.IsNullOrWhiteSpace(selectedQuest.QuestId)) return;
             if (questCardsById.TryGetValue(selectedQuest.QuestId, out var selectedCard)) {
                 selectedCard.AddToClassList("is-selected");
+                selectedCard.MarkDirtyRepaint();
             }
         }
 
@@ -630,7 +642,10 @@ namespace Capstone.Game.QuestSystem.UI {
                     questIcon.style.backgroundImage = StyleKeyword.None;
                 }
             }
-            if (detailTitle != null) detailTitle.text = definition.Title;
+            if (detailTitle != null) { detailTitle.text = definition.Title; detailTitle.tooltip = definition.Title; }
+            QuestSkinArt.Icon(questIcon, definition.Icon, selectedQuest.Status == QuestStatus.Completed ? "check" : "quest");
+            SetVisible(statusRow, selectedQuest.Status != QuestStatus.Active);
+            if (statusValue != null) statusValue.text = FormatStatus(selectedQuest.Status);
             if (typePill != null) typePill.text = FormatType(definition.QuestType);
             if (levelPill != null) levelPill.text = "Cấp " + definition.RecommendedLevel;
 
@@ -651,6 +666,7 @@ namespace Capstone.Game.QuestSystem.UI {
             RefreshRewards();
             RefreshRewardFeedback();
             RefreshActionButtons();
+            presentation?.Refresh(selectedQuest);
         }
 
         void SetEmptyDetail() {
@@ -695,6 +711,7 @@ namespace Capstone.Game.QuestSystem.UI {
             SetVisible(rewardsTitle, false);
             SetVisible(rewardList, false);
             RefreshActionButtons();
+            presentation?.Refresh(null);
         }
 
         void RefreshRewardFeedback() {
@@ -720,17 +737,24 @@ namespace Capstone.Game.QuestSystem.UI {
 
             for (int i = 0; i < selectedQuest.Objectives.Count; i++) {
                 var progress = selectedQuest.Objectives[i];
-                objectiveList.Add(CreateObjectiveRow(progress));
+                var row = CreateObjectiveRow(progress);
+                if (i == selectedQuest.Objectives.Count - 1) row.style.marginBottom = 0;
+                objectiveList.Add(row);
             }
         }
 
         VisualElement CreateObjectiveRow(QuestObjectiveProgress progress) {
-            var entry = new VisualElement();
+            var entry = new QuestFrame { Kind = "objective" };
             entry.AddToClassList("objective-entry");
             if (progress != null && progress.IsComplete) entry.AddToClassList("is-complete");
 
             var row = new VisualElement();
             row.AddToClassList("objective-row");
+
+            var stateIcon = new VisualElement { pickingMode = PickingMode.Ignore };
+            stateIcon.AddToClassList("objective-state-icon");
+            QuestSkinArt.Icon(stateIcon, null, progress != null && progress.IsComplete ? "check" : "attack");
+            row.Add(stateIcon);
 
             var objectiveDefinition = progress != null ? FindObjectiveDefinition(progress.ObjectiveId) : null;
             var label = new Label(FormatObjectiveText(objectiveDefinition, progress));
@@ -743,7 +767,7 @@ namespace Capstone.Game.QuestSystem.UI {
             entry.Add(row);
 
             if (progress != null && ShouldShowObjectiveProgressBar(objectiveDefinition)) {
-                var objectiveProgress = new ProgressBar {
+                var objectiveProgress = new QuestProgressBar {
                     lowValue = 0f,
                     highValue = 100f,
                     value = progress.RequiredAmount > 0
@@ -855,12 +879,13 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         VisualElement CreateRewardRow(QuestRewardDefinition reward) {
-            var row = new VisualElement();
+            var row = new QuestFrame { Kind = "reward" };
             row.AddToClassList("reward-row");
 
             var icon = new VisualElement();
             icon.AddToClassList("reward-icon");
             if (reward.Icon != null) icon.style.backgroundImage = new StyleBackground(reward.Icon);
+            QuestSkinArt.Icon(icon, reward.Icon, reward.RewardType == QuestRewardType.Experience ? "exp" : "quest");
             row.Add(icon);
 
             var label = new Label(FormatReward(reward));
@@ -905,7 +930,9 @@ namespace Capstone.Game.QuestSystem.UI {
 
             var trackedQuest = questManager != null ? questManager.GetTrackedQuest() : null;
             trackedQuestLabel.text = trackedQuest != null ? "Đang theo dõi: " + GetQuestTitle(trackedQuest) : string.Empty;
+            trackedQuestLabel.tooltip = trackedQuestLabel.text;
             SetVisible(trackedQuestStrip, filteredQuests.Count > 0 && trackedQuest != null);
+            presentation?.Invalidate();
         }
 
         void ToggleTrackSelectedQuest() {
@@ -966,6 +993,7 @@ namespace Capstone.Game.QuestSystem.UI {
 
             if (selected) button.AddToClassList("is-selected");
             else button.RemoveFromClassList("is-selected");
+            if (button is QuestButton view) view.Surface.MarkDirtyRepaint();
         }
 
         QuestObjectiveDefinition FindObjectiveDefinition(string objectiveId) {
@@ -1031,11 +1059,7 @@ namespace Capstone.Game.QuestSystem.UI {
 
         string FormatQuestCardMeta(QuestRuntimeState quest) {
             if (quest == null || quest.Definition == null) return string.Empty;
-            var type = FormatType(quest.Definition.QuestType);
-            if (string.IsNullOrWhiteSpace(quest.Definition.LocationName)) return type;
-
-            var location = quest.Definition.LocationName;
-            return string.IsNullOrWhiteSpace(location) ? type : type + "  |  " + location;
+            return FormatType(quest.Definition.QuestType);
         }
 
         static string GetQuestProgressText(QuestRuntimeState quest) {
@@ -1058,7 +1082,7 @@ namespace Capstone.Game.QuestSystem.UI {
             var name = string.IsNullOrWhiteSpace(reward.DisplayName)
                 ? reward.RewardType.ToString()
                 : reward.DisplayName;
-            return name + " x" + reward.Amount;
+            return Capstone.Game.UISystem.VietnameseUI.ItemName(name) + " x" + reward.Amount;
         }
 
         static string FormatType(QuestType type) {

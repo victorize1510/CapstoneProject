@@ -10,7 +10,7 @@ namespace Capstone.Game.UISystem {
     /// <summary>Opt-in Editor QA only. Redirects stores before scene Start, never edits a live save.</summary>
     public static class InteractionR3SaveIsolation {
         public const string Flag="Temp/InteractionR3.isolated";
-        public static readonly string Output=Path.GetFullPath("../artifacts/ui-r3-fixes-2026-10-20/transaction-run/");
+        public static readonly string Output=Path.GetFullPath(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-polish-2026-10-22/transaction-run/");
         public static string SaveRoot=>Path.Combine(Output,"test-saves");
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Redirect(){

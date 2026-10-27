@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Capstone.Game.Inventory.Bag;
 
 namespace Capstone.Game.Inventory {
     public sealed class ItemQuantityPopup {
@@ -27,6 +28,7 @@ namespace Capstone.Game.Inventory {
         int quantity = 1;
         bool fixedQuantity;
         bool isUpdating;
+        bool dropAction;
 
         public bool IsOpen => overlay != null && overlay.style.display.value != DisplayStyle.None;
 
@@ -99,6 +101,7 @@ namespace Capstone.Game.Inventory {
 
             RegisterCallbacks();
             root.Add(overlay);
+            BagPresentation.Quantity(overlay, Hide);
             Hide();
         }
 
@@ -109,6 +112,7 @@ namespace Capstone.Game.Inventory {
             fixedQuantity = item == null || !item.Stackable || maxQuantity <= 1;
 
             actionTitle.text = title ?? "Thao tác";
+            dropAction = title?.IndexOf("BỎ", StringComparison.OrdinalIgnoreCase) >= 0;
             itemName.text = item != null ? item.Name : "Vật phẩm";
             ownedQuantity.text = item != null ? $"Sở hữu: {maxQuantity}" : "Sở hữu: 0";
             SetIcon(item != null ? item.Icon : null);
@@ -120,6 +124,7 @@ namespace Capstone.Game.Inventory {
         }
 
         public void Hide() {
+            BagTooltip.HideAll(overlay);
             overlay.style.display = DisplayStyle.None;
             Capstone.Game.UISystem.PanelFocusUtility.Close(overlay);
             currentItem = null;
@@ -166,6 +171,7 @@ namespace Capstone.Game.Inventory {
             plusButton.SetEnabled(!fixedQuantity && quantity < maxQuantity);
             oneButton.SetEnabled(!fixedQuantity && quantity != 1);
             confirmButton.SetEnabled(currentItem != null && maxQuantity > 0);
+            confirmButton.text = dropAction ? $"Bỏ {quantity:N0}" : "Xác nhận";
         }
 
         void ApplyFixedQuantityState() {
@@ -178,7 +184,7 @@ namespace Capstone.Game.Inventory {
         }
 
         void SetIcon(Sprite sprite) {
-            itemIcon.style.backgroundColor = new Color(0.43f, 0.49f, 0.31f);
+            itemIcon.style.backgroundColor = Color.clear;
             if (sprite != null) {
                 itemIcon.style.backgroundImage = new StyleBackground(sprite);
             } else {
@@ -187,7 +193,7 @@ namespace Capstone.Game.Inventory {
         }
 
         static Button CreateButton(string name, string text, string className) {
-            var button = new Button { name = name, text = text };
+            var button = new BagButton { name = name, text = text, Kind = name == "quantity-confirm" ? "action-danger" : "action-small" };
             button.AddToClassList(className);
             return button;
         }
