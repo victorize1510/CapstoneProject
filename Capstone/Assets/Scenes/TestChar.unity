@@ -328019,6 +328019,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EvolutionController
   testEvolveKey: 19
+  useEvolutionScene: 0
+  evolutionSceneName: EvolutionScene
+  gameplayCamera: {fileID: 0}
+  evolutionOnlyLayerName: Evolution
   stages:
   - {fileID: 955717841895258307, guid: f8b62f332c9589e4e847b449066a2967, type: 3}
   - {fileID: 1464745901521549467, guid: 3b2bc9ea12bebd34db0ea2d87f964288, type: 3}
@@ -328082,6 +328086,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   groundRingVfxPrefab: {fileID: 100014, guid: 3aa143f52a2c20e45bf4bc03a7e127fd, type: 3}
   groundRingYOffset: 0
+  groundRingScale: 1
   growDuration: 0.2
   growCurve:
     serializedVersion: 2
@@ -328109,6 +328114,14 @@ MonoBehaviour:
     m_RotationOrder: 4
   idleStateName: Idle
   disableDuringEvolution: []
+  showStartText: 0
+  startMessageFormat: "{0} \u0111ang b\u1EAFt \u0111\u1EA7u ti\u1EBFn h\xF3a!"
+  startMessageDisplayTime: 1.5
+  showCongratsText: 0
+  congratsMessageFormat: "Ch\xFAc m\u1EEBng! {0} \u0111\xE3 ti\u1EBFn h\xF3a th\xE0nh
+    {1}!"
+  congratsMinDisplayTime: 1
+  congratsContinueKey: 1
 --- !u!4 &1665732190
 Transform:
   m_ObjectHideFlags: 0
@@ -394755,6 +394768,7 @@ MonoBehaviour:
   buildOnAwake: 1
   closeOnStart: 1
   disableStandaloneUiHotkeys: 1
+  trainerPetArtwork: {fileID: 0}
 --- !u!4 &1988912894
 Transform:
   m_ObjectHideFlags: 0
