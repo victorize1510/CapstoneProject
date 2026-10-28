@@ -1,0 +1,2300 @@
+{
+  "version": "Profile_OriginalLayout_R2_2026-10-23",
+  "supersedesLayout": "Profile_2026-10-23 R1",
+  "scope": "skin revision only; no Unity implementation",
+  "engineTarget": "existing uGUI",
+  "designReference": [
+    1920,
+    1080
+  ],
+  "mockup": [
+    1600,
+    900
+  ],
+  "mockupScale": 0.8333333333333334,
+  "layoutLocked": true,
+  "layout": "Specs/layout-original-1920.json",
+  "palette": {
+    "primary": "#3C4772",
+    "shell": "#66748E",
+    "panel": "#AEB8CD",
+    "raised": "#C1C3D3",
+    "ink": "#202B45",
+    "muted": "#39455E",
+    "gold": "#CCAD83",
+    "lavender": "#A596BB",
+    "disabled": "#9298AA",
+    "light": "#EDE9E1",
+    "edge": "#8996B0",
+    "hp": "#C47D8B",
+    "exp": "#76A6C3"
+  },
+  "material": {
+    "method": "Reuse prior built-in image_gen asset; no new image generation this revision",
+    "native": [
+      1672,
+      941
+    ],
+    "path": "Assets/Art/profile-material.png",
+    "opacity": 0.5,
+    "alpha50": "Assets/Art/profile-overlay50.png",
+    "alpha50UseOpacity": 1
+  },
+  "geometry": {
+    "avatar": "circle310 native; same original bounds",
+    "team": "3columns×2rows168×148 native",
+    "stats": "3columns×2rows320×164 native",
+    "buttons": "12degrees within original rects",
+    "mask": "shared native polygon/circle; no rectangular focus border",
+    "noNineSliceArtwork": true
+  },
+  "typography": {
+    "name": "single line BestFit28–48 ref1920, same as original; no state font change",
+    "body": "existing MenuTypography in engine",
+    "svg": "preview Bold uses.35px stroke, not a runtime instruction"
+  },
+  "reuse": [
+    {
+      "path": "Assets/Reuse/avatar-apple.png",
+      "source": "D:/Download/ProjectVTC/CapstoneProject/Capstone/Assets/ThangTest/UIThang/GDS/Common/Sprites/Items/apple.png",
+      "sha256": "1dc1a1ce098d674834b276ed0308b2e84aa2de1e852a6f016ba374271c3a84b5",
+      "keepOriginal": true
+    },
+    {
+      "path": "Assets/Reuse/avatar-armor.png",
+      "source": "D:/Download/ProjectVTC/CapstoneProject/Capstone/Assets/ThangTest/UIThang/GDS/Common/Sprites/Items/armor.png",
+      "sha256": "1d2bd09cc082129900272eac84a282f22d91521a04cf4b53f6dc7db42a27d0d2",
+      "keepOriginal": true
+    },
+    {
+      "path": "Assets/Reuse/avatar-cloak.png",
+      "source": "D:/Download/ProjectVTC/CapstoneProject/Capstone/Assets/ThangTest/UIThang/GDS/Common/Sprites/Items/cloak.png",
+      "sha256": "7d6cbac2b9e311ba8107cb76f9b9752f867d000ac8381a77bba90886ce2da9bd",
+      "keepOriginal": true
+    },
+    {
+      "path": "Assets/Reuse/pet-avatar.png",
+      "source": "E:/AIWork/Capstone/BAG_2026-10-22/Assets/Decor/pet-avatar-reference.png",
+      "sha256": "795d93204ec65f5d71470909a67208fdfd6cb6d6d65e058f099af8fe6dcf26b0",
+      "keepOriginal": true
+    },
+    {
+      "path": "Assets/Reuse/box-empty.png",
+      "source": "D:/Download/ProjectVTC/CapstoneProject/Capstone/Assets/Game/UISystem/Resources/UI/Latest20261020/Icons/box-empty-preserved-style.png",
+      "sha256": "329040f21a9ac05ba044e7d577e4aebc581214644ebb43f5ec010a45912d0546",
+      "keepOriginal": true
+    },
+    {
+      "path": "Assets/Reuse/compass-emblem.png",
+      "source": "E:/AIWork/Capstone/BAG_2026-10-22/Assets/Decor/compass-emblem.png",
+      "sha256": "1b53caa1dad4d5b2d8ed85d4e0b1a5092e45ab458b81ef17b61f8a47fff61d3b",
+      "keepOriginal": true
+    }
+  ],
+  "components": [
+    {
+      "id": "summary-panel",
+      "width": 1856,
+      "height": 436,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "panel",
+      "contour": [
+        [
+          21,
+          3
+        ],
+        [
+          1835,
+          3
+        ],
+        [
+          1853,
+          21
+        ],
+        [
+          1853,
+          415
+        ],
+        [
+          1835,
+          433
+        ],
+        [
+          21,
+          433
+        ],
+        [
+          3,
+          415
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "summary-panel__fill",
+          "svg": "Assets/Components/summary-panel__fill.svg",
+          "png": "Assets/Components/summary-panel__fill.png",
+          "width": 1856,
+          "height": 436
+        },
+        "border": {
+          "id": "summary-panel__border",
+          "svg": "Assets/Components/summary-panel__border.svg",
+          "png": "Assets/Components/summary-panel__border.png",
+          "width": 1856,
+          "height": 436
+        },
+        "mask": {
+          "id": "summary-panel__mask",
+          "svg": "Assets/Components/summary-panel__mask.svg",
+          "png": "Assets/Components/summary-panel__mask.png",
+          "width": 1856,
+          "height": 436
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "info-panel",
+      "width": 780,
+      "height": 488,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "panel",
+      "contour": [
+        [
+          21,
+          3
+        ],
+        [
+          759,
+          3
+        ],
+        [
+          777,
+          21
+        ],
+        [
+          777,
+          467
+        ],
+        [
+          759,
+          485
+        ],
+        [
+          21,
+          485
+        ],
+        [
+          3,
+          467
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "info-panel__fill",
+          "svg": "Assets/Components/info-panel__fill.svg",
+          "png": "Assets/Components/info-panel__fill.png",
+          "width": 780,
+          "height": 488
+        },
+        "border": {
+          "id": "info-panel__border",
+          "svg": "Assets/Components/info-panel__border.svg",
+          "png": "Assets/Components/info-panel__border.png",
+          "width": 780,
+          "height": 488
+        },
+        "mask": {
+          "id": "info-panel__mask",
+          "svg": "Assets/Components/info-panel__mask.svg",
+          "png": "Assets/Components/info-panel__mask.png",
+          "width": 780,
+          "height": 488
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "stats-panel",
+      "width": 1056,
+      "height": 488,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "panel",
+      "contour": [
+        [
+          21,
+          3
+        ],
+        [
+          1035,
+          3
+        ],
+        [
+          1053,
+          21
+        ],
+        [
+          1053,
+          467
+        ],
+        [
+          1035,
+          485
+        ],
+        [
+          21,
+          485
+        ],
+        [
+          3,
+          467
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "stats-panel__fill",
+          "svg": "Assets/Components/stats-panel__fill.svg",
+          "png": "Assets/Components/stats-panel__fill.png",
+          "width": 1056,
+          "height": 488
+        },
+        "border": {
+          "id": "stats-panel__border",
+          "svg": "Assets/Components/stats-panel__border.svg",
+          "png": "Assets/Components/stats-panel__border.png",
+          "width": 1056,
+          "height": 488
+        },
+        "mask": {
+          "id": "stats-panel__mask",
+          "svg": "Assets/Components/stats-panel__mask.svg",
+          "png": "Assets/Components/stats-panel__mask.png",
+          "width": 1056,
+          "height": 488
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "stat-card",
+      "width": 320,
+      "height": 164,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "panel",
+      "contour": [
+        [
+          15,
+          3
+        ],
+        [
+          305,
+          3
+        ],
+        [
+          317,
+          15
+        ],
+        [
+          317,
+          149
+        ],
+        [
+          305,
+          161
+        ],
+        [
+          15,
+          161
+        ],
+        [
+          3,
+          149
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "stat-card__fill",
+          "svg": "Assets/Components/stat-card__fill.svg",
+          "png": "Assets/Components/stat-card__fill.png",
+          "width": 320,
+          "height": 164
+        },
+        "border": {
+          "id": "stat-card__border",
+          "svg": "Assets/Components/stat-card__border.svg",
+          "png": "Assets/Components/stat-card__border.png",
+          "width": 320,
+          "height": 164
+        },
+        "mask": {
+          "id": "stat-card__mask",
+          "svg": "Assets/Components/stat-card__mask.svg",
+          "png": "Assets/Components/stat-card__mask.png",
+          "width": 320,
+          "height": 164
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "pet-slot",
+      "width": 168,
+      "height": 148,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "panel",
+      "contour": [
+        [
+          15,
+          3
+        ],
+        [
+          153,
+          3
+        ],
+        [
+          165,
+          15
+        ],
+        [
+          165,
+          133
+        ],
+        [
+          153,
+          145
+        ],
+        [
+          15,
+          145
+        ],
+        [
+          3,
+          133
+        ],
+        [
+          3,
+          15
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "pet-slot__fill",
+          "svg": "Assets/Components/pet-slot__fill.svg",
+          "png": "Assets/Components/pet-slot__fill.png",
+          "width": 168,
+          "height": 148
+        },
+        "border": {
+          "id": "pet-slot__border",
+          "svg": "Assets/Components/pet-slot__border.svg",
+          "png": "Assets/Components/pet-slot__border.png",
+          "width": 168,
+          "height": 148
+        },
+        "mask": {
+          "id": "pet-slot__mask",
+          "svg": "Assets/Components/pet-slot__mask.svg",
+          "png": "Assets/Components/pet-slot__mask.png",
+          "width": 168,
+          "height": 148
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "avatar-circle",
+      "width": 310,
+      "height": 310,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "circle",
+      "contour": [
+        [
+          155,
+          3
+        ],
+        [
+          162.4583,
+          3.1831
+        ],
+        [
+          169.8986,
+          3.7319
+        ],
+        [
+          177.303,
+          4.6452
+        ],
+        [
+          184.6537,
+          5.9206
+        ],
+        [
+          191.933,
+          7.5552
+        ],
+        [
+          199.1233,
+          9.5451
+        ],
+        [
+          206.2073,
+          11.8853
+        ],
+        [
+          213.1679,
+          14.5703
+        ],
+        [
+          219.9884,
+          17.5936
+        ],
+        [
+          226.6523,
+          20.948
+        ],
+        [
+          233.1436,
+          24.6253
+        ],
+        [
+          239.4467,
+          28.6166
+        ],
+        [
+          245.5463,
+          32.9125
+        ],
+        [
+          251.4278,
+          37.5024
+        ],
+        [
+          257.077,
+          42.3754
+        ],
+        [
+          262.4802,
+          47.5198
+        ],
+        [
+          267.6246,
+          52.923
+        ],
+        [
+          272.4976,
+          58.5722
+        ],
+        [
+          277.0875,
+          64.4537
+        ],
+        [
+          281.3834,
+          70.5533
+        ],
+        [
+          285.3747,
+          76.8564
+        ],
+        [
+          289.052,
+          83.3477
+        ],
+        [
+          292.4064,
+          90.0116
+        ],
+        [
+          295.4297,
+          96.8321
+        ],
+        [
+          298.1147,
+          103.7927
+        ],
+        [
+          300.4549,
+          110.8767
+        ],
+        [
+          302.4448,
+          118.067
+        ],
+        [
+          304.0794,
+          125.3463
+        ],
+        [
+          305.3548,
+          132.697
+        ],
+        [
+          306.2681,
+          140.1014
+        ],
+        [
+          306.8169,
+          147.5417
+        ],
+        [
+          307,
+          155
+        ],
+        [
+          306.8169,
+          162.4583
+        ],
+        [
+          306.2681,
+          169.8986
+        ],
+        [
+          305.3548,
+          177.303
+        ],
+        [
+          304.0794,
+          184.6537
+        ],
+        [
+          302.4448,
+          191.933
+        ],
+        [
+          300.4549,
+          199.1233
+        ],
+        [
+          298.1147,
+          206.2073
+        ],
+        [
+          295.4297,
+          213.1679
+        ],
+        [
+          292.4064,
+          219.9884
+        ],
+        [
+          289.052,
+          226.6523
+        ],
+        [
+          285.3747,
+          233.1436
+        ],
+        [
+          281.3834,
+          239.4467
+        ],
+        [
+          277.0875,
+          245.5463
+        ],
+        [
+          272.4976,
+          251.4278
+        ],
+        [
+          267.6246,
+          257.077
+        ],
+        [
+          262.4802,
+          262.4802
+        ],
+        [
+          257.077,
+          267.6246
+        ],
+        [
+          251.4278,
+          272.4976
+        ],
+        [
+          245.5463,
+          277.0875
+        ],
+        [
+          239.4467,
+          281.3834
+        ],
+        [
+          233.1436,
+          285.3747
+        ],
+        [
+          226.6523,
+          289.052
+        ],
+        [
+          219.9884,
+          292.4064
+        ],
+        [
+          213.1679,
+          295.4297
+        ],
+        [
+          206.2073,
+          298.1147
+        ],
+        [
+          199.1233,
+          300.4549
+        ],
+        [
+          191.933,
+          302.4448
+        ],
+        [
+          184.6537,
+          304.0794
+        ],
+        [
+          177.303,
+          305.3548
+        ],
+        [
+          169.8986,
+          306.2681
+        ],
+        [
+          162.4583,
+          306.8169
+        ],
+        [
+          155,
+          307
+        ],
+        [
+          147.5417,
+          306.8169
+        ],
+        [
+          140.1014,
+          306.2681
+        ],
+        [
+          132.697,
+          305.3548
+        ],
+        [
+          125.3463,
+          304.0794
+        ],
+        [
+          118.067,
+          302.4448
+        ],
+        [
+          110.8767,
+          300.4549
+        ],
+        [
+          103.7927,
+          298.1147
+        ],
+        [
+          96.8321,
+          295.4297
+        ],
+        [
+          90.0116,
+          292.4064
+        ],
+        [
+          83.3477,
+          289.052
+        ],
+        [
+          76.8564,
+          285.3747
+        ],
+        [
+          70.5533,
+          281.3834
+        ],
+        [
+          64.4537,
+          277.0875
+        ],
+        [
+          58.5722,
+          272.4976
+        ],
+        [
+          52.923,
+          267.6246
+        ],
+        [
+          47.5198,
+          262.4802
+        ],
+        [
+          42.3754,
+          257.077
+        ],
+        [
+          37.5024,
+          251.4278
+        ],
+        [
+          32.9125,
+          245.5463
+        ],
+        [
+          28.6166,
+          239.4467
+        ],
+        [
+          24.6253,
+          233.1436
+        ],
+        [
+          20.948,
+          226.6523
+        ],
+        [
+          17.5936,
+          219.9884
+        ],
+        [
+          14.5703,
+          213.1679
+        ],
+        [
+          11.8853,
+          206.2073
+        ],
+        [
+          9.5451,
+          199.1233
+        ],
+        [
+          7.5552,
+          191.933
+        ],
+        [
+          5.9206,
+          184.6537
+        ],
+        [
+          4.6452,
+          177.303
+        ],
+        [
+          3.7319,
+          169.8986
+        ],
+        [
+          3.1831,
+          162.4583
+        ],
+        [
+          3,
+          155
+        ],
+        [
+          3.1831,
+          147.5417
+        ],
+        [
+          3.7319,
+          140.1014
+        ],
+        [
+          4.6452,
+          132.697
+        ],
+        [
+          5.9206,
+          125.3463
+        ],
+        [
+          7.5552,
+          118.067
+        ],
+        [
+          9.5451,
+          110.8767
+        ],
+        [
+          11.8853,
+          103.7927
+        ],
+        [
+          14.5703,
+          96.8321
+        ],
+        [
+          17.5936,
+          90.0116
+        ],
+        [
+          20.948,
+          83.3477
+        ],
+        [
+          24.6253,
+          76.8564
+        ],
+        [
+          28.6166,
+          70.5533
+        ],
+        [
+          32.9125,
+          64.4537
+        ],
+        [
+          37.5024,
+          58.5722
+        ],
+        [
+          42.3754,
+          52.923
+        ],
+        [
+          47.5198,
+          47.5198
+        ],
+        [
+          52.923,
+          42.3754
+        ],
+        [
+          58.5722,
+          37.5024
+        ],
+        [
+          64.4537,
+          32.9125
+        ],
+        [
+          70.5533,
+          28.6166
+        ],
+        [
+          76.8564,
+          24.6253
+        ],
+        [
+          83.3477,
+          20.948
+        ],
+        [
+          90.0116,
+          17.5936
+        ],
+        [
+          96.8321,
+          14.5703
+        ],
+        [
+          103.7927,
+          11.8853
+        ],
+        [
+          110.8767,
+          9.5451
+        ],
+        [
+          118.067,
+          7.5552
+        ],
+        [
+          125.3463,
+          5.9206
+        ],
+        [
+          132.697,
+          4.6452
+        ],
+        [
+          140.1014,
+          3.7319
+        ],
+        [
+          147.5417,
+          3.1831
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "avatar-circle__fill",
+          "svg": "Assets/Components/avatar-circle__fill.svg",
+          "png": "Assets/Components/avatar-circle__fill.png",
+          "width": 310,
+          "height": 310
+        },
+        "border": {
+          "id": "avatar-circle__border",
+          "svg": "Assets/Components/avatar-circle__border.svg",
+          "png": "Assets/Components/avatar-circle__border.png",
+          "width": 310,
+          "height": 310
+        },
+        "mask": {
+          "id": "avatar-circle__mask",
+          "svg": "Assets/Components/avatar-circle__mask.svg",
+          "png": "Assets/Components/avatar-circle__mask.png",
+          "width": 310,
+          "height": 310
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "camera-circle",
+      "width": 68,
+      "height": 68,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "circle",
+      "contour": [
+        [
+          34,
+          3
+        ],
+        [
+          35.5211,
+          3.0373
+        ],
+        [
+          37.0385,
+          3.1493
+        ],
+        [
+          38.5486,
+          3.3355
+        ],
+        [
+          40.0478,
+          3.5957
+        ],
+        [
+          41.5324,
+          3.929
+        ],
+        [
+          42.9988,
+          4.3348
+        ],
+        [
+          44.4436,
+          4.8121
+        ],
+        [
+          45.8632,
+          5.3597
+        ],
+        [
+          47.2542,
+          5.9763
+        ],
+        [
+          48.6133,
+          6.6604
+        ],
+        [
+          49.9372,
+          7.4104
+        ],
+        [
+          51.2227,
+          8.2244
+        ],
+        [
+          52.4667,
+          9.1006
+        ],
+        [
+          53.6662,
+          10.0367
+        ],
+        [
+          54.8183,
+          11.0305
+        ],
+        [
+          55.9203,
+          12.0797
+        ],
+        [
+          56.9695,
+          13.1817
+        ],
+        [
+          57.9633,
+          14.3338
+        ],
+        [
+          58.8994,
+          15.5333
+        ],
+        [
+          59.7756,
+          16.7773
+        ],
+        [
+          60.5896,
+          18.0628
+        ],
+        [
+          61.3396,
+          19.3867
+        ],
+        [
+          62.0237,
+          20.7458
+        ],
+        [
+          62.6403,
+          22.1368
+        ],
+        [
+          63.1879,
+          23.5564
+        ],
+        [
+          63.6652,
+          25.0012
+        ],
+        [
+          64.071,
+          26.4676
+        ],
+        [
+          64.4043,
+          27.9522
+        ],
+        [
+          64.6645,
+          29.4514
+        ],
+        [
+          64.8507,
+          30.9615
+        ],
+        [
+          64.9627,
+          32.4789
+        ],
+        [
+          65,
+          34
+        ],
+        [
+          64.9627,
+          35.5211
+        ],
+        [
+          64.8507,
+          37.0385
+        ],
+        [
+          64.6645,
+          38.5486
+        ],
+        [
+          64.4043,
+          40.0478
+        ],
+        [
+          64.071,
+          41.5324
+        ],
+        [
+          63.6652,
+          42.9988
+        ],
+        [
+          63.1879,
+          44.4436
+        ],
+        [
+          62.6403,
+          45.8632
+        ],
+        [
+          62.0237,
+          47.2542
+        ],
+        [
+          61.3396,
+          48.6133
+        ],
+        [
+          60.5896,
+          49.9372
+        ],
+        [
+          59.7756,
+          51.2227
+        ],
+        [
+          58.8994,
+          52.4667
+        ],
+        [
+          57.9633,
+          53.6662
+        ],
+        [
+          56.9695,
+          54.8183
+        ],
+        [
+          55.9203,
+          55.9203
+        ],
+        [
+          54.8183,
+          56.9695
+        ],
+        [
+          53.6662,
+          57.9633
+        ],
+        [
+          52.4667,
+          58.8994
+        ],
+        [
+          51.2227,
+          59.7756
+        ],
+        [
+          49.9372,
+          60.5896
+        ],
+        [
+          48.6133,
+          61.3396
+        ],
+        [
+          47.2542,
+          62.0237
+        ],
+        [
+          45.8632,
+          62.6403
+        ],
+        [
+          44.4436,
+          63.1879
+        ],
+        [
+          42.9988,
+          63.6652
+        ],
+        [
+          41.5324,
+          64.071
+        ],
+        [
+          40.0478,
+          64.4043
+        ],
+        [
+          38.5486,
+          64.6645
+        ],
+        [
+          37.0385,
+          64.8507
+        ],
+        [
+          35.5211,
+          64.9627
+        ],
+        [
+          34,
+          65
+        ],
+        [
+          32.4789,
+          64.9627
+        ],
+        [
+          30.9615,
+          64.8507
+        ],
+        [
+          29.4514,
+          64.6645
+        ],
+        [
+          27.9522,
+          64.4043
+        ],
+        [
+          26.4676,
+          64.071
+        ],
+        [
+          25.0012,
+          63.6652
+        ],
+        [
+          23.5564,
+          63.1879
+        ],
+        [
+          22.1368,
+          62.6403
+        ],
+        [
+          20.7458,
+          62.0237
+        ],
+        [
+          19.3867,
+          61.3396
+        ],
+        [
+          18.0628,
+          60.5896
+        ],
+        [
+          16.7773,
+          59.7756
+        ],
+        [
+          15.5333,
+          58.8994
+        ],
+        [
+          14.3338,
+          57.9633
+        ],
+        [
+          13.1817,
+          56.9695
+        ],
+        [
+          12.0797,
+          55.9203
+        ],
+        [
+          11.0305,
+          54.8183
+        ],
+        [
+          10.0367,
+          53.6662
+        ],
+        [
+          9.1006,
+          52.4667
+        ],
+        [
+          8.2244,
+          51.2227
+        ],
+        [
+          7.4104,
+          49.9372
+        ],
+        [
+          6.6604,
+          48.6133
+        ],
+        [
+          5.9763,
+          47.2542
+        ],
+        [
+          5.3597,
+          45.8632
+        ],
+        [
+          4.8121,
+          44.4436
+        ],
+        [
+          4.3348,
+          42.9988
+        ],
+        [
+          3.929,
+          41.5324
+        ],
+        [
+          3.5957,
+          40.0478
+        ],
+        [
+          3.3355,
+          38.5486
+        ],
+        [
+          3.1493,
+          37.0385
+        ],
+        [
+          3.0373,
+          35.5211
+        ],
+        [
+          3,
+          34
+        ],
+        [
+          3.0373,
+          32.4789
+        ],
+        [
+          3.1493,
+          30.9615
+        ],
+        [
+          3.3355,
+          29.4514
+        ],
+        [
+          3.5957,
+          27.9522
+        ],
+        [
+          3.929,
+          26.4676
+        ],
+        [
+          4.3348,
+          25.0012
+        ],
+        [
+          4.8121,
+          23.5564
+        ],
+        [
+          5.3597,
+          22.1368
+        ],
+        [
+          5.9763,
+          20.7458
+        ],
+        [
+          6.6604,
+          19.3867
+        ],
+        [
+          7.4104,
+          18.0628
+        ],
+        [
+          8.2244,
+          16.7773
+        ],
+        [
+          9.1006,
+          15.5333
+        ],
+        [
+          10.0367,
+          14.3338
+        ],
+        [
+          11.0305,
+          13.1817
+        ],
+        [
+          12.0797,
+          12.0797
+        ],
+        [
+          13.1817,
+          11.0305
+        ],
+        [
+          14.3338,
+          10.0367
+        ],
+        [
+          15.5333,
+          9.1006
+        ],
+        [
+          16.7773,
+          8.2244
+        ],
+        [
+          18.0628,
+          7.4104
+        ],
+        [
+          19.3867,
+          6.6604
+        ],
+        [
+          20.7458,
+          5.9763
+        ],
+        [
+          22.1368,
+          5.3597
+        ],
+        [
+          23.5564,
+          4.8121
+        ],
+        [
+          25.0012,
+          4.3348
+        ],
+        [
+          26.4676,
+          3.929
+        ],
+        [
+          27.9522,
+          3.5957
+        ],
+        [
+          29.4514,
+          3.3355
+        ],
+        [
+          30.9615,
+          3.1493
+        ],
+        [
+          32.4789,
+          3.0373
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "camera-circle__fill",
+          "svg": "Assets/Components/camera-circle__fill.svg",
+          "png": "Assets/Components/camera-circle__fill.png",
+          "width": 68,
+          "height": 68
+        },
+        "border": {
+          "id": "camera-circle__border",
+          "svg": "Assets/Components/camera-circle__border.svg",
+          "png": "Assets/Components/camera-circle__border.png",
+          "width": 68,
+          "height": 68
+        },
+        "mask": {
+          "id": "camera-circle__mask",
+          "svg": "Assets/Components/camera-circle__mask.svg",
+          "png": "Assets/Components/camera-circle__mask.png",
+          "width": 68,
+          "height": 68
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "button",
+      "width": 388,
+      "height": 48,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "parallel",
+      "contour": [
+        [
+          11.9274,
+          3
+        ],
+        [
+          385,
+          3
+        ],
+        [
+          376.0726,
+          45
+        ],
+        [
+          3,
+          45
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "button__fill",
+          "svg": "Assets/Components/button__fill.svg",
+          "png": "Assets/Components/button__fill.png",
+          "width": 388,
+          "height": 48
+        },
+        "border": {
+          "id": "button__border",
+          "svg": "Assets/Components/button__border.svg",
+          "png": "Assets/Components/button__border.png",
+          "width": 388,
+          "height": 48
+        },
+        "mask": {
+          "id": "button__mask",
+          "svg": "Assets/Components/button__mask.svg",
+          "png": "Assets/Components/button__mask.png",
+          "width": 388,
+          "height": 48
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "input",
+      "width": 672,
+      "height": 56,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "panel",
+      "contour": [
+        [
+          11,
+          3
+        ],
+        [
+          661,
+          3
+        ],
+        [
+          669,
+          11
+        ],
+        [
+          669,
+          45
+        ],
+        [
+          661,
+          53
+        ],
+        [
+          11,
+          53
+        ],
+        [
+          3,
+          45
+        ],
+        [
+          3,
+          11
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "input__fill",
+          "svg": "Assets/Components/input__fill.svg",
+          "png": "Assets/Components/input__fill.png",
+          "width": 672,
+          "height": 56
+        },
+        "border": {
+          "id": "input__border",
+          "svg": "Assets/Components/input__border.svg",
+          "png": "Assets/Components/input__border.png",
+          "width": 672,
+          "height": 56
+        },
+        "mask": {
+          "id": "input__mask",
+          "svg": "Assets/Components/input__mask.svg",
+          "png": "Assets/Components/input__mask.png",
+          "width": 672,
+          "height": 56
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    },
+    {
+      "id": "popup",
+      "width": 720,
+      "height": 424,
+      "coordinateSpace": "native1920x1080 except input/popup1600x900; see usage",
+      "type": "panel",
+      "contour": [
+        [
+          21,
+          3
+        ],
+        [
+          699,
+          3
+        ],
+        [
+          717,
+          21
+        ],
+        [
+          717,
+          403
+        ],
+        [
+          699,
+          421
+        ],
+        [
+          21,
+          421
+        ],
+        [
+          3,
+          403
+        ],
+        [
+          3,
+          21
+        ]
+      ],
+      "files": {
+        "fill": {
+          "id": "popup__fill",
+          "svg": "Assets/Components/popup__fill.svg",
+          "png": "Assets/Components/popup__fill.png",
+          "width": 720,
+          "height": 424
+        },
+        "border": {
+          "id": "popup__border",
+          "svg": "Assets/Components/popup__border.svg",
+          "png": "Assets/Components/popup__border.png",
+          "width": 720,
+          "height": 424
+        },
+        "mask": {
+          "id": "popup__mask",
+          "svg": "Assets/Components/popup__mask.svg",
+          "png": "Assets/Components/popup__mask.png",
+          "width": 720,
+          "height": 424
+        }
+      },
+      "noBakedText": true,
+      "usage": "same bounds as original; native polygon/circle mask; artwork crop, no9slice"
+    }
+  ],
+  "assets": [
+    {
+      "path": "Assets/Art/profile-material.png",
+      "bytes": 3447048,
+      "sha256": "929a6482ccacbd70ea0a5dfe2f180e6efb1866deb5c6df305a029825ff73e087"
+    },
+    {
+      "path": "Assets/Art/profile-overlay50.png",
+      "bytes": 2725277,
+      "sha256": "8c1b2ed2d76d95eacdd68ff21eed93cc05183bf6919fb2a995954635c45a586a"
+    },
+    {
+      "path": "Assets/Art/profile-overlay50.svg",
+      "bytes": 269,
+      "sha256": "7c6b6fa30a4b0e41d38cedd87b83589191f2de29508dee1f4b65ba0919984788"
+    },
+    {
+      "path": "Assets/Art/profile-source-ai.png",
+      "bytes": 3024469,
+      "sha256": "5d6838985658aec8893cc896a3548284de7876fbfb9d48213e02d94fd14039ae"
+    },
+    {
+      "path": "Assets/Components/avatar-circle__border.png",
+      "bytes": 19965,
+      "sha256": "119afe8e1fbdaa325c3d3c1af45a7a14d35444cb896b95a6fd80c391914d1885"
+    },
+    {
+      "path": "Assets/Components/avatar-circle__border.svg",
+      "bytes": 2848,
+      "sha256": "4b4f3eddb8af5d54465f4375e0c92a521a8a97e723b48ea3f359318c1e5d0a74"
+    },
+    {
+      "path": "Assets/Components/avatar-circle__fill.png",
+      "bytes": 75828,
+      "sha256": "a9018534179771a1583f0a6aa2a5eed7c021fd7936f3ac964e63018eda79ced0"
+    },
+    {
+      "path": "Assets/Components/avatar-circle__fill.svg",
+      "bytes": 2577,
+      "sha256": "e1aea14c5704aefaa059af9e08d3573fb64e1bb95534eb8aeb1da8fb1ba055a2"
+    },
+    {
+      "path": "Assets/Components/avatar-circle__mask.png",
+      "bytes": 4408,
+      "sha256": "eb233142cf40ba636c605bdf88be6b8aa8ccafe1de29c81ce7671be74c37f40a"
+    },
+    {
+      "path": "Assets/Components/avatar-circle__mask.svg",
+      "bytes": 2270,
+      "sha256": "192509801ef3ac6fb6f856fcbd0ed96a778191fdbf9fead9f9bc79323c1e95bc"
+    },
+    {
+      "path": "Assets/Components/button__border.png",
+      "bytes": 1010,
+      "sha256": "48cbf4851143ff38ea86e089183906c145e919910248a0d26c0825be059e04cc"
+    },
+    {
+      "path": "Assets/Components/button__border.svg",
+      "bytes": 441,
+      "sha256": "280e34ddffea4e481fbc48d68af157d480ac41e4f77c889ac3f9e625f2459b29"
+    },
+    {
+      "path": "Assets/Components/button__disabled.png",
+      "bytes": 3671,
+      "sha256": "fd0ef1b6726bb42e40d65d4510d744d34420e99480b9b50cd4f0802c446b4dd1"
+    },
+    {
+      "path": "Assets/Components/button__disabled.svg",
+      "bytes": 979,
+      "sha256": "b5461dd4bcf6838f94d1407ad7941a3f6ff3f74b9b9b8fdc1f5b3fd0636032e2"
+    },
+    {
+      "path": "Assets/Components/button__fill.png",
+      "bytes": 9687,
+      "sha256": "50884ed0cc263afaf0be7d66b472423f660520e49d92ebd5392c62192854a1d2"
+    },
+    {
+      "path": "Assets/Components/button__fill.svg",
+      "bytes": 498,
+      "sha256": "6b44ca4c4eeeee3c5c2a5386c59d49d8484bf4be7282b3e294be70e38abccc8e"
+    },
+    {
+      "path": "Assets/Components/button__focus.png",
+      "bytes": 9645,
+      "sha256": "3b312bf42531a95128a8345390f6d8e49cfed4df70ff7d208d38efb37ef50f0f"
+    },
+    {
+      "path": "Assets/Components/button__focus.svg",
+      "bytes": 1071,
+      "sha256": "e24636378c4b39e0deab6214855c475f4e41b53858b4f809348e475042f3267c"
+    },
+    {
+      "path": "Assets/Components/button__hover.png",
+      "bytes": 8923,
+      "sha256": "cfbbbcef53535b5106a1d10318b5633ce98d11ddda6ec94a443e3ec47fcf5fac"
+    },
+    {
+      "path": "Assets/Components/button__hover.svg",
+      "bytes": 973,
+      "sha256": "b9b2a966000088a869fe46d63c24d1c5c3256fc2f91542fcdccc0b8a0ff964c7"
+    },
+    {
+      "path": "Assets/Components/button__mask.png",
+      "bytes": 604,
+      "sha256": "7989a56636b476062b9f790482ee23970bc30a52c6c7c77bed921aea79674f2c"
+    },
+    {
+      "path": "Assets/Components/button__mask.svg",
+      "bytes": 193,
+      "sha256": "e6f90f329dbbb39ef62f92f59b02ec1dbbd175b70a64dc00ed96a076024cfa8c"
+    },
+    {
+      "path": "Assets/Components/button__normal.png",
+      "bytes": 9978,
+      "sha256": "f90eb94d6b29131aadb879a2a8f055a4d8fb281eb24873444cf3249b8cac25e0"
+    },
+    {
+      "path": "Assets/Components/button__normal.svg",
+      "bytes": 913,
+      "sha256": "24dda60df78a7cabf0e0781ebf60d47e642e93ee4bc1739a207705f8d6c390a6"
+    },
+    {
+      "path": "Assets/Components/button__pressed.png",
+      "bytes": 9523,
+      "sha256": "f474c8e5fac93592c36cc0e9b3e0523c072d29a6f8114ce24ff9964a5c48a399"
+    },
+    {
+      "path": "Assets/Components/button__pressed.svg",
+      "bytes": 973,
+      "sha256": "eb07dc80b7c7ee6c49778034ce840a10ed84496ac78d0b94aef6ba041ea795ee"
+    },
+    {
+      "path": "Assets/Components/button__selected-focus.png",
+      "bytes": 6476,
+      "sha256": "b30ae9e43172a8ebfebf6c61a24847f61c23ae623631e379a1e7a83af433fa20"
+    },
+    {
+      "path": "Assets/Components/button__selected-focus.svg",
+      "bytes": 1187,
+      "sha256": "b9150fae5f208739dd1fb634029c60e21e647b63cd8a0087f8c02ece00a63634"
+    },
+    {
+      "path": "Assets/Components/camera-circle__border.png",
+      "bytes": 3274,
+      "sha256": "d603995adba58da40bd2869cb374b6619ad841c54eaf7e1ef6c6d547e5011d84"
+    },
+    {
+      "path": "Assets/Components/camera-circle__border.svg",
+      "bytes": 2689,
+      "sha256": "852060867dc4f4ba525f0f9c4dc190d80c69d5ddc18baca58690c3f3d5ccd2c3"
+    },
+    {
+      "path": "Assets/Components/camera-circle__fill.png",
+      "bytes": 4291,
+      "sha256": "5c3a798c31696c869276cdb407e7f1135b6b53a355127a6b29e5186613e9bd77"
+    },
+    {
+      "path": "Assets/Components/camera-circle__fill.svg",
+      "bytes": 2404,
+      "sha256": "b6f958dc4336f5daeaa97e21af6cd0f53cf11ea290470f5f14479ef4b4412d90"
+    },
+    {
+      "path": "Assets/Components/camera-circle__mask.png",
+      "bytes": 566,
+      "sha256": "20b19180d1be1185a9b16b3f886da92823f981bc106955f054385d19322e7c31"
+    },
+    {
+      "path": "Assets/Components/camera-circle__mask.svg",
+      "bytes": 2104,
+      "sha256": "6b5d9a4ef5b8c441accb7c96e7c4b14f4425df7aec48ca40f8667d7cb91d1b25"
+    },
+    {
+      "path": "Assets/Components/info-panel__border.png",
+      "bytes": 11035,
+      "sha256": "1c96501a520d99052d44265a5dd33ecc324230c3c3920c093bf924209b91eb51"
+    },
+    {
+      "path": "Assets/Components/info-panel__border.svg",
+      "bytes": 3790,
+      "sha256": "e8d6089d21a71bab9229e565dab7af6697da6bfd8af425f404f973d3d2499cdd"
+    },
+    {
+      "path": "Assets/Components/info-panel__fill.png",
+      "bytes": 408354,
+      "sha256": "5c19be3530dcc73867f6a101380b8a2f22ba9b348851fbbadf886c35ec7f7b57"
+    },
+    {
+      "path": "Assets/Components/info-panel__fill.svg",
+      "bytes": 521,
+      "sha256": "46e7765c3b95a85deef6f67f7e41b3f1a5103d4cd127443ca581e715570f2402"
+    },
+    {
+      "path": "Assets/Components/info-panel__mask.png",
+      "bytes": 2680,
+      "sha256": "5b27e91560b8f901a74e8af7cb2b20c7fc21bdacfd4daac0d1c82d1843d450e9"
+    },
+    {
+      "path": "Assets/Components/info-panel__mask.svg",
+      "bytes": 214,
+      "sha256": "a37e7ad53f3a0b451d64d995d9ce22778b9523727036042d832f47bac8d03441"
+    },
+    {
+      "path": "Assets/Components/input__border.png",
+      "bytes": 658,
+      "sha256": "238a0155da11440ce2cfa3607c49d3b8c1c113fb12d5183ccf3179ca4508c8c4"
+    },
+    {
+      "path": "Assets/Components/input__border.svg",
+      "bytes": 471,
+      "sha256": "5ccd7ca22a2f1cf15de4aa7bf47a6945d7251bb1d0955120d40cce038c37265d"
+    },
+    {
+      "path": "Assets/Components/input__fill.png",
+      "bytes": 22502,
+      "sha256": "0a1f4497f7220dd412d0d9c4701dd81fab10bffc214436954db81814007ea130"
+    },
+    {
+      "path": "Assets/Components/input__fill.svg",
+      "bytes": 512,
+      "sha256": "99c1ffa9dd4859ea1b6df9e41af93b4bfb7b66881f6045e508f6e3cc77e1362d"
+    },
+    {
+      "path": "Assets/Components/input__mask.png",
+      "bytes": 398,
+      "sha256": "9993facaafc84edfe015724c0faa0dcf8c4c31f6e23f1b0a4aed841d360c9dda"
+    },
+    {
+      "path": "Assets/Components/input__mask.svg",
+      "bytes": 208,
+      "sha256": "26f96752dfefedc3514e245730e51fa38668e25cc032aa0d3841d53c6beb7526"
+    },
+    {
+      "path": "Assets/Components/pet-slot__border.png",
+      "bytes": 751,
+      "sha256": "258b0b4532e6163ea669c9678e1de64a85fe8367b44e12131c85d436a040688a"
+    },
+    {
+      "path": "Assets/Components/pet-slot__border.svg",
+      "bytes": 482,
+      "sha256": "a9870a22d25d74976008ff268b21a39d5f8e3f76e5caf99798a283a5ac46697c"
+    },
+    {
+      "path": "Assets/Components/pet-slot__fill.png",
+      "bytes": 20591,
+      "sha256": "52a5b561787ac69a744fc68032b3e6a657903f2e3b217f744e121a7c9806985e"
+    },
+    {
+      "path": "Assets/Components/pet-slot__fill.svg",
+      "bytes": 521,
+      "sha256": "f7cc683612e7976cc3fe6557b28445acda58f3448706f96082060575c63ec602"
+    },
+    {
+      "path": "Assets/Components/pet-slot__mask.png",
+      "bytes": 531,
+      "sha256": "0ee4dbed9daa8e47eb29e11e920c97860fc670ddbf5a76f52c59a53c146c65bc"
+    },
+    {
+      "path": "Assets/Components/pet-slot__mask.svg",
+      "bytes": 214,
+      "sha256": "799817dfc6176f9706657ff1f943e2ddb1ed6ffb5de83340089fcded9a271f85"
+    },
+    {
+      "path": "Assets/Components/popup__border.png",
+      "bytes": 10557,
+      "sha256": "1f719c17147ba5995f13b792af3a9d734b1c90466a1bccb7084b531638db6da7"
+    },
+    {
+      "path": "Assets/Components/popup__border.svg",
+      "bytes": 3790,
+      "sha256": "e124b855a09a56b86245828e55687544aebac7237b0f63c1b151cb23b37b759d"
+    },
+    {
+      "path": "Assets/Components/popup__fill.png",
+      "bytes": 459403,
+      "sha256": "b1401d9ca1b14fdbc899f1c00f897f64b71887d5092d24faca42260c2e57eb2e"
+    },
+    {
+      "path": "Assets/Components/popup__fill.svg",
+      "bytes": 520,
+      "sha256": "ed1a384c0b3b784ebfefe7c3524ab6054b514224b5ad4d5dbaca2175be5e536c"
+    },
+    {
+      "path": "Assets/Components/popup__mask.png",
+      "bytes": 2296,
+      "sha256": "51d8f7b2bed6af63c81ce1a91385b57cae21972bc06e556efcabdd0a5c330004"
+    },
+    {
+      "path": "Assets/Components/popup__mask.svg",
+      "bytes": 214,
+      "sha256": "87442dda0bca1dcb2e4aeffdd8ca82495687a05425e19d090c41ebe07987d20e"
+    },
+    {
+      "path": "Assets/Components/stat-card__border.png",
+      "bytes": 966,
+      "sha256": "982884c7ce352e9e196592aef21054b045f17672a72cc68f4cd6905543694b32"
+    },
+    {
+      "path": "Assets/Components/stat-card__border.svg",
+      "bytes": 482,
+      "sha256": "b02eabef9cd74832a318397d50f95ff2fc0ad7eb45e0ca0108424428e2bdec84"
+    },
+    {
+      "path": "Assets/Components/stat-card__fill.png",
+      "bytes": 43575,
+      "sha256": "ac53c7cf3386252f290721203f5bf435fdf43b825aefa3d748283db157e5a0ba"
+    },
+    {
+      "path": "Assets/Components/stat-card__fill.svg",
+      "bytes": 521,
+      "sha256": "0cb5ba6a41582f4eacba2a4f9fd94fa55d45b4c678f23b918384b4b08dc4b1eb"
+    },
+    {
+      "path": "Assets/Components/stat-card__mask.png",
+      "bytes": 675,
+      "sha256": "1504ff1e7f8b2ff13490cf13d9f4f854321711b6f740c71db0a187b48b3a3f23"
+    },
+    {
+      "path": "Assets/Components/stat-card__mask.svg",
+      "bytes": 214,
+      "sha256": "aaa5ee6132d17ecb41122fe92aac221af5bc6e191bda5458ba1e20696b12641f"
+    },
+    {
+      "path": "Assets/Components/stats-panel__border.png",
+      "bytes": 11916,
+      "sha256": "f69eed236cd6079423616d21fc3456dd0a25a71926096718c230293a459c349e"
+    },
+    {
+      "path": "Assets/Components/stats-panel__border.svg",
+      "bytes": 3881,
+      "sha256": "1d396392546ef011a36c8fa80bb6df2da90788a9a165cfdc546e6e8623e61aed"
+    },
+    {
+      "path": "Assets/Components/stats-panel__fill.png",
+      "bytes": 543207,
+      "sha256": "a7a10c2b32232c3c395634ce77556342e4cd93148597ffd5ee6e92c1421e1b71"
+    },
+    {
+      "path": "Assets/Components/stats-panel__fill.svg",
+      "bytes": 529,
+      "sha256": "4c1361447ee4f293190d28c8efc4b1bfcc99684898a10c67a3c3940230494c41"
+    },
+    {
+      "path": "Assets/Components/stats-panel__mask.png",
+      "bytes": 3309,
+      "sha256": "08ace8232fa349b063de7b21ef5daeff1ab3055aa10645b391735c4daa5e37be"
+    },
+    {
+      "path": "Assets/Components/stats-panel__mask.svg",
+      "bytes": 220,
+      "sha256": "f32ba885858c5e1f06b16c7c86523269fd63583f6c31cc848b58c3d72c9c6a8a"
+    },
+    {
+      "path": "Assets/Components/summary-panel__border.png",
+      "bytes": 13161,
+      "sha256": "7f9dc809ddee9b54fb987e7aa5447523bf71a80db2d1b07c24170ab30833ef5b"
+    },
+    {
+      "path": "Assets/Components/summary-panel__border.svg",
+      "bytes": 3881,
+      "sha256": "d7ee25bdb7d20f575624ed05b2db1410f8261c01c1dc2fb0f15900ae90b7d9b8"
+    },
+    {
+      "path": "Assets/Components/summary-panel__fill.png",
+      "bytes": 920217,
+      "sha256": "5f14f307082d8e2cbaa9641d9f80835f18c4a86436fd46f38607b0b77170190e"
+    },
+    {
+      "path": "Assets/Components/summary-panel__fill.svg",
+      "bytes": 530,
+      "sha256": "12bfd5b584990e6a4c25ea42312a40e791eb74207bb40eea4c52fbc02ca1fba4"
+    },
+    {
+      "path": "Assets/Components/summary-panel__mask.png",
+      "bytes": 4316,
+      "sha256": "af56220a247197f34d052db0b4d6b648440512972718e226b935be8888017718"
+    },
+    {
+      "path": "Assets/Components/summary-panel__mask.svg",
+      "bytes": 220,
+      "sha256": "bd7a3fed9e84ccf43c426441fb9c695654c38b32334c38d268111f6d169242df"
+    },
+    {
+      "path": "Assets/Fonts/LiberationSans-OFL.txt",
+      "bytes": 4514,
+      "sha256": "a130e89b7b2326b599c4b2bbd873eaae63feda407541a2899cb8acb306723de6"
+    },
+    {
+      "path": "Assets/Fonts/LiberationSans.ttf",
+      "bytes": 350200,
+      "sha256": "e5b0af421ea2bfbc1ac8d251d647268087ae82786234c57f757d1f0b90fa8b49"
+    },
+    {
+      "path": "Assets/Fonts/NotoSerif-LICENSE.txt",
+      "bytes": 4377,
+      "sha256": "0dab92d0544f7b233403f14b84a663bdbfa746982eda629e7f4f9ffe1b036feb"
+    },
+    {
+      "path": "Assets/Fonts/NotoSerif-OFL.txt",
+      "bytes": 4396,
+      "sha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a"
+    },
+    {
+      "path": "Assets/Fonts/NotoSerif-Regular.ttf",
+      "bytes": 616196,
+      "sha256": "c8f669ceb2c9c60ccf55198b305e08a997ffca79a38cc7eeb551e643cbe66505"
+    },
+    {
+      "path": "Assets/Icons/back.png",
+      "bytes": 1855,
+      "sha256": "1d7220cc20635f701d5d99291323a9a4578c6377d1e0c9ce9bec89510841de4f"
+    },
+    {
+      "path": "Assets/Icons/back.svg",
+      "bytes": 645,
+      "sha256": "81a661c904c2148addb39b275e97254c15efa078a69849ea20c75f8a973fafdd"
+    },
+    {
+      "path": "Assets/Icons/book.png",
+      "bytes": 3674,
+      "sha256": "aa3f96c1041df410a817775450d2198bea8dcbd8411e2f295310bf360da7edc9"
+    },
+    {
+      "path": "Assets/Icons/book.svg",
+      "bytes": 989,
+      "sha256": "3730176539afafcbce91282ab0e3f662dea0a1e24a50bc99fb5207f527fc9534"
+    },
+    {
+      "path": "Assets/Icons/boss.png",
+      "bytes": 3154,
+      "sha256": "6ceabc639b3fd7efe2d164ed8b9ce91a064b52ed4e98ecd0d9db5624ac3e2f08"
+    },
+    {
+      "path": "Assets/Icons/boss.svg",
+      "bytes": 813,
+      "sha256": "c2ae01d29c6eeb3fdd746c792cbf73f31e3abc638a39f15f980c2a51875ab320"
+    },
+    {
+      "path": "Assets/Icons/calendar.png",
+      "bytes": 2839,
+      "sha256": "92e06b8a0799b351e6203f9d85d5ff68d293744b594c2fc5f1009d7be618dd95"
+    },
+    {
+      "path": "Assets/Icons/calendar.svg",
+      "bytes": 781,
+      "sha256": "0f093963136164f505361edd98050d92bf95628a6aa11e26466cc96750f382ee"
+    },
+    {
+      "path": "Assets/Icons/camera.png",
+      "bytes": 2785,
+      "sha256": "3e5c9b653a35f9d6465c55246f7c594bc55fa6d15b6fd042daad2a73035f75e7"
+    },
+    {
+      "path": "Assets/Icons/camera.svg",
+      "bytes": 825,
+      "sha256": "db74d294221ed757e9f59156ee8dbde820ce9931949bf5491f5579cae59c69a6"
+    },
+    {
+      "path": "Assets/Icons/chart.png",
+      "bytes": 2197,
+      "sha256": "c9dd8e4a113a1f7c0233911ff5f4aa5f45ee32fb2bad3cbdc801a0917c367db6"
+    },
+    {
+      "path": "Assets/Icons/chart.svg",
+      "bytes": 648,
+      "sha256": "c44d2dabcbcf59fcd27d67a751eab0ee14bc12d3fe7c75088a018c0f94770d9c"
+    },
+    {
+      "path": "Assets/Icons/check.png",
+      "bytes": 1733,
+      "sha256": "fc561b4f55037f81b038ae2daa72a7ea7775fe098b550903796aac2cc6a4ce17"
+    },
+    {
+      "path": "Assets/Icons/check.svg",
+      "bytes": 628,
+      "sha256": "7dad8ffcdabc9f452216588f608e5171293050bd07bdacfd6cde3ccba405787f"
+    },
+    {
+      "path": "Assets/Icons/close.png",
+      "bytes": 2532,
+      "sha256": "51ce1869ea65443bf1517e93d286fac2aca1a7eca98e8ff51bde2fd664f62941"
+    },
+    {
+      "path": "Assets/Icons/close.svg",
+      "bytes": 696,
+      "sha256": "653a0cc2b27022f2103639eb843dae88493870c85955809914563c56cd4abeb0"
+    },
+    {
+      "path": "Assets/Icons/compass.png",
+      "bytes": 3265,
+      "sha256": "7c227776f25cad50b8469f978b5eb9cdd13b3c8b70ca7470a88c5113b4474f2c"
+    },
+    {
+      "path": "Assets/Icons/compass.svg",
+      "bytes": 780,
+      "sha256": "14746e1d51e3bf7d11a3357611e60a9fe2e536f303a540b40ba703f66b0cd027"
+    },
+    {
+      "path": "Assets/Icons/edit.png",
+      "bytes": 1859,
+      "sha256": "00f9cb6641e72de31f44607b552cd89c56e420f995997b08d63a93c9c7489566"
+    },
+    {
+      "path": "Assets/Icons/edit.svg",
+      "bytes": 699,
+      "sha256": "12231d6767c763909dfe8097aac7440bd7cb61f4019015eab96cde3aae4bdaa1"
+    },
+    {
+      "path": "Assets/Icons/leaf.png",
+      "bytes": 2705,
+      "sha256": "8105eb1fb83db304b3d55c5b4fe3cb4b7828b34693c6bf35a5ee282ec684f73a"
+    },
+    {
+      "path": "Assets/Icons/leaf.svg",
+      "bytes": 761,
+      "sha256": "79eb63bd554408e6d3763be6a6c52b72d3d6b6c61655588d4d22380dcce97f36"
+    },
+    {
+      "path": "Assets/Icons/location.png",
+      "bytes": 2765,
+      "sha256": "695e648c4568eaeb3bbfdd969cacdb86c1c6a4fc117355290a3c679cdf249c69"
+    },
+    {
+      "path": "Assets/Icons/location.svg",
+      "bytes": 751,
+      "sha256": "9cbda99e9ed10574c1b6041bcc5f7922ab809bc10e8c31f899ebfc003d9f2a01"
+    },
+    {
+      "path": "Assets/Icons/profile.png",
+      "bytes": 3106,
+      "sha256": "6afb5092448dc923bd1e2394bf458a11e77f1712bd21a6d71b64816e7a94df46"
+    },
+    {
+      "path": "Assets/Icons/profile.svg",
+      "bytes": 790,
+      "sha256": "bd6c8c42702d96f7f2c8c4948abc4e6588969f9a1b9528c8072f867458268ced"
+    },
+    {
+      "path": "Assets/Icons/story.png",
+      "bytes": 2070,
+      "sha256": "b60fc26540a05614667daf3f4b1170de4177f4039a825b9fb327490a6b4e0709"
+    },
+    {
+      "path": "Assets/Icons/story.svg",
+      "bytes": 684,
+      "sha256": "1ad7981588b822c939d76492db7a5f948dc0f288c63fc325ac60aad2ca9cb26f"
+    },
+    {
+      "path": "Assets/Icons/swords.png",
+      "bytes": 4155,
+      "sha256": "ace58c8546078a4b1b70fd3bf8ea3ae753decd7a2f76daa87cf35bb68914de3e"
+    },
+    {
+      "path": "Assets/Icons/swords.svg",
+      "bytes": 859,
+      "sha256": "70f4a98e7a892060292b60e21fd632a3798124474cd9ebf7d100852960e06556"
+    },
+    {
+      "path": "Assets/Icons/time.png",
+      "bytes": 4112,
+      "sha256": "08ae311ef9b52ec60d98f704ed7c91c618a323d569937db41001585fbdb65f08"
+    },
+    {
+      "path": "Assets/Icons/time.svg",
+      "bytes": 795,
+      "sha256": "67786d689b7c84d9f4adc7b44ba78a10c89726950ce628ba53ec7976b4fa2657"
+    },
+    {
+      "path": "Assets/Reuse/avatar-apple.png",
+      "bytes": 21590,
+      "sha256": "1dc1a1ce098d674834b276ed0308b2e84aa2de1e852a6f016ba374271c3a84b5"
+    },
+    {
+      "path": "Assets/Reuse/avatar-armor.png",
+      "bytes": 30580,
+      "sha256": "1d2bd09cc082129900272eac84a282f22d91521a04cf4b53f6dc7db42a27d0d2"
+    },
+    {
+      "path": "Assets/Reuse/avatar-cloak.png",
+      "bytes": 28251,
+      "sha256": "7d6cbac2b9e311ba8107cb76f9b9752f867d000ac8381a77bba90886ce2da9bd"
+    },
+    {
+      "path": "Assets/Reuse/box-empty.png",
+      "bytes": 1333,
+      "sha256": "329040f21a9ac05ba044e7d577e4aebc581214644ebb43f5ec010a45912d0546"
+    },
+    {
+      "path": "Assets/Reuse/compass-emblem.png",
+      "bytes": 1161561,
+      "sha256": "1b53caa1dad4d5b2d8ed85d4e0b1a5092e45ab458b81ef17b61f8a47fff61d3b"
+    },
+    {
+      "path": "Assets/Reuse/pet-avatar.png",
+      "bytes": 53402,
+      "sha256": "795d93204ec65f5d71470909a67208fdfd6cb6d6d65e058f099af8fe6dcf26b0"
+    }
+  ],
+  "bindings": "Specs/binding-map.csv",
+  "data": "Observed latest user screenshot, illustrative only; implementation uses current provider",
+  "engineQA": "not run"
+}

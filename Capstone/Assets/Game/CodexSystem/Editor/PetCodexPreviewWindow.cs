@@ -193,10 +193,10 @@ namespace Capstone.Game.CodexSystem.Editor {
                 foreach (string panel in new[] { "InventoryPanel", "PetsPanel", "BoxPanel", "QuestPanel", "SkillsPanel", "PetDetailsPanel", "PetLevelUpPanel", "PetHealPanel", "PetEvolutionPanel", "PetReleasePanel" }) {
                     var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(UI+panel+".uxml"); Check(asset != null,"import " + panel);
                 }
-                Directory.CreateDirectory("../artifacts/ui-completion");
-                File.WriteAllLines("../artifacts/ui-completion/validation.txt",results);
+                Directory.CreateDirectory(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion");
+                File.WriteAllLines(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion/validation.txt",results);
                 Debug.Log("UI completion: " + results.Count + " checks passed.");
-            } catch(Exception e) { results.Add("FAIL " + e); Directory.CreateDirectory("../artifacts/ui-completion"); File.WriteAllLines("../artifacts/ui-completion/validation.txt",results); Debug.LogException(e); }
+            } catch(Exception e) { results.Add("FAIL " + e); Directory.CreateDirectory(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion"); File.WriteAllLines(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion/validation.txt",results); Debug.LogException(e); }
             finally {
                 validating=false;
                 if (closeAfterValidation) {
@@ -236,10 +236,10 @@ namespace Capstone.Game.CodexSystem.Editor {
             check(same,"cached name sort preserves previous order");
             entries[0].Name="Đổi tên mới"; optimized.Search="doi ten moi"; optimized.Apply(entries,actual);
             check(actual.Count==1 && actual[0]==entries[0],"name search observes provider edits without stale cache");
-            Directory.CreateDirectory("../artifacts/ui-completion");
+            Directory.CreateDirectory(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion");
             long beforeProbe=GC.GetAllocatedBytesForCurrentThread(); GC.KeepAlive(new byte[4096]);
             bool counterAvailable=GC.GetAllocatedBytesForCurrentThread()>beforeProbe;
-            File.WriteAllText("../artifacts/ui-completion/performance.txt","Name sort; 320 entries; 20 queries after 8 warmup passes\nBaseline elapsed ms: "+oldMs.ToString("F2")+"\nOptimized elapsed ms: "+newMs.ToString("F2")+"\nGC byte counter available: "+counterAvailable+"\nIf unavailable, prior zero-byte results are not valid allocation measurements.\nTiming is a local microbenchmark, not whole-game FPS.\n");
+            File.WriteAllText(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion/performance.txt","Name sort; 320 entries; 20 queries after 8 warmup passes\nBaseline elapsed ms: "+oldMs.ToString("F2")+"\nOptimized elapsed ms: "+newMs.ToString("F2")+"\nGC byte counter available: "+counterAvailable+"\nIf unavailable, prior zero-byte results are not valid allocation measurements.\nTiming is a local microbenchmark, not whole-game FPS.\n");
         }
         static void ValidateMarkerVisibility(Action<bool,string> check) {
             var go=new GameObject("MarkerVisibilityFixture",typeof(RectTransform),typeof(UnityEngine.UI.Button),typeof(MapMarkerView)) { hideFlags=HideFlags.HideAndDontSave };

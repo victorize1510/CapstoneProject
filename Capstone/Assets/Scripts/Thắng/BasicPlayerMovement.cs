@@ -1885,6 +1885,12 @@ public class BasicPlayerMovement : MonoBehaviour
         return right.sqrMagnitude > 0.001f ? right.normalized : Vector3.right;
     }
 
+    private bool OwnsCollider(Collider collider)
+    {
+        // Scene organization can put Player and other actors beneath one common root.
+        return collider.transform == transform || collider.transform.IsChildOf(transform);
+    }
+
     private void UpdateEnemyProbe(float deltaTime)
     {
         if (!autoDetectEnemies)
@@ -1906,7 +1912,7 @@ public class BasicPlayerMovement : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             Collider hit = enemyProbeHits[i];
-            if (hit == null || hit.transform.root == transform.root)
+            if (hit == null || OwnsCollider(hit))
             {
                 continue;
             }
@@ -2350,7 +2356,7 @@ public class BasicPlayerMovement : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             RaycastHit hit = groundHits[i];
-            if (hit.collider == null || hit.collider.transform.root == transform.root)
+            if (hit.collider == null || OwnsCollider(hit.collider))
             {
                 continue;
             }

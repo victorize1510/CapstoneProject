@@ -96,11 +96,11 @@ namespace Capstone.Game.HudSystem.Editor {
                 && Mathf.Approximately(root.Find("QuickItems").localScale.x, .5f), "Skill/quick-item HUD must be half scale; pet information must be at 65% scale.");
             Require(Mathf.Approximately(((RectTransform)root.Find("MiniMap")).rect.width, 350f), "Minimap must remain 350px wide.");
             if (Application.isPlaying) {
-                Require(root.Find("SkillBar").gameObject.activeSelf == hud.PetSkillsAvailable,
-                    "Skill bar must only be visible when the spawned pet can receive commands.");
+                Require(root.Find("SkillBar").gameObject.activeSelf,
+                    "Keep all four skill bindings visible, including while the pet is withdrawn.");
                 if (!hud.PetSkillsAvailable) {
                     foreach (var button in root.Find("SkillBar").GetComponentsInChildren<Button>(true))
-                        Require(!button.interactable, "Hidden skill buttons must also be disabled.");
+                        Require(!button.interactable, "Visible skill buttons must stay disabled until the pet is ready.");
                     ValidateRejectedSkills(active);
                 }
                 Debug.Log($"Pet skill availability: ready={hud.PetSkillsAvailable}, bar visible={root.Find("SkillBar").gameObject.activeSelf}.");

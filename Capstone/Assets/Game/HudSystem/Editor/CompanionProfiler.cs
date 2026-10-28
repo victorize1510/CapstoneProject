@@ -17,7 +17,7 @@ namespace Capstone.Game.HudSystem.Editor {
     /// <summary>Explicit QA request only. Real Unity Profiler counters + binary capture, no saved scene changes.</summary>
     public static class CompanionProfiler {
         const string Request = "Temp/ProfileCompanion.request", OwnPlay = "CompanionProfiler.OwnPlay";
-        const string Output = "../artifacts/companion-ui/profiler/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "companion-ui/profiler/";
         const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
         static readonly List<ProfilerRecorder> recorders = new List<ProfilerRecorder>();
         static readonly List<string> metrics = new List<string>();

@@ -15,7 +15,7 @@ namespace Capstone.Game.UISystem.Editor {
     /// <summary>Explicit QA request only. Real Unity Profiler counters + binary capture, no saved scene changes.</summary>
     public static class TrainerMenuProfiler {
         const string Request = "Temp/ProfileTrainerMenu.request", OwnPlay = "TrainerMenuProfiler.OwnPlay";
-        const string Output = "../artifacts/trainer-menu-v4/profiler/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "trainer-menu-v4/profiler/";
         const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
         static readonly List<ProfilerRecorder> recorders = new List<ProfilerRecorder>();
         static readonly List<string> metrics = new List<string>();

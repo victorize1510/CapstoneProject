@@ -40,6 +40,8 @@ namespace Capstone.Game.SettingsSystem {
             Unsubscribe(); CloseModal(); PanelFocusUtility.Close(root); Unbind();
             root = documentRoot?.Q("settings-panel");
             if (root == null) return;
+            UiReadability.Bind(documentRoot);
+            UiReadability.SoftenGroups(root,"settings-subtitle","settings-section-heading");
             modal = root.Q("settings-modal"); modalTitle = root.Q<Label>("settings-modal-title");
             modalText = root.Q<Label>("settings-modal-text"); modalError = root.Q<Label>("settings-modal-error");
             confirm = root.Q<Button>("settings-modal-confirm"); cancel = root.Q<Button>("settings-modal-cancel");

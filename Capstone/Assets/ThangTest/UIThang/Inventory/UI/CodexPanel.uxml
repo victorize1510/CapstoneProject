@@ -110,11 +110,18 @@
                         <ui:Instance template="CodexTypeBadge" />
                     </ui:VisualElement>
                     <ui:VisualElement name="codex-detail-portrait" class="codex-detail-portrait" />
+                    <ui:VisualElement class="ui-copy-section">
+                    <ui:Label text="MÔ TẢ" class="ui-section-heading" picking-mode="Ignore" />
                     <ui:Label name="codex-description" class="codex-detail-text" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="ui-copy-section">
                     <ui:Label text="Thông tin cơ bản" class="codex-section-title" />
                     <ui:Label name="codex-basic" class="codex-detail-text" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="ui-copy-section">
                     <ui:Label text="Tiến hóa" class="codex-section-title" />
                     <ui:VisualElement name="codex-evolution" class="codex-evolution" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:ScrollView>
         </ui:VisualElement>

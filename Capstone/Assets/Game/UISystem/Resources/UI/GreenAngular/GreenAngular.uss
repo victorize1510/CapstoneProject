@@ -1,178 +1,135 @@
-/* Green Angular popup geometry is in logical1600×900 units; GreenAngularCompanionSkin fits uniformly. */
-.ga-overlay {position:absolute;left:0;right:0;top:0;bottom:0;display:none;align-items:center;justify-content:center;background-color:rgba(23,53,44,.58);padding:0;margin:0;border-width:0;}
+/* Current R3 presentation: one definition per exact selector; immutable interaction geometry. */
 .ga-popup {position:absolute;transform-origin:0 0;margin:0;padding:0;min-width:0;min-height:0;max-width:none;max-height:none;background-color:transparent;background-image:none;border-width:0;border-radius:0;color:#202B45;}
 .ga-popup Label {font-size:16px;color:#202B45;white-space:nowrap;margin:0;padding:0;-unity-text-align:middle-left;}
 .ga-popup .unity-button,.ga-popup .unity-button:hover,.ga-popup .unity-button:focus,.ga-popup .unity-button:active,.ga-popup .unity-button:disabled {background-color:transparent;background-image:none;border-width:0;border-radius:0;opacity:1;padding:0;margin:0;min-width:0;min-height:0;}
 .ga-popup .ga-button {position:absolute;height:52px;color:#EDE9E1;font-size:21px;-unity-font-style:bold;-unity-text-align:middle-center;}
 .ga-popup .ga-button:disabled {color:#202B45;}
-.ga-popup .ga-modal-header{position:absolute;left:12px;right:12px;top:12px;height:64px;}
 .ga-popup .ga-popup-title {position:absolute;left:48px;right:48px;top:0;bottom:0;font-size:27px;-unity-font-style:bold;color:#EDE9E1;-unity-text-align:middle-center;}
 .ga-popup .ga-close {right:12px;top:10px;width:44px;height:44px;font-size:24px;}
-.ga-popup .ga-summary{position:absolute;left:24px;right:24px;top:92px;height:110px;}
-.ga-popup .ga-summary-portrait{position:absolute;left:12px;top:10px;width:88px;height:88px;background-color:transparent;background-image:none;}
-.ga-popup .ga-art-fallback{position:absolute;left:0;right:0;top:0;bottom:0;font-size:32px;-unity-text-align:middle-center;color:#CCAD83;}
-.ga-popup .ga-pet-name {font-size:25px;-unity-font-style:bold;overflow:hidden;text-overflow:ellipsis;}
-.ga-popup .ga-summary-copy{position:absolute;left:118px;right:20px;top:16px;bottom:12px;}
-.ga-popup .ga-summary-meta{flex-direction:row;flex-wrap:wrap;margin-top:8px;}
-.ga-popup .ga-summary-meta .ga-info-row{height:22px;max-width:200px;margin-right:12px;}
-.ga-popup .ga-info-row{flex-direction:row;justify-content:space-between;align-items:center;height:26px;}
-.ga-popup .ga-info-key{color:#39455E;font-size:14px;margin-right:8px;}
-.ga-popup .ga-info-value{color:#202B45;font-size:15px;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;}
+.ga-popup .ga-art-fallback {position:absolute;left:0;right:0;top:0;bottom:0;font-size:32px;-unity-text-align:middle-center;color:#CCAD83;}
+.ga-popup .ga-summary-meta {flex-direction:row;flex-wrap:wrap;margin-top:8px;}
+.ga-popup .ga-summary-meta .ga-info-row {height:22px;max-width:200px;margin-right:12px;}
+.ga-popup .ga-info-row {flex-direction:row;justify-content:space-between;align-items:center;height:26px;}
+.ga-popup .ga-info-key {color:#39455E;font-size:14px;margin-right:8px;}
 .ga-popup .ga-section-title {font-size:17px;-unity-font-style:bold;height:28px;}
-.ga-popup .ga-item-copy{position:absolute;left:110px;right:24px;top:14px;bottom:10px;justify-content:center;}
+.ga-popup .ga-item-copy {position:absolute;left:110px;right:24px;top:14px;bottom:10px;justify-content:center;}
 .ga-popup .ga-item-name {font-size:19px;-unity-font-style:bold;margin-bottom:8px;}
-.ga-popup .ga-hidden{display:none;}
-/* Rename */
-.ga-popup .rename-summary>.ga-pet-name{position:absolute;left:118px;right:20px;top:27px;height:45px;}
-.ga-popup .ga-field-label{position:absolute;left:24px;top:218px;right:24px;height:24px;}
-.ga-popup .ga-rename-input{position:absolute;left:24px;top:249px;width:592px;height:56px;}
+.ga-popup .ga-hidden {display:none;}
 .ga-popup .pets-rename-input {position:absolute;left:15px;right:15px;top:5px;bottom:5px;font-size:20px;max-width:none;margin:0;padding:0;background-color:transparent;border-width:0;}
 .ga-popup .unity-base-text-field__input {background-color:transparent;background-image:none;border-width:0;border-radius:0;color:#202B45;font-size:20px;padding:0;margin:0;}
 .ga-popup .pets-rename-placeholder {position:absolute;left:18px;right:15px;top:0;bottom:0;font-size:20px;color:#39455E;}
-.ga-popup .ga-counter{position:absolute;right:34px;top:314px;height:24px;color:#EDE9E1;font-size:14px;-unity-text-align:middle-right;}
-.ga-popup .ga-rename-error{position:absolute;left:24px;right:24px;top:312px;height:24px;font-size:14px;color:#EDE9E1;}
-.ga-popup .ga-rename-helper{position:absolute;left:24px;right:24px;top:336px;height:40px;font-size:15px;color:#EDE9E1;white-space:normal;}
-.ga-popup .ga-rename-cancel{left:24px;top:388px;width:288px;}
-.ga-popup .ga-rename-save{left:328px;top:388px;width:288px;}
-/* Heal: only feedback contains DisabledReason; no repeated full-resource text. */
-.ga-popup .ga-heal-preview{position:absolute;left:24px;top:218px;width:602px;height:116px;padding:14px 20px;}
-.ga-popup .ga-heal-values{position:absolute;right:20px;top:44px;height:27px;flex-direction:row;}
-.ga-popup .ga-heal-values Label{font-size:15px;margin-left:10px;}
-.ga-popup .ga-heal-track{position:absolute;left:24px;top:58px;width:330px;height:14px;}
-.ga-popup .ga-heal-fill{position:absolute;left:0;top:0;height:100%;width:0;}
-.ga-popup .ga-heal-amount{position:absolute;left:20px;top:85px;right:20px;height:22px;font-size:14px;color:#39455E;}
-.ga-popup .ga-heal-item-title{position:absolute;left:28px;top:352px;right:24px;height:28px;color:#EDE9E1;}
-.ga-popup .ga-heal-item{position:absolute;left:24px;top:388px;width:602px;height:104px;}
-.ga-popup .ga-heal-item>.ga-summary-portrait{width:64px;height:64px;left:16px;top:20px;}
-.ga-popup .ga-heal-item>.ga-item-copy{left:98px;right:120px;}
-.ga-popup .ga-item-count{position:absolute;right:28px;top:25px;width:94px;height:45px;font-size:23px;-unity-text-align:middle-right;}
-.ga-popup .ga-heal-feedback{position:absolute;left:24px;right:24px;top:506px;height:35px;white-space:normal;color:#EDE9E1;font-size:14px;-unity-text-align:middle-center;}
-.ga-popup .ga-heal-cancel {left:24px;top:548px;width:293px;height:55px;}
-.ga-popup .ga-heal-confirm {left:333px;top:548px;width:293px;height:55px;}
-/* Level up */
-.ga-popup .level-summary>.ga-summary-copy{right:458px;}
-.ga-popup .level-summary .ga-summary-meta{flex-direction:column;}
-.ga-popup .level-summary .ga-summary-meta .ga-info-row{height:17px;}
-.ga-popup .level-summary .ga-summary-meta Label{font-size:12px;}
-.ga-popup .ga-level-progress{position:absolute;left:500px;top:12px;right:24px;bottom:10px;}
-.ga-popup .ga-level-pair{height:30px;flex-direction:row;justify-content:flex-end;}
-.ga-popup .ga-level-pair Label{font-size:23px;-unity-font-style:bold;margin-left:8px;}
-.ga-popup .ga-resource-row{height:28px;flex-direction:row;align-items:center;}
-.ga-popup .ga-resource-name{width:42px;font-size:15px;}
-.ga-popup .ga-resource-track{height:14px;flex-grow:1;}
-.ga-popup .ga-resource-fill{height:100%;width:0;}
-.ga-popup .ga-resource-value{width:100px;font-size:14px;-unity-text-align:middle-right;}
-.ga-popup .ga-level-stats{position:absolute;left:24px;top:218px;width:912px;height:240px;padding:10px 20px;}
-.ga-popup .ga-level-stats>.ga-section-title{height:22px;}
-.ga-popup .ga-level-stat-row{height:28px;flex-direction:row;align-items:center;border-bottom-width:1px;border-bottom-color:rgba(117,147,135,.35);}
-.ga-popup .ga-level-stat-key{width:460px;flex-shrink:1;}
-.ga-popup .ga-level-stat-current,.ga-popup .ga-level-stat-next,.ga-popup .ga-level-stat-delta{width:120px;-unity-text-align:middle-center;font-size:17px;}
-.ga-popup .ga-level-stat-arrow{width:55px;-unity-text-align:middle-center;}
-.ga-popup .ga-level-new,.ga-popup .ga-level-evolution{position:absolute;top:472px;width:448px;height:92px;padding:12px 18px;background-color:transparent;background-image:none;border-width:0;}
-.ga-popup .ga-level-new{left:24px;}
-.ga-popup .ga-level-evolution{left:488px;}
-.ga-popup .ga-level-new .level-up-section-title,.ga-popup .ga-level-evolution .level-up-section-title{font-size:18px;height:24px;margin:0;color:#202B45;}
-.ga-popup .ga-level-new .level-up-skill-content,.ga-popup .ga-level-evolution .level-up-evolution-content{height:44px;flex-direction:row;}
-.ga-popup .ga-level-new .level-up-skill-icon,.ga-popup .ga-level-evolution .level-up-evolution-icon{width:32px;height:32px;min-width:0;min-height:0;}
-.ga-popup .ga-level-new .level-up-skill-copy,.ga-popup .ga-level-evolution .level-up-evolution-copy{flex-grow:1;min-width:0;}
-.ga-popup .ga-level-new .level-up-skill-copy Label,.ga-popup .ga-level-evolution .level-up-evolution-copy Label{font-size:12px;white-space:normal;height:auto;max-height:26px;margin:0;}
-.ga-popup .ga-level-new .level-up-skill-description{display:none;}
-.ga-popup .ga-level-evolution .level-up-evolution-arrow{width:20px;font-size:16px;}
-.ga-popup .ga-level-evolution .level-up-evolution-button{position:absolute;right:0;bottom:0;width:100px;height:24px;font-size:11px;color:#202B45;}
-.ga-popup .ga-level-item{position:absolute;left:24px;top:597px;width:550px;height:80px;}
-.ga-popup .ga-level-item>.ga-summary-portrait{width:64px;height:64px;left:6px;top:8px;}
-.ga-popup .ga-level-item>.ga-item-copy{left:86px;top:7px;}
-.ga-popup .ga-level-confirm {left:600px;top:609px;width:328px;height:58px;}
-.ga-popup .ga-level-feedback{position:absolute;left:598px;top:672px;right:26px;height:32px;color:#EDE9E1;font-size:13px;white-space:normal;-unity-text-align:middle-right;}
-/* Details retains all source fields, with extra Codex rows accessible by scrolling. */
-.ga-popup .ga-details-scroll{position:absolute;left:24px;top:92px;width:1032px;height:624px;margin:0;padding:0;}
-.ga-popup .ga-details-scroll>.unity-scroll-view__content-viewport{padding:0;margin:0;}
-.ga-popup .ga-details-summary{position:relative;width:1032px;height:110px;min-height:110px;margin-bottom:16px;}
-.ga-popup .ga-details-summary-copy{position:absolute;left:118px;right:24px;top:12px;bottom:10px;}
-.ga-popup .ga-details-summary-meta{position:absolute;left:0;right:400px;top:40px;height:28px;flex-direction:row;}
-.ga-popup .ga-details-summary-meta .ga-info-row{margin-right:18px;}
-.ga-popup .ga-details-resource{position:absolute;right:0;width:350px;height:24px;top:42px;flex-direction:row;align-items:center;}
-.ga-popup .ga-details-resource-hp{top:70px;}
-.ga-popup .ga-details-resource-track{height:12px;flex-grow:1;margin-left:10px;margin-right:10px;}
-.ga-popup .ga-details-resource-fill{width:0;height:100%;}
-.ga-popup .ga-details-resource Label{font-size:13px;}
-.ga-popup .ga-details-middle{height:258px;min-height:258px;flex-direction:row;margin-bottom:14px;}
-.ga-popup .ga-details-basic{width:504px;height:258px;padding:10px 20px;margin-right:16px;}
-.ga-popup .ga-details-stats{width:512px;height:258px;padding:10px 20px;}
-.ga-popup .ga-details-stat-row{height:25px;flex-direction:row;align-items:center;}
+.ga-popup .ga-heal-values {position:absolute;right:20px;top:44px;height:27px;flex-direction:row;}
+.ga-popup .ga-heal-values Label {font-size:15px;margin-left:10px;}
+.ga-popup .ga-heal-fill {position:absolute;left:0;top:0;height:100%;width:0;}
+.ga-popup .ga-heal-amount {position:absolute;left:20px;top:85px;right:20px;height:22px;font-size:14px;color:#39455E;}
+.ga-popup .ga-heal-item>.ga-summary-portrait {width:64px;height:64px;left:16px;top:20px;}
+.ga-popup .ga-heal-item>.ga-item-copy {left:98px;right:120px;}
+.ga-popup .ga-item-count {position:absolute;right:28px;top:25px;width:94px;height:45px;font-size:23px;-unity-text-align:middle-right;}
+.ga-popup .level-summary>.ga-summary-copy {right:458px;}
+.ga-popup .level-summary .ga-summary-meta {flex-direction:column;}
+.ga-popup .level-summary .ga-summary-meta .ga-info-row {height:17px;}
+.ga-popup .level-summary .ga-summary-meta Label {font-size:12px;}
+.ga-popup .ga-level-progress {position:absolute;left:500px;top:12px;right:24px;bottom:10px;}
+.ga-popup .ga-level-pair {height:30px;flex-direction:row;justify-content:flex-end;}
+.ga-popup .ga-level-pair Label {font-size:23px;-unity-font-style:bold;margin-left:8px;}
+.ga-popup .ga-resource-row {height:28px;flex-direction:row;align-items:center;}
+.ga-popup .ga-resource-name {width:42px;font-size:15px;}
+.ga-popup .ga-resource-track {height:14px;flex-grow:1;}
+.ga-popup .ga-resource-fill {height:100%;width:0;}
+.ga-popup .ga-resource-value {width:100px;font-size:14px;-unity-text-align:middle-right;}
+.ga-popup .ga-level-stats>.ga-section-title {height:22px;}
+.ga-popup .ga-level-stat-key {width:460px;flex-shrink:1;}
+.ga-popup .ga-level-stat-current,.ga-popup .ga-level-stat-next,.ga-popup .ga-level-stat-delta {width:120px;-unity-text-align:middle-center;font-size:17px;}
+.ga-popup .ga-level-stat-arrow {width:55px;-unity-text-align:middle-center;}
+.ga-popup .ga-level-new {left:24px;}
+.ga-popup .ga-level-new .level-up-section-title,.ga-popup .ga-level-evolution .level-up-section-title {font-size:18px;height:24px;margin:0;color:#202B45;}
+.ga-popup .ga-level-new .level-up-skill-content,.ga-popup .ga-level-evolution .level-up-evolution-content {height:44px;flex-direction:row;}
+.ga-popup .ga-level-new .level-up-skill-icon,.ga-popup .ga-level-evolution .level-up-evolution-icon {width:32px;height:32px;min-width:0;min-height:0;}
+.ga-popup .ga-level-new .level-up-skill-copy,.ga-popup .ga-level-evolution .level-up-evolution-copy {flex-grow:1;min-width:0;}
+.ga-popup .ga-level-new .level-up-skill-description {display:none;}
+.ga-popup .ga-level-evolution .level-up-evolution-arrow {width:20px;font-size:16px;}
+.ga-popup .ga-level-evolution .level-up-evolution-button {position:absolute;right:0;bottom:0;width:100px;height:24px;font-size:11px;color:#202B45;}
+.ga-popup .ga-level-item>.ga-summary-portrait {width:64px;height:64px;left:6px;top:8px;}
+.ga-popup .ga-level-item>.ga-item-copy {left:86px;top:7px;}
+.ga-popup .ga-details-scroll>.unity-scroll-view__content-viewport {padding:0;margin:0;}
+.ga-popup .ga-details-summary-meta .ga-info-row {margin-right:18px;}
+.ga-popup .ga-details-resource-fill {width:0;height:100%;}
+.ga-popup .ga-details-resource Label {font-size:13px;}
+.ga-popup .ga-details-stat-row {height:25px;flex-direction:row;align-items:center;}
 .ga-popup .pet-detail-stat-key {width:125px;font-size:14px;color:#39455E;}
-.ga-popup .ga-detail-stat-track{height:11px;flex-grow:1;}
-.ga-popup .ga-detail-stat-fill{height:100%;width:0;}
+.ga-popup .ga-detail-stat-track {height:11px;flex-grow:1;}
+.ga-popup .ga-detail-stat-fill {height:100%;width:0;}
 .ga-popup .pet-detail-stat-value {width:48px;font-size:15px;-unity-text-align:middle-right;}
-.ga-popup .ga-details-advanced{height:93px;min-height:93px;padding:10px 20px;margin-bottom:13px;flex-direction:row;flex-wrap:wrap;}
-.ga-popup .ga-details-advanced>.ga-section-title{width:100%;height:26px;}
-.ga-popup .ga-details-advanced>.ga-info-row{width:49%;height:22px;padding-right:15px;}
-.ga-popup .ga-details-advanced Label{font-size:13px;}
-.ga-popup .ga-details-skills{height:120px;min-height:120px;padding:10px 20px;margin-bottom:14px;}
-.ga-popup .ga-details-skills .pet-details-skills-row{height:74px;flex-direction:row;}
-.ga-popup .ga-details-skills .pet-details-skill-card{width:25%;height:70px;min-width:0;margin:0;padding:6px;flex-direction:row;background-color:transparent;border-width:0;}
-.ga-popup .ga-details-skills .pet-details-skill-icon{width:56px;height:56px;min-width:0;min-height:0;margin-right:12px;background-color:transparent;}
-.ga-popup .ga-details-skills .pet-details-skill-text{min-width:0;flex-grow:1;}
-.ga-popup .ga-details-skills Label{font-size:13px;overflow:hidden;text-overflow:ellipsis;}
-.ga-popup .ga-details-codex{padding:16px 20px;min-height:180px;background-color:transparent;border-width:0;}
-.ga-popup .ga-details-codex .pet-detail-section-title{font-size:17px;height:28px;color:#202B45;}
-.ga-popup .ga-details-codex .pet-details-codex-content{flex-direction:row;}
-.ga-popup .ga-details-codex Label{font-size:13px;color:#39455E;white-space:normal;}
-.ga-popup .ga-details-codex .pet-details-codex-status{width:200px;}
-.ga-popup .ga-details-codex .pet-details-codex-description{width:240px;}
-.ga-popup .ga-details-codex .pet-details-evolution-column{width:260px;}
-.ga-popup .ga-details-codex .pet-details-evolution-flow{flex-direction:row;height:70px;}
-.ga-popup .ga-details-codex .pet-details-evolution-icon{width:42px;height:42px;}
-.ga-popup .ga-details-codex .pet-details-evolution-requirements{flex-grow:1;}
-.ga-popup .ga-details-codex .pet-details-evolution-button{display:none;}
-
+.ga-popup .ga-details-advanced>.ga-section-title {width:100%;height:26px;}
+.ga-popup .ga-details-advanced>.ga-info-row {width:49%;height:22px;padding-right:15px;}
+.ga-popup .ga-details-advanced Label {font-size:13px;}
+.ga-popup .ga-details-skills .pet-details-skills-row {height:74px;flex-direction:row;}
+.ga-popup .ga-details-skills .pet-details-skill-card {width:25%;height:70px;min-width:0;margin:0;padding:6px;flex-direction:row;background-color:transparent;border-width:0;}
+.ga-popup .ga-details-skills .pet-details-skill-icon {width:56px;height:56px;min-width:0;min-height:0;margin-right:12px;background-color:transparent;}
+.ga-popup .ga-details-skills .pet-details-skill-text {min-width:0;flex-grow:1;}
+.ga-popup .ga-details-skills Label {font-size:13px;overflow:hidden;text-overflow:ellipsis;}
+.ga-popup .ga-details-codex {padding:16px 20px;min-height:180px;background-color:transparent;border-width:0;}
+.ga-popup .ga-details-codex .pet-detail-section-title {font-size:17px;height:28px;color:#202B45;}
+.ga-popup .ga-details-codex .pet-details-codex-content {flex-direction:row;}
+.ga-popup .ga-details-codex Label {font-size:13px;color:#39455E;white-space:normal;}
+.ga-popup .ga-details-codex .pet-details-codex-status {width:200px;}
+.ga-popup .ga-details-codex .pet-details-codex-description {width:240px;}
+.ga-popup .ga-details-codex .pet-details-evolution-column {width:260px;}
+.ga-popup .ga-details-codex .pet-details-evolution-flow {flex-direction:row;height:70px;}
+.ga-popup .ga-details-codex .pet-details-evolution-icon {width:42px;height:42px;}
+.ga-popup .ga-details-codex .pet-details-evolution-requirements {flex-grow:1;}
+.ga-popup .ga-details-codex .pet-details-evolution-button {display:none;}
 .ga-popup .ga-button .angular-button-caption {font-size:21px;-unity-font-style:bold;color:#EDE9E1;-unity-text-align:middle-center;}
 .ga-popup .ga-button:disabled .angular-button-caption {color:#202B45;}
 .ga-popup .ga-close .angular-button-caption {font-size:24px;}
-
 .ga-popup .ga-details-scroll .unity-scroll-view__vertical-scroller {position:absolute;right:-10px;top:0;bottom:0;width:6px;}
 .ga-popup .ga-details-scroll .unity-scroller__low-button, .ga-popup .ga-details-scroll .unity-scroller__high-button {display:none;}
 .ga-popup .ga-details-scroll .unity-base-slider__tracker {background-color:#8996B0;border-width:0;}
 .ga-popup .ga-details-scroll .unity-base-slider__dragger {background-color:#CCAD83;border-width:0;border-radius:0;}
 .ga-popup .pet-details-skill-fallback {width:28px;height:28px;align-self:center;color:transparent;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#202B45;}
-/* LATEST popup layout; fixed summary/header, scroll body only. */
-.ga-overlay {background-color:rgba(32,43,69,.58);}
-.ga-popup .ga-modal-header {left:12px;right:12px;top:12px;height:64px;}
-.ga-popup .ga-summary {top:90px;height:96px;}
-.ga-popup .ga-summary-portrait {top:10px;width:76px;height:76px;}
-.ga-popup .ga-summary-copy {left:106px;}
-.ga-popup .rename-summary>.ga-pet-name {left:106px;top:20px;}
-.ga-popup .ga-field-label {top:190px;}
-.ga-popup .ga-rename-input {top:222px;width:656px;}
-.ga-popup .ga-counter {top:282px;right:24px;}
-.ga-popup .ga-rename-error {top:309px;height:32px;}
-.ga-popup .ga-rename-helper {top:309px;height:32px;}
-.ga-popup .ga-rename-cancel {top:356px;width:320px;height:48px;}
-.ga-popup .ga-rename-save {left:360px;top:356px;width:320px;height:48px;}
-.ga-popup .ga-heal-preview {top:202px;width:656px;height:112px;}
-.ga-popup .ga-heal-track {width:400px;}
-.ga-popup .ga-heal-item-title {top:332px;}
-.ga-popup .ga-heal-item {top:362px;width:656px;height:96px;}
-.ga-popup .ga-heal-feedback {top:466px;height:28px;}
-.ga-popup .ga-heal-cancel {left:24px;top:498px;width:320px;height:46px;}
-.ga-popup .ga-heal-confirm {left:360px;top:498px;width:320px;height:46px;}
-.ga-popup .ga-level-stats {top:202px;width:952px;height:226px;}
-.ga-popup .ga-level-stat-row {height:26px;}
-.ga-popup .ga-level-new,.ga-popup .ga-level-evolution {top:444px;width:468px;height:88px;}
+.ga-overlay {position:absolute;left:0;right:0;top:0;bottom:0;display:none;align-items:center;justify-content:center;background-color:rgba(32,43,69,.58);padding:0;margin:0;border-width:0;}
+.ga-popup .ga-modal-header {position:absolute;left:12px;right:12px;top:12px;height:64px;}
+.ga-popup .ga-summary {position:absolute;left:24px;right:24px;top:90px;height:96px;}
+.ga-popup .ga-summary-portrait {position:absolute;left:12px;top:10px;width:76px;height:76px;background-color:transparent;background-image:none;}
+.ga-popup .ga-summary-copy {position:absolute;left:106px;right:20px;top:16px;bottom:12px;}
+.ga-popup .rename-summary>.ga-pet-name {position:absolute;left:106px;right:20px;top:20px;height:45px;}
+.ga-popup .ga-heal-preview {position:absolute;left:24px;top:202px;width:656px;height:112px;padding:14px 20px;}
+.ga-popup .ga-heal-track {position:absolute;left:24px;top:58px;width:400px;height:14px;}
+.ga-popup .ga-heal-item-title {position:absolute;left:28px;top:332px;right:24px;height:28px;color:#EDE9E1;}
+.ga-popup .ga-heal-item {position:absolute;left:24px;top:362px;width:656px;height:96px;}
+.ga-popup .ga-level-stats {position:absolute;left:24px;top:202px;width:952px;height:226px;padding:10px 20px;}
+.ga-popup .ga-level-stat-row {height:26px;flex-direction:row;align-items:center;border-bottom-width:1px;border-bottom-color:rgba(117,147,135,.35);}
 .ga-popup .ga-level-evolution {left:508px;}
-.ga-popup .ga-level-item {top:566px;height:92px;}
-.ga-popup .ga-level-confirm {left:596px;top:582px;width:380px;height:60px;}
-.ga-popup .ga-level-feedback {left:596px;top:650px;}
-.ga-popup .ga-details-summary {position:absolute;left:24px;top:90px;width:1056px;height:96px;min-height:96px;margin:0;}
-.ga-popup .ga-details-scroll {left:24px;top:202px;width:1056px;height:514px;}
-.ga-popup .ga-details-middle {height:266px;min-height:266px;margin-bottom:16px;}
-.ga-popup .ga-details-basic {width:514px;height:266px;}
-.ga-popup .ga-details-stats {width:526px;height:266px;}
-.ga-popup .ga-details-advanced {height:90px;min-height:90px;margin-bottom:16px;}
-.ga-popup .ga-details-skills {height:126px;min-height:126px;}
-.ga-popup .ga-details-summary-copy {left:106px;}
-.ga-popup .ga-details-resource {top:25px;width:380px;}
+.ga-popup .ga-details-summary {position:absolute;width:1056px;height:96px;min-height:96px;margin-bottom:16px;left:24px;top:90px;margin:0;}
+.ga-popup .ga-details-scroll {position:absolute;left:24px;top:202px;width:1056px;height:514px;margin:0;padding:0;}
+.ga-popup .ga-details-middle {height:266px;min-height:266px;flex-direction:row;margin-bottom:16px;}
+.ga-popup .ga-details-basic {width:514px;height:266px;padding:10px 20px;margin-right:16px;}
+.ga-popup .ga-details-stats {width:526px;height:266px;padding:10px 20px;}
+.ga-popup .ga-details-advanced {height:90px;min-height:90px;padding:10px 20px;margin-bottom:16px;flex-direction:row;flex-wrap:wrap;}
+.ga-popup .ga-details-skills {height:126px;min-height:126px;padding:10px 20px;margin-bottom:14px;}
+.ga-popup .ga-details-summary-copy {position:absolute;left:106px;right:24px;top:12px;bottom:10px;}
+.ga-popup .ga-details-resource {position:absolute;right:0;width:380px;height:24px;top:25px;flex-direction:row;align-items:center;}
 .ga-popup .ga-details-resource-hp {top:53px;}
-.ga-popup .ga-details-resource-track {min-width:130px;}
-.ga-popup .ga-details-summary-meta {right:400px;}
+.ga-popup .ga-details-resource-track {height:12px;flex-grow:1;margin-left:10px;margin-right:10px;min-width:130px;}
+.ga-popup .ga-details-summary-meta {position:absolute;left:0;right:400px;top:40px;height:28px;flex-direction:row;}
 .ga-popup .rename-summary {height:88px;}
+.ga-popup .ga-pet-name {font-size:25px;-unity-font-style:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.ga-popup .ga-info-value {color:#202B45;font-size:15px;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+.ga-popup .ga-field-label {position:absolute;left:24px;top:186px;right:24px;height:24px;}
+.ga-popup .ga-rename-input {position:absolute;left:24px;top:214px;width:656px;height:56px;}
+.ga-popup .ga-counter {position:absolute;right:24px;top:274px;height:24px;color:#EDE9E1;font-size:16px;-unity-text-align:middle-right;}
+.ga-popup .ga-rename-error {position:absolute;left:24px;right:24px;top:302px;height:30px;font-size:16px;color:#EDE9E1;white-space:normal;}
+.ga-popup .ga-rename-helper {position:absolute;left:24px;right:24px;top:334px;height:34px;font-size:16px;color:#EDE9E1;white-space:normal;}
+.ga-popup .ga-rename-cancel {left:24px;top:386px;width:320px;height:52px;}
+.ga-popup .ga-rename-save {left:360px;top:386px;width:320px;height:52px;}
+.ga-popup .ga-heal-feedback {position:absolute;left:24px;right:24px;top:466px;height:42px;white-space:normal;color:#EDE9E1;font-size:16px;-unity-text-align:middle-center;}
+.ga-popup .ga-heal-cancel {left:24px;top:516px;width:320px;height:48px;}
+.ga-popup .ga-heal-confirm {left:360px;top:516px;width:320px;height:48px;}
+.ga-popup .ga-heal-item .ga-item-name {white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ga-popup .ga-level-item {position:absolute;left:24px;top:556px;width:552px;height:116px;}
+.ga-popup .ga-level-confirm {left:596px;top:572px;width:380px;height:54px;}
+.ga-popup .ga-level-feedback {position:absolute;left:596px;top:634px;right:26px;height:64px;color:#EDE9E1;font-size:16px;white-space:normal;-unity-text-align:middle-right;width:380px;}
+.ga-popup .ga-level-new,.ga-popup .ga-level-evolution {position:absolute;top:444px;width:468px;height:96px;padding:12px 18px;background-color:transparent;background-image:none;border-width:0;}
+.ga-popup .ga-level-new .level-up-skill-copy Label,.ga-popup .ga-level-evolution .level-up-evolution-copy Label {font-size:16px;white-space:normal;height:auto;max-height:44px;margin:0;}
+.ga-popup .ga-details-scroll Label {font-size:16px;}
+.ga-popup .ga-details-scroll .ga-section-title {font-size:20px;}

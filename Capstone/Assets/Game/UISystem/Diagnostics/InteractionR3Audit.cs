@@ -28,7 +28,7 @@ namespace Capstone.Game.UISystem {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]static void Init(){
             var args=Environment.GetCommandLineArgs();string root=Arg(args,"--r3-audit");
 #if UNITY_EDITOR
-            if(root==null&&File.Exists("Temp/R3Audit.run"))root=Path.GetFullPath("../artifacts/ui-r3-fixes-2026-10-20/editor");
+            if(root==null&&File.Exists("Temp/R3Audit.run"))root=Path.GetFullPath(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-r3-fixes-2026-10-20/editor");
 #endif
             if(root==null)return;output=Path.GetFullPath(root);Directory.CreateDirectory(output);manual=args.Contains("--r3-manual");
 #if UNITY_EDITOR
@@ -150,7 +150,7 @@ namespace Capstone.Game.UISystem {
             foreach(string id in new[]{"pets-rename-button","pets-favorite-button","pets-tab-overview","pets-tab-skills","pets-tab-growth"}){
                 var b=ui.Q<Button>(id);if(b==null)continue;foreach(var pair in new[]{("button",(VisualElement)b),("icon",b.Q(className:"companion-icon"))}){var e=pair.Item2;if(e==null)continue;var r=e.worldBound;var s=e.resolvedStyle;motion.WriteLine(FormattableString.Invariant($"{Time.frameCount},{Time.realtimeSinceStartup},{id},{pair.Item1},{r.x},{r.y},{r.width},{r.height},{s.marginLeft},{s.paddingLeft},{s.borderLeftWidth},{b==ui.focusController.focusedElement},{InteractionFeedback.KeyboardNavigation}"));}
             }
-            if(frame++%60==0){motion.Flush();ScreenCapture.CaptureScreenshot(output+"/native-"+frame.ToString("D6")+".png");}
+            if(frame++%60==0){motion.Flush();ScreenCapture.CaptureScreenshot(output+"/native-"+((frame/60)%QaArtifactPaths.MaxRetainedFrames).ToString("D2")+".png");}
             if(Time.realtimeSinceStartup>end||File.Exists(output+"/stop")){motion.Dispose();motion=null;if(!Application.isEditor)Application.Quit();}
         }
         void OnDestroy(){motion?.Dispose();}

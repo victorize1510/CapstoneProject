@@ -8,22 +8,24 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.UISystem {
     /// <summary>Temporary visual suppression. Never disables gameplay components or changes HUD preferences.</summary>
     public sealed class TrainerMenuPresentation {
-        readonly List<(CanvasGroup group, float alpha, bool interactable, bool raycasts)> groups = new List<(CanvasGroup,float,bool,bool)>();
+        readonly List<(CanvasGroup group, float alpha, bool interactable, bool raycasts,bool ownsAlpha)> groups = new List<(CanvasGroup,float,bool,bool,bool)>();
         readonly List<(Renderer renderer, bool wasOff)> labels = new List<(Renderer,bool)>();
         readonly List<(VisualElement root, StyleEnum<Visibility> visibility)> trackers = new List<(VisualElement,StyleEnum<Visibility>)>();
-        bool active;
+        bool active,keepHud;
         public bool IsSuppressed => active;
-        public void SetMenuVisible(bool visible) {
-            if (active == visible) return;
+        public void SetMenuVisible(bool visible,bool keepGameplayHud=false) {
+            if (active == visible&&(!visible||keepHud==keepGameplayHud)) return;
+            if(active)Restore();keepHud=keepGameplayHud;
             active = visible;
             if (!visible) { Restore(); return; }
             foreach (var hud in Object.FindObjectsByType<GameplayHudController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                Hide(hud.PresentationRoot);
+                Hide(hud.PresentationRoot,keepGameplayHud);
             foreach (var canvas in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
                 if (canvas.renderMode == RenderMode.WorldSpace) Hide(canvas.transform);
             foreach (var label in Object.FindObjectsByType<TextMesh>(FindObjectsInactive.Include, FindObjectsSortMode.None)) HideLabel(label.GetComponent<Renderer>());
             foreach (var label in Object.FindObjectsByType<TMPro.TextMeshPro>(FindObjectsInactive.Include, FindObjectsSortMode.None)) HideLabel(label.GetComponent<Renderer>());
             foreach (var tracker in Object.FindObjectsByType<QuestTrackerHudController>(FindObjectsInactive.Include, FindObjectsSortMode.None)) {
+                if(keepGameplayHud)continue;
                 var doc = tracker.GetComponent<UIDocument>();
                 var root = doc != null ? doc.rootVisualElement : null;
                 if (root == null) continue;
@@ -32,17 +34,18 @@ namespace Capstone.Game.UISystem {
             // The save service still owns its timer and preference. Suppress only its
             // gameplay indicator while these menus own the screen.
             foreach(var doc in Object.FindObjectsByType<UIDocument>(FindObjectsInactive.Include,FindObjectsSortMode.None)){
+                if(keepGameplayHud)continue;
                 var indicator=doc.rootVisualElement?.Q("game-save-indicator");if(indicator==null)continue;
                 trackers.Add((indicator,indicator.style.visibility));indicator.style.visibility=Visibility.Hidden;
             }
         }
-        void Hide(Transform root) {
+        void Hide(Transform root,bool keepVisible=false) {
             if (root == null) return;
             var group = root.GetComponent<CanvasGroup>();
             if (group == null) { group = root.gameObject.AddComponent<CanvasGroup>(); group.hideFlags = HideFlags.DontSave; }
             if (groups.Exists(x => x.group == group)) return;
-            groups.Add((group, group.alpha, group.interactable, group.blocksRaycasts));
-            group.alpha = 0; group.interactable = false; group.blocksRaycasts = false;
+            groups.Add((group, group.alpha, group.interactable, group.blocksRaycasts,!keepVisible));
+            if(!keepVisible)group.alpha = 0; group.interactable = false; group.blocksRaycasts = false;
         }
         void HideLabel(Renderer renderer) {
             if (renderer == null || labels.Exists(x => x.renderer == renderer)) return;
@@ -50,7 +53,7 @@ namespace Capstone.Game.UISystem {
         }
         void Restore() {
             foreach (var state in groups) if (state.group != null) {
-                state.group.alpha = state.alpha; state.group.interactable = state.interactable; state.group.blocksRaycasts = state.raycasts;
+                if(state.ownsAlpha)state.group.alpha = state.alpha; state.group.interactable = state.interactable; state.group.blocksRaycasts = state.raycasts;
             }
             foreach (var state in labels) if (state.renderer != null) state.renderer.forceRenderingOff = state.wasOff;
             foreach (var state in trackers) state.root.style.visibility = state.visibility;

@@ -16,7 +16,7 @@ namespace Capstone.Game.UISystem.Editor {
         static void Poll(){
             if(running||EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||!File.Exists(Request))return;
             string request=File.ReadAllText(Request).Trim();string stage=request=="before"?"before":request=="mono"?"after-mono":"after";File.Delete(Request);running=true;
-            string output=Path.GetFullPath("../artifacts/ui-r3-fixes-2026-10-20/builds/"+stage);Directory.CreateDirectory(output);
+            string output=Path.GetFullPath(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-polish-2026-10-22/builds/"+stage);Directory.CreateDirectory(output);
             var scene=SceneManager.GetActiveScene();string source=scene.path;bool dirty=scene.isDirty;
             var target=UnityEditor.Build.NamedBuildTarget.Standalone;var backend=PlayerSettings.GetScriptingBackend(target);
             try {
@@ -41,7 +41,7 @@ namespace Capstone.Game.UISystem.Editor {
     static class InteractionR3AuditEditor {
         const string Request="Temp/R3AuditEditor.request",Own="R3AuditEditor.Own";
         static bool configured;
-        static readonly string Root=Path.GetFullPath("../artifacts/ui-r3-fixes-2026-10-20/editor");
+        static readonly string Root=Path.GetFullPath(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-r3-fixes-2026-10-20/editor");
         [InitializeOnLoadMethod]static void Init(){EditorApplication.update-=Poll;EditorApplication.update+=Poll;}
         static void Poll(){
             if(EditorApplication.isCompiling||EditorApplication.isUpdating)return;

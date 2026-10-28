@@ -104,8 +104,8 @@ namespace Capstone.Game.Inventory.Editor {
             try { File.Delete(request); }
             catch (IOException) { return; }
             bool result=DeliverSamples();
-            Directory.CreateDirectory("../artifacts/panel-consistency");
-            File.WriteAllText("../artifacts/panel-consistency/sample-delivery.txt",(result?"PASS recovery samples delivered and saved":"FAIL recovery samples delivery; existing bag preserved")+"\n"+deliveryDetails);
+            Directory.CreateDirectory(Capstone.Game.UISystem.QaArtifactPaths.Root + "panel-consistency");
+            File.WriteAllText(Capstone.Game.UISystem.QaArtifactPaths.Root + "panel-consistency/sample-delivery.txt",(result?"PASS recovery samples delivered and saved":"FAIL recovery samples delivery; existing bag preserved")+"\n"+deliveryDetails);
         }
     }
 }

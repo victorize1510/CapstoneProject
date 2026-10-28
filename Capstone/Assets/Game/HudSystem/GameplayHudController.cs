@@ -192,7 +192,7 @@ namespace Capstone.Game.HudSystem {
             Text active = V.Text(badge.transform, "Label", "ACTIVE", 17, TextAnchor.MiddleCenter); active.color = V.Paper; V.Stretch(active.rectTransform);
             petName = V.Text(panel.transform, "PetName", "No Pet", 30); V.Top(petName.rectTransform, 178, 15, 340, 40);
             petName.resizeTextForBestFit = true; petName.resizeTextMinSize = 22; petName.resizeTextMaxSize = 30;
-            petLevel = V.Text(panel.transform, "Level", "Lv. —", 27, TextAnchor.MiddleRight); V.Top(petLevel.rectTransform, 526, 15, 112, 40);
+            petLevel = V.Text(panel.transform, "Level", "Cấp —", 27, TextAnchor.MiddleRight); V.Top(petLevel.rectTransform, 526, 15, 112, 40);
             Text hpLabel = V.Text(panel.transform, "HPLabel", "HP", 21); V.Top(hpLabel.rectTransform, 180, 64, 42, 28);
             hpFill = V.Bar(panel.transform, "HPBar", V.Sage, 230, 69, 246);
             hpText = V.Text(panel.transform, "HP", "— / —", 23, TextAnchor.MiddleRight); V.Top(hpText.rectTransform, 487, 62, 151, 32);
@@ -253,7 +253,7 @@ namespace Capstone.Game.HudSystem {
             if (root == null || petName == null) return;
             PetStatusHudData status = Provider != null ? Provider.GetSelectedPetStatus() : default;
             petName.text = status.hasPet ? status.displayName : "No Pet";
-            petLevel.text = status.hasPet && status.level > 0 ? "Lv. " + status.level : "Lv. —";
+            petLevel.text = status.hasPet && status.level > 0 ? "Cấp " + status.level : "Cấp —";
             hpText.text = Amount(status.health, status.maxHealth); mpText.text = Amount(status.energy, status.maxEnergy);
             V.Icon(portrait, status.icon); portraitEmpty.gameObject.SetActive(status.icon == null);
             SyncActiveBadge(); V.Fill(hpFill, status.HealthPercent); V.Fill(mpFill, status.EnergyPercent);
@@ -277,7 +277,9 @@ namespace Capstone.Game.HudSystem {
         }
         void SyncVisibility() {
             if (root == null) return;
-            bool skillsVisible = PetSkillsAvailable;
+            // Keep the four bindings visible while the pet is withdrawn or spawning.
+            // RefreshSkills owns availability; hiding the whole bar loses that feedback.
+            bool skillsVisible = true;
             if (skillRegion != null && skillRegion.gameObject.activeSelf != skillsVisible) {
                 RefreshSkills();
                 skillRegion.gameObject.SetActive(skillsVisible);

@@ -20,13 +20,10 @@
         <ga:AngularSurface name="pets-selected-portrait" class="companion-large-portrait ga-portrait ga-portrait" picking-mode="Ignore" />
         <ui:Label name="pets-selected-portrait-fallback" text="Chưa có ảnh 2D" class="companion-missing-art" />
         <ui:VisualElement class="companion-mode">
-          <ga:AngularButton name="pets-mode-2d" class="companion-button " shape="parallel" role="primary">
-            <ui:VisualElement class="companion-icon ci-illustration " picking-mode="Ignore" />
-            <ui:Label text="2D" />
-          </ga:AngularButton>
-          <ga:AngularButton name="pets-mode-3d" class="companion-button " shape="parallel" role="primary">
-            <ui:VisualElement class="companion-icon ci-view3d " picking-mode="Ignore" />
-            <ui:Label text="3D" />
+          <ga:AngularButton name="pets-mode-toggle" class="companion-button companion-preview-toggle" shape="parallel" role="primary">
+            <ui:VisualElement name="pets-preview-mode-icon" class="companion-icon ci-illustration" picking-mode="Ignore" />
+            <ui:Label name="pets-preview-mode-text" text="2D" picking-mode="Ignore" />
+            <ui:Label text="⇄" class="companion-preview-switch" picking-mode="Ignore" />
           </ga:AngularButton>
         </ui:VisualElement>
       </ui:VisualElement>
@@ -58,7 +55,6 @@
               <ui:VisualElement class="companion-icon ci-favorite " picking-mode="Ignore" />
               <ui:Label text="" />
             </ga:AngularButton>
-            <ui:Label name="pets-summoned-badge" text="Đang xuất chiến" class="companion-summoned" />
           </ui:VisualElement>
           <ui:VisualElement class="companion-meta">
             <ui:Label name="pets-selected-level" text="Lv. —" />
@@ -165,6 +161,7 @@
               <ui:Label text="Chi tiết" />
             </ga:AngularButton>
           </ui:VisualElement>
+          <ui:VisualElement name="companion-footer" class="companion-footer">
           <ui:VisualElement name="companion-actions" class="companion-actions">
             <ga:AngularButton name="pets-level-up-button" class="companion-button companion-accent" shape="parallel" role="primary">
               <ui:VisualElement class="companion-icon ci-upgrade " picking-mode="Ignore" />
@@ -184,6 +181,7 @@
             <ui:VisualElement class="companion-icon ci-details " picking-mode="Ignore" />
             <ui:Label text="Thông tin thú" />
           </ga:AngularButton>
+          </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="pets-tab-body-skills" class="companion-tab-body companion-skills-host" />
         <ui:ScrollView name="pets-tab-body-growth" class="companion-tab-body companion-growth" horizontal-scroller-visibility="Hidden">
@@ -264,7 +262,7 @@
         <ui:Label name="" text="Tên mới" class="ga-field-label" />
         <ga:AngularSurface class="ga-rename-input" role="raised" name="pets-rename-input-shell">
           <ui:TextField name="pets-rename-input" value="" class="pets-rename-input" />
-          <ui:Label name="pets-rename-placeholder" text="Nhập tên mới cho thú…" class="pets-rename-placeholder" />
+          <ui:Label name="pets-rename-placeholder" text="Nhập tên mới cho thú…" class="pets-rename-placeholder" picking-mode="Ignore" />
         </ga:AngularSurface>
         <ui:Label name="pets-rename-counter" text="0 / 16" class="ga-counter" />
         <ui:Label name="pets-rename-error" text="" class="ga-rename-error" />

@@ -173,6 +173,8 @@ namespace Capstone.Game.UISystem {
                     : CurrentMode == GameInputMode.WorldMap ? mapSystem?.GetComponent<Capstone.Game.MapSystem.UI.WorldMapUIController>()?.NavigationRoot : panel;
                 MenuKeyboardNavigation.Advance(navigationRoot, reverse); return true;
             }
+            // The Quest journal reserves Q for its existing previous-tab callback.
+            if (key == KeyCode.Q && inventory != null && inventory.IsQuestSectionOpen) return false;
             if (key == inventoryKey && inventory != null && inventory.IsBagSectionOpen
                 || key == questKey && inventory != null && inventory.IsQuestSectionOpen
                 || key == petsKey && inventory != null && inventory.IsPetsSectionOpen
@@ -726,8 +728,8 @@ namespace Capstone.Game.UISystem {
         }
 
         void SetInputMode(GameInputMode mode) {
-            menuPresentation.SetMenuVisible(IsMenuOpen);
-            bool showMinimap = mode == GameInputMode.Gameplay;
+            menuPresentation.SetMenuVisible(IsMenuOpen,true);
+            bool showMinimap = mode == GameInputMode.Gameplay || IsMenuOpen;
             if (inputModeApplied && CurrentMode == mode && minimapPresentationApplied == showMinimap) return;
             inputModeApplied = true;
             minimapPresentationApplied = showMinimap;

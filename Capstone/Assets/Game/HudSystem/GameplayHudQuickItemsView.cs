@@ -1,10 +1,12 @@
 using System;
+using System.Linq;
 using Capstone.Game.Inventory;
 using Capstone.Game.SaveSystem;
 using UnityEngine;
 using UnityEngine.UI;
 using V = Capstone.Game.HudSystem.GameplayHudVisuals;
 using UITK = UnityEngine.UIElements;
+using Capstone.Game.Inventory.Bag;
 
 namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
@@ -146,19 +148,36 @@ namespace Capstone.Game.HudSystem {
             assignmentOverlay = new UITK.VisualElement { name = "quick-item-assignment", userData = this };
             assignmentOverlay.AddToClassList("quick-assignment-overlay");
             assignmentOverlay.AddToClassList("menu-theme");
-            var panel = new UITK.VisualElement(); panel.AddToClassList("quick-assignment-card");
+            var panel = new UITK.VisualElement { name = "quick-assignment-panel" }; panel.AddToClassList("quick-assignment-card");
+            assignmentOverlay.Add(panel);
+            BagPresentation.Modal(assignmentOverlay, panel, "popup-assignment", 792, 568);
+            var header = new BagSurface { Kind = "action-primary" }; BagPresentation.Place(header, 12, 12, 768, 56); panel.Add(header);
             var title = new UITK.Label("CHỌN PHÍM TẮT"); title.AddToClassList("quick-assignment-title"); panel.Add(title);
+            title.AddToClassList("bag-modal-title"); title.style.unityFontDefinition=UITK.FontDefinition.FromFont(Capstone.Game.UISystem.TrainerMenuArt.Serif); BagPresentation.Place(title,24,12,744,56);
+            var itemSurface = new BagSurface { Kind = "detail-art" }; BagPresentation.Place(itemSurface,24,88,744,96);panel.Add(itemSurface);
+            var icon = new UITK.VisualElement();icon.style.backgroundImage=new UITK.StyleBackground(request.Item.Icon);icon.style.backgroundSize=new UITK.BackgroundSize(UITK.BackgroundSizeType.Contain);BagPresentation.Place(icon,32,92,80,88);panel.Add(icon);
             var name = new UITK.Label(request.Item.Name); name.AddToClassList("quick-assignment-item"); panel.Add(name);
+            name.AddToClassList("bag-modal-item-name");BagPresentation.Place(name,124,104,620,38);
+            var owned = new UITK.Label("Sở hữu: "+request.Item.Quantity);BagPresentation.Place(owned,124,148,620,28);panel.Add(owned);
             for (int i = 0; i < 2; i++) {
                 int index = i;
                 string key = Key(i).ToString().ToUpperInvariant();
-                var button = new UITK.Button(() => Assign(index)) { name="quick-assignment-"+key, text=key };
+                var button = new BagButton(() => Assign(index)) { name="quick-assignment-"+key, Kind="quick-choice" };
                 button.AddToClassList("quick-assignment-choice"); button.tooltip="Gán vật phẩm vào phím "+key; panel.Add(button);
+                BagPresentation.Place(button,24+i*380,220,364,140);
+                string currentId=inventory.GetQuickItemId(index);var current=inventory.GetItems().FirstOrDefault(s=>string.Equals(s.ItemId,currentId,StringComparison.OrdinalIgnoreCase));
+                var currentName=new UITK.Label(current?.Name??"Chưa gán"){pickingMode=UITK.PickingMode.Ignore};BagPresentation.Place(currentName,88,30,260,30);button.Add(currentName);
+                var keyLabel=new UITK.Label(key){pickingMode=UITK.PickingMode.Ignore};BagPresentation.Place(keyLabel,16,12,32,28);button.Add(keyLabel);
+                var currentIcon=new UITK.VisualElement{pickingMode=UITK.PickingMode.Ignore};currentIcon.style.backgroundImage=new UITK.StyleBackground(current?.Icon);currentIcon.style.backgroundSize=new UITK.BackgroundSize(UITK.BackgroundSizeType.Contain);BagPresentation.Place(currentIcon,16,54,64,64);button.Add(currentIcon);
+                var next=new UITK.Label("→ "+request.Item.Name){pickingMode=UITK.PickingMode.Ignore};BagPresentation.Place(next,88,68,260,28);button.Add(next);
+                var state=new UITK.Label(string.Equals(currentId,request.Item.ItemId,StringComparison.OrdinalIgnoreCase)?"Đang gán vật phẩm này":"Thay vật phẩm hiện tại"){pickingMode=UITK.PickingMode.Ignore};BagPresentation.Place(state,16,108,332,24);button.Add(state);
             }
-            panel.Add(new UITK.Label("Nhấn R/T hoặc chọn nút. Esc để hủy.") { name="quick-assignment-hint" });
+            var hint=new UITK.Label("Chọn R/T sẽ lưu ngay; gán không tiêu hao vật phẩm.\nR/T hoặc click ô · Esc để hủy."){name="quick-assignment-hint"};hint.AddToClassList("bag-modal-note");BagPresentation.Place(hint,24,390,744,64);panel.Add(hint);
             assignmentFeedback = new UITK.Label(); assignmentFeedback.AddToClassList("quick-assignment-feedback"); panel.Add(assignmentFeedback);
-            panel.Add(new UITK.Button(Capstone.Game.UISystem.PlayerActionGate.Guard(this, "assignment-cancel", CloseAssignment)) { text = "HỦY" });
-            assignmentOverlay.Add(panel); document.rootVisualElement.Add(assignmentOverlay);
+            BagPresentation.Place(assignmentFeedback,24,452,744,28);
+            var cancel = new BagButton(Capstone.Game.UISystem.PlayerActionGate.Guard(this, "assignment-cancel", CloseAssignment)) { text="Hủy",Kind="action-small",name="quick-assignment-cancel" };BagPresentation.Place(cancel,24,480,744,56);panel.Add(cancel);
+            var dismiss=new BagButton(CloseAssignment){text="×",Kind="action-primary",name="quick-assignment-close"};BagPresentation.Place(dismiss,732,20,36,36);panel.Add(dismiss);
+            document.rootVisualElement.Add(assignmentOverlay);
             Capstone.Game.UISystem.PanelFocusUtility.Open(assignmentOverlay);
         }
         public bool Assign(int index) {
@@ -175,6 +194,7 @@ namespace Capstone.Game.HudSystem {
             CloseAssignment(); Refresh(); return true;
         }
         void CloseAssignment() {
+            BagTooltip.HideAll(assignmentOverlay);
             Capstone.Game.UISystem.PanelFocusUtility.Close(assignmentOverlay);
             assignmentOverlay?.RemoveFromHierarchy(); assignmentOverlay = null; pendingAssignment = null; assignmentFeedback = null;
         }

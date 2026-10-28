@@ -11,6 +11,7 @@ namespace Capstone.Game.UISystem {
         public const string Unavailable = "Chưa có thông tin";
         public const string Active = "Đang dùng";
         public const string Viewing = "Đang xem";
+        public static string ItemName(string value){switch(value){case "Leaf Berry":return "Quả lá";case "Dusk Stone":return "Đá hoàng hôn";case "Potion":return "Bình hồi máu";case "Potion nhỏ":return "Bình hồi máu nhỏ";case "Coin":case "Currency":return "Vàng";case "Experience":return "EXP";case "Item":return "Vật phẩm";default:return value??string.Empty;}}
 
         public static string ItemText(string value) {
             switch (value) {
@@ -21,6 +22,7 @@ namespace Capstone.Game.UISystem {
                 default: return value ?? string.Empty;
             }
         }
+        public static string SystemText(string value)=>(value??string.Empty).Replace("Leaf Berry","Quả lá").Replace("Dusk Stone","Đá hoàng hôn");
 
         public static string Element(PetElement value) {
             switch (value) {
@@ -92,6 +94,36 @@ namespace Capstone.Game.UISystem {
             }
         }
 
+        public static string Nature(string value) {
+            switch (value) {
+                case "Hardy": return "Bền bỉ"; case "Lonely": return "Độc lập"; case "Brave": return "Dũng cảm";
+                case "Adamant": return "Kiên định"; case "Naughty": return "Tinh nghịch"; case "Bold": return "Táo bạo";
+                case "Docile": return "Ngoan ngoãn"; case "Relaxed": return "Thư thái"; case "Impish": return "Lém lỉnh";
+                case "Lax": return "Vô tư"; case "Timid": return "Nhút nhát"; case "Hasty": return "Nóng vội";
+                case "Serious": return "Nghiêm túc"; case "Jolly": return "Vui vẻ"; case "Naive": return "Ngây thơ";
+                case "Modest": return "Khiêm tốn"; case "Mild": return "Ôn hòa"; case "Quiet": return "Trầm lặng";
+                case "Bashful": return "E thẹn"; case "Rash": return "Bốc đồng"; case "Calm": return "Điềm tĩnh";
+                case "Gentle": return "Dịu dàng"; case "Sassy": return "Bướng bỉnh"; case "Careful": return "Thận trọng";
+                case "Quirky": return "Khác biệt"; default: return string.IsNullOrWhiteSpace(value) ? Unknown : value;
+            }
+        }
+        public static string PetDescription(string value) {
+            if (string.IsNullOrWhiteSpace(value)) return "Chưa có mô tả cẩm nang cho thú này.";
+            switch (value.Trim()) {
+                case "A young dusk dragon learning to master its wings.": return "Một chú rồng hoàng hôn non đang học cách làm chủ đôi cánh.";
+                default: return value.Trim();
+            }
+        }
+        public static string SkillDescription(string value) {
+            switch(value?.Trim()) {
+                case "Basic close-range bite attack.": case "Test close-range bite attack.": return "Cắn mục tiêu ở cự ly gần.";
+                case "A roar-like magic blast.": case "Test roar-like magic blast.": return "Giải phóng một luồng sức mạnh ma thuật bằng tiếng gầm.";
+                case "Fires a ranged projectile.": case "Test ranged projectile attack.": return "Bắn một viên đạn năng lượng về phía mục tiêu.";
+                case "A wing attack that knocks the air forward.": case "Test wing attack.": return "Vỗ cánh tạo luồng gió tấn công phía trước.";
+                default: return string.IsNullOrWhiteSpace(value)?"Chưa có mô tả.":value.Trim();
+            }
+        }
+
         public static string SearchKey(string value) {
             if (string.IsNullOrWhiteSpace(value)) return string.Empty;
             string normalized = value.Trim().Normalize(NormalizationForm.FormD);
@@ -113,8 +145,8 @@ namespace Capstone.Game.UISystem {
                 case "DEF": return "Phòng thủ vật lý.";
                 case "SP.DEF": return "Phòng thủ đặc biệt.";
                 case "SPD": return "Tốc độ.";
-                case "CRI Rate": return "Tỷ lệ gây đòn chí mạng.";
-                case "CRI DMG": return "Sát thương bổ sung của đòn chí mạng.";
+                case "CRI Rate": case "CRIT RATE": return "Tỷ lệ gây đòn chí mạng.";
+                case "CRI DMG": case "CRIT DMG": return "Sát thương bổ sung của đòn chí mạng.";
                 default: return string.Empty;
             }
         }

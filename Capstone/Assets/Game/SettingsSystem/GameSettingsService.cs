@@ -69,6 +69,7 @@ namespace Capstone.Game.SettingsSystem {
                 if (feedbackStyle != null && !docRoot.styleSheets.Contains(feedbackStyle)) docRoot.styleSheets.Add(feedbackStyle);
                 saveIndicator = new Label { name = "game-save-indicator", pickingMode = PickingMode.Ignore, focusable = false };
                 saveIndicator.AddToClassList("menu-save-indicator"); docRoot.Add(saveIndicator); saveIndicator.style.display = DisplayStyle.None;
+                Capstone.Game.UISystem.UiReadability.Bind(docRoot);Capstone.Game.UISystem.UiReadability.BehindLabel(saveIndicator);
             }
             Apply(SettingsArea.Audio | SettingsArea.Camera | SettingsArea.Interface);
         }

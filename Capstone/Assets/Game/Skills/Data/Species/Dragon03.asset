@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17c454ea0bc778f488b17b8270673990, type: 3}
+  m_Name: Dragon03
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSpeciesSkillSet
+  speciesId: Dragon Darkness
+  catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
+  learnset:
+  - skill: {fileID: 11400000, guid: 860a06bc9fd1baa42bde56e65bef868b, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - Bite Attack
+    - Bite Attack Low
+    animationDuration: 0.8
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: f4f605f9756e3c840a6ef10fbdb064d8, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - Blast Attack
+    - Cast Spell
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - Projectile Attack
+    - Projectile Attack Low
+    animationDuration: 0.95
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: 67c3331c9c0221e479c2e4c1e893a3a9, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - Wing Attack
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0.1
+    recoverySeconds: 0.3
+    presentationOverride: {fileID: 0}
+  defaultLoadout:
+  - {fileID: 11400000, guid: 860a06bc9fd1baa42bde56e65bef868b, type: 2}
+  - {fileID: 11400000, guid: f4f605f9756e3c840a6ef10fbdb064d8, type: 2}
+  - {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
+  - {fileID: 11400000, guid: 67c3331c9c0221e479c2e4c1e893a3a9, type: 2}

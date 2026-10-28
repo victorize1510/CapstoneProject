@@ -40,7 +40,6 @@ namespace Capstone.Game.HudSystem {
             foreach(var corner in companionDesign.Query<VisualElement>(className:"companion-corner").ToList())corner.style.backgroundImage=new StyleBackground(CompanionArt.Load("Art/champagne-leaf-corner"));
             if(companionArt==null)companionArt=Resources.Load<PetCompanionArtCatalog>("UI/Companion/Portraits");
             Capstone.Game.UISystem.GreenAngularCompanionSkin.Bind(document.rootVisualElement,companionDesign);
-            if(selectedPortraitFallback!=null&&companionDesign.Q("r3-missing-art-plate")==null){var plate=new Capstone.Game.UISystem.AngularSurface{name="r3-missing-art-plate",Shape="parallel",Role="primary",Material=false,NoBorder=true};plate.style.position=Position.Absolute;plate.style.left=24;plate.style.top=508;plate.style.width=320;plate.style.height=36;var hero=panel.Q("companion-hero");hero.Insert(hero.IndexOf(selectedPortraitFallback),plate);}
             if(tooltip!=null)Capstone.Game.UISystem.GreenAngularCompanionSkin.Add(tooltip,"panel","primary");
             FitCompanionLayout();ShowCompanionTab(companionTab,false);
         }
@@ -50,8 +49,9 @@ namespace Capstone.Game.HudSystem {
             RegisterButton(panel.Q<Button>("pets-tab-skills"),()=>ShowCompanionTab(1));
             RegisterButton(panel.Q<Button>("pets-tab-growth"),()=>ShowCompanionTab(2));
             RegisterButton(panel.Q<Button>("pets-skills-details"),()=>ShowCompanionTab(1));
-            RegisterButton(panel.Q<Button>("pets-mode-2d"),()=>SetPreview3D(false));
-            RegisterButton(panel.Q<Button>("pets-mode-3d"),()=>SetPreview3D(true));
+            RegisterButton(panel.Q<Button>("pets-mode-toggle"),()=>SetPreview3D(!preview3D));
+            var mode=panel.Q<Button>("pets-mode-toggle");if(mode!=null){mode.focusable=true;mode.tabIndex=0;mode.UnregisterCallback<KeyDownEvent>(HandlePreviewModeKey,TrickleDown.TrickleDown);mode.RegisterCallback<KeyDownEvent>(HandlePreviewModeKey,TrickleDown.TrickleDown);}
+            RegisterActionTooltip(panel.Q<Button>("pets-mode-toggle"),"Chế độ hiển thị","Nhấn để chuyển giữa ảnh 2D và bản xem 3D.");
             RegisterButton(panel.Q<Button>("pets-swap-button"),ToggleCompanionSwap);
             RegisterButton(panel.Q<Button>("pets-growth-level"),OpenLevelUpPanel);
             RegisterButton(panel.Q<Button>("pets-growth-heal"),OpenHealPanel);
@@ -88,9 +88,15 @@ namespace Capstone.Game.HudSystem {
             tabFade=old.schedule.Execute(()=>{if(version!=tabTransitionVersion)return;float t=Mathf.Clamp01((float)(Time.realtimeSinceStartupAsDouble-begin)/.06f);old.style.opacity=fromOpacity*(1-t);if(t>=1){tabFade?.Pause();Show();}}).Every(16);
         }
         public void SetPreview3D(bool value){
-            preview3D=value;
-            if(!value)portraitPreview.Clear();
+            preview3D=value&&ViewedPet!=null;
+            if(!preview3D)portraitPreview.Clear();
             RefreshCompanionPortrait(ViewedPet);
+        }
+        void HandlePreviewModeKey(KeyDownEvent evt){
+            if(evt.keyCode!=KeyCode.Return&&evt.keyCode!=KeyCode.KeypadEnter&&evt.keyCode!=KeyCode.Space)return;
+            var button=evt.currentTarget as Button;if(button==null||!button.enabledInHierarchy)return;
+            evt.StopImmediatePropagation();evt.PreventDefault();
+            if(buttonCallbacks.TryGetValue(button,out var invoke))invoke();
         }
         void UpdateCompanionVisibility(bool visible){
             if(visible==companionVisible)return;companionVisible=visible;
@@ -98,14 +104,15 @@ namespace Capstone.Game.HudSystem {
             else StopCompanionPresentation();
         }
         void HandleCompanionVisibility(bool _)=>UpdateCompanionVisibility(inventoryOwner?.IsPetsSectionOpen==true);
-        void ReleaseCompanionBindings(){if(visibilityOwner!=null)visibilityOwner.VisibilityChanged-=HandleCompanionVisibility;visibilityOwner=null;root?.UnregisterCallback<PointerDownEvent>(HideTooltipOnPointer,TrickleDown.TrickleDown);root?.UnregisterCallback<TooltipEvent>(SuppressNativeTooltip,TrickleDown.TrickleDown);selectedName?.UnregisterCallback<PointerEnterEvent>(ShowNameTooltip);selectedName?.UnregisterCallback<PointerLeaveEvent>(HandleActionTooltipLeave);}
+        void ReleaseCompanionBindings(){panel?.Q<Button>("pets-mode-toggle")?.UnregisterCallback<KeyDownEvent>(HandlePreviewModeKey,TrickleDown.TrickleDown);if(visibilityOwner!=null)visibilityOwner.VisibilityChanged-=HandleCompanionVisibility;visibilityOwner=null;root?.UnregisterCallback<PointerDownEvent>(HideTooltipOnPointer,TrickleDown.TrickleDown);root?.UnregisterCallback<TooltipEvent>(SuppressNativeTooltip,TrickleDown.TrickleDown);selectedName?.UnregisterCallback<PointerEnterEvent>(ShowNameTooltip);selectedName?.UnregisterCallback<PointerLeaveEvent>(HandleActionTooltipLeave);}
         void StopCompanionPresentation(){++tabTransitionVersion;tabFade?.Pause();foreach(var body in companionTabs)if(body!=null)body.style.opacity=1;CancelViewedInteraction();viewedPet=null;viewedPetId=null;root?.RemoveFromClassList("companion-context");companionPresentation.SetMenuVisible(false);preview3D=false;portraitPreview.Clear();companionSkills?.CloseEmbedded();ClearSwapSelection();}
         void RefreshCompanionPortrait(PetController pet){
             if(companionDesign==null||selectedPortrait==null)return;
-            panel.Q<Button>("pets-mode-2d")?.EnableInClassList("is-selected",!preview3D);
-            panel.Q<Button>("pets-mode-3d")?.EnableInClassList("is-selected",preview3D);
+            var toggle=panel.Q<Button>("pets-mode-toggle");
+            if(toggle!=null){toggle.tooltip=preview3D?"Chuyển sang ảnh 2D":"Chuyển sang xem 3D";actionReasons[toggle]=toggle.tooltip;toggle.EnableInClassList("is-selected",preview3D);}
+            var modeText=panel.Q<Label>("pets-preview-mode-text");if(modeText!=null)modeText.text=preview3D?"3D":"2D";
+            var modeIcon=panel.Q("pets-preview-mode-icon");if(modeIcon!=null)modeIcon.style.backgroundImage=new StyleBackground(Capstone.Game.UISystem.InteractionR3Assets.Load(preview3D?"Masks/view3d":"Masks/portrait"));
             if(preview3D){
-                var plate=companionDesign.Q("r3-missing-art-plate");if(plate!=null)plate.style.display=portraitPreview.Texture==null?DisplayStyle.Flex:DisplayStyle.None;
                 if(portraitPreview.Texture==null){Capstone.Game.UISystem.AngularSurface.SetArt(selectedPortrait,(Sprite)null);if(selectedPortraitFallback!=null){selectedPortraitFallback.text=pet!=null?"Đang chuẩn bị 3D…":"Chưa có thú để xem 3D";selectedPortraitFallback.style.display=DisplayStyle.Flex;}}
                 return;
             }
@@ -113,7 +120,6 @@ namespace Capstone.Game.HudSystem {
             var art=companionArt?.Find(metadata)?.largeIllustration;
             Capstone.Game.UISystem.AngularSurface.SetArt(selectedPortrait,art);
             if(selectedPortraitFallback!=null){selectedPortraitFallback.text=pet!=null?"Chưa có ảnh minh họa 2D":"Chọn một thú để xem";selectedPortraitFallback.style.display=art!=null?DisplayStyle.None:DisplayStyle.Flex;}
-            var missing=companionDesign.Q("r3-missing-art-plate");if(missing!=null)missing.style.display=art!=null?DisplayStyle.None:DisplayStyle.Flex;
         }
         void ToggleCompanionSwap(){
             if(pendingSwapSourceIndex>=0){ClearSwapSelection();SetFeedback("Đã hủy đổi vị trí.");return;}
@@ -128,7 +134,7 @@ namespace Capstone.Game.HudSystem {
             panel.Q<Button>("pets-heal-button")?.SetEnabled(pet!=null);
             panel.Q<Button>("pets-details-button")?.SetEnabled(pet!=null);
             panel.Q<Button>("pets-skills-details")?.SetEnabled(pet!=null);
-            panel.Q<Button>("pets-mode-3d")?.SetEnabled(pet!=null);
+            panel.Q<Button>("pets-mode-toggle")?.SetEnabled(pet!=null);
             panel.Q<Button>("pets-swap-button")?.SetEnabled(pet!=null);
             bool summoned=false;
             for(int i=0;i<partyCards.Count;i++){
@@ -143,7 +149,6 @@ namespace Capstone.Game.HudSystem {
                 if(slot.occupied){var metadata=CommandProvider?.GetPetControllerAt(i)?.GetComponentInChildren<PetCollectionMetadata>(true);var avatar=companionArt?.Find(metadata)?.avatarCrop;if(avatar!=null)Capstone.Game.UISystem.AngularSurface.SetArt(card.Q("portrait"),avatar);}
                 card.tooltip=string.Empty;
             }
-            var badgeLabel=panel.Q<Label>("pets-summoned-badge");if(badgeLabel!=null){badgeLabel.text="Đang xem";badgeLabel.style.display=pet!=null?DisplayStyle.Flex:DisplayStyle.None;}
             if(favoriteButton!=null)favoriteButton.text=string.Empty;if(renameButton!=null)renameButton.text=string.Empty;
             var swap=panel.Q<Button>("pets-swap-button");if(swap?.Q<Label>("pets-swap-caption")!=null)swap.Q<Label>("pets-swap-caption").text=pendingSwapSourceIndex>=0?"Hủy đổi vị trí":"Đổi vị trí";
             RefreshCompanionPortrait(pet);
@@ -155,13 +160,13 @@ namespace Capstone.Game.HudSystem {
             var level=data?GetComponent<PetLevelUpService>()?.CreatePreview(pet):null;
             var heal=data?GetComponent<PetHealService>()?.CreatePreview(pet):null;
             var evolution=data?GetComponent<PetEvolutionService>()?.CreatePreview(pet):null;
-            SetGrowth("level",level!=null?$"Lv. {level.CurrentLevel} → {level.NextLevel}   •   {level.ItemName}: {level.OwnedItemQuantity} / {level.RequiredItemQuantity}\nHP {level.CurrentHealth} → {level.NextHealth}  |  ATK {level.CurrentAttack} → {level.NextAttack}  |  DEF {level.CurrentDefense} → {level.NextDefense}":"—",level?.DisabledReason,level?.ItemIcon,level!=null);
+            SetGrowth("level",level!=null?$"Cấp {level.CurrentLevel} → {level.NextLevel}   •   {Capstone.Game.UISystem.VietnameseUI.ItemName(level.ItemName)}: {level.OwnedItemQuantity} / {level.RequiredItemQuantity}\nHP {level.CurrentHealth} → {level.NextHealth}  |  ATK {level.CurrentAttack} → {level.NextAttack}  |  DEF {level.CurrentDefense} → {level.NextDefense}":"—",level?.DisabledReason,level?.ItemIcon,level!=null);
             SetGrowth("heal",heal!=null?$"{heal.ResourceName}: {heal.CurrentValue:0.#} → {heal.ResultValue:0.#}\n{heal.ItemName}: {heal.OwnedQuantity} / {heal.RequiredQuantity}":"—",heal?.DisabledReason,heal?.ItemIcon,heal!=null);
-            SetGrowth("evolution",evolution!=null?$"{evolution.CurrentName} → {(evolution.IsConfigured?evolution.TargetName:"—")}\n{(evolution.IsConfigured?$"Lv. {evolution.CurrentLevel}/{evolution.RequiredLevel}  •  {evolution.RequiredItemId}":"Chưa có dạng tiếp theo khả dụng")}":"—",evolution?.DisabledReason,evolution?.TargetIcon,evolution?.IsConfigured==true);
+            SetGrowth("evolution",evolution!=null?$"{evolution.CurrentName} → {(evolution.IsConfigured?evolution.TargetName:"—")}\n{(evolution.IsConfigured?$"Cấp {evolution.CurrentLevel}/{evolution.RequiredLevel}  •  {evolution.RequiredItemId}":"Chưa có dạng tiếp theo khả dụng")}":"—",evolution?.DisabledReason,evolution?.TargetIcon,evolution?.IsConfigured==true);
         }
         void SetGrowth(string key,string summary,string reason,Sprite icon,bool available){
-            var label=panel.Q<Label>("pets-growth-"+key+"-summary");if(label!=null)label.text=summary;
-            var why=panel.Q<Label>("pets-growth-"+key+"-reason");if(why!=null)why.text=string.IsNullOrEmpty(reason)?(available?"Mở xem trước để xác nhận.":"Chưa có dữ liệu."):reason;
+            var label=panel.Q<Label>("pets-growth-"+key+"-summary");if(label!=null)label.text=Capstone.Game.UISystem.VietnameseUI.SystemText(summary);
+            var why=panel.Q<Label>("pets-growth-"+key+"-reason");if(why!=null)why.text=string.IsNullOrEmpty(reason)?(available?"Mở xem trước để xác nhận.":"Chưa có dữ liệu."):Capstone.Game.UISystem.VietnameseUI.SystemText(reason);
             var image=panel.Q("pets-growth-"+key+"-icon");if(image!=null)image.style.backgroundImage=icon!=null?new StyleBackground(icon):StyleKeyword.None;
             var button=panel.Q<Button>("pets-growth-"+key);button?.SetEnabled(available);if(button!=null){button.tooltip=string.Empty;actionReasons[button]=reason??string.Empty;}
         }

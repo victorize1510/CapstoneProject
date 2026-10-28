@@ -13,7 +13,7 @@ using Object = UnityEngine.Object;
 using Cursor = UnityEngine.Cursor;
 namespace Capstone.Game.HudSystem.Editor {
     public static class CompanionVerification {
-        public const string Output="../artifacts/companion-ui/";
+        public const string Output=Capstone.Game.UISystem.QaArtifactPaths.Root + "companion-ui/";
         const string Request="Temp/VerifyCompanion.request",OwnPlay="CompanionVerification.OwnPlay";
         static bool running;
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;

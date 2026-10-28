@@ -140,23 +140,17 @@
           </ga:AngularSurface>
         </ui:VisualElement>
         <ga:AngularSurface class="ga-details-advanced" role="panel">
-          <ui:Label name="" text="TIỀM NĂNG &amp; RÈN LUYỆN" class="ga-section-title" />
+          <ui:Label text="TIỀM NĂNG &amp; HUẤN LUYỆN" class="ga-section-title" />
           <ui:VisualElement class="ga-info-row">
-            <ui:Label name="" text="Nature" class="ga-info-key" />
+            <ui:Label text="Tính khí" class="ga-info-key" />
             <ui:Label name="pet-details-nature" text="—" class="ga-info-value" />
           </ui:VisualElement>
           <ui:VisualElement class="ga-info-row">
-            <ui:Label name="" text="BST" class="ga-info-key" />
+            <ui:Label text="Tổng chỉ số cơ bản" class="ga-info-key" />
             <ui:Label name="pet-details-bst" text="—" class="ga-info-value" />
           </ui:VisualElement>
-          <ui:VisualElement class="ga-info-row">
-            <ui:Label name="" text="IV (0–31)" class="ga-info-key" />
-            <ui:Label name="pet-details-iv" text="—" class="ga-info-value" />
-          </ui:VisualElement>
-          <ui:VisualElement class="ga-info-row">
-            <ui:Label name="" text="EV (tối đa 510)" class="ga-info-key" />
-            <ui:Label name="pet-details-ev" text="—" class="ga-info-value" />
-          </ui:VisualElement>
+          <ui:VisualElement name="pet-details-genetics-table" class="genetics-table" picking-mode="Ignore" />
+          <ui:Label name="pet-details-ev-total" text="EV đã phân bổ: — / 510" />
         </ga:AngularSurface>
         <ga:AngularSurface class="ga-details-skills" role="panel">
           <ui:Label name="" text="KỸ NĂNG ĐANG TRANG BỊ" class="ga-section-title" />
@@ -204,16 +198,15 @@
           </ui:VisualElement>
         </ga:AngularSurface>
         <ui:VisualElement class="ga-details-codex">
-          <ui:Label text="❧  CODEX / EVOLUTION  ❧" class="pet-detail-section-title" />
+          <ui:Label text="CẨM NANG &amp; TIẾN HÓA" class="pet-detail-section-title" />
           <ui:VisualElement class="pet-details-codex-content">
             <ui:VisualElement class="pet-details-codex-status">
-              <ui:Label text="▤" class="pet-details-codex-icon" />
-              <ui:Label text="Trạng thái Codex" class="pet-details-codex-label" />
+              <ui:Label text="Trạng thái cẩm nang" class="pet-details-codex-label" />
               <ui:Label name="pet-details-codex-state" text="Chưa đăng ký" class="pet-details-codex-value" />
-              <ui:Label text="Số hiệu Codex" class="pet-details-codex-label" />
+              <ui:Label text="Số hiệu cẩm nang" class="pet-details-codex-label" />
               <ui:Label name="pet-details-codex-number" text="-" class="pet-details-codex-value" />
+              <ui:Label name="pet-details-codex-description" text="Chưa có mô tả cẩm nang cho thú này." class="pet-details-codex-description" />
             </ui:VisualElement>
-            <ui:Label name="pet-details-codex-description" text="Chưa có mô tả cẩm nang cho thú này." class="pet-details-codex-description" />
             <ui:VisualElement class="pet-details-evolution-column">
               <ui:Label text="TIẾN HÓA" class="pet-details-evolution-title" />
               <ui:VisualElement name="pet-details-evolution-flow" class="pet-details-evolution-flow">
@@ -231,14 +224,14 @@
                   <ui:Label name="pet-details-evolution-next-name" text="???" class="pet-details-evolution-name" />
                 </ui:VisualElement>
               </ui:VisualElement>
-              <ui:Label name="pet-details-evolution-max" text="Tiến hóa tối đa" class="pet-details-evolution-max" />
-            </ui:VisualElement>
+              <ui:Label name="pet-details-evolution-max" text="Đã đạt dạng cuối" class="pet-details-evolution-max" />
             <ui:VisualElement name="pet-details-evolution-requirements" class="pet-details-evolution-requirements">
               <ui:Label text="Điều kiện tiến hóa:" class="pet-details-requirement-title" />
               <ui:Label name="pet-details-evolution-level" text="• Chưa thiết lập cấp độ" class="pet-details-requirement" />
               <ui:Label name="pet-details-evolution-friendship" text="• Chưa thiết lập tình bạn" class="pet-details-requirement" />
               <ui:Label name="pet-details-evolution-extra" text="" class="pet-details-requirement" />
               <ui:Button name="pet-details-evolution-button" text="TIẾN HÓA" class="pet-details-evolution-button" />
+            </ui:VisualElement>
             </ui:VisualElement>
           </ui:VisualElement>
         </ui:VisualElement>

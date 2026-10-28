@@ -126,7 +126,7 @@ namespace Capstone.Game.HudSystem {
             if (feedback != null) {
                 feedback.text = !string.IsNullOrWhiteSpace(transientFeedback)
                     ? transientFeedback
-                    : preview.DisabledReason;
+                    : Capstone.Game.UISystem.VietnameseUI.SystemText(preview.DisabledReason);
             }
         }
 
@@ -363,7 +363,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void RefreshItem(PetLevelUpPreview preview) {
-            if (itemName != null) itemName.text = DisplayOrDash(preview.ItemName);
+            if (itemName != null) itemName.text = DisplayOrDash(Capstone.Game.UISystem.VietnameseUI.ItemName(preview.ItemName));
             if (itemCount != null) {
                 itemCount.text = $"{preview.OwnedItemQuantity:N0} / {preview.RequiredItemQuantity:N0}";
                 itemCount.EnableInClassList("is-missing", preview.OwnedItemQuantity < preview.RequiredItemQuantity);

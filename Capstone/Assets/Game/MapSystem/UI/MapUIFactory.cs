@@ -19,6 +19,11 @@ namespace Capstone.Game.MapSystem.UI {
             var image = rect.gameObject.AddComponent<Image>(); image.sprite = theme.roundedPanel;
             image.type = Image.Type.Sliced; image.color = color; image.raycastTarget = interactive;
             if (border) { var outline = rect.gameObject.AddComponent<Outline>(); outline.effectColor = theme.border; outline.effectDistance = new Vector2(1, -1); outline.useGraphicAlpha = false; }
+            if(!interactive&&(rect.name=="SelectedMarker"||rect.name=="MarkerTooltip"||rect.name=="BottomFilterBar"||rect.name=="ZoomButtonGroup"||rect.name=="RegionPanel"||rect.name=="TrackedQuestOverlay")){
+                image.color=Color.clear;var outline=rect.GetComponent<Outline>();if(outline!=null)outline.enabled=false;
+                bool onMap=rect.name=="SelectedMarker"||rect.name=="MarkerTooltip"||rect.name=="RegionPanel"||rect.name=="TrackedQuestOverlay";
+                Capstone.Game.UISystem.UiSectionGraphic.Attach(rect,onMap,1.2f);
+            }
             return image;
         }
         public static TextMeshProUGUI Text(Transform parent, WorldMapUITheme theme, string name, string value,
@@ -27,6 +32,9 @@ namespace Capstone.Game.MapSystem.UI {
             text.font = theme.font; text.text = value; text.color = theme.text; text.fontSize = size;
             text.fontStyle = bold ? FontStyles.Bold : FontStyles.Normal; text.alignment = align;
             text.textWrappingMode = TextWrappingModes.NoWrap; text.overflowMode = TextOverflowModes.Ellipsis;
+            var reading=parent.GetComponentInChildren<Capstone.Game.UISystem.SoftReadingGraphic>();if(reading!=null&&reading.Dark)text.color=Capstone.Game.UISystem.GreenAngularGeometry.Light;
+            var section=parent.GetComponentInChildren<Capstone.Game.UISystem.UiSectionGraphic>();
+            if(section!=null)text.color=section.Dark?Capstone.Game.UISystem.GreenAngularGeometry.Light:Capstone.Game.UISystem.GreenAngularGeometry.Ink;
             text.raycastTarget = false; return text;
         }
         public static Image Icon(Transform parent, string name, Sprite sprite, float x, float y, float size, Color color) {

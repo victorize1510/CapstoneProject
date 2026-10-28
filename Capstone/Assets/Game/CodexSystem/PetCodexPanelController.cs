@@ -58,6 +58,9 @@ namespace Capstone.Game.CodexSystem {
             UnbindView();
             root = documentRoot?.Q("codex-panel");
             if (root == null) return;
+            UiReadability.Bind(documentRoot);
+            UiReadability.SoftenGroups(root,"codex-types");
+            foreach(var group in root.Query<VisualElement>(className:"codex-types").ToList())UiReadability.Add(group);
             grid = root.Q("codex-grid"); details = root.Q("codex-details"); filterPanel = root.Q("codex-filters");
             search = root.Q<TextField>("codex-search"); empty = root.Q<Label>("codex-empty");
             detailEmpty = root.Q<Label>("codex-detail-empty"); progressNumber = root.Q<Label>("codex-progress-number");
@@ -248,7 +251,7 @@ namespace Capstone.Game.CodexSystem {
             if (entry == null) return;
             LabelText("codex-number", "#" + entry.Number.ToString("D3"));
             LabelText("codex-name", entry.Known ? entry.Name : "Chưa khám phá");
-            LabelText("codex-description", entry.Known ? Value(entry.Description) : "Khám phá sinh vật này để mở thông tin cẩm nang.");
+            LabelText("codex-description", entry.Known ? VietnameseUI.PetDescription(entry.Description) : "Khám phá sinh vật này để mở thông tin cẩm nang.");
             Sprite sprite = entry.Portrait != null ? entry.Portrait : entry.Icon;
             detailPortrait.style.backgroundImage = sprite != null ? new StyleBackground(sprite) : StyleKeyword.None;
             detailPortrait.style.unityBackgroundImageTintColor = entry.Known ? Color.white : new Color(0, 0, 0, .22f);

@@ -11,12 +11,12 @@ namespace Capstone.Game.ProfileSystem {
         GameObject popupReturnFocus;
         const string RootName = "ProfilePanelRoot";
 
-        static readonly Color White = MenuPalette.Surface;
-        static readonly Color Forest = new Color(0.09f, 0.29f, 0.19f, 1f);
-        static readonly Color Accent = new Color(0.32f, 0.51f, 0.36f, 1f);
-        static readonly Color Pale = new Color(0.88f, 0.93f, 0.85f, 1f);
-        static readonly Color Border = new Color(0.57f, 0.69f, 0.53f, 0.85f);
-        static readonly Color Muted = new Color(0.30f, 0.40f, 0.31f, 1f);
+        static readonly Color White = GreenAngularGeometry.Panel;
+        static readonly Color Forest = GreenAngularGeometry.Ink;
+        static readonly Color Accent = GreenAngularGeometry.Primary;
+        static readonly Color Pale = GreenAngularGeometry.Raised;
+        static readonly Color Border = GreenAngularGeometry.Edge;
+        static readonly Color Muted = GreenAngularGeometry.Muted;
 
         static Sprite solidSprite;
         static Sprite circleSprite;
@@ -125,6 +125,7 @@ namespace Capstone.Game.ProfileSystem {
             FitDesignSurface();
             BuildNameDialog();
             BuildAvatarDialog();
+            ApplyR2Skin();
 
             root.SetAsLastSibling();
             Refresh();
@@ -175,73 +176,9 @@ namespace Capstone.Game.ProfileSystem {
             return false;
         }
 
-        void BuildNameDialog() {
-            nameDialog = CreatePanel(root, "ChangeNameDialogOverlay", new Color(0f, 0f, 0f, 0.36f), true);
-            Stretch(nameDialog);
+        void BuildNameDialog() { BuildR2NameDialog(); }
 
-            RectTransform dialog = CreatePanel(nameDialog, "Dialog", White, true);
-            SetCenter(dialog, 0f, 0f, 570f, 278f);
-            AddOutline(dialog.gameObject, Border, 2f);
-
-            Text title = CreateText(dialog, "Title", "ĐỔI TÊN", 27, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopStretch(title.rectTransform, 30f, 22f, 30f, 48f);
-
-            nameInput = CreateInputField(dialog, "NameInput", 30f, 86f, 510f, 58f);
-            nameError = CreateText(dialog, "Error", string.Empty, 14, FontStyle.Normal, new Color(0.68f, 0.12f, 0.10f, 1f), TextAnchor.MiddleLeft);
-            SetTopStretch(nameError.rectTransform, 32f, 150f, 32f, 30f);
-
-            Button cancel = CreateOutlinedButton(dialog, "CancelButton", "HỦY", 16);
-            SetBottomRight(cancel.GetComponent<RectTransform>(), 190f, 24f, 150f, 48f);
-            cancel.onClick.AddListener(() => { if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HideNameDialog")) HideNameDialog(); });
-
-            Button confirm = CreateOutlinedButton(dialog, "ConfirmButton", "XÁC NHẬN", 16);
-            SetBottomRight(confirm.GetComponent<RectTransform>(), 24f, 24f, 150f, 48f);
-            confirm.onClick.AddListener(ConfirmNameChange);
-
-            HideNameDialog();
-        }
-
-        void BuildAvatarDialog() {
-            avatarDialog = CreatePanel(root, "AvatarPickerOverlay", new Color(0f, 0f, 0f, 0.42f), true);
-            Stretch(avatarDialog);
-
-            RectTransform dialog = CreatePanel(avatarDialog, "AvatarPickerDialog", White, true);
-            SetCenter(dialog, 0f, 0f, 760f, 700f);
-            AddOutline(dialog.gameObject, Border, 2f);
-
-            Text title = CreateText(dialog, "Title", "CHỌN ẢNH ĐẠI DIỆN", 28, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
-            SetTopLeft(title.rectTransform, 28f, 18f, 560f, 52f);
-
-            Button close = CreateOutlinedButton(dialog, "CloseButton", "×", 28);
-            SetTopRight(close.GetComponent<RectTransform>(), 20f, 16f, 54f, 54f);
-            close.onClick.AddListener(() => { if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "HideAvatarDialog")) HideAvatarDialog(); });
-
-            RectTransform separator = CreatePanel(dialog, "Separator", Pale, false);
-            SetTopStretch(separator, 24f, 80f, 24f, 2f);
-
-            RectTransform scrollRoot = CreatePanel(dialog, "AvatarScroll", Color.clear, true);
-            SetTopLeft(scrollRoot, 28f, 98f, 704f, 568f);
-            avatarScroll = scrollRoot.gameObject.AddComponent<ScrollRect>();
-            avatarScroll.horizontal = false;
-            avatarScroll.vertical = true;
-            avatarScroll.movementType = ScrollRect.MovementType.Clamped;
-            avatarScroll.scrollSensitivity = 34f;
-
-            RectTransform viewport = CreatePanel(scrollRoot, "Viewport", new Color(1f, 1f, 1f, 0.01f), true);
-            Stretch(viewport);
-            viewport.gameObject.AddComponent<RectMask2D>();
-
-            avatarGrid = CreatePanel(viewport, "AvatarGrid", Color.clear, false);
-            avatarGrid.anchorMin = new Vector2(0f, 1f);
-            avatarGrid.anchorMax = new Vector2(1f, 1f);
-            avatarGrid.pivot = new Vector2(0.5f, 1f);
-            avatarGrid.anchoredPosition = Vector2.zero;
-            avatarGrid.sizeDelta = Vector2.zero;
-
-            avatarScroll.viewport = viewport;
-            avatarScroll.content = avatarGrid;
-            HideAvatarDialog();
-        }
+        void BuildAvatarDialog() { BuildR2AvatarDialog(); }
 
         // Reuse the existing rename modal from the Trainer summary; no new save/edit flow.
         public void EditDisplayName() { if (IsOpen) ShowNameDialog(); }
@@ -252,6 +189,7 @@ namespace Capstone.Game.ProfileSystem {
             popupReturnFocus = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
             PlayerProfileSnapshot snapshot = provider != null ? provider.GetSnapshot() : default;
             nameInput.text = snapshot.DisplayName ?? string.Empty;
+            RefreshR2PopupIdentity(snapshot);
             nameError.text = string.Empty;
             nameDialog.gameObject.SetActive(true);
             nameDialog.SetAsLastSibling();
@@ -268,6 +206,7 @@ namespace Capstone.Game.ProfileSystem {
             if (avatarDialog == null || avatarGrid == null || provider == null || !provider.CanChangeAvatar) return;
             popupReturnFocus = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
             RebuildAvatarGrid();
+            RefreshR2PopupIdentity(provider.GetSnapshot());
             avatarDialog.gameObject.SetActive(true);
             avatarDialog.SetAsLastSibling();
             if (avatarScroll != null) avatarScroll.verticalNormalizedPosition = 1f;
@@ -280,69 +219,7 @@ namespace Capstone.Game.ProfileSystem {
             if (wasOpen) { Capstone.Game.UISystem.MenuKeyboardNavigation.Restore(popupReturnFocus); popupReturnFocus = null; }
         }
 
-        void RebuildAvatarGrid() {
-            if (avatarGrid == null || provider == null) return;
-            ClearChildren(avatarGrid);
-
-            const int columnCount = 3;
-            const float cardWidth = 205f;
-            const float cardHeight = 190f;
-            const float gapX = 16f;
-            const float gapY = 16f;
-            const float startX = 18f;
-            const float startY = 12f;
-
-            int visibleIndex = 0;
-            for (int optionIndex = 0; optionIndex < provider.AvatarOptions.Count; optionIndex++) {
-                Sprite sprite = provider.AvatarOptions[optionIndex];
-                if (sprite == null) continue;
-
-                int capturedIndex = optionIndex;
-                int column = visibleIndex % columnCount;
-                int row = visibleIndex / columnCount;
-                bool selected = optionIndex == provider.SelectedAvatarIndex;
-
-                RectTransform card = CreatePanel(avatarGrid, "AvatarOption_" + optionIndex, selected ? Pale : White, true);
-                SetTopLeft(card, startX + column * (cardWidth + gapX), startY + row * (cardHeight + gapY), cardWidth, cardHeight);
-                AddOutline(card.gameObject, selected ? Accent : Border, selected ? 3f : 1f);
-
-                Button button = card.gameObject.AddComponent<Button>();
-                button.targetGraphic = card.GetComponent<Image>();
-                ColorBlock colors = button.colors;
-                colors.normalColor = selected ? Pale : White;
-                colors.highlightedColor = new Color(0.87f, 0.95f, 0.84f, 1f);
-                colors.pressedColor = new Color(0.76f, 0.89f, 0.72f, 1f);
-                colors.selectedColor = colors.highlightedColor;
-                button.colors = colors;
-                button.onClick.AddListener(() => SelectAvatar(capturedIndex));
-
-                Image portrait = CreatePanel(card, "Portrait", Color.white, false).GetComponent<Image>();
-                SetTopLeft(portrait.rectTransform, 14f, 12f, 177f, 140f);
-                portrait.sprite = sprite;
-                portrait.preserveAspect = true;
-
-                Text label = CreateText(card, "Label", "Ảnh " + (visibleIndex + 1), 15, FontStyle.Bold, Forest, TextAnchor.MiddleCenter);
-                SetBottomStretch(label.rectTransform, 10f, 7f, 10f, 30f);
-
-                if (selected) {
-                    Text selectedMark = CreateText(card, "Selected", "✓", 22, FontStyle.Bold, Color.white, TextAnchor.MiddleCenter);
-                    RectTransform markBackground = CreatePanel(card, "SelectedMark", Accent, false);
-                    SetTopRight(markBackground, 7f, 7f, 34f, 34f);
-                    selectedMark.transform.SetParent(markBackground, false);
-                    Stretch(selectedMark.rectTransform);
-                }
-
-                visibleIndex++;
-            }
-
-            if (visibleIndex == 0) {
-                Text empty = CreateText(avatarGrid, "Empty", "Chưa có ảnh đại diện để chọn.", 18, FontStyle.Italic, Muted, TextAnchor.MiddleCenter);
-                SetTopStretch(empty.rectTransform, 20f, 180f, 20f, 60f);
-            }
-
-            int rowCount = Mathf.Max(1, Mathf.CeilToInt(visibleIndex / (float)columnCount));
-            avatarGrid.sizeDelta = new Vector2(0f, startY + rowCount * cardHeight + Mathf.Max(0, rowCount - 1) * gapY + 12f);
-        }
+        void RebuildAvatarGrid() { RebuildR2AvatarGrid(); }
 
         void SelectAvatar(int avatarIndex) {
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "SelectAvatar")) return;
@@ -471,6 +348,7 @@ namespace Capstone.Game.ProfileSystem {
             SetText(bossesDefeatedValue, FormatOptionalCount(snapshot.BossesDefeated));
             SetText(totalBattlesValue, FormatOptionalCount(snapshot.TotalBattles));
             RefreshTeam();
+            RefreshR2Skin(snapshot);
         }
 
         static string FormatOptionalCount(int value) {

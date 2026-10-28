@@ -16,7 +16,7 @@ using Button=UnityEngine.UIElements.Button;
 namespace Capstone.Game.UISystem.Editor {
     /// <summary>Explicit file-request QA only. Captures the actual engine, never a mockup renderer.</summary>
     public static class GreenAngularVerification {
-        public const string Output="../artifacts/ui-r3-fixes-2026-10-20/geometry/";
+        public const string Output=Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-r3-fixes-2026-10-20/geometry/";
         const string Request="Temp/VerifyGreenAngular.request",OwnPlay="GreenAngularVerification.OwnPlay";
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
         static bool running;

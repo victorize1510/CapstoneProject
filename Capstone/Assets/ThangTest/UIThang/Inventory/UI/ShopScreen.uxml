@@ -39,11 +39,16 @@
                 <ui:Label name="shop-detail-empty" text="Chọn vật phẩm để xem thông tin." class="menu-detail-empty" />
                 <ui:ScrollView name="shop-detail" class="shop-detail-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
                     <ui:VisualElement class="shop-portrait-frame"><ui:Image name="shop-portrait" class="shop-portrait" scale-mode="ScaleToFit" /></ui:VisualElement>
+                    <ui:VisualElement class="ui-copy-section">
                     <ui:Label name="shop-item-name" class="shop-item-name" />
                     <ui:Label name="shop-owned" class="shop-owned" />
                     <ui:VisualElement class="shop-badges"><ui:Label name="shop-item-category" class="shop-badge" /><ui:Label name="shop-rarity" class="shop-badge" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="ui-copy-section">
+                    <ui:Label text="MÔ TẢ" class="ui-section-heading" picking-mode="Ignore" />
                     <ui:Label name="shop-description" class="shop-description" />
-                    <ui:VisualElement class="shop-effect-section"><ui:Label text="HIỆU QUẢ" class="shop-section-title" /><ui:Label name="shop-effect" class="shop-description" /></ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="shop-effect-section ui-copy-section"><ui:Label text="HIỆU QUẢ" class="shop-section-title" /><ui:Label name="shop-effect" class="shop-description" /></ui:VisualElement>
                     <ui:Label name="shop-stock" class="shop-owned" />
                 </ui:ScrollView>
                 <ui:VisualElement name="shop-purchase" class="shop-purchase">

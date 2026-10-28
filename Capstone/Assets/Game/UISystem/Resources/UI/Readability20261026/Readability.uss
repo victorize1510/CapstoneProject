@@ -1,0 +1,112 @@
+/* Runtime-only opt-in. Decorative text backplates never style input controls or selected buttons. */
+.readability-ui .companion-design .companion-mode .companion-preview-toggle {width:128px;height:44px;margin:0;}
+.readability-ui .companion-design .companion-preview-toggle .companion-icon {position:absolute;left:18px;top:12px;width:20px;height:20px;margin:0;}
+.readability-ui #pets-preview-mode-text {position:absolute;left:44px;top:0;width:40px;height:44px;font-size:21px;-unity-font-style:bold;-unity-text-align:middle-center;}
+.readability-ui .companion-preview-switch {position:absolute;right:15px;top:0;width:24px;height:44px;font-size:20px;-unity-text-align:middle-center;}
+.readability-ui .companion-design #pets-selected-portrait-fallback {left:28px;top:490px;width:580px;height:30px;padding:0;color:#202B45;font-size:18px;white-space:normal;background-color:transparent;}
+.readability-ui .companion-design .companion-name-row {position:relative;padding-right:96px;}
+.readability-ui #pets-rename-button {position:absolute;right:48px;top:2px;width:40px;height:40px;margin:0;}
+.readability-ui #pets-favorite-button {position:absolute;right:0;top:2px;width:40px;height:40px;margin:0;}
+.readability-ui .companion-design .companion-meta {height:auto;min-height:44px;max-height:44px;flex-wrap:wrap;overflow:hidden;}
+.readability-ui .companion-design .companion-growth-module {padding:16px 20px;min-height:180px;margin-bottom:16px;}
+.readability-ui .companion-design .companion-growth-heading {position:relative;height:58px;min-height:58px;padding-left:52px;padding-right:190px;border-bottom-width:1px;border-bottom-color:rgba(110,126,153,.35);}
+.readability-ui .companion-design .companion-growth-heading>.companion-icon {left:0;top:6px;width:36px;height:36px;}
+.readability-ui .companion-design .companion-growth-heading>.companion-small-button {right:0;top:4px;width:178px;height:44px;}
+.readability-ui .companion-design .companion-growth-copy {position:relative;height:auto;min-height:48px;margin-top:12px;}
+.readability-ui .companion-design .companion-growth-reason {position:relative;height:auto;min-height:24px;margin-top:6px;white-space:normal;}
+.readability-ui .ga-popup .ga-details-middle {height:auto;min-height:292px;align-items:stretch;}
+.readability-ui .ga-popup .ga-details-basic,.readability-ui .ga-popup .ga-details-stats {height:auto;min-height:292px;}
+.readability-ui .ga-popup .ga-section-title {font-size:22px;min-height:30px;-unity-font-style:bold;}
+.readability-ui .ga-popup .ga-details-basic .ga-info-row {height:30px;}
+.readability-ui .ga-popup .ga-details-basic .ga-info-key,.readability-ui .ga-popup .ga-details-basic .ga-info-value {font-size:17px;}
+.readability-ui .ga-popup .ga-details-advanced {height:auto;min-height:224px;flex-wrap:nowrap;flex-direction:column;padding:16px 20px;}
+.readability-ui .ga-popup .ga-details-advanced>.ga-info-row {height:30px;width:100%;padding-right:0;}
+.readability-ui .ga-popup .ga-details-advanced .ga-info-key,.readability-ui .ga-popup .ga-details-advanced .ga-info-value {font-size:18px;}
+.readability-ui .genetics-table {height:100px;margin-top:10px;}
+.readability-ui .genetics-row {flex-direction:row;height:30px;align-items:center;}
+.readability-ui .genetics-row Label {flex-grow:1;flex-basis:0;min-width:0;font-size:18px;-unity-text-align:middle-center;}
+.readability-ui .genetics-row .genetics-key {width:144px;flex-grow:0;flex-basis:144px;-unity-text-align:middle-left;color:#39455E;}
+.readability-ui .genetics-heading Label {-unity-font-style:bold;color:#39455E;}
+.readability-ui #pet-details-ev-total {height:28px;font-size:17px;color:#39455E;}
+.readability-ui .ga-popup .ga-details-skills {height:auto;min-height:186px;padding:16px 20px;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skills-row {height:auto;min-height:132px;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skill-card {height:auto;min-height:128px;padding:8px;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skill-icon {width:48px;height:48px;margin-right:10px;}
+.readability-ui .ga-popup .ga-details-skills Label {font-size:17px;white-space:normal;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skill-name {min-height:44px;-unity-font-style:bold;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skill-pp {font-size:17px;min-height:40px;}
+.readability-ui .ga-popup .ga-details-codex {min-height:220px;height:auto;padding:18px 20px;}
+.readability-ui .ga-popup .ga-details-codex .pet-detail-section-title {font-size:22px;height:32px;margin-bottom:12px;-unity-font-style:bold;color:#202B45;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-codex-content {align-items:flex-start;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-codex-status {width:49%;padding-right:20px;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-evolution-column {width:49%;padding-left:20px;border-left-width:1px;border-left-color:rgba(137,150,176,.45);}
+.readability-ui .ga-popup .ga-details-codex Label {font-size:18px;white-space:normal;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-codex-label {font-size:16px;color:#39455E;margin-top:6px;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-codex-value {-unity-font-style:bold;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-codex-description {width:auto;margin-top:14px;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-evolution-requirements {width:100%;margin-top:10px;}
+.readability-ui .ga-popup .ga-details-codex .pet-details-evolution-flow {height:auto;min-height:94px;}
+.readability-ui .bag-design #bag-search-group #inventory-search-field .unity-text-field__input {padding-left:38px;padding-right:44px;}
+.readability-ui .bag-design #bag-search-group #inventory-search-field-clear {background-color:transparent;}
+.readability-ui .bag-design #bag-detail-empty-group #inventory-detail-empty {left:12px;top:80px;width:368px;height:38px;font-size:26px;-unity-font-style:bold;-unity-text-align:middle-center;}
+.readability-ui .bag-design #bag-detail-empty-hint {position:absolute;left:20px;top:124px;width:352px;height:32px;font-size:17px;-unity-text-align:middle-center;white-space:normal;color:#39455E;}
+.readability-ui .companion-design .companion-embedded-skills .skills-learned-scroll {top:192px;height:217px;}
+.readability-ui .companion-design .companion-embedded-skills .skills-filter-row {margin:0;padding:0;}
+.readability-ui .companion-design .companion-embedded-skills .filter-rail-arrow {padding:0;margin:0;min-width:0;min-height:0;}
+.readability-ui #quest-panel .quest-pill {background-color:transparent;color:#202B45;}
+.readability-ui .bag-design .detail-badges Label {background-color:transparent;padding-left:0;margin-right:16px;}
+.readability-ui .companion-design .companion-growth-heading>.companion-small-button Label {white-space:nowrap;}
+.readability-ui .quest-tracker-title-background {display:none;}
+.readability-ui .quest-tracker-title,.readability-ui .quest-tracker-objective,.readability-ui .quest-tracker-distance {color:#EDE9E1;background-color:transparent;}
+.readability-ui .menu-theme {--menu-text:#202B45;--menu-muted:#39455E;--menu-border:#8996B0;--menu-surface:rgba(174,184,205,.48);--menu-title-color:#202B45;--menu-heading-accent:#CCAD83;--menu-back-text:#202B45;}
+.readability-ui #box-panel,.readability-ui #codex-panel,.readability-ui #shop-panel,.readability-ui #settings-panel {background-color:#66748E;background-image:resource("UI/Unified20261024/Art/page");background-size:cover;}
+.readability-ui .box-stat-cell,.readability-ui .box-skill-chip,.readability-ui .codex-type-badge,.readability-ui .codex-evolution-icon {background-color:transparent;border-width:0;}
+.readability-ui .box-stat-name,.readability-ui .box-stat-value,.readability-ui .codex-type-badge {color:#202B45;}
+.readability-ui .menu-save-indicator {background-color:transparent;color:#202B45;border-width:0;}
+.readability-ui .ga-popup .ga-info-key,.readability-ui .ga-popup .ga-info-value,.readability-ui .ga-popup .pet-detail-stat-key,.readability-ui .ga-popup .pet-detail-stat-value,.readability-ui .ga-popup .ga-details-codex Label,.readability-ui .ga-popup #pet-details-ev-total {color:#202B45;}
+/* Stronger, local reading role for transactional popups; no root/tree opacity. */
+.readability-ui #level-up-modal-dialog .ga-info-key,.readability-ui #level-up-modal-dialog .ga-info-value,.readability-ui #heal-modal-dialog .ga-info-key,.readability-ui #heal-modal-dialog .ga-info-value {color:#152036;font-size:17px;}
+.readability-ui #level-up-modal-dialog .ga-stat-key,.readability-ui #level-up-modal-dialog .ga-stat-value,.readability-ui #level-up-modal-dialog .level-up-stat-name,.readability-ui #level-up-modal-dialog .level-up-stat-value {color:#152036;font-size:18px;}
+.readability-ui #level-up-modal-dialog .ga-level-stats Label {color:#152036;font-size:18px;}
+.readability-ui #level-up-modal-dialog .ga-level-stats .ga-section-title {font-size:22px;-unity-font-style:bold;}
+.readability-ui #level-up-modal-dialog .level-summary .ga-summary-meta Label {color:#152036;font-size:16px;}
+.readability-ui #level-up-modal-dialog .ga-copy,.readability-ui #heal-modal-dialog .ga-copy,.readability-ui #heal-modal-dialog .ga-heal-values Label,.readability-ui #heal-modal-dialog .ga-heal-amount {font-size:18px;color:#152036;}
+.readability-ui #level-up-modal-dialog .ga-level-new Label,.readability-ui #level-up-modal-dialog .ga-level-evolution Label {font-size:17px;color:#152036;}
+.readability-ui #heal-modal-dialog .ga-item-name,.readability-ui #level-up-modal-dialog .ga-item-name {color:#152036;font-size:21px;}
+.readability-ui #heal-modal-dialog .ga-item-count,.readability-ui #level-up-modal-dialog .ga-item-count {color:#152036;font-size:23px;}
+.readability-ui #heal-modal-dialog .ga-heal-item-title,.readability-ui #heal-modal-dialog .ga-heal-feedback,.readability-ui #level-up-modal-dialog .ga-level-feedback {color:#152036;}
+/* Growth modules are separate framed sections, rather than one continuous reading field. */
+.readability-ui .companion-design .companion-growth-text {font-size:16px;}
+.readability-ui .companion-design .companion-growth-reason {color:#39455E;}
+
+/* Stable filter geometry: selection uses a brighter face AND a reserved checkmark. */
+.readability-ui .skills-filter-button {position:relative;padding-left:24px;font-size:13px;}
+.readability-ui .skills-filter-button .filter-selection-mark {position:absolute;left:7px;top:0;bottom:0;width:16px;font-size:14px;-unity-font-style:bold;-unity-text-align:middle-center;color:#202B45;}
+.readability-ui .companion-design .skills-filter-button .angular-button-caption {left:22px;right:6px;color:#39455E;}
+.readability-ui .companion-design .skills-filter-button.is-selected .angular-button-caption {color:#152036;-unity-font-style:bold;}
+.readability-ui .skills-filter-button.is-selected {background-color:#C7C7E1;border-color:#CCAD83;color:#152036;}
+.readability-ui .companion-design .skills-filter-button.is-selected {background-color:transparent;}
+.readability-ui .companion-design .companion-embedded-skills .skills-filter-button {min-width:100px;}
+
+/* Reading groups share the Quest/Growth frame, preserving local controls and scroll. */
+.readability-ui .ui-copy-section {position:relative;flex-shrink:0;padding:14px;margin-bottom:12px;}
+.readability-ui .ui-section-heading {font-size:18px;color:#202B45;-unity-font-style:bold;min-height:28px;margin-bottom:8px;border-bottom-width:1px;border-bottom-color:rgba(110,126,153,.4);}
+.readability-ui .ui-copy-section Label {white-space:normal;}
+.readability-ui #quest-panel .quest-detail-section.ui-section {padding:14px 18px;margin-top:14px;border-width:0;}
+.readability-ui .companion-design .companion-summary.ui-section> #section-frame {left:-10px;right:-10px;top:-4px;bottom:-4px;}
+.readability-ui .companion-design .companion-resources.ui-section> #section-frame {left:-8px;right:-8px;top:-4px;bottom:-4px;}
+.readability-ui .companion-inline-detail.ui-section {padding:14px;}
+.readability-ui .ga-popup .ui-section {color:#202B45;}
+.readability-ui .ga-popup .ui-section .ga-section-title {color:#202B45;}
+.readability-ui .ui-section .pet-detail-section-title,.readability-ui .ui-section .settings-section-title,.readability-ui .ui-section .codex-section-title {border-bottom-width:1px;border-bottom-color:rgba(110,126,153,.4);padding-bottom:6px;}
+.readability-ui #box-panel .box-selected-meta-row.ui-section {padding:8px 12px;}
+.readability-ui #box-panel .box-nature-card.ui-section,.readability-ui #box-panel .box-health-card.ui-section {padding:12px;}
+.readability-ui #codex-panel .codex-progress.ui-section {padding:14px;}
+.readability-ui #shop-panel .shop-purchase.ui-section {padding:14px;margin-top:12px;}
+.readability-ui #settings-panel .settings-section-heading {background-color:transparent;}
+.readability-ui #settings-panel .settings-note,.readability-ui #settings-panel .settings-section-title {color:#202B45;}
+.readability-ui #release-modal-dialog .release-pet-card.ui-section,.readability-ui #release-modal-dialog .release-section.ui-section {padding:14px;margin-bottom:12px;}
+.readability-ui #shop-panel .shop-subtitle,.readability-ui #codex-panel .codex-subtitle,.readability-ui #settings-panel .settings-subtitle {color:#202B45;}
+.readability-ui #settings-panel .settings-row-label,.readability-ui #settings-panel .settings-percent {color:#202B45;}
+.readability-ui #shop-panel .ui-section .shop-description,.readability-ui #shop-panel .ui-section .shop-section-title,.readability-ui #shop-panel .ui-section .shop-item-name,.readability-ui #shop-panel .ui-section .shop-owned {color:#202B45;}
+.readability-ui #codex-panel .ui-section .codex-detail-text,.readability-ui #codex-panel .ui-section .codex-progress-number {color:#202B45;}

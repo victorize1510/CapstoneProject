@@ -175,8 +175,8 @@ namespace Capstone.Game.UISystem.Editor {
         }
         static async Task Settle() { await Task.Delay(220); if (!Application.isPlaying) throw new InvalidOperationException("Play Mode ended during panel validation."); }
         static async Task Capture(string name) {
-            Directory.CreateDirectory("../artifacts/ui-completion/screenshots");
-            ScreenCapture.CaptureScreenshot("../artifacts/ui-completion/screenshots/"+name+".png"); await Settle();
+            Directory.CreateDirectory(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion/screenshots");
+            ScreenCapture.CaptureScreenshot(Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-completion/screenshots/"+name+".png"); await Settle();
         }
         static T Field<T>(object owner,string name) => (T)owner.GetType().GetField(name,Private).GetValue(owner);
         static void Invoke(object owner,string name,params object[] args) => owner.GetType().GetMethod(name,Private).Invoke(owner,args);

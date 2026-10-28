@@ -18,7 +18,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.UISystem.Editor {
     public static class UiExperienceValidation {
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-        const string Output = "../artifacts/ui-experience/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-experience/";
         static readonly List<string> results = new List<string>();
         static bool running;
         const string StartedForValidation = "Capstone.UiExperienceValidation.Started";

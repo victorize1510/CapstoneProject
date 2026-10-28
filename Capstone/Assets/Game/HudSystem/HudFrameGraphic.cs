@@ -12,6 +12,8 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] float thickness = 1.4f;
         [SerializeField] float corner = 14f;
         readonly Vector2[] points = new Vector2[96];
+        readonly Capstone.Game.UISystem.SoftReadingMesh reading=new Capstone.Game.UISystem.SoftReadingMesh();Vector2[] readingContour;Vector2 readingSize;
+        internal bool IsDarkReading=>shape==Shape.PetPanel&&color.a>.9f;
 
         public void Configure(Shape value, Color fill, Color line, float width = 1.4f, float cut = 14f) {
             shape = value; color = fill; border = line; thickness = width; corner = cut;
@@ -43,7 +45,13 @@ namespace Capstone.Game.HudSystem {
             }
             int count = GetPoints(r);
             Vector2 center = r.center;
-            if (color.a > 0f) {
+            if(IsDarkReading){
+                const float scale=1.2f;
+                if(readingContour==null||readingSize!=r.size){readingSize=r.size;readingContour=new Vector2[count];for(int i=0;i<count;i++)readingContour[i]=new Vector2(points[i].x-r.xMin,r.yMax-points[i].y)/scale;}
+                reading.Ensure(r.width/scale,r.height/scale,"hud-pet-panel",true,readingContour);
+                for(int i=0;i<reading.Points.Length;i++){var p=reading.Points[i]*scale;vh.AddVert(new Vector3(r.xMin+p.x,r.yMax-p.y),reading.Colors[i],Vector2.zero);}
+                for(int i=0;i<reading.Indices.Length;i+=3)vh.AddTriangle(reading.Indices[i],reading.Indices[i+2],reading.Indices[i+1]);
+            }else if (color.a > 0f) {
                 vh.AddVert(center, color, Vector2.zero);
                 for (int i = 0; i < count; i++) vh.AddVert(points[i], color, Vector2.zero);
                 for (int i = 0; i < count; i++) vh.AddTriangle(0, i + 1, (i + 1) % count + 1);

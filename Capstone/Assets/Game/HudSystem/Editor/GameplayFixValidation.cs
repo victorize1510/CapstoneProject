@@ -19,7 +19,7 @@ namespace Capstone.Game.HudSystem.Editor {
     /// <summary>Isolated targeting and quick-slot fixtures; live Play checks never save the player's bag.</summary>
     public static class GameplayFixValidation {
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-        const string Output = "../artifacts/gameplay-fixes/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "gameplay-fixes/";
         static readonly List<string> results = new List<string>();
         static bool running;
         static object Get(object owner, string name) => owner.GetType().GetField(name, Private).GetValue(owner);

@@ -1,117 +1,129 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
-    <!-- Load theme, shared controls, panel styles, then the shared header. -->
-    <ui:Style src="MenuTheme.uss" />
-    <ui:Style src="MenuCommon.uss" />
-    <ui:Style src="InventoryPanel.uss" />
-    <ui:Style src="InventoryQuantityPopup.uss" />
-    <ui:Style src="MenuScreenHeader.uss" />
-    <ui:VisualElement name="inventory-panel" class="inventory-panel menu-panel menu-theme">
-        <ui:VisualElement name="inventory-shell" class="inventory-shell">
-            <ui:VisualElement class="inventory-header screen-header">
-                <ui:VisualElement class="inventory-heading screen-heading">
-                    <ui:VisualElement class="screen-heading-mark" picking-mode="Ignore" focusable="false" />
-                    <ui:Label text="TÚI ĐỒ" class="screen-title" />
-                </ui:VisualElement>
-                <ui:VisualElement class="inventory-header-actions">
-                    <ui:VisualElement class="inventory-currency" tooltip="Vàng đang sở hữu">
-                        <ui:Label text="G" class="inventory-currency-icon" />
-                        <ui:Label name="inventory-gold-label" text="0" class="inventory-gold-value" />
-                    </ui:VisualElement>
-                    <ui:Button name="cancel-button" text="←  TRỞ LẠI" class="screen-back" />
-                </ui:VisualElement>
-            </ui:VisualElement>
-            <ui:VisualElement name="inventory-body" class="inventory-body">
-                <ui:VisualElement name="category-panel" class="category-panel">
-                    <ui:Label text="DANH MỤC" class="category-heading" />
-                    <ui:Button name="category-all" class="category-button is-selected">
-                        <ui:Label text="▦" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Tất cả" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                    <ui:Button name="category-capture-ball" class="category-button">
-                        <ui:Label text="◉" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Dụng cụ bắt" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                    <ui:Button name="category-medicine" class="category-button">
-                        <ui:Label text="+" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Hồi phục" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                    <ui:Button name="category-food" class="category-button">
-                        <ui:Label text="♧" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Thức ăn" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                    <ui:Button name="category-material" class="category-button">
-                        <ui:Label text="◇" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Nguyên liệu" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                    <ui:Button name="category-equipment" class="category-button">
-                        <ui:Label text="⚔" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Trang bị" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                    <ui:Button name="category-quest-item" class="category-button">
-                        <ui:Label text="!" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Vật phẩm nhiệm vụ" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                    <ui:Button name="category-key-item" class="category-button">
-                        <ui:Label text="◆" class="category-icon" picking-mode="Ignore" />
-                        <ui:Label text="Vật phẩm chính" class="category-label" picking-mode="Ignore" />
-                        <ui:Label text="0" class="category-count" picking-mode="Ignore" />
-                    </ui:Button>
-                </ui:VisualElement>
-                <ui:VisualElement class="inventory-grid-column">
-                    <ui:VisualElement class="inventory-tools">
-                        <ui:TextField name="inventory-search-field" class="inventory-search" tooltip="Tìm tên, mã hoặc danh mục vật phẩm" />
-                        <ui:Button name="inventory-search-field-clear" text="×" tooltip="Xóa tìm kiếm" class="menu-search-clear" />
-                        <ui:DropdownField name="inventory-sort-field" class="inventory-sort" />
-                        <ui:DropdownField name="inventory-filter-field" class="inventory-filter" />
-                        <ui:Button name="inventory-view-button" text="☷" class="inventory-view-button" tooltip="Chuyển sang danh sách" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="inventory-grid-frame">
-                        <ui:ScrollView name="item-scroll" class="inventory-grid-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
-                            <ui:VisualElement name="item-grid" class="item-grid" />
-                        </ui:ScrollView>
-                        <ui:Label name="no-items-label" text="Danh mục này chưa có vật phẩm." class="no-items-label" picking-mode="Ignore" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
-                <ui:VisualElement class="inventory-detail-column">
-                    <ui:Label name="inventory-detail-empty" text="Chọn vật phẩm để xem thông tin." class="inventory-detail-empty" picking-mode="Ignore" />
-                    <ui:ScrollView name="detail-panel" class="detail-panel inventory-initially-hidden" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
-                        <ui:VisualElement name="detail-icon" class="detail-icon">
-                            <ui:Label name="detail-icon-placeholder" text="◇" class="detail-icon-placeholder" />
-                        </ui:VisualElement>
-                        <ui:Label name="detail-name" text="Chọn một vật phẩm" class="detail-name" />
-                        <ui:VisualElement class="detail-badges">
-                            <ui:Label name="detail-rarity" text="" class="detail-rarity" />
-                            <ui:Label name="detail-category" text="" class="detail-category" />
-                        </ui:VisualElement>
-                        <ui:Label name="detail-quantity" text="" class="detail-owned" />
-                        <ui:VisualElement class="detail-divider" />
-                        <ui:Label name="detail-description" text="Chọn vật phẩm trong túi để xem thông tin." class="detail-description" />
-                        <ui:Label name="detail-effect" text="" class="detail-effect" />
-                        <ui:VisualElement name="detail-source-block" class="detail-source-block">
-                            <ui:Label text="NGUỒN THU THẬP" class="detail-section-title" />
-                            <ui:Label name="detail-source" text="" class="detail-source" />
-                        </ui:VisualElement>
-                        <ui:Label name="detail-flavor" text="" class="detail-flavor" />
-                    </ui:ScrollView>
-                    <ui:VisualElement name="inventory-actions" class="inventory-actions inventory-initially-hidden">
-                        <ui:Button name="use-button" text="SỬ DỤNG" class="inventory-action-button inventory-primary-action" />
-                        <ui:VisualElement class="inventory-secondary-actions">
-                            <ui:Button name="equip-button" text="GÁN PHÍM TẮT" class="inventory-action-button" />
-                            <ui:Button name="drop-button" text="BỎ" class="inventory-action-button inventory-drop-action" />
-                        </ui:VisualElement>
-                    </ui:VisualElement>
-                </ui:VisualElement>
-            </ui:VisualElement>
-            <ui:VisualElement class="inventory-footer">
-                <ui:Label text="Q / E: danh mục  •  ↑ / ↓: chọn vật phẩm  •  Esc: quay lại" class="inventory-input-hint" />
-            </ui:VisualElement>
+<ui:UXML xmlns:bag="Capstone.Game.Inventory.Bag" xmlns:ga="Capstone.Game.UISystem" xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+  <ui:Style src="MenuTheme.uss" />
+  <ui:Style src="MenuCommon.uss" />
+  <ui:Style src="../../../../Game/Inventory/Bag/Resources/UI/BAG20261022/Bag.uss" />
+  <ui:VisualElement name="inventory-panel" class="inventory-panel menu-panel menu-theme bag-design">
+    <ui:VisualElement name="bag-canvas" class="bag-canvas">
+      <ga:AngularSurface role="panel" shape="parallel" style="position:absolute;left:28px;top:24px;width:644px;height:64px;" />
+      <ui:VisualElement name="bag-title-emblem" picking-mode="Ignore" class="bag-title-emblem" />
+      <ui:Label text="TÚI ĐỒ" picking-mode="Ignore" class="bag-title" style="position:absolute;left:144px;top:24px;width:480px;height:64px;" />
+      <bag:BagSurface kind="category-row" style="position:absolute;left:1176px;top:36px;width:176px;height:48px;" />
+      <ui:Label text="G" picking-mode="Ignore" style="position:absolute;left:1196px;top:42px;width:24px;height:36px;color:#CCAD83;font-size:24px;-unity-font-style:bold;" />
+      <ui:Label text="0" picking-mode="Ignore" name="inventory-gold-label" style="position:absolute;left:1224px;top:42px;width:112px;height:36px;" />
+      <bag:BagButton name="cancel-button" text="←  Trở lại" kind="action-primary" style="position:absolute;left:1372px;top:36px;width:196px;height:48px;" class="bag-dark" />
+      <bag:BagSurface kind="shell" style="position:absolute;left:24px;top:112px;width:1552px;height:748px;" name="inventory-shell" />
+      <ui:VisualElement name="inventory-body" style="position:absolute;left:0;right:0;top:0;bottom:0;">
+        <bag:BagSurface kind="category-panel" style="position:absolute;left:48px;top:136px;width:240px;height:628px;" name="category-panel" />
+        <ui:Label text="DANH MỤC" picking-mode="Ignore" class="bag-category-heading" style="position:absolute;left:68px;top:160px;width:172px;height:28px;" />
+        <bag:BagButton name="category-all" text="" kind="category-row" style="position:absolute;left:64px;top:194px;width:212px;height:56px;" class="category-button bag-dark is-selected">
+          <ui:VisualElement name="bag-category-all-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Tất cả" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagButton name="category-capture-ball" text="" kind="category-row" style="position:absolute;left:64px;top:259px;width:212px;height:56px;" class="category-button bag-dark">
+          <ui:VisualElement name="bag-category-capture-ball-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Dụng cụ bắt" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagButton name="category-medicine" text="" kind="category-row" style="position:absolute;left:64px;top:324px;width:212px;height:56px;" class="category-button bag-dark">
+          <ui:VisualElement name="bag-category-medicine-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Hồi phục" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagButton name="category-food" text="" kind="category-row" style="position:absolute;left:64px;top:389px;width:212px;height:56px;" class="category-button bag-dark">
+          <ui:VisualElement name="bag-category-food-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Thức ăn" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagButton name="category-material" text="" kind="category-row" style="position:absolute;left:64px;top:454px;width:212px;height:56px;" class="category-button bag-dark">
+          <ui:VisualElement name="bag-category-material-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Nguyên liệu" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagButton name="category-key-item" text="" kind="category-row" style="position:absolute;left:64px;top:519px;width:212px;height:56px;" class="category-button bag-dark">
+          <ui:VisualElement name="bag-category-key-item-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Vật phẩm chính" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagButton name="category-quest-item" text="" kind="category-row" style="position:absolute;left:64px;top:584px;width:212px;height:56px;" class="category-button bag-dark">
+          <ui:VisualElement name="bag-category-quest-item-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Vật phẩm nhiệm vụ" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagButton name="category-equipment" text="" kind="category-row" style="position:absolute;left:64px;top:649px;width:212px;height:56px;" class="category-button bag-dark">
+          <ui:VisualElement name="bag-category-equipment-icon" picking-mode="Ignore" class="category-icon" />
+          <ui:Label text="Trang bị" picking-mode="Ignore" class="category-label" />
+          <ui:Label text="0" picking-mode="Ignore" class="category-count" />
+        </bag:BagButton>
+        <bag:BagSurface kind="browser" style="position:absolute;left:312px;top:136px;width:784px;height:628px;" name="bag-browser" />
+        <ui:VisualElement name="bag-browser-art" picking-mode="Ignore" style="position:absolute;left:516px;top:410px;width:560px;height:280px;background-size:cover;opacity:0.10;" />
+        <ui:VisualElement name="bag-search-group" picking-mode="Ignore" style="position:absolute;left:328px;top:154px;width:340px;height:48px;">
+          <bag:BagSurface kind="search" style="position:absolute;left:0;top:0;width:340px;height:48px;" />
+          <ui:TextField name="inventory-search-field" tooltip="Tìm tên, mã hoặc danh mục vật phẩm" style="position:absolute;left:0;top:0;width:340px;height:48px;" />
+          <ui:VisualElement name="bag-search-icon" picking-mode="Ignore" style="position:absolute;left:12px;top:14px;width:20px;height:20px;background-size:contain;" />
+          <bag:BagButton name="inventory-search-field-clear" text="×" kind="action-small" style="position:absolute;left:300px;top:4px;width:32px;height:40px;" />
         </ui:VisualElement>
+        <bag:BagSurface kind="sort" style="position:absolute;left:680px;top:154px;width:176px;height:48px;" />
+        <bag:BagSurface kind="filter" style="position:absolute;left:868px;top:154px;width:148px;height:48px;" />
+        <ui:DropdownField name="inventory-sort-field" style="position:absolute;left:680px;top:154px;width:176px;height:48px;" />
+        <ui:DropdownField name="inventory-filter-field" style="position:absolute;left:868px;top:154px;width:148px;height:48px;" />
+        <bag:BagButton name="inventory-view-button" text="" kind="view-toggle" style="position:absolute;left:1028px;top:154px;width:52px;height:48px;" class="bag-dark">
+          <ui:VisualElement name="bag-view-icon" picking-mode="Ignore" style="position:absolute;left:14px;top:12px;width:24px;height:24px;background-size:contain;-unity-background-image-tint-color:#EDE9E1;" />
+        </bag:BagButton>
+        <ui:Label text="" picking-mode="Ignore" name="bag-type-count" class="bag-type-count" style="position:absolute;left:328px;top:212px;width:440px;height:30px;" />
+        <ui:Label text="Ô vuông" picking-mode="Ignore" name="bag-mode-label" class="bag-mode-label" style="position:absolute;left:852px;top:212px;width:220px;height:30px;" />
+        <ui:ScrollView name="item-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+          <ui:VisualElement name="item-grid" />
+        </ui:ScrollView>
+        <ui:VisualElement name="bag-empty-state" picking-mode="Ignore" class="bag-empty">
+          <bag:BagSurface kind="browser" style="position:absolute;left:0px;top:0px;width:596px;height:260px;" />
+          <ui:VisualElement name="bag-empty-icon" picking-mode="Ignore" class="bag-empty-icon" />
+          <ui:Label text="Túi đồ đang trống" picking-mode="Ignore" name="no-items-label" />
+        </ui:VisualElement>
+        <ui:Label text="Số trên ô là tổng vật phẩm cùng loại." picking-mode="Ignore" name="bag-grid-helper" style="position:absolute;left:328px;top:704px;width:744px;height:32px;-unity-text-align:middle-center;" />
+        <bag:BagSurface kind="inspector" style="position:absolute;left:1112px;top:136px;width:440px;height:628px;" name="bag-inspector" />
+        <bag:BagSurface kind="detail-art" style="position:absolute;left:1136px;top:156px;width:392px;height:172px;" name="bag-detail-art" />
+        <ui:VisualElement name="detail-icon" picking-mode="Ignore">
+          <ui:Label text="◇" picking-mode="Ignore" name="detail-icon-placeholder" />
+        </ui:VisualElement>
+        <ui:VisualElement name="bag-detail-empty-group" picking-mode="Ignore" style="position:absolute;left:1136px;top:156px;width:392px;height:172px;">
+          <ui:VisualElement name="bag-detail-empty-art" picking-mode="Ignore" style="position:absolute;left:168px;top:16px;width:56px;height:56px;background-size:contain;" />
+          <ui:Label text="Chọn vật phẩm" picking-mode="Ignore" name="inventory-detail-empty" />
+          <ui:Label text="Chọn một vật phẩm để xem chi tiết." picking-mode="Ignore" name="bag-detail-empty-hint" />
+        </ui:VisualElement>
+        <ui:ScrollView name="detail-panel" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
+          <ui:VisualElement class="ui-copy-section bag-item-summary">
+          <ui:Label text="" picking-mode="Ignore" name="detail-name" />
+          <ui:VisualElement class="detail-badges">
+            <ui:Label text="" picking-mode="Ignore" name="detail-category" />
+            <ui:Label text="" picking-mode="Ignore" name="detail-rarity" />
+          </ui:VisualElement>
+          <ui:Label text="" picking-mode="Ignore" name="detail-quantity" />
+          </ui:VisualElement>
+          <ui:VisualElement class="ui-copy-section">
+          <ui:Label text="MÔ TẢ &amp; HIỆU QUẢ" class="ui-section-heading" picking-mode="Ignore" />
+          <ui:Label text="" picking-mode="Ignore" name="detail-description" />
+          <ui:Label text="" picking-mode="Ignore" name="detail-effect" />
+          </ui:VisualElement>
+          <ui:VisualElement name="detail-source-block" class="ui-copy-section">
+            <ui:Label text="NGUỒN THU THẬP" picking-mode="Ignore" class="detail-section-title" />
+            <ui:Label text="" picking-mode="Ignore" name="detail-source" />
+          </ui:VisualElement>
+          <ui:Label text="" picking-mode="Ignore" name="detail-flavor" />
+        </ui:ScrollView>
+        <ui:Label text="" picking-mode="Ignore" name="bag-action-feedback" class="bag-feedback" />
+        <ui:VisualElement name="inventory-actions">
+          <bag:BagButton name="use-button" text="Sử dụng" kind="action-primary" style="position:absolute;left:0px;top:0px;width:392px;height:56px;" class="bag-dark" />
+          <ui:VisualElement class="inventory-secondary-actions">
+            <bag:BagButton name="equip-button" text="Gán R/T" kind="action-small" style="position:absolute;left:0px;top:0px;width:190px;height:44px;" class="" />
+            <bag:BagButton name="drop-button" text="Bỏ" kind="action-small" style="position:absolute;left:202px;top:0px;width:190px;height:44px;" class="" />
+          </ui:VisualElement>
+        </ui:VisualElement>
+      </ui:VisualElement>
+      <bag:BagSurface kind="category-row" style="position:absolute;left:48px;top:780px;width:1504px;height:56px;" />
+      <ui:Label text="" picking-mode="Ignore" name="bag-footer-count" class="bag-footer-count" style="position:absolute;left:68px;top:788px;width:200px;height:40px;" />
+      <ui:Label text="Q/E Danh mục · ↑/↓ Chọn · Enter Thao tác · Esc Quay lại" picking-mode="Ignore" class="bag-footer-hint" style="position:absolute;left:288px;top:788px;width:900px;height:40px;" />
+      <ui:Label text="R / T Vật phẩm nhanh" picking-mode="Ignore" class="bag-footer-quick" style="position:absolute;left:1224px;top:788px;width:300px;height:40px;" />
     </ui:VisualElement>
+  </ui:VisualElement>
 </ui:UXML>

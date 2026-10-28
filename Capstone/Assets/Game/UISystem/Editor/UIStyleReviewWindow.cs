@@ -12,7 +12,7 @@ namespace Capstone.Game.UISystem.Editor {
     public sealed class UIStyleReviewWindow : EditorWindow {
         const string Folder = "Assets/ThangTest/UIThang/Inventory/UI/";
         const string ArchivedFolder = "Assets/Editor/UIStyleBaselineTemp/";
-        const string Output = "../artifacts/ui-style-audit/resolved/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "ui-style-audit/resolved/";
         static readonly string[] Documents = { "MonsterInventory", "InventoryPanel", "PetsPanel", "BoxPanel", "QuestPanel", "SkillsPanel", "PetDetailsPanel", "PetLevelUpPanel", "PetHealPanel", "PetEvolutionPanel", "PetReleasePanel" };
         static readonly Vector2[] Viewports = { new Vector2(1920,1080), new Vector2(1366,768) };
         static bool running;

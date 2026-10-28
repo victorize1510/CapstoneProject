@@ -44,6 +44,8 @@ namespace Capstone.Game.ShopSystem {
             service = new ShopPurchaseService(bag, currency);
             root = documentRoot?.Q("shop-panel");
             if (root == null) return;
+            UiReadability.Bind(documentRoot);
+            foreach(var group in root.Query<VisualElement>(className:"shop-detail-copy").ToList())UiReadability.Add(group);
             cardTemplate = Resources.Load<VisualTreeAsset>("UI/ShopProductCard");
             grid = root.Q("shop-grid"); detail = root.Q("shop-detail"); purchase = root.Q("shop-purchase");
             productScroll = root.Q<ScrollView>(className: "shop-grid-scroll");

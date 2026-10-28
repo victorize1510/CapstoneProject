@@ -598,7 +598,10 @@ namespace Capstone.Game.HudSystem {
                 return species.Trim() + ":" + obtainedOrder;
             }
 
-            Transform root = transform.root;
+            // An organizer may contain multiple actors. Identity belongs to this pet,
+            // never to the shared scene/prefab container.
+            PetController actor = GetComponentInParent<PetController>(true);
+            Transform root = actor != null ? actor.transform : transform;
             string scenePath = root.gameObject.scene.path;
             return scenePath + ":" + root.name.Replace("(Clone)", string.Empty).Trim() + ":" + root.GetSiblingIndex();
         }

@@ -258,6 +258,9 @@ namespace Capstone.Game.Inventory {
 
         bool TryHandleKey(KeyCode key) {
             if (key == KeyCode.None) return false;
+            // BAG choice menus own arrows/submit until the command frame ends.
+            // Escape continues through the existing native-dropdown cancellation path.
+            if(key!=closeKey && Capstone.Game.Inventory.Bag.BagChoicePopup.OwnsKey(document?.rootVisualElement))return false;
             if (key != closeKey && IsEditingUiText()) return false;
             if (shortcutRouter != null && shortcutRouter.HandleShortcut(key, Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) {
                 MarkHandled(); return true;
@@ -325,6 +328,15 @@ namespace Capstone.Game.Inventory {
             }
 
             if (key == confirmKey || key == alternateConfirmKey) {
+                // The root key handler consumes submit before Button's navigation
+                // handler. Honor the focused Back control through its existing
+                // close request instead of using the selected inventory item.
+                var focused = document?.rootVisualElement?.focusController?.focusedElement as Button;
+                if (focused != null && focused.name == "cancel-button" && focused.enabledInHierarchy) {
+                    inventory.RequestClose();
+                    MarkHandled();
+                    return true;
+                }
                 inventory.ConfirmSelected();
                 MarkHandled();
                 return true;
