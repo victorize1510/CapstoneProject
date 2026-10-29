@@ -33,7 +33,8 @@ namespace Capstone.Game.CodexSystem {
                 string nameKey = entry.Known && (needle.Length > 0 || Sort == CodexSort.Name)
                     ? VietnameseUI.SearchKey(entry.Name) : string.Empty;
                 // Do not leak undiscovered names, types or regions through filters.
-                if (needle.Length > 0 && !entry.Number.ToString("D3").Contains(needle)
+                if (needle.Length > 0 && !entry.Number.ToString("D2").Contains(needle)
+                    && !entry.Number.ToString("D3").Contains(needle)
                     && (!entry.Known || !nameKey.Contains(needle))) continue;
                 if (Sort == CodexSort.Name) nameKeys[entry] = nameKey;
                 output.Add(entry);

@@ -8,13 +8,13 @@
 - Tự động kiểm tra sau reload script: tạo `Temp/RunUICompletion.request` trong project Unity trước khi refresh. Editor tiêu thụ yêu cầu một lần; không có hook runtime.
 - Bộ xem thử nằm hoàn toàn trong thư mục `Editor`, có 0/1/25/26/320 mục. Không tạo hoặc ghi save.
 
-## Kết nối dữ liệu sau này
+## Kết nối dữ liệu
 
 `PetCodexPanelController.SetProvider(IPetCodexProvider)` nhận snapshot hiển thị. Provider phát `Changed` sau khi snapshot thay đổi. Controller chỉ refresh khi đang mở.
 
 `PetCodexEntryViewData` chứa ID ổn định, số thứ tự, tên riêng, trạng thái khám phá, hệ, vùng, độ hiếm, ảnh và chuỗi tiến hóa. Trường chưa biết để null/rỗng. Controller hiển thị “Chưa rõ”; mục chưa khám phá chỉ có số thứ tự, bóng mờ và dấu hỏi.
 
-`CanSetFavorite` và `TrySetFavorite` dành cho yêu thích theo loài trong Cẩm nang, độc lập với yêu thích từng thú ở đội/kho. Chưa có provider runtime hoặc cơ chế lưu cho tính năng này.
+`CanSetFavorite` và `TrySetFavorite` dành cho yêu thích theo loài trong Cẩm nang, độc lập với yêu thích từng thú ở đội/kho. Provider runtime ba rồng đã có từ 29/10; favorite theo loài chưa có cơ chế lưu nên vẫn khóa.
 
 Không có provider: thông báo “Cẩm nang chưa có thông tin sinh vật.”, tiến độ `—`, khóa tìm/lọc và giải thích qua tooltip. Không tự tạo dữ liệu chính thức.
 
@@ -32,4 +32,4 @@ Không có provider: thông báo “Cẩm nang chưa có thông tin sinh vật.�
 
 ## Giới hạn đợt này
 
-Không thêm theo dõi khám phá/thu phục, catalog loài chính thức, save mới, dữ liệu thống kê mới hoặc Shop. Không sửa SampleScene hay hệ Spawn/Recall.
+Bản gốc không thêm catalog runtime. Bổ sung 29/10 theo yêu cầu: catalog ba rồng tham chiếu prefab có sẵn và provider đọc trạng thái sở hữu thật. Không bổ sung save schema, lịch sử khám phá, favorite theo loài, thống kê mới hoặc Shop. Không sửa SampleScene hay hệ Spawn/Recall.

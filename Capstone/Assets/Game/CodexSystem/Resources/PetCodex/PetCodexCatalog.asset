@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bc5d2c8a62965e4caec55cc5f0792e4, type: 3}
+  m_Name: PetCodexCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CodexSystem.PetCodexCatalog
+  species:
+  - id: dragon-dusk
+    number: 1
+    sourcePrefab: {fileID: 537217093674518083, guid: 24cd2f33f4bd2264499982b0af608b08, type: 3}
+    portrait: {fileID: 0}
+    region: 
+    height: 
+    weight: 
+    habitat: 
+    trait: 
+    favoriteFood: 
+  - id: dragon-darkness
+    number: 2
+    sourcePrefab: {fileID: 2945029398312691855, guid: 5768bd01684a1274d8a758479bfe94dc, type: 3}
+    portrait: {fileID: 0}
+    region: 
+    height: 
+    weight: 
+    habitat: 
+    trait: 
+    favoriteFood: 
+  - id: dragon-nightfall
+    number: 3
+    sourcePrefab: {fileID: 4304348002892361780, guid: b24397c846b1f6f4c8b6a3ec93ac09f1, type: 3}
+    portrait: {fileID: 0}
+    region: 
+    height: 
+    weight: 
+    habitat: 
+    trait: 
+    favoriteFood: 
+  evolutionItems:
+  - {fileID: 11400000, guid: 5bd730739fc04e47a6f9f66bc2a2bf4d, type: 2}

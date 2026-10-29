@@ -1,6 +1,6 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:Button class="codex-category">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:cx="Capstone.Game.CodexSystem">
+    <cx:CodexButton class="codex-category" kind="category">
         <ui:Label name="category-name" class="codex-category-name" picking-mode="Ignore" />
         <ui:Label name="category-count" picking-mode="Ignore" />
-    </ui:Button>
+    </cx:CodexButton>
 </ui:UXML>

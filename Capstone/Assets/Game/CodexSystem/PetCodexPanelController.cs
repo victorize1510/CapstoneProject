@@ -47,11 +47,21 @@ namespace Capstone.Game.CodexSystem {
         int page;
         string selectedId;
         bool open;
+        CodexPresentation presentation;
         bool subscribed;
         public event Action BackRequested;
         public bool IsOpen => open;
         public int VisibleCount => Mathf.Min(PetCodexQuery.PageSize, Mathf.Max(0, filtered.Count - page * PetCodexQuery.PageSize));
         public int PageCount => Mathf.Max(1, Mathf.CeilToInt(filtered.Count / (float)PetCodexQuery.PageSize));
+
+        void Update() {
+            if (!open || root?.panel == null) return;
+            // This project's gameplay gate can suspend the UI Submit action map while a panel is open.
+            // Match its existing legacy keyboard routing, without treating text entry as a button submit.
+            if (!Input.GetKeyDown(KeyCode.Return) && !Input.GetKeyDown(KeyCode.KeypadEnter) && !Input.GetKeyDown(KeyCode.Space)) return;
+            if (!(root.focusController.focusedElement is Button button) || !button.enabledInHierarchy || !root.Contains(button)) return;
+            if (button is CodexButton codex) codex.SubmitKeyboard();
+        }
 
         public void Bind(UIDocument document) => Bind(document?.rootVisualElement);
         public void Bind(VisualElement documentRoot) {
@@ -61,6 +71,7 @@ namespace Capstone.Game.CodexSystem {
             UiReadability.Bind(documentRoot);
             UiReadability.SoftenGroups(root,"codex-types");
             foreach(var group in root.Query<VisualElement>(className:"codex-types").ToList())UiReadability.Add(group);
+            presentation = CodexPresentation.Attach(root);
             grid = root.Q("codex-grid"); details = root.Q("codex-details"); filterPanel = root.Q("codex-filters");
             search = root.Q<TextField>("codex-search"); empty = root.Q<Label>("codex-empty");
             detailEmpty = root.Q<Label>("codex-detail-empty"); progressNumber = root.Q<Label>("codex-progress-number");
@@ -90,7 +101,7 @@ namespace Capstone.Game.CodexSystem {
             for (int i = 0; i < pageButtons.Count; i++) { Button button = pageButtons[i]; Click(button, () => { if (button.userData is int target) { page = target; RenderPage(); } }); }
             Click(root.Q<Button>("codex-back"), () => BackRequested?.Invoke());
             Click(root.Q<Button>("codex-clear"), () => { search.value = string.Empty; search.Focus(); });
-            Click(root.Q<Button>("codex-filter-toggle"), () => { bool visible = filterPanel.resolvedStyle.display == DisplayStyle.None; Show(filterPanel, visible); });
+            Click(root.Q<Button>("codex-filter-toggle"), () => { bool visible = filterPanel.resolvedStyle.display == DisplayStyle.None; Show(filterPanel, visible); presentation?.FitFilters(); });
             Click(root.Q<Button>("codex-reset"), ResetFilters);
             Click(favorite, ToggleFavorite);
             Change(search, evt => { query.Search = evt.newValue; ApplyQuery(); });
@@ -107,7 +118,10 @@ namespace Capstone.Game.CodexSystem {
             Change(rarity, _ => { query.Rarity = rarity.index > 0 ? (PetRarity?)rarity.index : null; ApplyQuery(); });
             Change(discovery, _ => { query.Discovery = discovery.index > 0 ? (CodexDiscovery?)(discovery.index - 1) : null; ApplyQuery(); });
             Change(extraSort, _ => { query.Sort = (CodexSort)Mathf.Max(0, extraSort.index); ApplyQuery(); });
-            SetProvider(provider ?? providerSource as IPetCodexProvider);
+            var source = provider ?? providerSource as IPetCodexProvider;
+            if (source == null && Application.isPlaying && PetCodexCatalog.Default != null)
+                source = GetComponent<PetCodexRuntimeProvider>() ?? gameObject.AddComponent<PetCodexRuntimeProvider>();
+            SetProvider(source);
             if (!open) Refresh();
         }
 
@@ -116,11 +130,14 @@ namespace Capstone.Game.CodexSystem {
             if (open && isActiveAndEnabled) Subscribe();
             if (open) Refresh();
         }
-        public void Open() { open = true; Subscribe(); Show(root, true); Refresh(); root?.Q<Button>("codex-back")?.Focus(); }
+        public void Open() {
+            if (provider is PetCodexRuntimeProvider runtime) runtime.RefreshSnapshot();
+            open = true; Subscribe(); Show(root, true); Refresh(); root?.Q<Button>("codex-back")?.Focus();
+        }
         public void Close() { open = false; Unsubscribe(); Show(root, false); }
         public bool TryCloseFilters() {
             if (filterPanel == null || filterPanel.resolvedStyle.display == DisplayStyle.None) return false;
-            Show(filterPanel, false); root.Q<Button>("codex-filter-toggle")?.Focus(); return true;
+            Show(filterPanel, false); presentation?.FitFilters(); root.Q<Button>("codex-filter-toggle")?.Focus(); return true;
         }
         void OnEnable() { if (open) Subscribe(); }
         void OnDisable() { Unsubscribe(); Close(); }
@@ -173,7 +190,8 @@ namespace Capstone.Game.CodexSystem {
                 categories[i].Q<Label>("category-count").text = available ? count.ToString() : "—";
                 categories[i].SetEnabled(available); categories[i].tooltip = available ? "Lọc danh sách sinh vật." : unavailable;
             }
-            foreach (var sort in sorts) sort.SetEnabled(available);
+            foreach (var sort in sorts) { sort.SetEnabled(available); sort.tooltip = available ? "Sắp xếp danh sách sinh vật." : unavailable; }
+            root.Q<Button>("codex-clear").tooltip = available ? "Xóa tìm kiếm" : unavailable;
             query.Apply(entries, filtered);
             page = Mathf.Clamp(page, 0, PageCount - 1);
             ValidateSelection(); RenderPage();
@@ -201,9 +219,10 @@ namespace Capstone.Game.CodexSystem {
                 var card = cards[i]; bool visible = index < filtered.Count;
                 Show(card.parent, visible); if (!visible) { card.userData = null; continue; }
                 var entry = filtered[index]; card.userData = entry.Id;
+                presentation?.BindCard(i, entry);
                 card.EnableInClassList("is-selected", entry.Id == selectedId);
                 var view = cardViews[i];
-                view.Number.text = entry.Number.ToString("D3");
+                view.Number.text = entry.Number.ToString("D2");
                 view.Type.text = entry.Known ? PetCodexQuery.TypeName(entry.PrimaryType) : string.Empty;
                 Show(view.Favorite, entry.Known && entry.Favorite);
                 Show(view.Unknown, !entry.Known || entry.Icon == null);
@@ -215,6 +234,7 @@ namespace Capstone.Game.CodexSystem {
             for (int i = 0; i < sorts.Count; i++) sorts[i].EnableInClassList("is-selected", i == (int)query.Sort);
             extraSort.SetValueWithoutNotify(SortNames[(int)query.Sort]);
             RenderPagination(); RenderDetails();
+            presentation?.Refresh(filtered.Find(e => e.Id == selectedId), provider?.Entries != null && provider.Entries.Count > 0, filtered.Count);
         }
         void RenderPagination() {
             int count = PageCount;
@@ -249,19 +269,23 @@ namespace Capstone.Game.CodexSystem {
             var entry = filtered.Find(e => e.Id == selectedId);
             Show(details, entry != null); Show(detailEmpty, entry == null);
             if (entry == null) return;
-            LabelText("codex-number", "#" + entry.Number.ToString("D3"));
+            LabelText("codex-number", "#" + entry.Number.ToString("D2"));
             LabelText("codex-name", entry.Known ? entry.Name : "Chưa khám phá");
             LabelText("codex-description", entry.Known ? VietnameseUI.PetDescription(entry.Description) : "Khám phá sinh vật này để mở thông tin cẩm nang.");
             Sprite sprite = entry.Portrait != null ? entry.Portrait : entry.Icon;
             detailPortrait.style.backgroundImage = sprite != null ? new StyleBackground(sprite) : StyleKeyword.None;
             detailPortrait.style.unityBackgroundImageTintColor = entry.Known ? Color.white : new Color(0, 0, 0, .22f);
-            for (int i = 0; i < badges.Count; i++) { var type = i == 0 ? entry.PrimaryType : entry.SecondaryType; badges[i].text = PetCodexQuery.TypeName(type); Show(badges[i].parent, entry.Known && type != CodexType.Unknown); }
+            for (int i = 0; i < badges.Count; i++) { var type = !entry.Known ? CodexType.Unknown : i == 0 ? entry.PrimaryType : entry.SecondaryType; badges[i].text = entry.Known ? PetCodexQuery.TypeName(type) : string.Empty; Show(badges[i].parent, entry.Known && type != CodexType.Unknown); }
             LabelText("codex-basic", entry.Known ? $"Chiều cao: {Value(entry.Height)}\nCân nặng: {Value(entry.Weight)}\nKhu vực sinh sống: {Value(entry.Habitat)}\nĐặc tính: {Value(entry.Trait)}\nThức ăn ưa thích: {Value(entry.FavoriteFood)}\nĐộ hiếm: {VietnameseUI.Rarity(entry.Rarity)}" : VietnameseUI.Unknown);
             favorite.text = entry.Known && entry.Favorite ? "★  Đã yêu thích" : "Đánh dấu yêu thích";
             favorite.SetEnabled(entry.Known && provider?.CanSetFavorite == true);
-            favorite.tooltip = provider?.CanSetFavorite == true ? "Đánh dấu loài trong cẩm nang." : "Đánh dấu sẽ khả dụng khi dữ liệu cẩm nang được kết nối.";
+            favorite.tooltip = !entry.Known ? "Khám phá loài này để mở thông tin."
+                : provider?.CanSetFavorite == true ? "Đánh dấu loài trong cẩm nang."
+                : "Nguồn dữ liệu hiện chưa hỗ trợ lưu yêu thích theo loài.";
             foreach (var view in evolutionViews) Show(view.Root, false);
             bool hasEvolution = entry.Known && entry.Evolution != null && entry.Evolution.Count > 0;
+            evolutionUnknown.text = entry.Known && entry.Evolution != null && entry.Evolution.Count == 0
+                ? "Không có dạng tiến hóa tiếp theo." : VietnameseUI.Unknown;
             Show(evolutionUnknown, !hasEvolution);
             if (!hasEvolution) return;
             int used = 0;
