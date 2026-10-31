@@ -109429,6 +109429,7 @@ MonoBehaviour:
   hideStandaloneQuestTrackerHud: 1
   hideWhileUiOpen: 1
   enableSkillHotkeys: 1
+  skillBarDisplayMode: 0
   refreshInterval: 0.15
   skillHotkeys: 7a000000780000006300000076000000
 --- !u!4 &541011725
@@ -217431,6 +217432,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f36916143c7509543b1b8d40091baa24, type: 3}
+--- !u!1001 &1089066626
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 33.276737
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -95.442406
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 48.103214
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
+      propertyPath: m_Name
+      value: Dragon Darkness
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 66f5299d52f11b84994f0142cd1a3292, type: 3}
 --- !u!1 &1089487268
 GameObject:
   m_ObjectHideFlags: 0
@@ -337258,6 +337316,63 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1695464005}
   m_Mesh: {fileID: -3611471854593489396, guid: 40e9efa1eec80434e8f4ec7d54191999, type: 3}
+--- !u!1001 &1696540806
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 40.77139
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -95.44241
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 42.0744
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
+      propertyPath: m_Name
+      value: Dragon Dusk
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6673ba2f77187aa41a22500b3212c448, type: 3}
 --- !u!1 &1696645951
 GameObject:
   m_ObjectHideFlags: 0
@@ -427203,3 +427318,5 @@ SceneRoots:
   - {fileID: 1823797050}
   - {fileID: 2001524942}
   - {fileID: 2132942559}
+  - {fileID: 1089066626}
+  - {fileID: 1696540806}

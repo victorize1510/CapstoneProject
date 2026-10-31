@@ -132,7 +132,7 @@ namespace Capstone.Game.HudSystem {
         public string Nature { get { EnsureLegacyGenetics(); return nature; } }
         public int BaseStatTotal => PetStatCalculator.GetBaseStatTotal(this);
         public bool CodexRegistered => codexRegistered;
-        public string CodexNumber => codexNumber ?? string.Empty;
+        public string CodexNumber => Capstone.Game.CodexSystem.PetCodexCatalog.NumberFor(this, codexNumber);
         public string CodexDescription => codexDescription ?? string.Empty;
         public string CurrentFormId => string.IsNullOrWhiteSpace(currentFormId) ? "base" : currentFormId.Trim();
         public int EvolutionStage => Mathf.Max(0, evolutionStage);

@@ -1,5 +1,5 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements">
-    <ui:Button class="codex-card">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:cx="Capstone.Game.CodexSystem">
+    <cx:CodexButton class="codex-card" kind="card">
         <ui:VisualElement name="portrait" class="codex-card-portrait" picking-mode="Ignore">
             <ui:Label name="unknown" text="?" class="codex-card-unknown" picking-mode="Ignore" />
             <ui:Label name="favorite" text="★" class="codex-card-favorite" picking-mode="Ignore" />
@@ -8,5 +8,5 @@
             <ui:Label name="number" picking-mode="Ignore" />
             <ui:Label name="type" class="codex-card-type" picking-mode="Ignore" />
         </ui:VisualElement>
-    </ui:Button>
+    </cx:CodexButton>
 </ui:UXML>

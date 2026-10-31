@@ -9,6 +9,10 @@ using UnityEngine.UI;
 using V = Capstone.Game.HudSystem.GameplayHudVisuals;
 
 namespace Capstone.Game.HudSystem {
+    public enum SkillBarDisplayMode {
+        [InspectorName("Luôn hiện 4 ô")] AlwaysVisible,
+        [InspectorName("Chỉ khi thú được triệu hồi")] WhilePetSummoned
+    }
     [DisallowMultipleComponent]
     public sealed class GameplayHudController : MonoBehaviour {
         const string RootName = "GameplayHUDRoot";
@@ -28,6 +32,9 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] bool hideStandaloneQuestTrackerHud = true;
         [SerializeField] bool hideWhileUiOpen = true;
         [SerializeField] bool enableSkillHotkeys = true;
+        [Tooltip("Always Visible: luôn hiện 4 ô. While Pet Summoned: chỉ hiện sau khi triệu hồi xong; thu thú thì ẩn. Không thay đổi điều kiện sử dụng kỹ năng.")]
+        [InspectorName("Hiển thị 4 ô kỹ năng")]
+        [SerializeField] SkillBarDisplayMode skillBarDisplayMode = SkillBarDisplayMode.AlwaysVisible;
         [SerializeField, Min(.05f)] float refreshInterval = .15f;
         [Header("Existing skill bindings")]
         [SerializeField] KeyCode[] skillHotkeys = { KeyCode.Z, KeyCode.X, KeyCode.C, KeyCode.V };
@@ -277,9 +284,9 @@ namespace Capstone.Game.HudSystem {
         }
         void SyncVisibility() {
             if (root == null) return;
-            // Keep the four bindings visible while the pet is withdrawn or spawning.
-            // RefreshSkills owns availability; hiding the whole bar loses that feedback.
-            bool skillsVisible = true;
+            PetController activePet = commandInput != null ? commandInput.activePet : null;
+            bool skillsVisible = skillBarDisplayMode == SkillBarDisplayMode.AlwaysVisible
+                || (activePet != null && activePet.IsSummoned && !activePet.IsSummonPresentationPending);
             if (skillRegion != null && skillRegion.gameObject.activeSelf != skillsVisible) {
                 RefreshSkills();
                 skillRegion.gameObject.SetActive(skillsVisible);
