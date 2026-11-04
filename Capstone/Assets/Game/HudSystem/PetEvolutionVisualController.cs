@@ -9,6 +9,10 @@ namespace Capstone.Game.HudSystem {
         GameObject runtimeVisual;
         Renderer[] baseRenderers;
         Animator baseAnimator;
+        public Transform ActiveVisualTransform => runtimeVisual != null ? runtimeVisual.transform
+        : (baseVisual != null ? baseVisual.transform : transform);
+        public Animator ActiveAnimator => runtimeVisual != null ? runtimeVisual.GetComponentInChildren<Animator>(true)
+        : baseAnimator;
 
         void Awake() {
             if (visualRoot == null) visualRoot = transform;
