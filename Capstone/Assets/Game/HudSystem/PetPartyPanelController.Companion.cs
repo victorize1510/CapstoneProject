@@ -35,7 +35,7 @@ namespace Capstone.Game.HudSystem {
                 if(label.ClassListContains("companion-title")||label.ClassListContains("companion-name")||label.ClassListContains("companion-section-label"))
                     label.style.unityFontDefinition=FontDefinition.FromFont(serif);
             }
-            foreach(var icon in companionDesign.Query<VisualElement>(className:"companion-icon").ToList())foreach(string cls in icon.GetClasses())if(cls.StartsWith("ci-")){string id=cls.Substring(3);if(id=="illustration")id="portrait";if(id=="details")id="profile";if(icon.parent?.name=="pets-tab-growth")id="grow";icon.style.backgroundImage=new StyleBackground(Capstone.Game.UISystem.InteractionR3Assets.Load("Masks/"+id));}
+            foreach(var icon in companionDesign.Query<VisualElement>(className:"companion-icon").ToList())foreach(string cls in icon.GetClasses())if(cls.StartsWith("ci-")){string id=cls.Substring(3);if(Capstone.Game.SettingsSystem.SettingsFinalArt.StatIcon(icon,id,id=="hp"))continue;if(id=="illustration")id="portrait";if(id=="details")id="profile";if(icon.parent?.name=="pets-tab-growth")id="grow";icon.style.backgroundImage=new StyleBackground(Capstone.Game.UISystem.InteractionR3Assets.Load("Masks/"+id));}
             var emblem=panel.Q("companion-emblem");if(emblem!=null)emblem.style.backgroundImage=new StyleBackground(CompanionArt.Load("Art/companion-title-emblem"));
             foreach(var corner in companionDesign.Query<VisualElement>(className:"companion-corner").ToList())corner.style.backgroundImage=new StyleBackground(CompanionArt.Load("Art/champagne-leaf-corner"));
             if(companionArt==null)companionArt=Resources.Load<PetCompanionArtCatalog>("UI/Companion/Portraits");

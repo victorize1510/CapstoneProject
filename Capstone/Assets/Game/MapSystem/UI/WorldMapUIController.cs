@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace Capstone.Game.MapSystem.UI {
     [DefaultExecutionOrder(-100), DisallowMultipleComponent]
-    public sealed class WorldMapUIController : MonoBehaviour {
+    public sealed partial class WorldMapUIController : MonoBehaviour {
         [SerializeField] WorldMapController worldMap;
         [SerializeField] WorldMapUITheme theme;
         [SerializeField] RectTransform overlayRoot;
@@ -42,7 +42,7 @@ namespace Capstone.Game.MapSystem.UI {
         public event Action<MapMarkerData> MarkerSelected;
         public event Action<MapFilterGroup, bool> FilterChanged;
         public RectTransform MarkerContainer => markerContainer;
-        public Transform NavigationRoot => clusters?.IsPopupOpen == true ? clusters.NavigationRoot : screen;
+        public Transform NavigationRoot => clusters?.IsPopupOpen == true ? clusters.NavigationRoot : overlayRoot?.parent;
         public WorldMapUITheme Theme => theme;
         public float ViewportAspect => 1832f / 818f;
 
@@ -65,122 +65,8 @@ namespace Capstone.Game.MapSystem.UI {
         public void EnsureBuilt() { if (screen == null && theme != null && overlayRoot != null && mapViewport != null) Rebuild(); }
 
         [ContextMenu("Rebuild World Map UI")]
-        public void Rebuild() {
-            if (theme == null || worldMap == null || overlayRoot == null || mapViewport == null) return;
-            RestoreIcons(); sourceViews.Clear(); dataViews.Clear(); selectedId = null;
-            fittedViewportSize = Vector2.zero;
-            for (int i = overlayRoot.childCount - 1; i >= 0; i--) {
-                var child = overlayRoot.GetChild(i).gameObject; child.SetActive(false);
-                if (Application.isPlaying) Destroy(child); else DestroyImmediate(child);
-            }
-            if (overlayRoot.TryGetComponent(out Image surface)) { surface.color = Color.clear; surface.raycastTarget = false; }
-            if (overlayRoot.TryGetComponent(out Outline oldBorder)) oldBorder.enabled = false;
-            MapUIFactory.Stretch(overlayRoot);
-            screen = MapUIFactory.Rect(overlayRoot, "MapScreen", 0, 0, 1920, 1080);
-            screen.anchorMin = screen.anchorMax = screen.pivot = new Vector2(.5f, .5f); screen.anchoredPosition = Vector2.zero;
-            var header = MapUIFactory.Rect(screen, "TopHeader", 0, 0, 1920, 76);
-            var emblem = MapUIFactory.Rect(header, "Emblem", 24, 26, 24, 24);
-            MapUIFactory.Panel(emblem, theme, Capstone.Game.UISystem.MenuPalette.HeadingAccent, false, false).sprite = null;
-            emblem.pivot = new Vector2(.5f,.5f);
-            emblem.anchoredPosition = new Vector2(36,-38);
-            emblem.localRotation = Quaternion.Euler(0,0,45);
-            MapUIFactory.Text(header, theme, "Title", "BẢN ĐỒ", 66, 0, 300, 76, 38, true);
-            MapUIFactory.Text(header, theme, "Subtitle", "Xem khu vực và các điểm đánh dấu quan trọng", 370, 0, 1060, 76, 18);
-            var back = MapUIFactory.Button(MapUIFactory.Rect(header, "BackButton", 1752, 17, 146, 42), theme, Capstone.Game.UISystem.VietnameseUI.Back, 15);
-            Capstone.Game.UISystem.MenuTypography.StyleBack(back);
-            back.onClick.AddListener(worldMap.RequestBackFromUI);
-            var divider = MapUIFactory.Rect(screen, "HeaderDivider", 24, 75, 1872, 1);
-            MapUIFactory.Panel(divider, theme, theme.border, false, false);
-            var frame = MapUIFactory.Rect(screen, "MapFrame", 32, 112, 1856, 842);
-            var frameImage = MapUIFactory.Panel(frame, theme, theme.border, false, false);
-            frameImage.sprite = theme.roundedBorder;
-            Compass("N", 942, 94); Compass("E", 1870, 515); Compass("S", 942, 936); Compass("W", 14, 515);
-
-            markerContainer = MapUIFactory.Rect(screen, "MarkerContainer", 44, 124, 1832, 818);
-            markerContainer.gameObject.AddComponent<RectMask2D>();
-            clusters = new MapMarkerClusters(markerContainer, theme, SelectMarker);
-            var questRect = MapUIFactory.Rect(screen, "TrackedQuestOverlay", 64, 146, 360, 56);
-            MapUIFactory.Panel(questRect, theme, new Color(1, 1, 1, .83f));
-            MapUIFactory.Icon(questRect, "QuestIcon", theme.markers[(int)MapFilterGroup.Quest].icon, 12, 10, 36, Color.white);
-            var questText = MapUIFactory.Text(questRect, theme, "TrackedQuestTitle", "", 62, 0, 284, 56, 22, true);
-            questBanner = questRect.gameObject.AddComponent<TrackedQuestBanner>(); questBanner.Bind(quests, questText);
-            var regionRect = MapUIFactory.Rect(screen, "RegionPanel", 764, 146, 392, 56);
-            MapUIFactory.Panel(regionRect, theme, new Color(1, 1, 1, .83f));
-            MapUIFactory.Icon(regionRect, "LocationIcon", theme.waypointIcon, 12, 12, 32, Color.white);
-            region = regionRect.gameObject.AddComponent<RegionDisplayPanel>();
-            region.Bind(MapUIFactory.Text(regionRect, theme, "Region", "Tọa độ: X 0, Z 0", 60, 0, 316, 56, 21, true));
-            var zoom = MapUIFactory.Rect(screen, "ZoomButtonGroup", 1788, 612, 72, 246);
-            MapUIFactory.Panel(zoom, theme, new Color(1, 1, 1, .75f));
-            ActionButton(zoom, "ZoomIn", "+", 4, 8, "map-zoom-in", () => worldMap.Zoom(1));
-            ActionButton(zoom, "ZoomOut", "−", 4, 88, "map-zoom-out", () => worldMap.Zoom(-1));
-            ActionButton(zoom, "Center", "⊙", 4, 168, "map-center", worldMap.CenterOnPlayer);
-
-            var filters = MapUIFactory.Rect(screen, "BottomFilterBar", 218, 978, 1320, 64);
-            MapUIFactory.Panel(filters, theme, new Color(1, 1, 1, .9f));
-            for (int i = 0; i < 7; i++) BuildFilter(filters, (MapFilterGroup)i, i);
-            var clear = MapUIFactory.Button(MapUIFactory.Rect(screen, "ClearWaypointButton", 1570, 978, 318, 64), theme, "Xóa điểm đánh dấu", 22);
-            clear.gameObject.AddComponent<MapActionButton>().Bind(this, "map-clear", worldMap.ClearWaypoint);
-            var selected = MapUIFactory.Rect(screen, "SelectedMarker", 64, 860, 360, 56);
-            MapUIFactory.Panel(selected, theme, new Color(1, 1, 1, .85f));
-            selectedLabel = MapUIFactory.Text(selected, theme, "Name", "", 16, 0, 328, 56, 22, true); selected.gameObject.SetActive(false);
-            markerTooltip = MapUIFactory.Rect(screen, "MarkerTooltip", 0, 0, 340, 72);
-            markerTooltip.anchorMin = markerTooltip.anchorMax = new Vector2(.5f, .5f);
-            markerTooltip.pivot = new Vector2(0, 1);
-            MapUIFactory.Panel(markerTooltip, theme, theme.background, false);
-            markerTooltipText = MapUIFactory.Text(markerTooltip, theme, "Text", "", 12, 6, 316, 60, 18);
-            markerTooltipText.raycastTarget = false;
-            markerTooltipText.overflowMode = TextOverflowModes.Ellipsis;
-            HideMarkerTooltip();
-            worldMap.UsePresentation(this, overlayRoot);
-            FitViewport(); nextMarkerRefresh = 0;
-        }
-        void Compass(string caption, float x, float y) {
-            var rect = MapUIFactory.Rect(screen, "Compass" + caption, x, y, 36, 36);
-            rect.pivot = new Vector2(.5f, .5f); rect.anchoredPosition += new Vector2(18, -18);
-            var diamond = MapUIFactory.Panel(rect, theme, theme.background);
-            diamond.sprite = null; diamond.type = Image.Type.Simple;
-            rect.localRotation = Quaternion.Euler(0, 0, 45);
-            var label = MapUIFactory.Text(rect, theme, "Direction", caption, 0, 0, 36, 36, 22, true, TextAlignmentOptions.Center);
-            label.rectTransform.pivot = new Vector2(.5f, .5f); label.rectTransform.anchoredPosition = new Vector2(18,-18);
-            label.transform.localRotation = Quaternion.Euler(0, 0, -45);
-        }
-        void ActionButton(Transform parent, string name, string caption, float x, float y, string key, Action action) {
-            var button = MapUIFactory.Button(MapUIFactory.Rect(parent, name, x, y, 64, 64), theme, caption, 36);
-            button.image.sprite = theme.circle; button.image.type = Image.Type.Simple;
-            if (name == "Center") {
-                button.GetComponentInChildren<TMP_Text>().text = string.Empty;
-                MapUIFactory.Icon(button.transform, "CenterTarget", theme.circleBorder, 18,18,28,theme.text);
-                MapUIFactory.Panel(MapUIFactory.Rect(button.transform,"Horizontal",12,30,40,4),theme,theme.text,false,false);
-                MapUIFactory.Panel(MapUIFactory.Rect(button.transform,"Vertical",30,12,4,40),theme,theme.text,false,false);
-            }
-            button.gameObject.AddComponent<MapActionButton>().Bind(this, key, action);
-        }
-        void BuildFilter(Transform parent, MapFilterGroup group, int index) {
-            var rect = MapUIFactory.Rect(parent, "Filter" + group, 22 + index * 184, 12, 174, 40);
-            var hit = MapUIFactory.Panel(rect, theme, Color.clear, true, false);
-            var toggle = rect.gameObject.AddComponent<Toggle>(); toggle.targetGraphic = hit;
-            filterToggles[index] = toggle;
-            var checkbox = MapUIFactory.Rect(rect, "Checkbox", 0, 8, 24, 24);
-            MapUIFactory.Panel(checkbox, theme, theme.background);
-            var check = MapUIFactory.Panel(MapUIFactory.Rect(checkbox, "Checkmark", 4, 4, 16, 16), theme, theme.accent, false, false);
-            toggle.graphic = check;
-            MapUIFactory.Icon(rect, "Icon", theme.markers[index].icon, 34, 4, 32, Color.white);
-            MapUIFactory.Text(rect, theme, "Label", FilterName(group), 76, 0, 96, 40, 17);
-            rect.gameObject.AddComponent<MapFilterToggle>().Bind(group, visibleGroups[index], SetFilter);
-        }
-        public void FitViewport() {
-            if (screen == null || mapViewport == null) return;
-            Vector2 size = overlayRoot.rect.size;
-            if (size == fittedViewportSize) return;
-            float scale = Mathf.Min(overlayRoot.rect.width / 1920f, overlayRoot.rect.height / 1080f);
-            if (scale <= 0) return;
-            fittedViewportSize = size;
-            screen.localScale = Vector3.one * scale;
-            mapViewport.anchorMin = mapViewport.anchorMax = mapViewport.pivot = new Vector2(.5f, .5f);
-            mapViewport.sizeDelta = new Vector2(1832, 818) * scale; mapViewport.anchoredPosition = new Vector2(0, 7) * scale;
-            mapViewport.localScale = Vector3.one;
-            if (mapViewport.TryGetComponent(out Image mask)) { mask.sprite = theme.roundedPanel; mask.type = Image.Type.Sliced; }
-        }
+        public void Rebuild() => BuildR5();
+        public void FitViewport() => FitR5Viewport();
         static string FilterName(MapFilterGroup group) {
             switch (group) {
                 case MapFilterGroup.NPC: return "Nhân vật";
@@ -197,7 +83,11 @@ namespace Capstone.Game.MapSystem.UI {
             clusters?.Close();
             HideMarkerTooltip();
             visibleGroups[(int)group] = visible;
-            if (filterToggles[(int)group] != null) filterToggles[(int)group].SetIsOnWithoutNotify(visible);
+            if (filterToggles[(int)group] != null) {
+                filterToggles[(int)group].SetIsOnWithoutNotify(visible);
+                filterToggles[(int)group].GetComponent<MapR5Feedback>()?.Refresh();
+                if(r5Compact!=null)r5Compact.Find("Compact_"+(int)group).GetComponent<Image>().color=Capstone.Game.UISystem.GreenAngularGeometry.FilterGlyph(visible);
+            }
             foreach (MapMarkerType type in Enum.GetValues(typeof(MapMarkerType)))
                 if (WorldMapUITheme.Group(type) == group) worldMap.SetFilter(type, visible);
             foreach (var view in dataViews.Values) UpdateDataVisibility(view);
@@ -205,7 +95,7 @@ namespace Capstone.Game.MapSystem.UI {
         }
         public bool IsFilterVisible(MapFilterGroup group) => visibleGroups[(int)group];
         public void SetTrackedQuestTitle(string title) => questBanner?.SetTitle(title);
-        public void UpdateRegion(Vector3 position) => region?.SetPosition(position);
+        public void UpdateRegion(Vector3 position) {if(mapSystem!=null&&mapSystem.PlayerTarget!=null)region?.SetPosition(mapSystem.PlayerTarget.position);}
 
         public MapMarkerView RenderMarker(MapMarkerData data) {
             if (data == null || string.IsNullOrWhiteSpace(data.id)) throw new ArgumentException("Marker requires an id.");
@@ -223,33 +113,16 @@ namespace Capstone.Game.MapSystem.UI {
         }
         void UpdateDataVisibility(MapMarkerView view) {
             var data = view.Data; var group = WorldMapUITheme.Group(data.type);
-            view.SetPosition(data.normalizedPosition, data.isVisible && (!group.HasValue || visibleGroups[(int)group.Value]));
+            view.SetPosition(data.normalizedPosition, data.isVisible && MapR5Contour.ContainsNormalized(data.normalizedPosition) && (!group.HasValue || visibleGroups[(int)group.Value]));
         }
-        MapMarkerView CreateMarker(MapMarkerData data) {
-            var rect = MapUIFactory.Rect(markerContainer, "Marker_" + data.id, 0, 0, 52, 52); rect.pivot = new Vector2(.5f, .5f);
-            var group = WorldMapUITheme.Group(data.type);
-            var color = group.HasValue ? theme.markers[(int)group.Value].color : theme.accent;
-            var image = MapUIFactory.Panel(rect, theme, color, true); image.sprite = theme.circle; image.type = Image.Type.Simple;
-            var button = rect.gameObject.AddComponent<Button>(); button.targetGraphic = image;
-            var halo = MapUIFactory.Icon(rect, "Selection", theme.circleBorder, -5, -5, 62, theme.gold);
-            halo.transform.SetAsFirstSibling(); halo.enabled = false;
-            Sprite sprite = group.HasValue ? theme.markers[(int)group.Value].icon
-                : data.type == MapMarkerType.Player ? theme.playerIcon : theme.waypointIcon;
-            MapUIFactory.Icon(rect, "Icon", sprite, 4, 4, 44, Color.white);
-            var view = rect.gameObject.AddComponent<MapMarkerView>(); view.Bind(data, halo, SelectMarker, HoverMarker); return view;
-        }
-        void ApplyMarkerAppearance(MapMarkerView view) {
-            var group = WorldMapUITheme.Group(view.Data.type);
-            view.GetComponent<Image>().color = group.HasValue ? theme.markers[(int)group.Value].color : theme.accent;
-            view.transform.Find("Icon").GetComponent<Image>().sprite = group.HasValue ? theme.markers[(int)group.Value].icon
-                : view.Data.type == MapMarkerType.Player ? theme.playerIcon : theme.waypointIcon;
-        }
+        MapMarkerView CreateMarker(MapMarkerData data) => CreateR5Marker(data);
+        void ApplyMarkerAppearance(MapMarkerView view) => ApplyR5MarkerAppearance(view);
         void SelectMarker(MapMarkerData data) {
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "select-map-marker")) return;
             selectedId = data.id;
             foreach (var view in sourceViews.Values) view.SetSelected(view.Data.id == selectedId);
             foreach (var view in dataViews.Values) view.SetSelected(view.Data.id == selectedId);
-            selectedLabel.transform.parent.gameObject.SetActive(true); selectedLabel.text = data.displayName;
+            selectedLabel.transform.parent.gameObject.SetActive(true); selectedLabel.text = data.displayName; UpdateSelectedCard(data);
             MarkerSelected?.Invoke(data);
         }
         void HoverMarker(MapMarkerData data, bool visible) {
@@ -269,16 +142,25 @@ namespace Capstone.Game.MapSystem.UI {
         }
         void UpdateMarkerTooltipPosition() {
             if (hoveredMarker == null || markerTooltip == null) return;
-            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(screen, Input.mousePosition, null, out var point)) return;
-            point += new Vector2(18, -18);
-            point.x = Mathf.Clamp(point.x, screen.rect.xMin + 8, screen.rect.xMax - markerTooltip.rect.width - 8);
-            point.y = Mathf.Clamp(point.y, screen.rect.yMin + markerTooltip.rect.height + 8, screen.rect.yMax - 8);
-            markerTooltip.anchoredPosition = point;
+            if (clusters?.IsPopupOpen == true) { HideMarkerTooltip(); return; }
+            var rect=mapViewport.rect;
+            var centre=screen.InverseTransformPoint(mapViewport.TransformPoint(new Vector3(rect.xMin+hoveredMarker.normalizedPosition.x*rect.width,rect.yMin+hoveredMarker.normalizedPosition.y*rect.height)));
+            var lower=screen.InverseTransformPoint(mapViewport.TransformPoint(new Vector3(rect.xMin,rect.yMin)));
+            var upper=screen.InverseTransformPoint(mapViewport.TransformPoint(new Vector3(rect.xMax,rect.yMax)));
+            float inset=20*MapR5View.Native, gap=(MapR5View.MarkerSize(hoveredMarker.type)/2+12)*MapR5View.Native;
+            var size=markerTooltip.rect.size;
+            var point=new Vector2(centre.x-size.x/2,centre.y+gap+size.y);
+            if(point.y>upper.y-inset)point.y=centre.y-gap;
+            point.x=Mathf.Clamp(point.x,lower.x+inset,upper.x-inset-size.x);
+            point.y=Mathf.Clamp(point.y,lower.y+inset+size.y,upper.y-inset);
+            markerTooltip.anchoredPosition=point;
         }
         void LateUpdate() {
             if (worldMap == null || !worldMap.IsOpen) { clusters?.Close(); HideMarkerTooltip(); return; }
             EnsureBuilt(); if (screen == null) return;
+            RecoverR5KeyboardSubmit();if(!worldMap.IsOpen)return;
             FitViewport();
+            if (!UpdateR5Availability()) return;
             UpdateMarkerTooltipPosition();
             if (worldMap.MapManager != null) UpdateRegion(worldMap.MapManager.GetCameraPosition());
             if (Time.unscaledTime >= nextMarkerRefresh) { RefreshSources(); nextMarkerRefresh = Time.unscaledTime + .5f; }
@@ -288,14 +170,15 @@ namespace Capstone.Game.MapSystem.UI {
             foreach (var pair in sourceViews) {
                 var source = pair.Key; var view = pair.Value;
                 if (source == null) { view.SetPosition(view.Data.normalizedPosition, false); continue; }
-                if (view.Data.type != source.MarkerType) { view.Data.type = source.MarkerType; ApplyMarkerAppearance(view); }
-                view.Data.displayName = source.DisplayName;
+                var displayType = worldMap.IsWaypointMarker(source) ? MapMarkerType.Waypoint : source.MarkerType;
+                if (view.Data.type != displayType) { view.Data.type = displayType; ApplyMarkerAppearance(view); }
+                view.Data.displayName = worldMap.IsWaypointMarker(source) ? "Điểm đánh dấu" : source.DisplayName;
                 var position = camera.WorldToViewportPoint(source.transform.position);
                 var group = WorldMapUITheme.Group(source.MarkerType);
                 bool shown = source.ShouldRender(viewer, false) && source.MarkerType != MapMarkerType.CoopPlayer
                     && (!group.HasValue || visibleGroups[(int)group.Value])
                     && (markerManager == null || markerManager.IsMarkerTypeVisible(source.MarkerType))
-                    && position.z > 0 && position.x >= 0 && position.x <= 1 && position.y >= 0 && position.y <= 1;
+                    && position.z > 0 && MapR5Contour.ContainsNormalized(position);
                 view.SetPosition(position, shown);
                 if (shown && view.Data.id == selectedId) {
                     selectedVisible = true;
@@ -323,7 +206,7 @@ namespace Capstone.Game.MapSystem.UI {
             foreach (var source in removed) { Destroy(sourceViews[source].gameObject); sourceViews.Remove(source); }
             foreach (var source in markers) {
                 if (source == null || sourceViews.ContainsKey(source)) continue;
-                sourceViews.Add(source, CreateMarker(new MapMarkerData { id = source.MarkerId, displayName = source.DisplayName, type = source.MarkerType }));
+                sourceViews.Add(source, CreateMarker(new MapMarkerData { id = source.MarkerId, displayName = source.DisplayName, type = worldMap.IsWaypointMarker(source) ? MapMarkerType.Waypoint : source.MarkerType }));
             }
         }
         void BeforeCamera(ScriptableRenderContext context, Camera camera) {

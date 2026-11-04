@@ -22,3 +22,5 @@ MonoBehaviour:
   speed: 60
   criticalRate: 10
   criticalDamage: 50
+  isCatchable: 1
+  baseCatchRate: 255

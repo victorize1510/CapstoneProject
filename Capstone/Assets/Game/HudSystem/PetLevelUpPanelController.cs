@@ -296,6 +296,7 @@ namespace Capstone.Game.HudSystem {
             SetText($"level-up-stat-{id}-current", current.ToString("N0"));
             SetText($"level-up-stat-{id}-next", next.ToString("N0"));
             SetText($"level-up-stat-{id}-delta", $"+{Mathf.Max(0, next - current):N0}");
+            Capstone.Game.SettingsSystem.SettingsFinalArt.BindStatRow(document?.rootVisualElement.Q<Label>($"level-up-stat-{id}-current")?.parent,id,"ga-level-stat-key");
         }
 
         void RefreshNewSkill(PetLevelUpPreview preview) {

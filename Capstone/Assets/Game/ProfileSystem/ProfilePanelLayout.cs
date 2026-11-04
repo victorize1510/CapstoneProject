@@ -120,8 +120,6 @@ namespace Capstone.Game.ProfileSystem {
 
             var team = CreatePanel(panel, "CurrentTeamSection", Color.clear, false);
             SetTopLeft(team, 1290, 26, 540, 384);
-            var separator = CreatePanel(panel, "TeamDivider", Gold, false);
-            SetTopLeft(separator, 1270, 30, 1, 370);
             AddIcon(team, "TeamIcon", Icon.Paw, 0, 4, 34, Accent);
             var teamTitle = CreateText(team, "TeamTitle", "ĐỘI THÚ HIỆN TẠI", 25, FontStyle.Bold, Forest, TextAnchor.MiddleLeft);
             SetTopLeft(teamTitle.rectTransform, 46, 0, 488, 42);

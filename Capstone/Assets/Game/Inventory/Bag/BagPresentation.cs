@@ -25,8 +25,19 @@ namespace Capstone.Game.Inventory.Bag {
                 // Remove only the obsolete faint landscape; the continuous terrain field replaces it.
                 if(art!=null)art.style.backgroundImage=StyleKeyword.None;
             }
+            // Material only: preserve BAG contours, content, grid/list and actions.
+            foreach(var surface in panel.Query<BagSurface>().ToList()) {
+                string material=surface.Kind=="browser"?"A-products":surface.Kind=="inspector"?"A-details":surface.Kind=="detail-art"?"A-portrait":null;
+                if(material!=null)surface.MaterialFill=Capstone.Game.ShopSystem.ShopAArt.Texture("Components/"+material+"__fill");
+            }
             string[] cats={"all","capture-ball","medicine","food","material","key-item","quest-item","equipment"};string[] icons={"grid","capture","heal","food","material","keyitem","questitem","defense"};
             for(int i=0;i<cats.Length;i++)BagArt.Icon(panel.Q("bag-category-"+cats[i]+"-icon"),icons[i]);
+            panel.AddToClassList("runtime-choice-list");RuntimeChoiceStyle.Sheet(panel);
+            foreach(var category in panel.Query<BagButton>(className:"category-button").ToList()){
+                category.PlainChoice=true;category.Surface.Stop();category.Surface.RemoveFromHierarchy();
+                RuntimeChoiceStyle.Category(category);category.style.height=category.style.minHeight=56;
+                var glyph=category.Q(className:"category-icon");if(glyph!=null)glyph.style.unityBackgroundImageTintColor=GreenAngularGeometry.Ink;
+            }
             BagArt.Icon(panel.Q("bag-search-icon"),"search");
             var bagGlyph=Resources.Load<Texture2D>("UI/Readability20261026/bag-empty");
             foreach(string id in new[]{"bag-empty-icon","bag-detail-empty-art"}){var emptyArt=panel.Q(id);if(emptyArt!=null){emptyArt.style.backgroundImage=new StyleBackground(bagGlyph);emptyArt.style.backgroundSize=new BackgroundSize(BackgroundSizeType.Contain);emptyArt.style.unityBackgroundImageTintColor=Color.white;}}
@@ -55,6 +66,8 @@ namespace Capstone.Game.Inventory.Bag {
             var art=panel.Q("bag-browser-art");if(art!=null)art.style.display=list?DisplayStyle.None:DisplayStyle.Flex;
         }
         public void Refresh(int count,bool hasItem,bool hasItems){
+            var material=Capstone.Game.ShopSystem.ShopAArt.Texture("Components/A-details__fill");
+            foreach(var frame in panel.Query<UiSectionFrame>().ToList())if(frame.MaterialFill!=material){frame.MaterialFill=material;frame.MarkDirtyRepaint();}
             foreach(string id in new[]{"bag-type-count","bag-footer-count"}){var label=panel.Q<Label>(id);if(label!=null)label.text=count+" loại vật phẩm";}
             var empty=panel.Q("bag-empty-state");if(empty!=null)empty.style.display=hasItems?DisplayStyle.None:DisplayStyle.Flex;
             var icon=panel.Q("detail-icon");if(icon!=null)icon.style.display=hasItem?DisplayStyle.Flex:DisplayStyle.None;

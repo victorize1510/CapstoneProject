@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
-    public sealed class PetCaptureCoordinator : MonoBehaviour {
+    public sealed partial class PetCaptureCoordinator : MonoBehaviour {
         [SerializeField] PetBoxRuntimeProvider roster = null;
         [SerializeField] PlayerProfileRuntimeProvider profileProvider = null;
         [SerializeField] AchievementManager achievementManager = null;
@@ -34,54 +34,13 @@ namespace Capstone.Game.HudSystem {
             string creatureId,
             string creatureTypeId,
             out string error) {
-            ResolveReferences();
-            if (pet == null) return Fail("Pet vừa bắt không hợp lệ.", out error);
-            if (roster == null) return Fail("Không tìm thấy Box để lưu pet vừa bắt.", out error);
-            if (profileProvider == null) return Fail("Không tìm thấy Profile để cập nhật thống kê.", out error);
-            if (questManager == null) return Fail("Không tìm thấy QuestManager để cập nhật nhiệm vụ.", out error);
-            if (saveController == null) return Fail("Không tìm thấy PlayerSaveController.", out error);
-
-            PetCollectionMetadata metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
-            if (metadata == null) metadata = pet.gameObject.AddComponent<PetCollectionMetadata>();
-            string speciesId = FirstNonEmpty(creatureTypeId, metadata.DefinitionId, metadata.Species);
-            if (string.IsNullOrWhiteSpace(speciesId)) return Fail("Pet vừa bắt thiếu ID loài.", out error);
-
-            string instanceId = FirstNonEmpty(creatureId);
-            if (string.IsNullOrWhiteSpace(instanceId)) {
-                instanceId = "captured-" + Guid.NewGuid().ToString("N");
-            }
-            metadata.AssignPersistentId(instanceId);
-            if (string.IsNullOrWhiteSpace(metadata.DefinitionId)) metadata.AssignDefinitionId(speciesId);
-            metadata.RollGeneticsForNewCapture();
-            metadata.SyncRuntimeHealth(pet.GetComponentInChildren<PetHudRuntimeStats>(true));
-
-            bool wasSummoned = pet.IsSummoned;
-            PlayerProfileSaveData profileSnapshot = profileProvider.CreateSaveData();
-            AchievementSaveData achievementSnapshot = achievementManager != null
-                ? achievementManager.CreateSaveData()
-                : null;
-            QuestSaveData questSnapshot = questManager.CreateSaveData();
-
-            if (!roster.TryStoreCapturedPet(pet, out error)) return false;
-
-            profileProvider.RecordCreatureSeen();
-            profileProvider.RecordSpeciesCaptured(speciesId);
-            questManager.ReportProgress(QuestProgressEvent.CreatureCaptured(instanceId, speciesId));
-
-            if (!saveController.SaveNow()) {
-                questManager.RestoreFromSaveData(questSnapshot);
-                profileProvider.RestoreFromSaveData(profileSnapshot);
-                if (achievementSnapshot != null) achievementManager?.RestoreFromSaveData(achievementSnapshot);
-                roster.TryRemoveCapturedPetForRollback(pet, wasSummoned, out _);
-                roster.RestorePendingCapturedPet(pet);
-                return Fail("Không thể lưu lần bắt pet. Mọi thay đổi đã được hoàn tác.", out error);
-            }
-
-            CaptureCommitted?.Invoke(pet);
-            error = string.Empty;
-            return true;
+            if(IsCapturing||Capstone.Game.CaptureSystem.CaptureEventBatch.IsActive){error=Capstone.Game.CaptureSystem.CaptureMessages.For(Capstone.Game.CaptureSystem.CaptureFailure.Busy);return false;}
+            var metadata=pet!=null?pet.GetComponentInChildren<PetCollectionMetadata>(true):null;
+            if(string.IsNullOrWhiteSpace(creatureTypeId))creatureTypeId=metadata?.DefinitionId;
+            processing=true;
+            try { return CommitAttempt(pet,creatureId,creatureTypeId,true,null,null,null,out error); }
+            finally { processing=false; }
         }
-
         public bool TryCommitPendingCapture(out string error) {
             ResolveReferences();
             PetController pet = roster != null ? roster.PendingCapturedPet : null;

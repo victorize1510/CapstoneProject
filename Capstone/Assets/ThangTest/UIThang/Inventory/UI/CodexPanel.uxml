@@ -21,7 +21,8 @@
                 <ui:VisualElement class="codex-progress">
                     <ui:Label text="TIẾN ĐỘ KHÁM PHÁ" class="codex-section-title" />
                     <ui:Label name="codex-progress-number" text="—" class="codex-progress-number" />
-                    <ui:ProgressBar name="codex-progress-bar" title="Chưa có thông tin" low-value="0" high-value="100" />
+                    <ui:ProgressBar name="codex-progress-bar" title="" low-value="0" high-value="100" />
+                    <ui:Label name="codex-progress-caption" text="Chưa có thông tin" class="codex-progress-caption" />
                 </ui:VisualElement>
                 <ui:VisualElement class="codex-search-row">
                     <ui:TextField name="codex-search" placeholder-text="Tìm tên hoặc số thứ tự..." class="codex-search" />

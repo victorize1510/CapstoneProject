@@ -48,6 +48,7 @@ namespace Capstone.Game.Inventory {
 
         void OnEnable() {
             InventoryRecoveryCatalog.Load();
+            Capstone.Game.CaptureSystem.CaptureAssets.LoadBall();
             EnsureInventory();
             Subscribe(inventory);
         }
@@ -201,6 +202,23 @@ namespace Capstone.Game.Inventory {
         }
 
         public void NotifyAtomicAddition() => inventory.NotifyReset();
+        internal bool TryRemoveItemAtomic(ItemBase definition, int quantity) {
+            if (definition == null || quantity < 1 || GetQuantity(definition) < quantity) return false;
+            var staged = new List<ListSlot>(inventory.Slots.Count);
+            int remaining = quantity;
+            foreach (var slot in inventory.Slots) {
+                if (slot == null) return false;
+                var item = slot.Item?.Clone();
+                if (item?.Base == definition && remaining > 0) {
+                    int amount = Math.Min(remaining, item.StackSize); item.StackSize -= amount; remaining -= amount;
+                    if (item.StackSize == 0) item = null;
+                }
+                staged.Add(new ListSlot { Index = slot.Index, Item = item, Tags = new List<Tag>(slot.Tags) });
+            }
+            if (remaining != 0) return false; inventory.Slots = staged; return true;
+        }
+        internal List<ListSlot> CaptureSlots() => inventory.Slots;
+        internal void RestoreCaptureSlots(List<ListSlot> slots) { inventory.Slots = slots; }
 
         bool CanReceiveAtomicStack(Item stack) {
             if (!inventory.Accepts(stack)) return false;
@@ -281,6 +299,7 @@ namespace Capstone.Game.Inventory {
 
         public bool RestoreFromSaveData(InventorySaveData saveData, out string error) {
             InventoryRecoveryCatalog.Load();
+            Capstone.Game.CaptureSystem.CaptureAssets.LoadBall();
             error = string.Empty;
             if (saveData == null || !saveData.captured) return false;
 
@@ -475,8 +494,8 @@ namespace Capstone.Game.Inventory {
 
         void PublishChangedNow() {
             var items = GetItems();
-            InventoryChanged?.Invoke();
-            ItemsChanged?.Invoke(items);
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "inventory", () => InventoryChanged?.Invoke());
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "items", () => ItemsChanged?.Invoke(items));
         }
     }
 }

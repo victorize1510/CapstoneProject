@@ -109429,7 +109429,7 @@ MonoBehaviour:
   hideStandaloneQuestTrackerHud: 1
   hideWhileUiOpen: 1
   enableSkillHotkeys: 1
-  skillBarDisplayMode: 0
+  skillBarDisplayMode: 1
   refreshInterval: 0.15
   skillHotkeys: 7a000000780000006300000076000000
 --- !u!4 &541011725
@@ -216411,7 +216411,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 838daae13eb54444385f77c37339df5f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -92.48
+      value: -94.38
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 838daae13eb54444385f77c37339df5f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -362904,7 +362904,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3de0453da09fba449b47cb3c38e6679a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -91.79
+      value: -93.22
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 3de0453da09fba449b47cb3c38e6679a, type: 3}
       propertyPath: m_LocalPosition.z

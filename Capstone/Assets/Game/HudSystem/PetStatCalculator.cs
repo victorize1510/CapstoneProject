@@ -122,6 +122,9 @@ namespace Capstone.Game.HudSystem {
             }
             return null;
         }
+        public static bool TryGetProfile(PetCollectionMetadata metadata, out PetStatProfile profile) {
+            profile = ResolveProfile(metadata, out _); return profile != null;
+        }
 
         // Legacy form names remain valid prefab/save IDs; normalize only for stat lookup.
         static string CanonicalProfileId(string id) {

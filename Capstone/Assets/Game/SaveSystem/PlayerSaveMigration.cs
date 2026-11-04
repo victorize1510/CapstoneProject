@@ -60,6 +60,7 @@ namespace Capstone.Game.SaveSystem {
                     JObject source = states != null && i < states.Count ? states[i] as JObject : null;
                     if (source?["customization"] == null || source["customization"].Type == JTokenType.Null) pet.customization = null;
                     else if (pet.customization != null && source["customization"] is JObject customization) {
+                        pet.customization.captureBallId = customization["captureBallId"]?.Value<string>() ?? string.Empty;
                         if (customization["magicAttack"] == null) pet.customization.magicAttack = pet.customization.attack;
                         if (customization["magicDefense"] == null) pet.customization.magicDefense = pet.customization.defense;
                     }

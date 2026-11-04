@@ -13,8 +13,8 @@
 .unified-panel .companion-mode {left:28px;top:532px;}
 .unified-panel .companion-swap {top:24px;}
 .unified-panel .r3-swap-actions {top:12px;}
-.unified-panel .companion-footer {height:80px;bottom:8px;}
-.unified-panel .companion-details-link {top:52px;height:28px;}
+.unified-panel .companion-footer {height:100px;bottom:12px;}
+.unified-panel .companion-details-link {top:auto;bottom:12px;height:28px;}
 #quest-panel.unified-panel .quest-detail-heading-row {min-height:148px;}
 #quest-panel.unified-panel .quest-detail-title {font-size:30px;}
 #quest-panel.unified-panel .quest-detail-section {margin-top:8px;padding-top:8px;}

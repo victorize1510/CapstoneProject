@@ -40,7 +40,7 @@ namespace Capstone.Game.CodexSystem {
         IPetCodexProvider provider;
         VisualElement root, grid, details, filterPanel;
         TextField search;
-        Label empty, detailEmpty, progressNumber;
+        Label empty, detailEmpty, progressNumber, progressCaption;
         ProgressBar progressBar;
         DropdownField region, rarity, discovery, extraSort;
         Button favorite;
@@ -76,6 +76,7 @@ namespace Capstone.Game.CodexSystem {
             search = root.Q<TextField>("codex-search"); empty = root.Q<Label>("codex-empty");
             detailEmpty = root.Q<Label>("codex-detail-empty"); progressNumber = root.Q<Label>("codex-progress-number");
             progressBar = root.Q<ProgressBar>("codex-progress-bar");
+            progressCaption = root.Q<Label>("codex-progress-caption");
             favorite = root.Q<Button>("codex-favorite");
             region = root.Q<DropdownField>("codex-region"); rarity = root.Q<DropdownField>("codex-rarity");
             discovery = root.Q<DropdownField>("codex-discovery"); extraSort = root.Q<DropdownField>("codex-extra-sort");
@@ -183,7 +184,8 @@ namespace Capstone.Game.CodexSystem {
             region.SetValueWithoutNotify(query.Region ?? regions[0]);
             progressNumber.text = available ? $"{known} / {entries.Count}" : "—";
             progressBar.value = available ? 100f * known / entries.Count : 0;
-            progressBar.title = available ? Mathf.RoundToInt(progressBar.value) + "% • Đã khám phá" : "Chưa có thông tin";
+            progressBar.title = string.Empty;
+            if(progressCaption!=null)progressCaption.text = available ? Mathf.RoundToInt(progressBar.value) + "% • Đã khám phá" : "Chưa có thông tin";
             for (int i = 0; i < categories.Count; i++) {
                 int count = 0;
                 if (entries != null) foreach (var e in entries) if (e != null && (!Types[i].HasValue || (e.Known && (e.PrimaryType == Types[i] || e.SecondaryType == Types[i])))) count++;

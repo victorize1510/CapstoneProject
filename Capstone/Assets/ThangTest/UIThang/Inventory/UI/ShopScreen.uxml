@@ -1,4 +1,4 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:s="Capstone.Game.ShopSystem" editor-extension-mode="False">
     <ui:Style src="MenuTheme.uss" />
     <ui:Style src="MenuCommon.uss" />
     <ui:Style src="ShopScreen.uss" />
@@ -14,20 +14,23 @@
                 <ui:Label text="G" class="inventory-currency-icon" />
                 <ui:Label name="shop-gold" text="—" class="inventory-gold-value" />
             </ui:VisualElement>
-            <ui:Button name="shop-back" text="←  TRỞ LẠI" class="screen-back" />
+            <s:ShopAButton name="shop-back" text="←  TRỞ LẠI" class="screen-back" />
         </ui:VisualElement>
         <ui:VisualElement class="shop-body">
             <ui:ScrollView class="shop-sidebar shop-column" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
-                <ui:Button name="shop-category-consumables" class="shop-category"><ui:Label text="+" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
-                <ui:Button name="shop-category-capture" class="shop-category"><ui:Label text="◉" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
-                <ui:Button name="shop-category-materials" class="shop-category"><ui:Label text="◇" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
-                <ui:Button name="shop-category-special" class="shop-category"><ui:Label text="★" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
-                <ui:Button name="shop-category-evolution" class="shop-category"><ui:Label text="◆" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></ui:Button>
+                <s:ShopAButton name="shop-category-consumables" class="shop-category"><ui:Label text="+" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></s:ShopAButton>
+                <s:ShopAButton name="shop-category-capture" class="shop-category"><ui:Label text="◉" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></s:ShopAButton>
+                <s:ShopAButton name="shop-category-materials" class="shop-category"><ui:Label text="◇" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></s:ShopAButton>
+                <s:ShopAButton name="shop-category-special" class="shop-category"><ui:Label text="★" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></s:ShopAButton>
+                <s:ShopAButton name="shop-category-evolution" class="shop-category"><ui:Label text="◆" class="shop-category-icon" picking-mode="Ignore" /><ui:Label class="shop-category-name" picking-mode="Ignore" /><ui:Label class="shop-category-count" picking-mode="Ignore" /></s:ShopAButton>
             </ui:ScrollView>
             <ui:VisualElement class="shop-products shop-column">
                 <ui:VisualElement class="shop-toolbar">
+                    <ui:VisualElement name="shop-search-group" class="shop-search-group">
+                    <ui:VisualElement name="shop-search-glyph" picking-mode="Ignore" />
                     <ui:TextField name="shop-search" placeholder-text="Tìm kiếm vật phẩm..." class="shop-search" />
-                    <ui:Button name="shop-clear" text="×" tooltip="Xóa tìm kiếm" class="menu-search-clear" />
+                    <s:ShopAButton name="shop-clear" text="×" tooltip="Xóa tìm kiếm" class="shop-search-clear" />
+                    </ui:VisualElement>
                     <ui:DropdownField name="shop-sort" class="shop-sort" />
                 </ui:VisualElement>
                 <ui:ScrollView class="shop-grid-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
@@ -54,14 +57,14 @@
                 <ui:VisualElement name="shop-purchase" class="shop-purchase">
                     <ui:Label text="Số lượng" class="shop-section-title" />
                     <ui:VisualElement class="shop-quantity-row">
-                        <ui:Button name="shop-minus" text="−" tooltip="Giảm số lượng" />
+                        <s:ShopAButton name="shop-minus" text="−" tooltip="Giảm số lượng" />
                         <ui:IntegerField name="shop-quantity" value="1" is-delayed="true" tooltip="Số lượng cần mua" />
-                        <ui:Button name="shop-plus" text="+" tooltip="Tăng số lượng" />
-                        <ui:Button name="shop-max" text="Tối đa" />
+                        <s:ShopAButton name="shop-plus" text="+" tooltip="Tăng số lượng" />
+                        <s:ShopAButton name="shop-max" text="Tối đa" />
                     </ui:VisualElement>
                     <ui:VisualElement class="shop-total-row"><ui:Label text="Tổng giá" /><ui:Label name="shop-total" /></ui:VisualElement>
                     <ui:Label name="shop-reason" class="shop-reason" />
-                    <ui:Button name="shop-buy" text="MUA" class="action-button primary-action shop-buy" />
+                    <s:ShopAButton name="shop-buy" text="MUA" class="action-button primary-action shop-buy" />
                 </ui:VisualElement>
                 <ui:Label name="shop-feedback" class="shop-feedback" />
             </ui:VisualElement>

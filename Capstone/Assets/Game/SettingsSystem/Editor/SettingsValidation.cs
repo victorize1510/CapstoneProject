@@ -106,13 +106,14 @@ namespace Capstone.Game.SettingsSystem.Editor {
                     window.Surface.style.width = size.x; window.Surface.style.height = size.y; await Task.Delay(220);
                     var audio = root.Q("settings-audio-group"); var camera = root.Q("settings-camera-group");
                     var gameplay = root.Q("settings-interface-group"); var other = root.Q("settings-other-group");
-                    Check(audio.worldBound.width > 0 && audio.worldBound.xMax < camera.worldBound.xMin && audio.worldBound.yMax < gameplay.worldBound.yMin, "two columns and two rows " + size);
-                    Check(other.worldBound.yMax <= root.worldBound.yMax + 1 && camera.worldBound.xMax <= root.worldBound.xMax + 1, "four cards fit viewport " + size);
-                    Check(root.Q<Button>("settings-back").worldBound.xMax <= root.worldBound.xMax + 1 && root.Q<Label>(className: "screen-title").resolvedStyle.fontSize == 38, "shared title and Back geometry " + size);
+                    SettingsFinalView.Attach(root).SelectTab(0);await Task.Delay(100);
+                    Check(audio.worldBound.width > 0 && audio.resolvedStyle.display == DisplayStyle.Flex && camera.resolvedStyle.display == DisplayStyle.None && gameplay.resolvedStyle.display == DisplayStyle.None && other.resolvedStyle.display == DisplayStyle.None, "one active group under four tabs " + size);
+                    Check(root.Q("settings-tab-audio") != null && root.Q("settings-tab-controls") != null && root.Q("settings-tab-interface") != null && root.Q("settings-tab-system") != null, "four R3 category tabs " + size);
+                    Check(root.Q<Button>("settings-back").worldBound.xMax <= root.worldBound.xMax + 1 && root.Q<Label>(className: "screen-title").resolvedStyle.fontSize == UnifiedPanelHeader.TitleFont, "shared title and Back geometry " + size);
                     Check(master.worldBound.xMax <= root.Q("settings-master-row").Q<Label>("setting-value").worldBound.xMin + 1, "slider and percent do not overlap " + size);
-                    Check(Toggle(root,"settings-invert-row").Q("settings-switch-thumb").resolvedStyle.marginLeft > 20 && Toggle(root,"settings-mute-row").Q("settings-switch-thumb").resolvedStyle.marginLeft < 10, "pill switches represent actual state " + size);
-                    Check(Toggle(root,"settings-invert-row").Q(className:"unity-toggle__input").resolvedStyle.width >= 63 && Toggle(root,"settings-mute-row").Q(className:"unity-toggle__input").resolvedStyle.width >= 63, "pill background never collapses to native checkbox width " + size);
-                    if (size.y >= 1080) Check(Button(root,"settings-quit-row").worldBound.yMax <= other.Q<ScrollView>().contentViewport.worldBound.yMax+1, "exit action visible without scrolling " + size);
+                    Check(Toggle(root,"settings-mute-row").Q("settings-switch-thumb") == null && Toggle(root,"settings-mute-row").Q(className:"unity-toggle__input").resolvedStyle.backgroundImage.texture == SettingsFinalArt.Texture("Components/checkbox-face-off"), "native checkbox uses FINAL face without pill thumb " + size);
+                    Check(master.Q<SettingsSliderFace>() != null && master.Q(className:"unity-base-slider__dragger").resolvedStyle.opacity == 0, "R4 face replaces native slider artwork only " + size);
+                    Check(Mathf.Abs(root.Q("settings-quit-row").layout.y-806) < 1.5f, "exit action belongs to fixed footer " + size);
                 }
                 Submit(Button(root,"settings-reset-row")); await Task.Delay(180);
                 Check(root.Q("settings-modal").resolvedStyle.display == DisplayStyle.Flex, "reset requires confirmation");

@@ -6,7 +6,7 @@ using Capstone.Game.QuestSystem;
 namespace Capstone.Game.SaveSystem {
     [Serializable]
     public sealed class PlayerSaveData {
-        public const int CurrentVersion = 12;
+        public const int CurrentVersion = 13;
 
         public int version = CurrentVersion;
         public string savedAtUtc = string.Empty;
@@ -130,6 +130,7 @@ namespace Capstone.Game.SaveSystem {
         public long obtainedOrder;
         public string captureDate = string.Empty;
         public string captureLocation = string.Empty;
+        public string captureBallId = string.Empty;
         public string trainerName = string.Empty;
         public string personality = string.Empty;
         public bool hasGenetics;

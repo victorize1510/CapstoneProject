@@ -31,6 +31,7 @@ namespace Capstone.Game.QuestSystem.UI {
         }
 
         void Update() {
+            if(root!=null){bool allowed=!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked||Capstone.Game.HudSystem.HubCaptureHud.OwnsCaptureKey&&Capstone.Game.HudSystem.GameplayHudController.Live.GetComponent<Capstone.Game.HudSystem.HubCaptureHud>()?.IsPickerOpen==true;root.style.visibility=allowed?Visibility.Visible:Visibility.Hidden;}
             if (trackedQuest == null || Time.unscaledTime < nextDistanceRefreshTime) return;
 
             nextDistanceRefreshTime = Time.unscaledTime + distanceRefreshInterval;
@@ -75,6 +76,8 @@ namespace Capstone.Game.QuestSystem.UI {
             if (document == null || document.rootVisualElement == null) return;
             Capstone.Game.UISystem.UiReadability.Bind(document.rootVisualElement);
 
+            if(document.panelSettings!=null){document.panelSettings.scaleMode=PanelScaleMode.ScaleWithScreenSize;document.panelSettings.referenceResolution=new Vector2Int(1920,1080);document.panelSettings.match=.5f;}
+            document.rootVisualElement.pickingMode=PickingMode.Ignore;
             root = document.rootVisualElement.Q<VisualElement>("quest-tracker-root") ?? document.rootVisualElement;
             scrollView = root.Q<ScrollView>("quest-tracker-scroll");
             list = root.Q<VisualElement>("quest-tracker-list");
@@ -139,22 +142,15 @@ namespace Capstone.Game.QuestSystem.UI {
             var card = new VisualElement();
             card.AddToClassList("quest-tracker-card");
             card.AddToClassList("is-tracked");
-            Capstone.Game.UISystem.UiReadability.Add(card,true,"panel");
+            card.style.backgroundImage=new StyleBackground(Capstone.Game.HudSystem.HubR11Art.Load("Components/quest-body__fill"));
 
             var titleRow = new VisualElement();
             titleRow.AddToClassList("quest-tracker-title-row");
 
-            var titleBackground = new VisualElement();
-            titleBackground.AddToClassList("quest-tracker-title-background");
-            for (int i = 0; i < 16; i++) {
-                var fade = new VisualElement();
-                fade.AddToClassList("quest-tracker-title-fade");
-                fade.AddToClassList("quest-tracker-title-fade-" + i);
-                titleBackground.Add(fade);
-            }
-            titleRow.Add(titleBackground);
-
+            var border=new VisualElement{pickingMode=PickingMode.Ignore};border.style.position=Position.Absolute;border.style.left=border.style.right=border.style.top=border.style.bottom=0;border.style.backgroundImage=new StyleBackground(Capstone.Game.HudSystem.HubR11Art.Load("Components/quest-body__border"));card.Add(border);
+            var emblem=new VisualElement{pickingMode=PickingMode.Ignore};emblem.style.width=30;emblem.style.height=40;emblem.style.backgroundImage=new StyleBackground(Capstone.Game.HudSystem.HubR11Art.Load("quest-glyph"));emblem.style.backgroundSize=new BackgroundSize(BackgroundSizeType.Contain);titleRow.Add(emblem);
             var title = new Label(GetQuestTitle(trackedQuest));
+            title.style.unityFontDefinition=FontDefinition.FromFont(Capstone.Game.UISystem.TrainerMenuArt.Serif??Capstone.Game.UISystem.MenuTypography.Font);
             title.AddToClassList("quest-tracker-title");
             titleRow.Add(title);
             card.Add(titleRow);
@@ -171,12 +167,10 @@ namespace Capstone.Game.QuestSystem.UI {
                 var progressRow = new VisualElement();
                 progressRow.AddToClassList("quest-tracker-progress-row");
 
-                var progressBar = new ProgressBar {
-                    lowValue = 0f,
-                    highValue = 100f,
-                    value = percent * 100f,
-                    title = string.Empty
-                };
+                // Decorative progress rail: avoid the theme's 18px ProgressBar chrome
+                // overflowing this 3px live tracker rail.
+                var progressBar = new VisualElement {pickingMode=PickingMode.Ignore};
+                var fill=new VisualElement {pickingMode=PickingMode.Ignore};fill.style.width=Length.Percent(percent*100f);fill.style.height=3;fill.style.backgroundColor=(Color)new Color32(162,197,173,255);progressBar.Add(fill);
                 progressBar.AddToClassList("quest-tracker-progress-bar");
                 progressRow.Add(progressBar);
                 card.Add(progressRow);

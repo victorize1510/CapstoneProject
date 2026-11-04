@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
+  m_Name: BasicCaptureBall
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
+  Name: "B\xF3ng thu ph\u1EE5c c\u01A1 b\u1EA3n"
+  Icon: {fileID: 21300000, guid: c4cf4760d7c76544ba60ee2baa8d037d, type: 3}
+  Stackable: 1
+  MaxStackSize: 99
+  Tags: []
+  stableId: capture-ball-basic-01
+  legacyIds: []
+  category: 1
+  rarity: 0
+  description: "D\u1EE5ng c\u1EE5 thu ph\u1EE5c th\xFA hoang khi \u0111ang chi\u1EBFn
+    \u0111\u1EA5u."
+  effect: "Kh\xF3a m\u1ED9t th\xFA hoang r\u1ED3i s\u1EED d\u1EE5ng b\xF3ng \u0111\u1EC3
+    thu ph\u1EE5c."
+  source: 
+  flavorText: 
+  healAmount: 0
+  energyRestoreAmount: 0
+  usableFromInventory: 1
+  consumable: 1
+  isCaptureBall: 1
+  captureMultiplier: 1
+  guaranteedCapture: 0
+  captureCondition: 0

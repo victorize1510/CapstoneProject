@@ -25,11 +25,13 @@ namespace Capstone.Game.MapSystem.UI {
         readonly List<MapMarkerView> previousCandidates = new List<MapMarkerView>();
         readonly List<Vector2> previousPositions = new List<Vector2>();
         float nextRegroup;
-        RectTransform popup;
+        RectTransform popup, popupBlocker;
+        readonly RectTransform popupHost;
         GameObject returnFocus;
         public bool IsPopupOpen => popup != null && popup.gameObject.activeSelf;
         public Transform NavigationRoot => IsPopupOpen ? popup : parent;
-        public MapMarkerClusters(RectTransform parent, WorldMapUITheme theme, Action<MapMarkerData> select) { this.parent = parent; this.theme = theme; this.select = select; }
+        public MapMarkerClusters(RectTransform parent, WorldMapUITheme theme, Action<MapMarkerData> select) : this(parent,theme,select,parent) { }
+        public MapMarkerClusters(RectTransform parent, WorldMapUITheme theme, Action<MapMarkerData> select, RectTransform popupHost) { this.parent=parent;this.theme=theme;this.select=select;this.popupHost=popupHost; }
 
         public void Update(List<MapMarkerView> views) {
             candidates.Clear(); positions.Clear(); grouped.Clear();
@@ -65,13 +67,14 @@ namespace Capstone.Game.MapSystem.UI {
                 var rect = (RectTransform)cluster.Button.transform;
                 if (rect.anchorMin != center) { rect.anchorMin = rect.anchorMax = center; rect.anchoredPosition = Vector2.zero; }
                 if (cluster.DisplayedCount != group.Count) { cluster.DisplayedCount = group.Count; cluster.Count.text = group.Count.ToString(); }
+                bool selected=false;foreach(var member in cluster.Members)selected|=member.Data.isSelected;cluster.Button.GetComponent<MapR5Feedback>().SetSelected(selected);
                 if (!cluster.Button.gameObject.activeSelf) cluster.Button.gameObject.SetActive(true);
                 if (regrouped) rect.SetAsLastSibling();
             }
             for (int i = 0; i < candidates.Count; i++) candidates[i].SetClustered(grouped[i]);
             for (int i = used; i < pool.Count; i++)
                 if (pool[i].Button.gameObject.activeSelf) pool[i].Button.gameObject.SetActive(false);
-            if (IsPopupOpen && popup.GetSiblingIndex() != parent.childCount - 1) popup.SetAsLastSibling();
+            if (IsPopupOpen && popup.GetSiblingIndex() != popupHost.childCount - 1) popup.SetAsLastSibling();
         }
 
         // Transitive grouping avoids order-dependent overlapping pairs.
@@ -123,38 +126,53 @@ namespace Capstone.Game.MapSystem.UI {
         }
 
         Cluster CreateCluster() {
-            var rect = MapUIFactory.Rect(parent, "MarkerGroup", 0, 0, 52, 52); rect.pivot = new Vector2(.5f, .5f);
-            var button = MapUIFactory.Button(rect, theme, string.Empty, 22); button.image.sprite = theme.circle; button.image.type = Image.Type.Simple;
-            button.image.color = theme.accent;
-            var cluster = new Cluster { Button = button, Count = button.GetComponentInChildren<TMP_Text>() };
-            cluster.Count.color = Color.white;
-            button.onClick.AddListener(() => { if (Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "map-group")) Open(cluster); });
-            return cluster;
+            var rect=MapR5View.Rect(parent,"MarkerGroup",0,0,54,54);rect.pivot=new Vector2(.5f,.5f);
+            var button=MapR5View.Button(rect,theme,"",null,"skill-oct","map-cluster",23);
+            MapR5View.Icon(rect,"ClusterGlyph","cluster",18,3,18);
+            var count=button.GetComponentInChildren<TMP_Text>();count.rectTransform.anchoredPosition=new Vector2(4,-20)*MapR5View.Native;count.rectTransform.sizeDelta=new Vector2(46,30)*MapR5View.Native;
+            count.color=Color.white;
+            var cluster=new Cluster{Button=button,Count=count};
+            button.onClick.AddListener(()=>{if(Capstone.Game.UISystem.PlayerActionGate.TryAccept(this,"map-group"))Open(cluster);});return cluster;
         }
-
         void Open(Cluster cluster) {
-            Close();
-            returnFocus = UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
-            if (popup != null) { popup.gameObject.SetActive(false); UnityEngine.Object.Destroy(popup.gameObject); }
-            popup = MapUIFactory.Rect(parent, "MarkerGroupChoices", 0, 0, 320, Mathf.Min(360, 54 + cluster.Members.Count * 42));
-            popup.anchorMin = popup.anchorMax = new Vector2(.5f, .5f); popup.pivot = new Vector2(.5f, .5f); popup.anchoredPosition = Vector2.zero;
-            MapUIFactory.Panel(popup, theme, theme.background, true);
-            var close = MapUIFactory.Button(MapUIFactory.Rect(popup, "Close", 270, 6, 42, 36), theme, "×", 24); close.onClick.AddListener(Close);
-            MapUIFactory.Text(popup, theme, "Title", "Chọn điểm đánh dấu", 12, 4, 254, 40, 20, true);
-            var viewport = MapUIFactory.Rect(popup, "Viewport", 8, 48, 304, popup.sizeDelta.y - 56);
-            MapUIFactory.Panel(viewport, theme, Color.clear, true, false); viewport.gameObject.AddComponent<RectMask2D>();
-            var content = MapUIFactory.Rect(viewport, "Content", 0, 0, 304, cluster.Members.Count * 42);
-            for (int i = 0; i < cluster.Members.Count; i++) {
-                var data = cluster.Members[i].Data;
-                var button = MapUIFactory.Button(MapUIFactory.Rect(content, "Choice_" + i, 0, i * 42, 304, 40), theme, data.displayName, 17);
-                button.onClick.AddListener(() => { select(data); Close(); });
+            Close();returnFocus=UnityEngine.EventSystems.EventSystem.current?.currentSelectedGameObject;
+            DestroyPresentation(popup);DestroyPresentation(popupBlocker);
+            popupBlocker=MapR5View.Rect(popupHost,"MarkerGroupBackdrop",40,128,1520,678.689956f);
+            var hit=popupBlocker.gameObject.AddComponent<Image>();hit.color=Color.clear;popupBlocker.gameObject.AddComponent<Button>().interactable=false;
+            popupBlocker.gameObject.AddComponent<MapR5Contour>().Viewport=true;
+            var dim=MapR5View.FaceChild(popupBlocker,"panel",null,new Color(.125f,.169f,.27f,.16f));dim.Border=false;dim.Padding=0;
+            popup=MapR5View.Rect(popupHost,"MarkerGroupChoices",578,304,444,300);MapR5View.Face(popup,"panel","map-cluster-popup");
+            var heading=MapR5View.Rect(popup,"Heading",0,0,444,62);MapR5View.Face(heading,"panel",null,Capstone.Game.UISystem.GreenAngularGeometry.Primary,false);
+            MapR5View.Text(heading,theme,"Title","Chọn điểm đánh dấu",20,4,354,54,24,true,Capstone.Game.UISystem.GreenAngularGeometry.Light,true);
+            var close=MapR5View.Button(MapR5View.Rect(popup,"Close",392,14,34,34),theme,"",null,"diamond","map-tool");
+            close.GetComponent<MapR5Feedback>().Glyph=MapR5View.Icon(close.transform,"CloseGlyph","close",9,9,16);
+            close.onClick.AddListener(()=>{if(Capstone.Game.UISystem.PlayerActionGate.TryAccept(this,"map-group-close"))Close();});
+            var scrollHost=MapR5View.Rect(popup,"ScrollHost",18,76,408,206);
+            var viewport=MapR5View.Rect(scrollHost,"Viewport",0,0,408,206);viewport.anchorMin=Vector2.zero;viewport.anchorMax=Vector2.one;viewport.offsetMin=viewport.offsetMax=Vector2.zero;
+            var viewportHit=viewport.gameObject.AddComponent<Image>();viewportHit.color=Color.clear;viewport.gameObject.AddComponent<RectMask2D>();
+            float rowWidth=cluster.Members.Count*64-10>206?392:408;
+            var content=MapR5View.Rect(viewport,"Content",0,0,408,Mathf.Max(206,cluster.Members.Count*64-10));
+            for(int i=0;i<cluster.Members.Count;i++) {
+                var data=cluster.Members[i].Data;
+                var choice=MapR5View.Button(MapR5View.Rect(content,"Choice_"+i,0,i*64,rowWidth,54),theme,data.displayName,dark:false);
+                var label=choice.GetComponentInChildren<TMP_Text>();label.rectTransform.anchoredPosition=new Vector2(65,-4)*MapR5View.Native;label.rectTransform.sizeDelta=new Vector2(rowWidth-116,46)*MapR5View.Native;label.alignment=TextAlignmentOptions.MidlineLeft;label.color=Capstone.Game.UISystem.GreenAngularGeometry.Ink;
+                choice.GetComponent<MapR5Feedback>().enabled=false;
+                choice.transform.Find("Face").gameObject.SetActive(false);choice.transform.Find("Feedback").gameObject.SetActive(false);
+                UnityEngine.Object.Destroy(choice.GetComponent<MapR5Contour>());
+                Capstone.Game.UISystem.RuntimeChoiceStyle.UguiRow(choice,label,MapR5View.Native);
+                MapR5View.Icon(choice.transform,"MemberIcon",MapR5View.IconFor(data.type),15,10,34);MapR5View.Icon(choice.transform,"Chevron","chevron",rowWidth-36,18,18);
+                choice.onClick.AddListener(()=>{select(data);Close();});
             }
-            var scroll = viewport.gameObject.AddComponent<ScrollRect>(); scroll.viewport = viewport; scroll.content = content; scroll.horizontal = false; scroll.vertical = true; scroll.movementType = ScrollRect.MovementType.Clamped;
+            var scroll=scrollHost.gameObject.AddComponent<ScrollRect>();scroll.viewport=viewport;scroll.content=content;scroll.horizontal=false;scroll.vertical=true;scroll.movementType=ScrollRect.MovementType.Clamped;
+            Capstone.Game.UISystem.RuntimeScrollbars.Apply(scroll,MapR5View.Native);
             UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(close.gameObject);
         }
+        static void DestroyPresentation(RectTransform rect) {if(rect==null)return;rect.gameObject.SetActive(false);if(Application.isPlaying)UnityEngine.Object.Destroy(rect.gameObject);else UnityEngine.Object.DestroyImmediate(rect.gameObject);}
+        public void Dispose() {Close();DestroyPresentation(popup);DestroyPresentation(popupBlocker);}
         public void Close() {
             bool wasOpen = IsPopupOpen;
             if (popup != null) popup.gameObject.SetActive(false);
+            if(popupBlocker!=null)popupBlocker.gameObject.SetActive(false);
             if (wasOpen) Capstone.Game.UISystem.MenuKeyboardNavigation.Restore(returnFocus);
             returnFocus = null;
         }

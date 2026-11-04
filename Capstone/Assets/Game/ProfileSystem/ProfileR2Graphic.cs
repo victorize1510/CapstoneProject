@@ -18,6 +18,7 @@ namespace Capstone.Game.ProfileSystem {
     public sealed class ProfileR2Graphic:MaskableGraphic {
         public string Shape="panel";public Texture Texture;public bool Cover,NoFill,Edge,AccentRails;public float LogicalScale=1;
         public Color EdgeColor=GreenAngularGeometry.Edge;public float EdgeWidth=1.35f;
+        public bool GradientFill;public Color BottomColor;
         public override Texture mainTexture=>Texture!=null?Texture:s_WhiteTexture;
         Vector2[] circle,rectangle,scaledContour;Vector2 circleSize,rectangleSize,scaledSize;float cachedLogicalScale;string scaledShape;
         public Vector2[] Contour(){var r=rectTransform.rect;
@@ -29,7 +30,7 @@ namespace Capstone.Game.ProfileSystem {
         protected override void OnPopulateMesh(VertexHelper vh){
             vh.Clear();var r=rectTransform.rect;if(r.width<7||r.height<7)return;var p=Contour();
             if(!NoFill){Rect uv=new Rect(0,0,1,1);if(Cover&&Texture!=null){float image=Texture.width/(float)Texture.height,box=r.width/r.height;if(image>box){uv.width=box/image;uv.x=(1-uv.width)/2;}else{uv.height=image/box;uv.y=(1-uv.height)/2;}}
-                for(int i=0;i<p.Length;i++){var v=UIVertex.simpleVert;v.position=new Vector3(r.xMin+p[i].x,r.yMax-p[i].y);v.color=color;v.uv0=new Vector2(uv.x+p[i].x/r.width*uv.width,uv.y+(1-p[i].y/r.height)*uv.height);vh.AddVert(v);}
+                for(int i=0;i<p.Length;i++){var v=UIVertex.simpleVert;v.position=new Vector3(r.xMin+p[i].x,r.yMax-p[i].y);v.color=GradientFill?Color.Lerp(color,BottomColor,p[i].y/r.height):color;v.uv0=new Vector2(uv.x+p[i].x/r.width*uv.width,uv.y+(1-p[i].y/r.height)*uv.height);vh.AddVert(v);}
                 for(int i=1;i<p.Length-1;i++)vh.AddTriangle(0,i+1,i);
             }
             if(Edge){for(int i=0;i<p.Length;i++)Line(vh,p[i],p[(i+1)%p.Length],EdgeColor,EdgeWidth,r);

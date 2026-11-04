@@ -159,12 +159,15 @@ namespace Capstone.Game.UISystem {
         public void MarkShortcutHandled(KeyCode key) { handledShortcutFrame = Time.frameCount; handledShortcutKey = key; }
 
         bool RouteShortcut(KeyCode key, bool reverse) {
+            var hud=GameplayHudController.Live;
             if (key == closeKey) {
+                if(hud!=null&&hud.TryCloseTransientHud())return true;
                 if (inventory != null && inventory.IsEvolutionScreenOpen) { inventory.DismissEvolutionScreen(); return true; }
                 if (CurrentMode == GameInputMode.Gameplay) OpenSettingsFromGameplay(); else CloseTopUi();
                 return true;
             }
             if (CurrentMode == GameInputMode.Dialogue) return false;
+            if(CurrentMode==GameInputMode.Gameplay&&hud!=null&&key==hud.PartyKey)return hud.HandlePartyKey(key);
             if (key == menuKey && (CurrentMode == GameInputMode.Gameplay || IsMenuOpen) && !(key == KeyCode.Tab && reverse && IsMenuOpen)) {
                 ToggleMenuFromInput(); return true;
             }

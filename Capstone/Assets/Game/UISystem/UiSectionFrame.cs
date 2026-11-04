@@ -5,15 +5,18 @@ namespace Capstone.Game.UISystem {
     /// <summary>View-only section boundary. Cached geometry, no focus or pointer ownership.</summary>
     public sealed class UiSectionFrame : VisualElement {
         readonly UiSectionFrameMesh frame = new UiSectionFrameMesh();
+        public bool Identity;
+        public Texture2D MaterialFill;
         public UiSectionFrame() {
             name = "section-frame"; pickingMode = PickingMode.Ignore;
             style.position = Position.Absolute; style.left = style.right = style.top = style.bottom = 0;
-            generateVisualContent += context => frame.Paint(context, layout.width, layout.height, false);
+            generateVisualContent += context => frame.Paint(context, layout.width, layout.height, false,Identity,MaterialFill);
         }
         public static void Attach(VisualElement host) {
             if (host == null) return;
-            foreach (var child in host.Children()) if (child is UiSectionFrame) return;
-            host.Insert(0, new UiSectionFrame());
+            bool identity=host.ClassListContains("companion-summary");
+            foreach (var child in host.Children()) if (child is UiSectionFrame existing){if(existing.Identity!=identity){existing.Identity=identity;existing.MarkDirtyRepaint();}return;}
+            host.Insert(0, new UiSectionFrame{Identity=identity});
         }
     }
 
@@ -37,14 +40,17 @@ namespace Capstone.Game.UISystem {
                 Indices = GreenAngularGeometry.Triangles(Points);
             }
         }
-        public void Paint(MeshGenerationContext context, float width, float height, bool dossier) {
+        public void Paint(MeshGenerationContext context, float width, float height, bool dossier,bool identity=false,Texture2D material=null) {
             if (!float.IsFinite(width) || !float.IsFinite(height) || width < 2 || height < 2) return;
             Ensure(width, height);
             var points = Points; var indices = Indices;
-            var mesh = context.Allocate(points.Length, indices.Length);
+            var mesh = context.Allocate(points.Length, indices.Length,material);
+            var uv=new Rect(0,0,1,1);
+            if(material!=null){float image=material.width/(float)material.height,box=width/height;if(image>box){uv.width=box/image;uv.x=(1-uv.width)/2;}else{uv.height=image/box;uv.y=(1-uv.height)/2;}}
             foreach (var p in points) {
                 var tint = Fill(p.y, height, dossier);
-                mesh.SetNextVertex(new Vertex { position = new Vector3(p.x,p.y,Vertex.nearZ), tint = tint });
+                if(identity){float alpha=tint.a;tint=Color.Lerp(tint,GreenAngularGeometry.Lavender,.12f);tint.a=alpha;}
+                mesh.SetNextVertex(new Vertex { position = new Vector3(p.x,p.y,Vertex.nearZ), tint = material!=null?Color.white:tint,uv=material!=null?new Vector2(uv.x+p.x/width*uv.width,uv.y+(1-p.y/height)*uv.height):Vector2.zero });
             }
             foreach (int index in indices) mesh.SetNextIndex((ushort)index);
             var pen = context.painter2D;

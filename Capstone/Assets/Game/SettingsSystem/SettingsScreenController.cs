@@ -12,7 +12,7 @@ namespace Capstone.Game.SettingsSystem {
 
     [DisallowMultipleComponent]
     public sealed class SettingsScreenController : MonoBehaviour {
-        sealed class SliderView { public Slider Slider; public Label Value; public VisualElement Fill; public Func<GameSettingsData, float> Read; }
+        sealed class SliderView { public Slider Slider; public Label Value; public SettingsSliderFace Face; public Func<GameSettingsData, float> Read; }
         sealed class ToggleView { public Toggle Toggle; public Label Value; public Func<GameSettingsData, bool> Read; }
         readonly List<SliderView> sliders = new List<SliderView>();
         readonly List<ToggleView> toggles = new List<ToggleView>();
@@ -30,6 +30,7 @@ namespace Capstone.Game.SettingsSystem {
         bool open, subscribed;
         SettingsCapabilities capabilities;
         bool leavingScene;
+        SettingsFinalView presentation;
         enum Modal { None, Guide, Reset, Quit }
         Modal currentModal;
         public bool IsOpen => open;
@@ -41,7 +42,7 @@ namespace Capstone.Game.SettingsSystem {
             root = documentRoot?.Q("settings-panel");
             if (root == null) return;
             UiReadability.Bind(documentRoot);
-            UiReadability.SoftenGroups(root,"settings-subtitle","settings-section-heading");
+            presentation=SettingsFinalView.Attach(root);
             modal = root.Q("settings-modal"); modalTitle = root.Q<Label>("settings-modal-title");
             modalText = root.Q<Label>("settings-modal-text"); modalError = root.Q<Label>("settings-modal-error");
             confirm = root.Q<Button>("settings-modal-confirm"); cancel = root.Q<Button>("settings-modal-cancel");
@@ -70,13 +71,13 @@ namespace Capstone.Game.SettingsSystem {
                 model.Change(SettingsArea.Display, d => { d.resolutionWidth = sizes[index].x; d.resolutionHeight = sizes[index].y; });
             };
             resolution.RegisterValueChangedCallback(changeResolution); unbind.Add(() => resolution.UnregisterValueChangedCallback(changeResolution));
-            BindButton("settings-guide-row", "Hướng dẫn phím điều khiển", "Xem hướng dẫn  ›", () => OpenModal(Modal.Guide));
-            BindButton("settings-reset-row", "Đặt lại cài đặt mặc định", "Đặt lại  ›", () => OpenModal(Modal.Reset));
-            BindButton("settings-quit-row", "Thoát về màn hình chính", "Thoát  ›", () => OpenModal(Modal.Quit));
+            BindButton("settings-guide-row", "Hướng dẫn phím điều khiển", "Hướng dẫn phím", () => OpenModal(Modal.Guide));
+            BindButton("settings-reset-row", "Đặt lại cài đặt mặc định", "Đặt lại mặc định", () => OpenModal(Modal.Reset));
+            BindButton("settings-quit-row", "Thoát về màn hình chính", "Về màn hình chính", () => OpenModal(Modal.Quit));
             Click(root.Q<Button>("settings-back"), () => BackRequested?.Invoke());
             Click(cancel, CloseModal); Click(confirm, ConfirmModal);
-            var mark = root.Q(className: "screen-heading-mark");
-            mark.generateVisualContent += DrawGear; unbind.Add(() => mark.generateVisualContent -= DrawGear);
+            Click(root.Q<Button>("settings-modal-close"),()=>{if(!leavingScene)CloseModal();});
+            BindSubmitKeys();
             if (model != null) { SetCapabilities(capabilities); Refresh(); }
             Show(root, open); if (open) { Subscribe(); PanelFocusUtility.Open(root); }
         }
@@ -108,6 +109,7 @@ namespace Capstone.Game.SettingsSystem {
             string displayHelp = caps.Display ? "Áp dụng tức thời cho cửa sổ trò chơi." : "Thiết lập cửa sổ khả dụng trong bản game PC.";
             root.Q("settings-fullscreen-row").tooltip = displayHelp; resolution.tooltip = displayHelp;
             root.Q<Label>("settings-display-note").text = caps.Display ? "" : displayHelp;
+            presentation?.Refresh();
         }
         public void Close() {
             bool wasOpen = open; open = false; CloseModal(); Unsubscribe(); Show(root, false); PanelFocusUtility.Close(root);
@@ -123,7 +125,7 @@ namespace Capstone.Game.SettingsSystem {
             if (model == null || root == null) return;
             foreach (var view in sliders) {
                 float value = view.Read(model.Data); view.Slider.SetValueWithoutNotify(value * 100);
-                view.Value.text = Mathf.RoundToInt(value * 100) + "%"; view.Fill.style.width = Length.Percent(value * 100);
+                view.Value.text = Mathf.RoundToInt(value * 100) + "%"; view.Face?.Refresh();
             }
             foreach (var view in toggles) {
                 bool value = view.Read(model.Data); view.Toggle.SetValueWithoutNotify(value); view.Value.text = value ? "Bật" : "Tắt";
@@ -133,23 +135,47 @@ namespace Capstone.Game.SettingsSystem {
             int selected = sizes.IndexOf(wanted);
             if (selected < 0) selected = sizes.IndexOf(new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height));
             resolution.SetValueWithoutNotify(resolution.choices[Mathf.Clamp(selected, 0, resolution.choices.Count - 1)]);
+            presentation?.Refresh();
         }
         void BindSlider(string name, string label, SettingsArea area, Func<GameSettingsData, float> read, Action<GameSettingsData, float> write) {
             var row = root.Q(name); row.Q<Label>("setting-label").text = label;
-            var slider = row.Q<Slider>("setting-slider"); var tracker = slider.Q(className: "unity-base-slider__tracker");
-            var fill = tracker.Q("settings-slider-fill");
-            if (fill == null) { fill = new VisualElement { name = "settings-slider-fill", pickingMode = PickingMode.Ignore }; fill.AddToClassList("settings-slider-fill"); tracker.Add(fill); }
-            sliders.Add(new SliderView { Slider = slider, Value = row.Q<Label>("setting-value"), Fill = fill, Read = read });
+            var slider = row.Q<Slider>("setting-slider");
+            sliders.Add(new SliderView { Slider = slider, Value = row.Q<Label>("setting-value"), Face = slider.Q<SettingsSliderFace>(), Read = read });
             EventCallback<ChangeEvent<float>> callback = evt => model?.Change(area, d => write(d, evt.newValue / 100));
             slider.RegisterValueChangedCallback(callback); unbind.Add(() => slider.UnregisterValueChangedCallback(callback));
+            // This project's legacy gameplay input can suspend the UI move action.
+            // Forward focused arrow keys through Slider's native navigation path,
+            // and consume a second move from the input module in the same frame.
+            int keyFrame = -1, moveFrame = -1;
+            NavigationMoveEvent forwardedMove = null;
+            EventCallback<NavigationMoveEvent> move = evt => {
+                if (!(evt.target is VisualElement target) || target != slider && !slider.Contains(target)) return;
+                if (evt.direction != NavigationMoveEvent.Direction.Left && evt.direction != NavigationMoveEvent.Direction.Right) return;
+                if (ReferenceEquals(evt, forwardedMove)) forwardedMove = null;
+                else if (keyFrame == Time.frameCount) { evt.StopImmediatePropagation(); slider.focusController?.IgnoreEvent(evt); return; }
+                moveFrame = Time.frameCount;
+            };
+            EventCallback<KeyDownEvent> key = evt => {
+                if (!(evt.target is VisualElement target) || target != slider && !slider.Contains(target)) return;
+                if (!open || !slider.enabledInHierarchy || evt.altKey || evt.ctrlKey || evt.commandKey) return;
+                if (evt.keyCode != KeyCode.LeftArrow && evt.keyCode != KeyCode.RightArrow) return;
+                if (moveFrame != Time.frameCount) {
+                    keyFrame = Time.frameCount;
+                    // Nested Toolkit dispatch may be queued until this key event
+                    // finishes. Identify that event rather than a temporary flag.
+                    using (var navigation = NavigationMoveEvent.GetPooled(evt.keyCode == KeyCode.LeftArrow ? NavigationMoveEvent.Direction.Left : NavigationMoveEvent.Direction.Right)) { forwardedMove = navigation; navigation.target = slider; slider.SendEvent(navigation); }
+                }
+                evt.StopPropagation(); slider.focusController?.IgnoreEvent(evt);
+            };
+            // Capture above BaseSlider's internal key handler, which consumes
+            // legacy arrow events before user callbacks on the slider itself.
+            var inputRoot = root;
+            inputRoot.RegisterCallback(move, TrickleDown.TrickleDown); inputRoot.RegisterCallback(key, TrickleDown.TrickleDown);
+            unbind.Add(() => { inputRoot.UnregisterCallback(move, TrickleDown.TrickleDown); inputRoot.UnregisterCallback(key, TrickleDown.TrickleDown); });
         }
         void BindToggle(string name, string label, SettingsArea area, Func<GameSettingsData, bool> read, Action<GameSettingsData, bool> write) {
             var row = root.Q(name); row.Q<Label>("setting-label").text = label;
-            var toggle = row.Q<Toggle>("setting-toggle"); var input = toggle.Q(className: "unity-toggle__input");
-            if (input.Q("settings-switch-thumb") == null) {
-                var thumb = new VisualElement { name = "settings-switch-thumb", pickingMode = PickingMode.Ignore };
-                thumb.AddToClassList("settings-switch-thumb"); input.Add(thumb);
-            }
+            var toggle = row.Q<Toggle>("setting-toggle");
             toggles.Add(new ToggleView { Toggle = toggle, Value = row.Q<Label>("setting-value"), Read = read });
             EventCallback<ChangeEvent<bool>> callback = evt => model?.Change(area, d => write(d, evt.newValue));
             toggle.RegisterValueChangedCallback(callback); unbind.Add(() => toggle.UnregisterValueChangedCallback(callback));
@@ -168,11 +194,41 @@ namespace Capstone.Game.SettingsSystem {
             Action guarded = PlayerActionGate.Guard(this, "settings:" + button.name, callback);
             button.clicked += guarded; unbind.Add(() => button.clicked -= guarded);
         }
+        void BindSubmitKeys() {
+            var inputRoot = root;
+            int keyFrame = -1, submitFrame = -1;
+            VisualElement keyControl = null, submitControl = null;
+            NavigationSubmitEvent forwarded = null;
+            VisualElement Control(object target) {
+                for (var element = target as VisualElement; element != null && element != inputRoot; element = element.parent)
+                    if (element is Button || element is Toggle) return element;
+                return null;
+            }
+            EventCallback<NavigationSubmitEvent> submit = evt => {
+                var control = Control(evt.target); if (control == null) return;
+                if (ReferenceEquals(evt, forwarded)) forwarded = null;
+                else if (keyControl == control && keyFrame == Time.frameCount) { evt.StopImmediatePropagation(); inputRoot.focusController?.IgnoreEvent(evt); return; }
+                submitControl = control; submitFrame = Time.frameCount;
+            };
+            EventCallback<KeyDownEvent> key = evt => {
+                if (!open || evt.altKey || evt.ctrlKey || evt.commandKey) return;
+                if (evt.keyCode != KeyCode.Return && evt.keyCode != KeyCode.KeypadEnter && evt.keyCode != KeyCode.Space) return;
+                var control = Control(evt.target); if (control == null || !control.enabledInHierarchy) return;
+                if (submitControl != control || submitFrame != Time.frameCount) {
+                    keyControl = control; keyFrame = Time.frameCount;
+                    using (var navigation = NavigationSubmitEvent.GetPooled()) { forwarded = navigation; navigation.target = control; control.SendEvent(navigation); }
+                }
+                evt.StopPropagation(); inputRoot.focusController?.IgnoreEvent(evt);
+            };
+            inputRoot.RegisterCallback(submit, TrickleDown.TrickleDown); inputRoot.RegisterCallback(key, TrickleDown.TrickleDown);
+            unbind.Add(() => { inputRoot.UnregisterCallback(submit, TrickleDown.TrickleDown); inputRoot.UnregisterCallback(key, TrickleDown.TrickleDown); });
+        }
         void Unbind() { foreach (var action in unbind) action(); unbind.Clear(); sliders.Clear(); toggles.Clear(); }
         void OpenModal(Modal type) {
             if (leavingScene) return;
             confirm.SetEnabled(true); cancel.SetEnabled(true);
             currentModal = type; modalError.text = "";
+            presentation?.Modal(type==Modal.Guide);
             modalTitle.text = type == Modal.Guide ? "PHÍM ĐIỀU KHIỂN" : type == Modal.Reset ? "ĐẶT LẠI CÀI ĐẶT" : "VỀ MÀN HÌNH CHÍNH";
             modalText.text = type == Modal.Guide ? controlsGuide?.Invoke() ?? "Chưa có thông tin phím điều khiển."
                 : type == Modal.Reset ? "Bạn có muốn đặt lại toàn bộ cài đặt? Tiến trình trò chơi của bạn được giữ nguyên."
@@ -192,20 +248,5 @@ namespace Capstone.Game.SettingsSystem {
         }
         void CloseModal() { currentModal = Modal.None; Show(modal, false); PanelFocusUtility.Close(modal); }
         static void Show(VisualElement element, bool visible) { if (element != null) element.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None; }
-        static void DrawGear(MeshGenerationContext context) {
-            var painter = context.painter2D;
-            var center = context.visualElement.contentRect.center;
-            painter.fillColor = new Color(.97f, .98f, .95f);
-            painter.BeginPath();
-            for (int i = 0; i < 32; i++) {
-                float angle = i * Mathf.PI / 16;
-                float radius = i % 4 < 2 ? 10 : 7;
-                var point = center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-                if (i == 0) painter.MoveTo(point); else painter.LineTo(point);
-            }
-            painter.ClosePath(); painter.Fill();
-            painter.fillColor = context.visualElement.resolvedStyle.backgroundColor;
-            painter.BeginPath(); painter.Arc(center, 3.2f, new Angle(0), new Angle(360)); painter.ClosePath(); painter.Fill();
-        }
     }
 }

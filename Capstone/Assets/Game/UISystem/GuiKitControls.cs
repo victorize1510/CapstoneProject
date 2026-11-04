@@ -47,6 +47,8 @@ namespace Capstone.Game.UISystem {
             label.fontSize = size;
             label.color = GuiKitPalette.Text;
             label.alignment = TextAnchor.MiddleLeft;
+            // Align visible glyphs, including Vietnamese diacritics, inside the allocated rect.
+            label.alignByGeometry = true;
             label.raycastTarget = false;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Truncate;

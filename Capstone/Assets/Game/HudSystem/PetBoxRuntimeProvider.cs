@@ -137,6 +137,34 @@ namespace Capstone.Game.HudSystem {
             error = string.Empty;
             return true;
         }
+        internal sealed class CapturePlacement {
+            public PetController Pet, PreviousActive;
+            public int PartyIndex = -1, BoxIndex = -1;
+        }
+        public bool HasCaptureRoom {
+            get { Initialize(); var input = ResolveInput();
+                if (input?.petSlots != null) for (int i = 0; i < Mathf.Min(6,input.petSlots.Length); i++) if (input.petSlots[i] == null) return true;
+                return FindFirstEmptyBoxSlot() >= 0;
+            }
+        }
+        internal bool TryStageCapture(PetController pet, out CapturePlacement placement) {
+            placement = null; Initialize(); if (pet == null || ContainsPet(pet)) return false;
+            var input = ResolveInput(); var token = new CapturePlacement { Pet = pet, PreviousActive = input != null ? input.activePet : null };
+            if (input?.petSlots != null) for (int i = 0; i < Mathf.Min(6,input.petSlots.Length); i++) if (input.petSlots[i] == null) {
+                input.petSlots[i] = pet; token.PartyIndex = i;
+                if (input.activePet == null) input.activePet = pet;
+                placement = token; return true;
+            }
+            int slot = FindFirstEmptyBoxSlot(); if (slot < 0) return false;
+            storedPets[slot] = pet; token.BoxIndex = slot; placement = token; return true;
+        }
+        internal void RollbackCapture(CapturePlacement token) {
+            if (token == null) return; var input = ResolveInput();
+            if (token.PartyIndex >= 0 && input?.petSlots != null && input.petSlots[token.PartyIndex] == token.Pet) input.petSlots[token.PartyIndex] = null;
+            if (token.BoxIndex >= 0 && storedPets[token.BoxIndex] == token.Pet) storedPets[token.BoxIndex] = null;
+            if (input != null) input.activePet = token.PreviousActive;
+        }
+        internal void PublishCapture() { pendingCapturedPet = null; Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"roster",()=>Changed?.Invoke()); }
 
         public bool TryRemoveCapturedPetForRollback(PetController pet, bool wasSummoned, out string error) {
             Initialize();

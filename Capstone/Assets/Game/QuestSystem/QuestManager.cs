@@ -201,10 +201,10 @@ namespace Capstone.Game.QuestSystem {
 
             if (autoTrackMainQuest && definition.Category == QuestCategory.Main) {
                 SetOnlyTrackedQuest(state);
-                TrackedQuestChanged?.Invoke(state);
+                Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "TrackedQuestChanged" + state.QuestId, () => TrackedQuestChanged?.Invoke(state));
             }
 
-            QuestAccepted?.Invoke(state);
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestAccepted" + state.QuestId, () => QuestAccepted?.Invoke(state));
             PublishQuestChanged(state);
             RefreshUnlockedQuests(true);
             return true;
@@ -220,7 +220,7 @@ namespace Capstone.Game.QuestSystem {
             if (state == null) return false;
 
             SetOnlyTrackedQuest(state);
-            TrackedQuestChanged?.Invoke(state);
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "TrackedQuestChanged" + state.QuestId, () => TrackedQuestChanged?.Invoke(state));
             PublishQuestChanged(state);
             return true;
         }
@@ -230,7 +230,7 @@ namespace Capstone.Game.QuestSystem {
             if (state == null || !state.IsTracked) return false;
 
             state.SetTracked(false);
-            TrackedQuestChanged?.Invoke(null);
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "TrackedQuestChanged", () => TrackedQuestChanged?.Invoke(null));
             PublishQuestChanged(state);
             return true;
         }
@@ -276,9 +276,9 @@ namespace Capstone.Game.QuestSystem {
             if (state == null) return false;
 
             state.Complete(Time.time);
-            QuestCompleted?.Invoke(state);
-            QuestRewardsReady?.Invoke(state, state.Definition.Rewards);
-            TrackedQuestChanged?.Invoke(GetTrackedQuest());
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestCompleted" + state.QuestId, () => QuestCompleted?.Invoke(state));
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestRewardsReady", () => QuestRewardsReady?.Invoke(state, state.Definition.Rewards));
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "TrackedQuestChanged", () => TrackedQuestChanged?.Invoke(GetTrackedQuest()));
             PublishQuestChanged(state);
 
             UnlockLinkedQuests(state.Definition, true);
@@ -293,8 +293,8 @@ namespace Capstone.Game.QuestSystem {
             if (state == null) return false;
 
             state.Fail(Time.time);
-            QuestFailed?.Invoke(state);
-            TrackedQuestChanged?.Invoke(GetTrackedQuest());
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestFailed" + state.QuestId, () => QuestFailed?.Invoke(state));
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "TrackedQuestChanged", () => TrackedQuestChanged?.Invoke(GetTrackedQuest()));
             PublishQuestChanged(state);
             RefreshUnlockedQuests(true);
             return true;
@@ -306,8 +306,8 @@ namespace Capstone.Game.QuestSystem {
             if (state == null || state.Definition == null || !state.Definition.CanAbandon) return false;
 
             state.Abandon(Time.time);
-            QuestAbandoned?.Invoke(state);
-            TrackedQuestChanged?.Invoke(GetTrackedQuest());
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestAbandoned" + state.QuestId, () => QuestAbandoned?.Invoke(state));
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "TrackedQuestChanged", () => TrackedQuestChanged?.Invoke(GetTrackedQuest()));
             PublishQuestChanged(state);
             RefreshUnlockedQuests(true);
             return true;
@@ -450,8 +450,8 @@ namespace Capstone.Game.QuestSystem {
 
             RefreshUnlockedQuests(false);
             ResumePendingCompletions();
-            TrackedQuestChanged?.Invoke(GetTrackedQuest());
-            QuestsChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "TrackedQuestChanged", () => TrackedQuestChanged?.Invoke(GetTrackedQuest()));
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestsChanged", () => QuestsChanged?.Invoke());
         }
 
         public void ResetForNewGame() {
@@ -639,7 +639,7 @@ namespace Capstone.Game.QuestSystem {
                 if (!unlockedQuestIds.Add(definition.QuestId)) continue;
 
                 if (publishEvents) {
-                    QuestUnlocked?.Invoke(definition);
+                    Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestUnlocked" + definition.QuestId, () => QuestUnlocked?.Invoke(definition));
                 }
             }
         }
@@ -653,7 +653,7 @@ namespace Capstone.Game.QuestSystem {
                 if (!unlockedQuestIds.Add(questId)) continue;
 
                 if (publishEvents) {
-                    QuestUnlocked?.Invoke(definition);
+                    Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestUnlocked" + definition.QuestId, () => QuestUnlocked?.Invoke(definition));
                 }
             }
         }
@@ -695,8 +695,8 @@ namespace Capstone.Game.QuestSystem {
         }
 
         void PublishQuestChanged(QuestRuntimeState state) {
-            QuestChanged?.Invoke(state);
-            QuestsChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestChanged" + state.QuestId, () => QuestChanged?.Invoke(state));
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestsChanged", () => QuestsChanged?.Invoke());
         }
 
         void RestoreQuestStates(QuestSaveData saveData) {

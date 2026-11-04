@@ -9,7 +9,7 @@ namespace Capstone.Game.MapSystem.UI {
         public void SetPosition(Vector3 position) {
             var cell = new Vector2Int(Mathf.RoundToInt(position.x), Mathf.RoundToInt(position.z));
             if (cell == last || label == null) return;
-            last = cell; label.text = $"Tọa độ: X {cell.x}, Z {cell.y}";
+            last = cell; label.text = $"X {cell.x}   ·   Z {cell.y}";
         }
     }
 }

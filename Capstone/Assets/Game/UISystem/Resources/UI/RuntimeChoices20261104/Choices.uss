@@ -1,0 +1,28 @@
+/* One runtime choice language: Liberation Sans, 18 logical, bold, stable geometry. No baked frames or checkmarks. */
+.runtime-choice-panel { background-color:#B9C2D2;color:#202B45; }
+.runtime-choice-panel .runtime-choice-row.runtime-choice-row,
+#codex-panel .runtime-choice-row.runtime-choice-row,
+.runtime-choice-list .runtime-choice-row.runtime-choice-row { background-color:transparent;background-image:none;color:#202B45;border-color:#8996B0;opacity:1;transition-property:background-color;transition-duration:0.14s; }
+.runtime-choice-panel .runtime-choice-row.runtime-choice-row:hover,
+#codex-panel .runtime-choice-row.runtime-choice-row:hover,
+.runtime-choice-list .runtime-choice-row.runtime-choice-row:hover { background-color:#D2D8E3;color:#202B45; }
+.runtime-choice-panel .runtime-choice-row.runtime-choice-row.is-selected,
+#codex-panel .runtime-choice-row.runtime-choice-row.is-selected,
+.runtime-choice-list .runtime-choice-row.runtime-choice-row.is-selected { background-color:#A596BB;color:#202B45; }
+.runtime-choice-panel .runtime-choice-row.runtime-choice-row:focus,
+#codex-panel .runtime-choice-row.runtime-choice-row:focus,
+.runtime-choice-list .runtime-choice-row.runtime-choice-row:focus { background-color:#98A8C1;color:#202B45; }
+.runtime-choice-panel .runtime-choice-row.runtime-choice-row.is-selected:focus,
+#codex-panel .runtime-choice-row.runtime-choice-row.is-selected:focus,
+.runtime-choice-list .runtime-choice-row.runtime-choice-row.is-selected:focus { background-color:#B4A7CA;color:#202B45; }
+.runtime-choice-panel .runtime-choice-row.runtime-choice-row:active,
+#codex-panel .runtime-choice-row.runtime-choice-row:active,
+.runtime-choice-list .runtime-choice-row.runtime-choice-row:active { background-color:#8796AE;color:#202B45;transition-duration:0.08s; }
+.runtime-choice-panel .runtime-choice-row.runtime-choice-row:disabled,
+#codex-panel .runtime-choice-row.runtime-choice-row:disabled,
+.runtime-choice-list .runtime-choice-row.runtime-choice-row:disabled { background-color:#A8B1C0;color:#52607A;opacity:1; }
+.runtime-choice-panel .runtime-choice-tile.runtime-choice-row { background-color:#C8CFDD;border-color:#8996B0; }
+.runtime-choice-panel .unity-scroll-view__content-container { min-width:0; }
+.runtime-choice-panel .unity-base-dropdown__checkmark { display:none; }
+.runtime-choice-list .runtime-choice-solid.runtime-choice-row { background-color:#B9C2D2; }
+#codex-panel .runtime-choice-solid.runtime-choice-row { background-color:#B9C2D2; }

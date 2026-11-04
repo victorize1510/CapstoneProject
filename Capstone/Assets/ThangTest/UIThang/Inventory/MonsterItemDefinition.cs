@@ -24,6 +24,13 @@ namespace Capstone.Game.Inventory {
         [SerializeField, Min(0)] int energyRestoreAmount;
         [SerializeField] bool usableFromInventory = true;
         [SerializeField] bool consumable = true;
+        [Header("Capture ball (internal configuration)")]
+        [SerializeField] bool isCaptureBall;
+        [SerializeField, Min(0)] float captureMultiplier;
+        [SerializeField] bool guaranteedCapture;
+        [SerializeField] Capstone.Game.CaptureSystem.CaptureBallCondition captureCondition;
+        public bool IsCaptureBall => category == GameItemCategory.CaptureBall && isCaptureBall;
+        public Capstone.Game.CaptureSystem.CaptureBallRules CaptureRules => new Capstone.Game.CaptureSystem.CaptureBallRules(captureMultiplier, guaranteedCapture, captureCondition);
 
         public GameItemCategory Category => category;
         public string StableId => string.IsNullOrWhiteSpace(stableId) ? name : stableId.Trim();

@@ -36,6 +36,10 @@ public class DummyEnemy : MonoBehaviour
     private float reviveAt;
     private float flashUntil;
     private bool alive = true;
+    public float CurrentHealth => health;
+    public bool CaptureLocked { get; internal set; }
+    internal void InitializeCaptureHealth(float current, float maximum) { maxHealth = maximum; health = current; alive = health > 0; RefreshName(); }
+    internal void FinishCaptureWithoutDefeat() { alive = false; autoRevive = false; enabled = false; }
     private MapMarker mapMarker;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -166,12 +170,13 @@ public class DummyEnemy : MonoBehaviour
 
     public void TakeDamage(float damage, GameObject source)
     {
-        if (!alive)
+        if (!alive || CaptureLocked)
         {
             return;
         }
 
         health = Mathf.Max(0f, health - Mathf.Max(0f, damage));
+        GetComponent<Capstone.Game.CaptureSystem.WildPetCaptureTarget>()?.SyncHealthFromEnemy();
         RefreshName();
 
         if (health <= 0f)

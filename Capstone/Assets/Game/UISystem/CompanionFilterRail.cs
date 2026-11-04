@@ -11,14 +11,14 @@ namespace Capstone.Game.UISystem {
             name = "companion-filter-rail"; pickingMode = PickingMode.Ignore;
             var face = new AngularSurface { Shape = "panel", Role = "panel", NoBorder = false };
             Stretch(face); Add(face);
-            viewport = new ScrollView(ScrollViewMode.Horizontal) { name = "green-filter-viewport" };
+            viewport = RuntimeScrollbars.Create(ScrollViewMode.Horizontal);viewport.name="green-filter-viewport";
             viewport.horizontalScrollerVisibility = ScrollerVisibility.Hidden; viewport.verticalScrollerVisibility = ScrollerVisibility.Hidden;
             Place(viewport, 34, 4, 400, 36); Add(viewport); viewport.Add(filters);
             filters.style.position = Position.Relative; filters.style.left = filters.style.top = 0; filters.style.width = StyleKeyword.Auto; filters.style.height = 36; filters.style.overflow = Overflow.Visible;
             viewport.contentViewport.style.overflow = Overflow.Hidden;
-            previous = new AngularButton(() => Shift(-160)) { name = "skills-filter-previous", text = "‹", tooltip = "Các hệ phía trước", Role = "raised", Shape = "parallel" };
-            next = new AngularButton(() => Shift(160)) { name = "skills-filter-next", text = "›", tooltip = "Các hệ phía sau", Role = "raised", Shape = "parallel" };
-            foreach (var b in new[] { previous, next }) { b.SetAngularContext(true); b.AddToClassList("filter-rail-arrow"); b.style.fontSize = 24; }
+            previous = new AngularButton(() => Shift(-160)) { name = "skills-filter-previous", text = "‹", tooltip = "Các hệ phía trước", Role = "filter-arrow", Shape = "parallel" };
+            next = new AngularButton(() => Shift(160)) { name = "skills-filter-next", text = "›", tooltip = "Các hệ phía sau", Role = "filter-arrow", Shape = "parallel" };
+            foreach (var b in new[] { previous, next }) { b.SetAngularContext(true); b.Surface.Material=false; b.AddToClassList("filter-rail-arrow"); b.style.fontSize = 24; }
             Place(previous, 2, 4, 30, 36); Place(next, 436, 4, 30, 36); Add(previous); Add(next);
             Place(leftFade, 34, 4, 16, 36); Place(rightFade, 418, 4, 16, 36); Add(leftFade); Add(rightFade);
             var all=filters.Q<Button>("skills-filter-all");
@@ -32,7 +32,10 @@ namespace Capstone.Game.UISystem {
             bool overflow = viewport.horizontalScroller.highValue > 1;
             previous.style.display = next.style.display = overflow ? DisplayStyle.Flex : DisplayStyle.None;
             bool canLeft = overflow && viewport.scrollOffset.x > 1, canRight = overflow && viewport.scrollOffset.x < viewport.horizontalScroller.highValue - 1;
-            previous.SetEnabled(canLeft); next.SetEnabled(canRight);
+            // Endpoints clamp to a no-op; both arrow faces keep the same normal tint.
+            previous.SetEnabled(overflow); next.SetEnabled(overflow);
+            previous.tooltip=canLeft?"Các hệ phía trước":"Đã ở đầu danh sách hệ";
+            next.tooltip=canRight?"Các hệ phía sau":"Đã ở cuối danh sách hệ";
             leftFade.style.display = canLeft ? DisplayStyle.Flex : DisplayStyle.None; rightFade.style.display = canRight ? DisplayStyle.Flex : DisplayStyle.None;
         }
         static void Place(VisualElement e, float x, float y, float width, float height) { e.style.position = Position.Absolute; e.style.left = x; e.style.top = y; e.style.width = width; e.style.height = height; }

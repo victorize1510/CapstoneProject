@@ -134,7 +134,7 @@ namespace Capstone.Game.ProfileSystem {
             displayName = cleanName;
             error = string.Empty;
             RequestSave();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
             return true;
         }
 
@@ -161,7 +161,7 @@ namespace Capstone.Game.ProfileSystem {
 
             avatarIndex = nextAvatarIndex;
             RequestSave();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
             return true;
         }
 
@@ -240,7 +240,7 @@ namespace Capstone.Game.ProfileSystem {
 
         void NotifyChanged() {
             RequestSave();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         public PlayerProfileSaveData CreateSaveData() {
@@ -292,7 +292,7 @@ namespace Capstone.Game.ProfileSystem {
             }
             EnsureIdentity();
             SyncAchievementMetrics();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         public void ResetForNewGame() {
@@ -312,7 +312,7 @@ namespace Capstone.Game.ProfileSystem {
             totalBattles = -1;
             capturedSpeciesIds.Clear();
             EnsureIdentity();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         Sprite GetCurrentAvatar() {
@@ -407,16 +407,16 @@ namespace Capstone.Game.ProfileSystem {
         void OnQuestsChanged() {
             GetStoryProgress(out int storyCompleted, out _);
             SyncAchievementMetrics(storyCompleted);
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         void OnAchievementsChanged() {
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         void OnActiveSceneChanged(Scene previous, Scene current) {
             ResolveQuestManager();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         void EnsureIdentity() {

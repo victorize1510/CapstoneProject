@@ -15,6 +15,11 @@ namespace Capstone.Game.HudSystem {
         [Header("Base critical bonuses (percent)")]
         [SerializeField, Range(0f, 100f)] float criticalRate = 6.25f;
         [SerializeField, Range(0f, 100f)] float criticalDamage = 50f;
+        [Header("Capture (internal; never shown to players)")]
+        [SerializeField] bool isCatchable;
+        [SerializeField, Range(0, 255), Tooltip("0 means unconfigured. Valid capture rates are 1..255.")] int baseCatchRate;
+        public bool IsCatchable => isCatchable;
+        public int BaseCatchRate => baseCatchRate;
 
         public string DefinitionId => definitionId?.Trim() ?? string.Empty;
         public string FormId => string.IsNullOrWhiteSpace(formId) ? "base" : formId.Trim();

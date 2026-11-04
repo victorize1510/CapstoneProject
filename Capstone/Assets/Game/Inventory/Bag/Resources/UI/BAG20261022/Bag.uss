@@ -36,7 +36,7 @@
 .bag-design #item-grid { position:relative;width:744px;min-height:488px;margin:0;padding:0;flex-shrink:0; }
 .bag-design .inventory-item-card { position:absolute;margin:0;padding:0; }
 .bag-design .inventory-item-icon { position:absolute;left:24px;top:24px;width:54px;height:46.5px;background-size:contain;background-color:rgba(0,0,0,0); }
-.bag-design .inventory-item-name { position:absolute;left:6px;right:6px;top:71px;height:28px;font-size:13px;-unity-font-style:bold;white-space:normal;overflow:hidden;text-overflow:ellipsis;-unity-text-align:upper-center; }
+.bag-design .inventory-item-name { position:absolute;left:6px;right:6px;top:71px;height:26px;font-size:13px;-unity-font-style:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;-unity-text-align:middle-center;padding:0; }
 .bag-design .inventory-item-quantity { position:absolute;right:8px;top:6px;width:44px;height:18px;font-size:13px;-unity-font-style:bold;-unity-text-align:middle-right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
 .bag-design .inventory-item-placeholder { font-size:16px;-unity-text-align:middle-center; }
 .bag-design .bag-item-category { display:none; }
@@ -51,7 +51,6 @@
 .bag-design .bag-empty-icon { position:absolute;left:260px;top:30px;width:72px;height:72px;background-size:contain; }
 .bag-design #detail-panel { position:absolute;left:1136px;top:342px;width:392px;height:268px;margin:0;padding:0;background-color:rgba(0,0,0,0); }
 .bag-design #detail-panel .unity-scroll-view__content-container { padding:0 6px 12px 0; }
-.bag-design #detail-panel .unity-scroll-view__vertical-scroller { width:7px; }
 .bag-design #detail-name { font-size:26px;-unity-font-style:bold;margin-bottom:12px;white-space:normal; }
 .bag-design .detail-badges { flex-direction:row;margin-bottom:12px;min-height:24px; }
 .bag-design .detail-badges Label { font-size:16px;-unity-font-style:bold;padding:2px 10px;margin-right:8px;background-color:rgba(193,195,211,.65); }

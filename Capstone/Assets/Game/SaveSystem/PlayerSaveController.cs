@@ -710,7 +710,9 @@ namespace Capstone.Game.SaveSystem {
         }
 
         static PetController[] FindScenePets() {
-            return FindObjectsByType<PetController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            var all = FindObjectsByType<PetController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            return Array.FindAll(all, pet => !pet.IsWildEncounter
+                || pet.GetComponent<Capstone.Game.CaptureSystem.WildPetCaptureTarget>()?.StagedForSave == true);
         }
 
         static PetCollectionMetadata ResolveMetadata(PetController pet, bool createIfMissing) {

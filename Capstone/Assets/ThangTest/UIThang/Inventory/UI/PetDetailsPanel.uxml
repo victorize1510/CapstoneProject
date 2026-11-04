@@ -140,7 +140,8 @@
           </ga:AngularSurface>
         </ui:VisualElement>
         <ga:AngularSurface class="ga-details-advanced" role="panel">
-          <ui:Label text="TIỀM NĂNG &amp; HUẤN LUYỆN" class="ga-section-title" />
+          <ga:AngularButton name="pet-details-advanced-toggle" text="Chi tiết nâng cao +" class="ga-button" role="primary" shape="parallel" style="position:relative;height:44px;min-height:44px;flex-shrink:0;width:100%;" />
+          <ui:VisualElement name="pet-details-advanced-body" style="display:none;position:relative;flex-direction:column;flex-shrink:0;">
           <ui:VisualElement class="ga-info-row">
             <ui:Label text="Tính khí" class="ga-info-key" />
             <ui:Label name="pet-details-nature" text="—" class="ga-info-value" />
@@ -151,6 +152,7 @@
           </ui:VisualElement>
           <ui:VisualElement name="pet-details-genetics-table" class="genetics-table" picking-mode="Ignore" />
           <ui:Label name="pet-details-ev-total" text="EV đã phân bổ: — / 510" />
+          </ui:VisualElement>
         </ga:AngularSurface>
         <ga:AngularSurface class="ga-details-skills" role="panel">
           <ui:Label name="" text="KỸ NĂNG ĐANG TRANG BỊ" class="ga-section-title" />

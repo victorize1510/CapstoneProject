@@ -1,0 +1,72 @@
+/* Runtime text roles only. Font sizes and control hit areas do not change with state. */
+.readability-ui .angular-button-caption {
+    padding-left:10px;
+    padding-right:10px;
+    padding-top:1px;
+    padding-bottom:1px;
+    white-space:nowrap;
+    -unity-text-align:middle-center;
+}
+/* Filter chips keep symmetric insets; selection is shown by surface tint only. */
+.readability-ui .companion-design .skills-filter-button .angular-button-caption {
+    padding-left:0;
+    padding-right:0;
+}
+/* Reserve space for bevels rather than placing content on the section boundary. */
+.readability-ui .companion-design .companion-summary {
+    padding-left:8px;
+    padding-right:8px;
+}
+.readability-ui .companion-design .companion-resources {
+    padding-left:8px;
+    padding-right:8px;
+}
+.readability-ui .companion-design .companion-meta {min-width:0;}
+.readability-ui .companion-design .companion-name {min-width:0;}
+.readability-ui .companion-design .companion-details-link {
+    right:12px;
+    top:auto;
+    bottom:12px;
+    height:28px;
+}
+/* Compact captions must ellipsize as one line; their full names remain in tooltips. */
+.readability-ui .bag-design .inventory-item-name {
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+/* These tiny controls inherited normal-button vertical padding, clipping the cross. */
+.readability-ui #box-search-field-clear,
+.readability-ui #shop-clear {
+    padding:0;
+    margin-top:0;
+    margin-bottom:0;
+    min-width:32px;
+    min-height:32px;
+    -unity-text-align:middle-center;
+}
+/* Shrinking names and wrapping copy have different jobs. Keep values at the right. */
+.readability-ui .box-selected-name,
+.readability-ui .codex-card-name {
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.readability-ui .ga-info-value {
+    min-width:0;
+    -unity-text-align:middle-right;
+}
+.readability-ui .settings-row-label {
+    min-width:0;
+    flex-shrink:1;
+    white-space:normal;
+}
+.readability-ui .settings-note,
+.readability-ui .shop-item-name,
+.readability-ui .shop-description,
+.readability-ui .codex-detail-text,
+.readability-ui .quest-description {
+    white-space:normal;
+    flex-shrink:0;
+}

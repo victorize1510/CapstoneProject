@@ -8,18 +8,21 @@
 .readability-ui #pets-rename-button {position:absolute;right:48px;top:2px;width:40px;height:40px;margin:0;}
 .readability-ui #pets-favorite-button {position:absolute;right:0;top:2px;width:40px;height:40px;margin:0;}
 .readability-ui .companion-design .companion-meta {height:auto;min-height:44px;max-height:44px;flex-wrap:wrap;overflow:hidden;}
-.readability-ui .companion-design .companion-growth-module {padding:16px 20px;min-height:180px;margin-bottom:16px;}
-.readability-ui .companion-design .companion-growth-heading {position:relative;height:58px;min-height:58px;padding-left:52px;padding-right:190px;border-bottom-width:1px;border-bottom-color:rgba(110,126,153,.35);}
-.readability-ui .companion-design .companion-growth-heading>.companion-icon {left:0;top:6px;width:36px;height:36px;}
-.readability-ui .companion-design .companion-growth-heading>.companion-small-button {right:0;top:4px;width:178px;height:44px;}
-.readability-ui .companion-design .companion-growth-copy {position:relative;height:auto;min-height:48px;margin-top:12px;}
-.readability-ui .companion-design .companion-growth-reason {position:relative;height:auto;min-height:24px;margin-top:6px;white-space:normal;}
+.readability-ui .companion-design .companion-growth-module {padding:12px 16px;min-height:148px;margin-bottom:8px;}
+.readability-ui .companion-design .companion-growth-heading {position:relative;height:44px;min-height:44px;padding-left:48px;padding-right:190px;border-bottom-width:1px;border-bottom-color:rgba(110,126,153,.35);}
+.readability-ui .companion-design .companion-growth-heading>.companion-icon {left:0;top:4px;width:36px;height:36px;}
+.readability-ui .companion-design .companion-growth-heading>.companion-small-button {right:0;top:0;width:178px;height:44px;}
+.readability-ui .companion-design .companion-growth-copy {position:relative;height:auto;min-height:40px;margin-top:8px;}
+.readability-ui .companion-design .companion-growth-reason {position:relative;height:auto;min-height:24px;margin-top:4px;white-space:normal;}
 .readability-ui .ga-popup .ga-details-middle {height:auto;min-height:292px;align-items:stretch;}
 .readability-ui .ga-popup .ga-details-basic,.readability-ui .ga-popup .ga-details-stats {height:auto;min-height:292px;}
 .readability-ui .ga-popup .ga-section-title {font-size:22px;min-height:30px;-unity-font-style:bold;}
 .readability-ui .ga-popup .ga-details-basic .ga-info-row {height:30px;}
 .readability-ui .ga-popup .ga-details-basic .ga-info-key,.readability-ui .ga-popup .ga-details-basic .ga-info-value {font-size:17px;}
-.readability-ui .ga-popup .ga-details-advanced {height:auto;min-height:224px;flex-wrap:nowrap;flex-direction:column;padding:16px 20px;}
+.readability-ui .ga-popup .ga-details-advanced {height:auto;min-height:0;flex-wrap:nowrap;flex-direction:column;padding:12px 20px;}
+.readability-ui #pet-details-advanced-body {margin-top:12px;flex-shrink:0;height:auto;width:100%;}
+.readability-ui #pet-details-advanced-toggle {position:relative;left:auto;right:auto;top:auto;bottom:auto;flex-shrink:0;}
+.readability-ui #pet-details-advanced-body>.ga-info-row {height:30px;width:100%;padding-right:0;}
 .readability-ui .ga-popup .ga-details-advanced>.ga-info-row {height:30px;width:100%;padding-right:0;}
 .readability-ui .ga-popup .ga-details-advanced .ga-info-key,.readability-ui .ga-popup .ga-details-advanced .ga-info-value {font-size:18px;}
 .readability-ui .genetics-table {height:100px;margin-top:10px;}
@@ -28,10 +31,10 @@
 .readability-ui .genetics-row .genetics-key {width:144px;flex-grow:0;flex-basis:144px;-unity-text-align:middle-left;color:#39455E;}
 .readability-ui .genetics-heading Label {-unity-font-style:bold;color:#39455E;}
 .readability-ui #pet-details-ev-total {height:28px;font-size:17px;color:#39455E;}
-.readability-ui .ga-popup .ga-details-skills {height:auto;min-height:186px;padding:16px 20px;}
-.readability-ui .ga-popup .ga-details-skills .pet-details-skills-row {height:auto;min-height:132px;}
-.readability-ui .ga-popup .ga-details-skills .pet-details-skill-card {height:auto;min-height:128px;padding:8px;}
-.readability-ui .ga-popup .ga-details-skills .pet-details-skill-icon {width:48px;height:48px;margin-right:10px;}
+.readability-ui .ga-popup .ga-details-skills {height:auto;min-height:148px;padding:16px 20px;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skills-row {height:80px;min-height:80px;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skill-card {height:80px;min-height:80px;padding:12px;}
+.readability-ui .ga-popup .ga-details-skills .pet-details-skill-icon {width:56px;height:56px;margin-right:10px;}
 .readability-ui .ga-popup .ga-details-skills Label {font-size:17px;white-space:normal;}
 .readability-ui .ga-popup .ga-details-skills .pet-details-skill-name {min-height:44px;-unity-font-style:bold;}
 .readability-ui .ga-popup .ga-details-skills .pet-details-skill-pp {font-size:17px;min-height:40px;}
@@ -80,10 +83,9 @@
 .readability-ui .companion-design .companion-growth-reason {color:#39455E;}
 
 /* Stable filter geometry: selection uses a brighter face AND a reserved checkmark. */
-.readability-ui .skills-filter-button {position:relative;padding-left:24px;font-size:13px;}
-.readability-ui .skills-filter-button .filter-selection-mark {position:absolute;left:7px;top:0;bottom:0;width:16px;font-size:14px;-unity-font-style:bold;-unity-text-align:middle-center;color:#202B45;}
-.readability-ui .companion-design .skills-filter-button .angular-button-caption {left:22px;right:6px;color:#39455E;}
-.readability-ui .companion-design .skills-filter-button.is-selected .angular-button-caption {color:#152036;-unity-font-style:bold;}
+.readability-ui .skills-filter-button {position:relative;padding-left:6px;font-size:13px;}
+.readability-ui .companion-design .skills-filter-button .angular-button-caption {left:6px;right:6px;color:#202B45;}
+.readability-ui .companion-design .skills-filter-button.is-selected .angular-button-caption {color:#202B45;}
 .readability-ui .skills-filter-button.is-selected {background-color:#C7C7E1;border-color:#CCAD83;color:#152036;}
 .readability-ui .companion-design .skills-filter-button.is-selected {background-color:transparent;}
 .readability-ui .companion-design .companion-embedded-skills .skills-filter-button {min-width:100px;}

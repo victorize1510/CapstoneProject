@@ -1,0 +1,75 @@
+/* Scoped presentation only. Functional flex/grid measurements remain in BoxPanel.uss. */
+.box-unified { color: rgb(32,43,66); }
+.box-unified .box-skin-layer { position:absolute; left:0; top:0; right:0; bottom:0; }
+.box-unified .box-header { padding:0; background-color:transparent; border-width:0; }
+.box-unified .unified-back { max-width:158px; max-height:46px; }
+.box-unified .box-title-group { background-color:transparent; border-width:0; }
+.box-unified .box-subtitle, .box-unified #box-source-label, .box-unified .box-section-hint { display:none; }
+.box-unified .box-surface, .box-unified .box-meta-item, .box-unified .box-nature-card,
+.box-unified .box-health-card, .box-unified .box-radar-area, .box-unified .box-selected-portrait,
+.box-unified .box-filter-panel, .box-unified .box-sort-popup, .box-unified .box-purchase-card,
+.box-unified .box-footer { background-color:transparent; border-color:transparent; border-radius:0; }
+.box-unified .box-radar-area { border-width:0; }
+.box-unified .unity-button, .box-unified .unity-button:hover, .box-unified .unity-button:focus,
+.box-unified .unity-button:active, .box-unified .box-party-card.is-selected,
+.box-unified .box-party-card.is-swap-source, .box-unified .box-storage-card.is-selected,
+.box-unified .box-storage-card.is-swap-source, .box-unified .box-filter-chip.is-selected {
+    background-color:transparent; background-image:none; border-width:1px; border-color:transparent;
+    border-radius:0; color:rgb(32,43,66); -unity-font-style:normal;
+}
+.box-unified .box-button-caption { flex-grow:1; min-width:0; margin:0; padding:0;
+    -unity-text-align:middle-center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    font-size:14px; -unity-font-style:bold; color:rgb(32,43,66);
+}
+.box-unified .box-party-card .box-button-caption, .box-unified .box-storage-card .box-button-caption { display:none; }
+.box-unified .box-favorite-badge, .box-unified .box-storage-favorite { background-color:transparent; border-radius:0; }
+.box-unified .box-action-button .box-button-caption { font-size:16px; }
+.box-unified .box-primary-action .box-button-caption, .box-unified #box-purchase-confirm .box-button-caption { color:rgb(238,235,226); }
+.box-unified .box-filter-chip .box-button-caption { font-size:13px; }
+.box-unified .box-sort-option .box-button-caption { -unity-text-align:middle-left; font-size:13px; }
+.box-unified .box-sort-option { min-height:28px; padding:3px 12px; }
+.box-unified .box-party-card.is-empty { opacity:1; }
+.box-unified .box-party-card.is-filtered-out, .box-unified .box-storage-card.is-filtered-out { opacity:0.32; }
+.box-unified .box-party-card.is-locked, .box-unified .box-storage-card.is-locked { opacity:0.5; }
+.box-unified .box-party-name { color:rgb(32,43,66); }
+.box-unified .box-party-name, .box-unified .box-storage-name { -unity-font-style:bold; }
+.box-unified .box-party-name { font-size:14px; }
+.box-unified .box-storage-name { font-size:12px; }
+.box-unified .box-filter-toggle .box-button-caption, .box-unified .box-sort-field .box-button-caption { font-size:12px; }
+.box-unified .box-filter-toggle .box-utility-glyph, .box-unified .box-sort-field .box-utility-glyph { width:14px; height:14px; left:8px; }
+.box-unified .box-filter-toggle.box-has-glyph .box-button-caption, .box-unified .box-sort-field.box-has-glyph .box-button-caption { margin-left:15px; }
+.box-unified .box-slot-number, .box-unified .box-party-level, .box-unified .box-lead-badge {
+    background-color:rgb(67,80,116); border-width:0; border-radius:0; color:rgb(238,235,226);
+}
+.box-unified .box-party-hp-label, .box-unified .box-party-hp-value,
+.box-unified .box-storage-meta, .box-unified .box-meta-caption, .box-unified .box-health-value { color:rgb(51,62,85); }
+.box-unified .box-party-hp-track { background-color:rgb(124,140,165); border-radius:0; }
+.box-unified .box-party-hp-track .box-health-fill { background-color:rgb(190,126,150); border-radius:0; }
+.box-unified .box-storage-portrait, .box-unified .box-party-portrait { background-color:transparent; border-width:0; border-radius:0; }
+.box-unified .box-empty-slot-icon { width:46px; height:46px; min-height:46px; background-color:transparent; border-width:0; border-radius:0; color:transparent; }
+.box-unified .box-empty-slot-text { color:rgb(80,93,120); }
+.box-unified .box-search-field { background-color:transparent; border-color:transparent; border-radius:0; }
+.box-unified .box-search-field > .unity-text-field__input { background-color:transparent; background-image:none; border-width:0; border-radius:0; padding-left:26px; padding-right:8px; color:rgb(32,43,66); font-size:13px; }
+.box-unified .box-search-field .unity-text-input { background-color:transparent; border-width:0; color:rgb(32,43,66); }
+.box-unified .box-utility-glyph { position:absolute; width:19px; height:19px; left:12px; top:50%; translate:0 -50%; }
+.box-unified .box-search-glyph { left:8px; width:16px; height:16px; }
+.box-unified .box-has-glyph .box-button-caption { margin-left:23px; }
+.box-unified .box-centered-glyph { flex-direction:row; justify-content:center; align-items:center; }
+.box-unified .box-centered-glyph .box-utility-glyph { position:relative; left:auto; top:auto; translate:0 0; margin-right:8px; flex-shrink:0; }
+.box-unified .box-centered-glyph .box-button-caption { flex-grow:0; margin-left:0; }
+.box-unified .box-icon-only .box-utility-glyph { left:50%; translate:-50% -50%; }
+.box-unified .box-selected-element-icon { width:25px; height:25px; margin-right:8px; background-color:transparent; border-width:0; }
+.box-unified .box-selected-favorite { width:22px; height:22px; background-color:transparent; }
+.box-unified .box-selected-name { color:rgb(32,43,66); font-size:30px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.box-unified .box-selected-location { font-size:13px; }
+.box-unified .box-meta-caption { font-size:12px; }
+.box-unified .box-meta-value { font-size:15px; }
+.box-unified .box-nature-name { font-size:20px; }
+.box-unified .box-selected-portrait-fallback { color:rgb(75,89,116); }
+.box-unified .box-nature-title { color:rgb(58,70,95); }
+.box-unified .box-health-track, .box-unified .box-health-fill { border-radius:0; border-width:0; -unity-background-scale-mode:stretch-to-fill; }
+.box-unified .box-radar-label { color:rgb(41,54,81); background-color:transparent; }
+.box-unified .box-footer .unity-label { color:rgb(238,235,226); font-size:12px; }
+.box-unified .box-purchase-overlay { background-color:rgba(23,29,47,0.72); }
+.box-unified .box-purchase-title { color:rgb(32,43,66); }
+.box-unified .box-purchase-line { color:rgb(41,54,81); font-size:16px; }

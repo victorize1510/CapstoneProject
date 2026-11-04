@@ -30,6 +30,12 @@ public class PetController : MonoBehaviour
 
     [Header("References")]
     public Transform owner;
+    [SerializeField, Tooltip("Only for explicitly authored wild capture prefabs; owned pets keep this off.")] bool wildEncounter;
+    public bool IsWildEncounter => wildEncounter;
+    internal void FinishWildCapture(Transform nextOwner) {
+        wildEncounter = false; owner = nextOwner; IsSummoned = false; state = PetState.Dormant;
+        SetWorldPresence(false);
+    }
     public Animator animator;
     public float SummonPresentationAnimationDuration => summonAnimationDuration;
     public bool HasSummonPresentationAnimationFinished
@@ -56,7 +62,7 @@ public class PetController : MonoBehaviour
 
     public bool ShouldShowVisualRenderer(Renderer renderer)
     {
-        if (renderer == null || !IsSummoned) return false;
+        if (renderer == null || (!IsSummoned && !wildEncounter)) return false;
         var visual = GetComponentInChildren<Capstone.Game.HudSystem.PetEvolutionVisualController>(true);
         return (visual == null || visual.IsCurrentVisualRenderer(renderer))
             && rendererEnabledStates.TryGetValue(renderer, out bool allowed) && allowed;
@@ -66,10 +72,10 @@ public class PetController : MonoBehaviour
     {
         if (renderer == null) return;
         rendererEnabledStates[renderer] = enabled;
-        renderer.enabled = enabled && IsSummoned;
+        renderer.enabled = enabled && (IsSummoned || wildEncounter);
     }
 
-    public void RefreshVisualPresence() => SetWorldPresence(IsSummoned);
+    public void RefreshVisualPresence() => SetWorldPresence(IsSummoned || wildEncounter);
     public NavMeshAgent agent;
 
     [Header("Follow")]
@@ -246,11 +252,12 @@ public class PetController : MonoBehaviour
         ConfigureAgent();
         animatorInitiallyEnabled = animator != null && animator.enabled;
         CacheWorldPresence();
-        SetWorldPresence(false);
+        if (!wildEncounter) SetWorldPresence(false);
     }
 
     private void OnEnable()
     {
+        if (wildEncounter) return;
         EnsureMapMarker();
         markerInitiallyEnabled = mapMarker != null && mapMarker.enabled;
         if (!IsSummoned && mapMarker != null)
@@ -261,6 +268,7 @@ public class PetController : MonoBehaviour
 
     private void Start()
     {
+        if (wildEncounter) return;
         if (owner == null)
         {
             BasicPlayerMovement player = FindFirstObjectByType<BasicPlayerMovement>();
@@ -280,6 +288,7 @@ public class PetController : MonoBehaviour
 
     private void Update()
     {
+        if (wildEncounter) return;
         if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
             && useSelfInput
             && summonKey != KeyCode.None
