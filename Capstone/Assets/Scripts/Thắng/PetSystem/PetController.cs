@@ -2,6 +2,8 @@
 using Capstone.Game.HudSystem;
 using Capstone.Game.MapSystem;
 using Capstone.Game.SaveSystem;
+using Capstone.Game.CreatureSystem;
+using Capstone.Game.Skills;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -54,6 +56,12 @@ public class PetController : MonoBehaviour
     public void BindVisualAnimator(Animator nextAnimator)
     {
         if (nextAnimator == null) return;
+        if (animator != nextAnimator) {
+            hasPendingSkillAnimation = false;
+            pendingSkillCandidates = null;
+            skillAnimationUntil = 0;
+            currentAnimatorState = null;
+        }
         RestoreSummonAnimatorSpeed();
         animator = nextAnimator;
         animatorInitiallyEnabled = nextAnimator.enabled;
@@ -121,7 +129,7 @@ public class PetController : MonoBehaviour
         get
         {
             PetCollectionMetadata metadata = GetComponentInChildren<PetCollectionMetadata>(true);
-            return Mathf.Max(0f, attackDamage + (metadata != null ? metadata.Attack : 0));
+            return metadata != null ? Mathf.Max(0f, metadata.Attack) : Mathf.Max(0f, attackDamage);
         }
     }
     public float attackCooldown = 0.95f;
@@ -219,16 +227,37 @@ public class PetController : MonoBehaviour
 
     public bool IsSummoned { get; private set; }
     public bool IsSummonPresentationPending => summonRevealPending;
+    private Capstone.Game.CreatureSystem.CreatureCombatant combatant;
+    private PetHudRuntimeStats combatStats;
+    private PetCombatActionDriver combatActions;
+    private CombatOffenseRoll basicRoll;
+    private int basicToken;
+    internal void BindCombatant(Capstone.Game.CreatureSystem.CreatureCombatant value) { combatant = value; combatStats = GetComponent<PetHudRuntimeStats>(); }
+    internal void BindCombatActions(PetCombatActionDriver value) { combatActions = value; }
+    internal float BasicSkillDelay => state == PetState.AttackTarget && (hasPendingHit || Time.time < pendingHitAt + .08f) ? Mathf.Max(0, pendingHitAt + .08f - Time.time) : 0;
+    internal void HoldCoordinatedSkill() {
+        hasPendingHit = false; hasPendingSkillAnimation = false; pendingSkillCandidates = null;
+        skillStopsMovement = true; skillFacesTarget = false; StopMovement(false);
+        SetAnimatorBool(attackingParameter, false);
+    }
+    internal void ReleaseCoordinatedSkill() { skillAnimationUntil = 0; currentAnimatorState = null; }
+    internal void FaceCombatDirection(Vector3 direction) {
+        direction.y = 0;
+        if (direction.sqrMagnitude > .001f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(direction), 720 * Time.deltaTime);
+    }
 
     public bool CanReceiveCommands
     {
-        get { return IsSummoned && state != PetState.Summoning && !recallLocked; }
+        get { return IsSummoned && state != PetState.Summoning && !recallLocked && (combatant == null || (combatStats != null && combatStats.Health > 0)); }
     }
 
     public bool HasCombatTarget
     {
         get { return target != null && target.IsAlive; }
     }
+    public DummyEnemy CombatTarget => target != null && target.IsAlive ? target : null;
+    internal void HandleCombatDefeat() { EnterDormant(); }
+    internal void AwardCombatDefeat(DummyEnemy enemy) { AwardDefeatExperience(enemy); }
 
     private void Reset()
     {
@@ -470,6 +499,7 @@ public class PetController : MonoBehaviour
 
     public bool TrySummonAt(Vector3 worldPosition, Vector3 facingDirection, bool deferSpawnAnimation)
     {
+        if (combatant != null && (combatStats == null || combatStats.Health <= 0)) return false;
         if (!TryPlaceForSummon(worldPosition))
         {
             return false;
@@ -706,6 +736,7 @@ public class PetController : MonoBehaviour
         recoverySeconds = Mathf.Max(0f, recoverySeconds);
 
         skillStopsMovement = stopMovement;
+        hasPendingHit = false;
         skillFacesTarget = faceTarget;
         if (skillStopsMovement)
         {
@@ -1224,12 +1255,8 @@ public class PetController : MonoBehaviour
             if (IsTargetInAttackRange())
             {
                 DummyEnemy attackedEnemy = target;
-                bool wasAlive = attackedEnemy != null && attackedEnemy.IsAlive;
-                attackedEnemy?.TakeDamage(CalculateAttackDamage(), gameObject);
-                if (wasAlive && attackedEnemy != null && !attackedEnemy.IsAlive)
-                {
-                    AwardDefeatExperience(attackedEnemy);
-                }
+                if (attackedEnemy != null) attackedEnemy.ApplyCombatHit(new CombatHit(gameObject, "basic", basicToken,
+                    basicRoll.RawDamage, CreatureDamageKind.Physical, basicRoll.Critical, false, attackedEnemy.ClosestPoint(transform.position + Vector3.up)));
             }
         }
 
@@ -1267,9 +1294,11 @@ public class PetController : MonoBehaviour
 
         state = PetState.AttackTarget;
         attackStartedAt = Time.time;
-        nextAttackAt = Time.time + attackCooldown;
+        nextAttackAt = Time.time + attackCooldown * (combatant != null ? combatant.AttackIntervalScale : 1f);
         pendingHitAt = Time.time + attackHitDelay;
         hasPendingHit = true;
+        basicToken++;
+        basicRoll = RollBasicAttack();
 
         StopMovement(false);
         FacePoint(GetTargetPosition());
@@ -1301,6 +1330,7 @@ public class PetController : MonoBehaviour
 
     private void MoveTo(Vector3 destination, float speed, float stopDistance)
     {
+        if (combatant != null) speed *= combatant.MovementScale;
         if (TryMoveWithAgent(destination, speed, stopDistance))
         {
             return;
@@ -1373,7 +1403,7 @@ public class PetController : MonoBehaviour
 
     private void AwardDefeatExperience(DummyEnemy defeatedEnemy)
     {
-        if (defeatedEnemy == null)
+        if (defeatedEnemy == null || defeatedEnemy.IsTrainingDummy)
         {
             return;
         }
@@ -1403,17 +1433,18 @@ public class PetController : MonoBehaviour
 
     private float CalculateAttackDamage()
     {
+        return RollBasicAttack().RawDamage;
+    }
+
+    private CombatOffenseRoll RollBasicAttack()
+    {
+        if (combatant != null) return combatant.RollOffense(CreatureDamageKind.Physical);
         PetCollectionMetadata metadata = GetComponentInChildren<PetCollectionMetadata>(true);
-        if (metadata == null) return Mathf.Max(0f, attackDamage);
+        if (metadata == null) return new CombatOffenseRoll(Mathf.Max(0f, attackDamage), false);
 
         PetStatSnapshot stats = metadata.CurrentStats;
-        float damage = Mathf.Max(0f, attackDamage + stats.Attack);
-        if (Random.value >= stats.CriticalRate / 100f)
-        {
-            return damage;
-        }
-
-        return damage * (1f + stats.CriticalDamage / 100f);
+        float roll = Random.value;
+        return new CombatOffenseRoll(CreatureCombatRules.Offense(stats, CreatureDamageKind.Physical, 1, 0, roll), roll < stats.CriticalRate / 100f);
     }
 
     private bool TryEnableAgentOnNavMesh()
@@ -1614,6 +1645,41 @@ public class PetController : MonoBehaviour
         }
 
         next = candidate;
+        return true;
+    }
+
+    // Called only by an accepted skill while its ordinary movement is suspended.
+    // No sidestep/teleport fallback: a blocked retreat stops and the cast continues.
+    public bool TrySkillRetreatStep(Vector3 direction, float distance)
+    {
+        if (!CanReceiveCommands || distance <= 0 || !IsSkillAnimationActive()) return false;
+        direction.y = 0;
+        if (direction.sqrMagnitude < .001f) return false;
+        direction.Normalize();
+        Vector3 current = transform.position;
+        if (!TryDirectStep(current, direction, distance, out Vector3 next)) return false;
+        var capsule = GetComponent<CapsuleCollider>();
+        Bounds bounds = capsule != null ? capsule.bounds : new Bounds(current + Vector3.up, new Vector3(.6f, 2, .6f));
+        float radius = Mathf.Max(.1f, Mathf.Min(bounds.extents.x, bounds.extents.z) * .95f);
+        float half = Mathf.Max(0, bounds.extents.y - radius);
+        int count = Physics.CapsuleCastNonAlloc(bounds.center + Vector3.up * half, bounds.center - Vector3.up * half,
+            radius, direction, directObstacleHits, distance + .04f, directObstacleMask, QueryTriggerInteraction.Ignore);
+        if (count == directObstacleHits.Length) return false;
+        for (int i = 0; i < count; i++) {
+            var hit = directObstacleHits[i];
+            if (hit.collider == null || hit.transform.IsChildOf(transform)) continue;
+            if (hit.normal.y >= directMinGroundNormal && hit.point.y <= current.y + directMaxStepHeight) continue;
+            return false;
+        }
+        if (agent != null && agent.enabled && agent.isOnNavMesh) {
+            if (!NavMesh.SamplePosition(next, out NavMeshHit sampled, .15f, agent.areaMask)
+                || NavMesh.Raycast(current, sampled.position, out _, agent.areaMask)) return false;
+            StopMovement(false);
+            agent.Move(sampled.position - current);
+        } else {
+            StopMovement(false);
+            transform.position = next;
+        }
         return true;
     }
 
@@ -1904,6 +1970,16 @@ public class PetController : MonoBehaviour
         }
 
         animator.applyRootMotion = false;
+        var actionDriver = GetComponent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>();
+        if (actionDriver != null) {
+            actionDriver.Bind(animator);
+            if (actionDriver.Profile != null) {
+                actionDriver.TryGetStates(Capstone.Game.CreatureSystem.CreatureAction.Idle, out idleStates);
+                actionDriver.TryGetStates(Capstone.Game.CreatureSystem.CreatureAction.Move, out moveStates);
+                actionDriver.TryGetStates(Capstone.Game.CreatureSystem.CreatureAction.Attack, out attackStates);
+                actionDriver.TryGetStates(Capstone.Game.CreatureSystem.CreatureAction.Spawn, out spawnStates);
+            }
+        }
         floatParameters.Clear();
         boolParameters.Clear();
         triggerParameters.Clear();
@@ -2023,7 +2099,7 @@ public class PetController : MonoBehaviour
 
     private bool IsSkillAnimationActive()
     {
-        return Time.time < skillAnimationUntil;
+        return (combatActions != null && combatActions.IsSkillBusy) || Time.time < skillAnimationUntil;
     }
 
     private void SetAnimatorFloat(string parameterName, float value)

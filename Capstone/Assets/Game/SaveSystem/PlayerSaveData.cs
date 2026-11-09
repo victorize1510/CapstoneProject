@@ -36,6 +36,9 @@ namespace Capstone.Game.SaveSystem {
         public int bossesDefeated = -1;
         public int totalBattles = -1;
         public List<string> capturedSpeciesIds = new List<string>();
+        // Optional presentation progress. Older v13 saves deserialize these as empty.
+        public List<string> discoveredCodexForms = new List<string>();
+        public List<string> favoriteCodexForms = new List<string>();
     }
 
     [Serializable]

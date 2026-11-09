@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0342a19e0b38cbe4cbbfcf9620e979a6, type: 3}
+  m_Name: Family_dragon-fire
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureFamilyDefinition
+  definitionId: dragon-fire
+  displayName: "D\xF2ng r\u1ED3ng l\u1EEDa"
+  legacyDefinitionIds: []
+  evolutionRulesReviewed: 0
+  forms:
+  - formId: 01
+    displayName: "Kh\u1EE7ng Long L\u1EEDa"
+    sourcePrefab: {fileID: 6441672652124175571, guid: 441cc1e283df1a044acfd221971ed0d8, type: 3}
+    avatar: {fileID: 21300000, guid: dc2be1dc358c14e48a083f2eca623df7, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 0}
+    skillSet: {fileID: 0}
+  - formId: 02
+    displayName: "R\u1ED3ng L\u1EEDa Bay"
+    sourcePrefab: {fileID: 1186819576259076603, guid: f839e11588133ba4ea13edb3db72c822, type: 3}
+    avatar: {fileID: 21300000, guid: 848f48cbb61ce6d4caae2e202b0fa64c, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 0}
+    skillSet: {fileID: 0}
+  - formId: 03
+    displayName: "R\u1ED3ng L\u1EEDa \u0110\u1ECBa Ng\u1EE5c"
+    sourcePrefab: {fileID: 8935804055337787527, guid: e76e3e9836000144495ea816ed4e8b58, type: 3}
+    avatar: {fileID: 21300000, guid: ad6b6080d1afd99429089b40b18db182, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 0}
+    skillSet: {fileID: 0}

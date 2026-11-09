@@ -12,6 +12,9 @@ public class DummyEnemy : MonoBehaviour
     public float maxHealth = 100f;
     public bool autoRevive = true;
     public float reviveDelay = 2.5f;
+    [Tooltip("Practice only: no defeat event, EXP, EV or quest kill credit.")]
+    public bool trainingDummy;
+    public bool IsTrainingDummy => trainingDummy;
 
     [Header("Targeting")]
     [Tooltip("Prioritize this enemy during automatic lock selection. A Boss map marker also identifies a boss.")]
@@ -28,6 +31,9 @@ public class DummyEnemy : MonoBehaviour
     public Color deadColor = new Color(0.25f, 0.25f, 0.25f, 1f);
     public float hitFlashTime = 0.12f;
     public bool writeHealthToName = true;
+    [Tooltip("Disable on textured creatures to preserve original art colors.")]
+    public bool tintFeedback = true;
+    private MaterialPropertyBlock colorProperties;
 
     private Renderer cachedRenderer;
     private Collider[] colliders;
@@ -39,7 +45,7 @@ public class DummyEnemy : MonoBehaviour
     public float CurrentHealth => health;
     public bool CaptureLocked { get; internal set; }
     internal void InitializeCaptureHealth(float current, float maximum) { maxHealth = maximum; health = current; alive = health > 0; RefreshName(); }
-    internal void FinishCaptureWithoutDefeat() { alive = false; autoRevive = false; enabled = false; }
+    internal void FinishCaptureWithoutDefeat() { alive = false; autoRevive = false; GetComponent<Capstone.Game.CreatureSystem.CombatBleed>()?.ClearWounds(); enabled = false; }
     private MapMarker mapMarker;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -62,12 +68,12 @@ public class DummyEnemy : MonoBehaviour
 
     public int ExperienceReward
     {
-        get { return Mathf.Max(0, experienceReward); }
+        get { return trainingDummy ? 0 : Mathf.Max(0, experienceReward); }
     }
 
     public bool IsBoss => isBoss || (mapMarker != null && mapMarker.MarkerType == MapMarkerType.Boss);
 
-    public Capstone.Game.HudSystem.PetStatValues EffortYield => effortYield.Clamped(0, 3);
+    public Capstone.Game.HudSystem.PetStatValues EffortYield => trainingDummy ? default : effortYield.Clamped(0, 3);
 
     public Vector3 TargetPosition
     {
@@ -170,23 +176,40 @@ public class DummyEnemy : MonoBehaviour
 
     public void TakeDamage(float damage, GameObject source)
     {
-        if (!alive || CaptureLocked)
+        TakeCombatDamage(damage, source, Capstone.Game.CreatureSystem.CreatureDamageKind.Physical);
+    }
+
+    public void TakeCombatDamage(float damage, GameObject source, Capstone.Game.CreatureSystem.CreatureDamageKind kind)
+    {
+        ApplyCombatHit(new Capstone.Game.CreatureSystem.CombatHit(source, "legacy", 0, damage, kind, false, false, TargetPosition));
+    }
+
+    public Capstone.Game.CreatureSystem.CombatDamageResult ApplyCombatHit(Capstone.Game.CreatureSystem.CombatHit hit)
+    {
+        float damage = hit.RawDamage;
+        if (!alive || CaptureLocked || damage <= 0 || float.IsNaN(damage) || float.IsInfinity(damage))
         {
-            return;
+            return new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, 0, false);
         }
 
+        var combat = GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>();
+        if (combat != null) damage = combat.Mitigate(damage, hit.Kind);
+        float previousHealth = health;
         health = Mathf.Max(0f, health - Mathf.Max(0f, damage));
+        combat?.SyncEnemyHealth(health, maxHealth);
         GetComponent<Capstone.Game.CaptureSystem.WildPetCaptureTarget>()?.SyncHealthFromEnemy();
         RefreshName();
+        var result = new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, previousHealth - health, health <= 0f);
 
         if (health <= 0f)
         {
-            Die(source);
-            return;
+            Die(hit.Source);
+            // All pet damage, including wounds after recall, shares one reward commit.
+            if (!trainingDummy && hit.Source != null) hit.Source.GetComponent<PetController>()?.AwardCombatDefeat(this);
         }
-
-        flashUntil = Time.time + hitFlashTime;
-        ApplyColor(hitColor);
+        else { flashUntil = Time.time + hitFlashTime; ApplyColor(hitColor); }
+        Capstone.Game.CreatureSystem.CombatDamageEvents.Publish(result);
+        return result;
     }
 
     public void Revive()
@@ -194,6 +217,7 @@ public class DummyEnemy : MonoBehaviour
         alive = true;
         health = Mathf.Max(1f, maxHealth);
         reviveAt = 0f;
+        GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>()?.SyncEnemyHealth(health, maxHealth);
         flashUntil = 0f;
         SetCollidersEnabled(true);
         ApplyColor(idleColor);
@@ -203,11 +227,12 @@ public class DummyEnemy : MonoBehaviour
     private void Die(GameObject source)
     {
         alive = false;
+        GetComponent<Capstone.Game.CreatureSystem.CombatBleed>()?.ClearWounds();
         reviveAt = Time.time + reviveDelay;
         SetCollidersEnabled(autoRevive);
         ApplyColor(deadColor);
         RefreshName();
-        Defeated?.Invoke(source);
+        if (!trainingDummy) Defeated?.Invoke(source);
     }
 
     private Bounds GetTargetBounds()
@@ -243,12 +268,16 @@ public class DummyEnemy : MonoBehaviour
 
     private void ApplyColor(Color color)
     {
-        if (cachedRenderer == null)
+        if (cachedRenderer == null || !tintFeedback)
         {
             return;
         }
 
-        cachedRenderer.material.color = color;
+        if (colorProperties == null) colorProperties = new MaterialPropertyBlock();
+        cachedRenderer.GetPropertyBlock(colorProperties);
+        colorProperties.SetColor("_BaseColor", color);
+        colorProperties.SetColor("_Color", color);
+        cachedRenderer.SetPropertyBlock(colorProperties);
     }
 
     private void RefreshName()

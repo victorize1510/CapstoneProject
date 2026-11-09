@@ -50,7 +50,8 @@ namespace Capstone.Game.HudSystem {
             preview.TargetName = string.IsNullOrWhiteSpace(rule.TargetDisplayName)
                 ? rule.TargetFormId
                 : rule.TargetDisplayName;
-            preview.TargetIcon = rule.TargetIcon;
+            preview.TargetIcon = Capstone.Game.CreatureSystem.CreatureAvatarCatalog.Resolve(
+                preview.Metadata.DefinitionId, rule.TargetFormId, rule.TargetIcon);
             preview.RequiredLevel = rule.RequiredLevel;
             preview.RequiredItemId = rule.RequiredItemId;
             preview.RequiredItemQuantity = rule.RequiredItemQuantity;
@@ -119,6 +120,10 @@ namespace Capstone.Game.HudSystem {
 
             PetCustomizationSaveData metadataSnapshot = preview.Metadata.CreateSaveData();
             PetRuntimeStatsSaveData statsSnapshot = preview.RuntimeStats.CreateSaveData();
+            float[] cooldownSnapshot = preview.RuntimeStats.SnapshotCooldowns();
+            var profile=FindFirstObjectByType<Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider>();
+            var profileSnapshot=profile!=null?profile.CreateSaveData():null;
+
 
             bool consumedEvolutionItem = preview.UsesItem;
 
@@ -144,6 +149,8 @@ namespace Capstone.Game.HudSystem {
                 || !visualController.TryApply(preview.Rule.TargetVisualPrefab, out visualError)) {
                 preview.Metadata.RestoreFromSaveData(metadataSnapshot);
                 stats.RestoreFromSaveData(statsSnapshot);
+                stats.RestoreCooldowns(cooldownSnapshot);
+                if(profileSnapshot!=null)profile.RestoreFromSaveData(profileSnapshot);
                 message = preview.Rule.TargetVisualPrefab == null
                     ? "Chưa gán model cho dạng tiến hóa."
                     : visualController == null ? "Thú thiếu PetEvolutionVisualController." : visualError;
@@ -156,6 +163,8 @@ namespace Capstone.Game.HudSystem {
                     preview.Metadata.RestoreFromSaveData(metadataSnapshot);
                     stats.RestoreFromSaveData(statsSnapshot);
                     visualController.RestoreForm(metadataSnapshot.evolutionStage);
+                    stats.RestoreCooldowns(cooldownSnapshot);
+                if(profileSnapshot!=null)profile.RestoreFromSaveData(profileSnapshot);
                     message = $"Không thể dùng {preview.Rule.RequiredItemId}. Hãy kiểm tra lại Túi đồ.";
                     return false;
                 }
@@ -163,10 +172,17 @@ namespace Capstone.Game.HudSystem {
                     preview.Item.Name, preview.Rule.RequiredItemQuantity);
             }
 
+            if(profile!=null) {
+                profile.RecordCodexForm(preview.Metadata.DefinitionId+"::"+metadataSnapshot.currentFormId,false);
+                profile.RecordCodexForm(Capstone.Game.CodexSystem.PetCodexRuntimeProvider.FormKey(preview.Metadata),false);
+            }
             if (saveController == null || !saveController.SaveNow()) {
+
                 preview.Metadata.RestoreFromSaveData(metadataSnapshot);
                 stats.RestoreFromSaveData(statsSnapshot);
                 visualController.RestoreForm(metadataSnapshot.evolutionStage);
+                stats.RestoreCooldowns(cooldownSnapshot);
+                if(profileSnapshot!=null)profile.RestoreFromSaveData(profileSnapshot);
                 if (consumedEvolutionItem) {
                     inventory.AddItem(preview.Item.ItemBase, preview.Rule.RequiredItemQuantity);
                 }

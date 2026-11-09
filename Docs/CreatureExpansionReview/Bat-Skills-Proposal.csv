@@ -1,0 +1,4 @@
+﻿proposed_shared_skill_id,proposed_name,proposed_element,semantic_action,learn_at_level,cooldown_seconds,forms,damage_coefficient_proposed,range_proposed,damage_delivery_note,presentation_rule,vfx_prefab,sound_clip,approved_by,status,asset_created
+bite.normal,Cắn,Normal,Bite,1,1.6,bat/01;bat/02;bat/03,,,Melee; damage formula/range to be approved against existing executor,Per-form override for animation timing/VFX/SFX/socket; shared gameplay definition,,,,PROPOSED_NOT_APPROVED,false
+orb.dark,Đạn bóng tối,Dark,Projectile,1,3.6,bat/01;bat/02;bat/03,,,Projectile/collision/impact; no fabricated hit or damage,Per-form override for animation timing/VFX/SFX/socket; shared gameplay definition,,,,PROPOSED_NOT_APPROVED,false
+pulse.dark,Xung bóng tối,Dark,Cast,12,5,bat/01;bat/02;bat/03,,,Damage delivery and coefficient need approval; no added buff/debuff,Per-form override for animation timing/VFX/SFX/socket; shared gameplay definition,,,,PROPOSED_NOT_APPROVED,false

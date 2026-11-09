@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0342a19e0b38cbe4cbbfcf9620e979a6, type: 3}
+  m_Name: Family_bat
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureFamilyDefinition
+  definitionId: bat
+  displayName: "D\xF2ng d\u01A1i"
+  legacyDefinitionIds: []
+  evolutionRulesReviewed: 1
+  forms:
+  - formId: 01
+    displayName: "D\u01A1i Nh\u1ECF"
+    sourcePrefab: {fileID: 1162074717683033587, guid: 6997b2f444cea1c4ebba2af9b7dea132, type: 3}
+    avatar: {fileID: 21300000, guid: 5a6ab5b08820ca241a3446c80a97a57b, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 15d33a69877d22f41b18ce0f601a07a8, type: 2}
+    skillSet: {fileID: 11400000, guid: 79fecc178b454c54cb9eca7d4c0f600f, type: 2}
+    visualPrefab: {fileID: 3246941677017630414, guid: 67bb1f948bb8e3e4aaa1d4f80cfb9ac6, type: 3}
+    petPrefab: {fileID: 1679457036408839924, guid: 1a082fbdf8d6ed346900d88820522f27, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 660bc1c6bd3fb6c468b78fad4eaf5a57, type: 3}
+    enemyPrefab: {fileID: 541602093502461519, guid: 452796619452df54e8f5650f9d32f140, type: 3}
+    animationProfile: {fileID: 11400000, guid: 5c8de83006e06474191110c2674b3640, type: 2}
+  - formId: 02
+    displayName: "D\u01A1i Ma C\xE0 R\u1ED3ng"
+    sourcePrefab: {fileID: 6328325485107444708, guid: 297592cbe5a45be4bbe3d75b44ee2d7b, type: 3}
+    avatar: {fileID: 21300000, guid: 7305f2b68cd957c4a85fdf3ba7ab50ba, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 115ee0283ba5c8942823a2a0b154fad5, type: 2}
+    skillSet: {fileID: 11400000, guid: 3cfe58a5b923f014297b4ddaff539446, type: 2}
+    visualPrefab: {fileID: 3965183163660077883, guid: f0cb434726faaff46bc81252e180b1cb, type: 3}
+    petPrefab: {fileID: 2897453090869464863, guid: 816d81ae8d91dac4baaaeb11bd6882f9, type: 3}
+    wildPrefab: {fileID: 1106331304754840548, guid: 64bee044dfb63354180f22828addf844, type: 3}
+    enemyPrefab: {fileID: 1391536608632063208, guid: 4fa3c3d57096ac6418697bbaaf1d9e9a, type: 3}
+    animationProfile: {fileID: 11400000, guid: bbcb53b90e76b89478dbef92cca7e9d4, type: 2}
+  - formId: 03
+    displayName: "D\u01A1i Ch\xFAa T\u1EC3"
+    sourcePrefab: {fileID: 2156180079196364993, guid: 52d1567d15f3e37428b2481553c58447, type: 3}
+    avatar: {fileID: 21300000, guid: 656f11ffedf653740b96ad4aac0bbef9, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: cb81f37bd8ecb7143b659cbd07e86ac1, type: 2}
+    skillSet: {fileID: 11400000, guid: c07727c8fc88b6e42a0d286b37582583, type: 2}
+    visualPrefab: {fileID: 2034503012870913961, guid: 8617197064d3575429c775462ef4d059, type: 3}
+    petPrefab: {fileID: 3643431579001653669, guid: 5ca9083e43d13074085e581a376f1959, type: 3}
+    wildPrefab: {fileID: 1536715140522227698, guid: ac564a5e29678a544a5dbdec1056790e, type: 3}
+    enemyPrefab: {fileID: 612345293920782756, guid: 037694175b13d724dbe9a483256f2ed1, type: 3}
+    animationProfile: {fileID: 11400000, guid: de54717bce54302429c1491ba84289c7, type: 2}

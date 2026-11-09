@@ -16,10 +16,19 @@ namespace Capstone.Game.CodexSystem {
         readonly List<PetCodexEntryViewData> entries = new List<PetCodexEntryViewData>();
         readonly List<PetCollectionMetadata> owned = new List<PetCollectionMetadata>();
         bool refreshing;
+        Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider profile;
         public event Action Changed;
         public IReadOnlyList<PetCodexEntryViewData> Entries => entries;
-        public bool CanSetFavorite => false;
-        public bool TrySetFavorite(string id, bool favorite) => false;
+        public bool CanSetFavorite=>profile!=null&&saves!=null&&saves.IsCurrentSlotLoaded&&!saves.IsSaveBlocked;
+        public static string FormKey(PetCollectionMetadata value)=>value==null?string.Empty:value.DefinitionId+"::"+value.CurrentFormId;
+        public bool TrySetFavorite(string id,bool favorite) {
+            var entry=entries.Find(e=>e.Id==id);var source=catalog?.species.Find(e=>e.id==id)?.Metadata;
+            if(!CanSetFavorite||entry==null||!entry.Known||source==null)return false;
+            var before=profile.CreateSaveData();
+            if(!profile.SetCodexFavorite(FormKey(source),favorite))return false;
+            if(!saves.SaveNow()){profile.RestoreFromSaveData(before);RefreshSnapshot();return false;}
+            RefreshSnapshot();return true;
+        }
 
         void OnEnable() => RefreshSnapshot();
         void OnDisable() => Unsubscribe();
@@ -27,6 +36,7 @@ namespace Capstone.Game.CodexSystem {
         void Unsubscribe() {
             if (box != null) box.Changed -= RefreshSnapshot;
             if (saves != null) saves.LoadCompleted -= OnLoaded;
+            if(profile!=null)profile.ProfileChanged-=RefreshSnapshot;
             foreach (var pet in owned) if (pet != null) pet.Changed -= RefreshSnapshot;
         }
         void AddOwned(PetController pet) {
@@ -44,7 +54,9 @@ namespace Capstone.Game.CodexSystem {
                 if (party == null) party = FindFirstObjectByType<PetCommandInput>();
                 if (box == null) box = FindFirstObjectByType<PetBoxRuntimeProvider>();
                 if (saves == null) saves = FindFirstObjectByType<PlayerSaveController>();
+                if(profile==null)profile=FindFirstObjectByType<Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider>();
                 if (isActiveAndEnabled) {
+                    if(profile!=null)profile.ProfileChanged+=RefreshSnapshot;
                     if (box != null) box.Changed += RefreshSnapshot;
                     if (saves != null) saves.LoadCompleted += OnLoaded;
                 }
@@ -53,12 +65,16 @@ namespace Capstone.Game.CodexSystem {
                 if (catalog?.species != null) foreach (var definition in catalog.species) {
                     var source = definition?.Metadata;
                     if (source == null || string.IsNullOrWhiteSpace(definition.id)) continue;
-                    bool captured = owned.Exists(definition.Matches);
+                    bool captured=owned.Exists(definition.Matches);
+                    string key=FormKey(source);
+                    if(captured&&profile!=null)profile.RecordCodexForm(key,false);
+                    bool known=captured||(profile!=null&&profile.KnowsCodexForm(key));
                     entries.Add(new PetCodexEntryViewData {
                         Id = definition.id, Number = definition.number, Name = source.Species,
                         PrimaryType = MapType(source.Element), SecondaryType = MapType(source.SecondaryElement),
                         Rarity = source.Rarity, Region = definition.region,
-                        Discovery = captured ? CodexDiscovery.Captured : CodexDiscovery.Unknown,
+                        Discovery = known ? CodexDiscovery.Captured : CodexDiscovery.Unknown,
+                        Favorite=known&&profile!=null&&profile.IsCodexFavorite(key),
                         Description = source.CodexDescription, Icon = definition.Icon, Portrait = definition.portrait,
                         Height = definition.height, Weight = definition.weight, Habitat = definition.habitat,
                         Trait = definition.trait, FavoriteFood = definition.favoriteFood,

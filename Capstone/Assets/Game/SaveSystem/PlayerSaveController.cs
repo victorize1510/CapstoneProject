@@ -112,7 +112,7 @@ namespace Capstone.Game.SaveSystem {
             var created = new PetController[2];
             var configured = new bool[2];
             for (int stage = 1; stage <= 2; stage++) {
-                if (!petPrefabCatalog.TryInstantiate("Dragon Dusk", "01", restoredPetRoot,
+                if (!petPrefabCatalog.TryInstantiate("Dragon Dusk", (stage + 1).ToString("00"), restoredPetRoot,
                     out PetController pet) || pet == null) break;
                 created[stage - 1] = pet;
                 PetCollectionMetadata metadata = ResolveMetadata(pet, false);
@@ -125,8 +125,12 @@ namespace Capstone.Game.SaveSystem {
                 pet.AssignOwner(petCommandInput.transform);
                 pet.Withdraw();
                 PetEvolutionRule finalRule = null;
+                foreach (PetEvolutionRule rule in metadata.EvolutionRules)
+                    if (rule != null && rule.TargetStage == stage) { finalRule = rule; break; }
                 bool valid = true;
-                for (int step = 0; step < stage; step++) {
+                // New catalogs provide the actual form root. Legacy catalogs can still
+                // return the base root, so retain their existing staged initialization.
+                for (int step = metadata.EvolutionStage; step < stage; step++) {
                     if (!metadata.TryGetNextEvolutionRule(out PetEvolutionRule rule)
                         || !metadata.ApplyEvolution(rule)) { valid = false; break; }
                     finalRule = rule;
@@ -293,6 +297,7 @@ namespace Capstone.Game.SaveSystem {
         }
 
         PlayerSaveData CaptureSaveData() {
+            FindFirstObjectByType<Capstone.Game.CodexSystem.PetCodexRuntimeProvider>()?.RefreshSnapshot();
             return new PlayerSaveData {
                 version = PlayerSaveData.CurrentVersion,
                 savedAtUtc = DateTime.UtcNow.ToString("O"),

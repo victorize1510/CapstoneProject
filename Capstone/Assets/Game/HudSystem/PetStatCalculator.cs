@@ -25,6 +25,8 @@ namespace Capstone.Game.HudSystem {
         static readonly PetStatValues Neutral = new PetStatValues(70, 70, 70, 70, 70, 70);
         static readonly HashSet<string> MissingProfiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         static PetStatProfile[] profiles;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetProfiles() { profiles = null; MissingProfiles.Clear(); }
 
         public static int CalculateCoreStat(int baseStat, int iv, int ev, int level,
             PetCoreStat stat, string nature) {
@@ -107,18 +109,22 @@ namespace Capstone.Game.HudSystem {
         static PetStatProfile ResolveProfile(PetCollectionMetadata metadata, out string missingKey) {
             string id = CanonicalProfileId(metadata != null ? metadata.DefinitionId : string.Empty);
             string species = CanonicalProfileId(metadata != null ? metadata.Species : string.Empty);
-            string form = CanonicalProfileFormId(metadata != null ? metadata.CurrentFormId : "base");
-            if (string.Equals(form, "base", StringComparison.OrdinalIgnoreCase)
-                && (string.Equals(id, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(species, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)))
-                form = "dragon-dusk-base";
+            string rawForm = metadata != null ? metadata.CurrentFormId : "base";
+            string form = CanonicalProfileFormId(id, rawForm);
             missingKey = $"{id}/{form}";
             EnsureProfiles();
+            // Prefer the persistent definition ID; a display species is only a legacy fallback.
+            PetStatProfile found = FindProfile(id, form);
+            if (found != null || string.Equals(id, species, StringComparison.OrdinalIgnoreCase)) return found;
+            return FindProfile(species, CanonicalProfileFormId(species, rawForm));
+        }
+
+        static PetStatProfile FindProfile(string definitionId, string form) {
+            if (string.IsNullOrWhiteSpace(definitionId)) return null;
             for (int i = 0; i < profiles.Length; i++) {
                 PetStatProfile profile = profiles[i];
                 if (profile == null || !string.Equals(profile.FormId, form, StringComparison.OrdinalIgnoreCase)) continue;
-                if (string.Equals(profile.DefinitionId, id, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(profile.DefinitionId, species, StringComparison.OrdinalIgnoreCase)) return profile;
+                if (string.Equals(profile.DefinitionId, definitionId, StringComparison.OrdinalIgnoreCase)) return profile;
             }
             return null;
         }
@@ -128,6 +134,7 @@ namespace Capstone.Game.HudSystem {
 
         // Legacy form names remain valid prefab/save IDs; normalize only for stat lookup.
         static string CanonicalProfileId(string id) {
+            id = id?.Trim() ?? string.Empty;
             if (string.Equals(id, "Dragon Dusk Winged", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(id, "Dragon Dusk Elder", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(id, "Dragon Nightfall", StringComparison.OrdinalIgnoreCase)
@@ -136,7 +143,9 @@ namespace Capstone.Game.HudSystem {
             return id;
         }
 
-        static string CanonicalProfileFormId(string form) {
+        static string CanonicalProfileFormId(string definitionId, string form) {
+            if (!string.Equals(definitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) return form;
+            if (string.Equals(form, "base", StringComparison.OrdinalIgnoreCase)) return "dragon-dusk-base";
             if (string.Equals(form, "01", StringComparison.OrdinalIgnoreCase)) return "dragon-dusk-base";
             if (string.Equals(form, "02", StringComparison.OrdinalIgnoreCase)) return "dragon-dusk-winged";
             if (string.Equals(form, "03", StringComparison.OrdinalIgnoreCase)) return "dragon-dusk-elder";

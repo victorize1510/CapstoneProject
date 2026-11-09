@@ -83,6 +83,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ResetEmbeddedDetails(){
+            tooltip?.Q("skill-r2-metadata")?.RemoveFromHierarchy();
             if(tooltipName!=null)tooltipName.text="Chi tiết kỹ năng";
             if(tooltipDescription!=null)tooltipDescription.text="Chọn kỹ năng đã học, sau đó chọn ô cần thay.";
             if(tooltipElement!=null)tooltipElement.text="—";
@@ -205,6 +206,12 @@ namespace Capstone.Game.HudSystem {
             tooltip = root.Q<VisualElement>("skills-hover-tooltip");
             tooltipName = root.Q<Label>("skills-tooltip-name");
             tooltipElement = root.Q<Label>("skills-tooltip-element");
+            if(tooltipElement!=null&&!tooltipElement.ClassListContains("element-library-link")){
+                tooltipElement.AddToClassList("element-library-link");tooltipElement.focusable=true;tooltipElement.pickingMode=PickingMode.Position;
+                void OpenElement(){var type=selectedLearnedIndex>=0&&selectedLearnedIndex<learnedSnapshot.Count?learnedSnapshot[selectedLearnedIndex].element:PetElement.Unknown;Capstone.Game.UISystem.ElementLibraryPopup.Open(tooltipElement,type);}
+                tooltipElement.RegisterCallback<ClickEvent>(_=>OpenElement());
+                tooltipElement.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Return||e.keyCode==KeyCode.Space){OpenElement();e.StopImmediatePropagation();}});
+            }
             tooltipLevel = root.Q<Label>("skills-tooltip-level");
             tooltipCooldown = root.Q<Label>("skills-tooltip-cooldown");
             tooltipDescription = root.Q<Label>("skills-tooltip-description");
@@ -220,15 +227,16 @@ namespace Capstone.Game.HudSystem {
 
             allFilterButton = root.Q<Button>("skills-filter-all");
             filterButtons.Clear();
-            AddFilterReference(root, "skills-filter-nature", PetElement.Nature);
-            AddFilterReference(root, "skills-filter-fire", PetElement.Fire);
-            AddFilterReference(root, "skills-filter-water", PetElement.Water);
-            AddFilterReference(root, "skills-filter-wind", PetElement.Wind);
-            AddFilterReference(root, "skills-filter-earth", PetElement.Earth);
-            AddFilterReference(root, "skills-filter-electric", PetElement.Electric);
-            AddFilterReference(root, "skills-filter-ice", PetElement.Ice);
-            AddFilterReference(root, "skills-filter-light", PetElement.Light);
-            AddFilterReference(root, "skills-filter-dark", PetElement.Dark);
+            var rail=allFilterButton?.parent;
+            if(rail!=null&&!rail.ClassListContains("elements-r2-ready")) {
+                rail.AddToClassList("elements-r2-ready");
+                foreach(var old in rail.Query<Button>(className:"skills-filter-button").ToList())if(old!=allFilterButton)old.RemoveFromHierarchy();
+                foreach(var token in Capstone.Game.UISystem.ElementUi.All) {
+                    var button=new Capstone.Game.UISystem.AngularButton{name="skills-filter-"+token.element.ToString().ToLowerInvariant(),text=token.name};
+                    button.AddToClassList("skills-filter-button");button.style.width=button.style.minWidth=100;button.style.height=32;button.SetAngularContext(true);rail.Add(button);
+                }
+            }
+            foreach(var token in Capstone.Game.UISystem.ElementUi.All)AddFilterReference(root,"skills-filter-"+token.element.ToString().ToLowerInvariant(),token.element);
         }
 
         void AddFilterReference(VisualElement root, string name, PetElement element) {
@@ -478,6 +486,7 @@ namespace Capstone.Game.HudSystem {
             foreach (KeyValuePair<PetElement, Button> pair in filterButtons) {
                 bool selected = selectedElements.Contains(pair.Key);
                 SetFilterSelected(pair.Value, selected, selected ? "Đang lọc hệ này · Bấm để bỏ chọn" : "Bấm để thêm hệ này vào bộ lọc");
+                Capstone.Game.UISystem.ElementUi.Filter(pair.Value,Capstone.Game.UISystem.ElementUi.Find(pair.Key),selected);
             }
         }
 
@@ -504,7 +513,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         PetElement EffectiveElement(SkillHudData skill) {
-            return skill.element != PetElement.Unknown ? skill.element : selectedPetElement;
+            return skill.element; // Missing skill classification must not inherit the pet type.
         }
 
         void ShowEquippedTooltip(int slotIndex) {
@@ -518,11 +527,12 @@ namespace Capstone.Game.HudSystem {
             // Embedded details follow the clicked selection, not incidental pointer hover.
             if(IsEmbedded&&anchor!=dialog)return;
             if (tooltipName != null) tooltipName.text = SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName));
-            if (tooltipElement != null) tooltipElement.text = FormatElement(EffectiveElement(skill));
+            Capstone.Game.UISystem.ElementUi.Label(tooltipElement,EffectiveElement(skill));
             if (tooltipLevel != null) tooltipLevel.text = Mathf.Max(1, skill.skillLevel).ToString();
             if (tooltipCooldown != null) tooltipCooldown.text = skill.cooldownSeconds > 0f ? $"{skill.cooldownSeconds:0.#} giây" : "-";
             if (tooltipDescription != null) tooltipDescription.text = Capstone.Game.UISystem.VietnameseUI.SkillDescription(skill.description);
 
+            Capstone.Game.UISystem.ElementUi.Details(IsEmbedded&&workflowDetailsScroll!=null?(VisualElement)workflowDetailsScroll:tooltip,skill);
             if(IsEmbedded){tooltip.style.display=DisplayStyle.Flex;return;}
 
             Rect anchorBounds = anchor.worldBound;

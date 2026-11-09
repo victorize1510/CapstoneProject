@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 252f753a61ef66945ac6f56d4dce8c94, type: 3}
+  m_Name: Presentation_bite.normal
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillPresentationProfile
+  releaseMode: 0
+  releaseDelaySeconds: 0.25
+  impactWindowSeconds: 4
+  mixerGroup: {fileID: 0}
+  spatialBlend: 1
+  minDistance: 2
+  maxDistance: 35
+  cast:
+    effectPrefab: {fileID: 0}
+    sound: {fileID: 8300000, guid: daf95965eb430f8419d5cef6e85b8046, type: 3}
+    socket: Body
+    followSocket: 1
+    localOffset: {x: 0, y: 0, z: 0}
+    localEulerAngles: {x: 0, y: 0, z: 0}
+    scale: 1
+    volume: 0.15
+    pitch: 1
+    lifetimeSeconds: 0.6
+  release:
+    effectPrefab: {fileID: 0}
+    sound: {fileID: 8300000, guid: 11f9432fd9e94894883da7801527a8f0, type: 3}
+    socket: Mouth
+    followSocket: 0
+    localOffset: {x: 0, y: 0, z: 0}
+    localEulerAngles: {x: 0, y: 0, z: 0}
+    scale: 1
+    volume: 0.35
+    pitch: 1
+    lifetimeSeconds: 0.9
+  impact:
+    effectPrefab: {fileID: 1943929973302761377, guid: 53532ad673171ec40b7e3a3b84962619, type: 3}
+    sound: {fileID: 8300000, guid: 0baf8600b856b794b90ef46e9e7fb215, type: 3}
+    socket: 
+    followSocket: 0
+    localOffset: {x: 0, y: 0, z: 0}
+    localEulerAngles: {x: 0, y: 0, z: 0}
+    scale: 0.3
+    volume: 0.3
+    pitch: 1
+    lifetimeSeconds: 1.2

@@ -17,7 +17,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f4f605f9756e3c840a6ef10fbdb064d8, type: 2}
   - {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
   - {fileID: 11400000, guid: 67c3331c9c0221e479c2e4c1e893a3a9, type: 2}
+  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - {fileID: 11400000, guid: 7665f54394d722b4d949aa9e076e6189, type: 2}
+  - {fileID: 11400000, guid: 5ec25958a72b6f647bfd0a790c343dea, type: 2}
   speciesSets:
   - {fileID: 11400000, guid: e034d8e1a64a50d44a254f3ceb58152b, type: 2}
   - {fileID: 11400000, guid: 6bc01a0d401bc3c458b2452ee9b5ce47, type: 2}
   - {fileID: 11400000, guid: b0ca97568a017a3439ba3d62c035ce85, type: 2}
+  - {fileID: 11400000, guid: 79fecc178b454c54cb9eca7d4c0f600f, type: 2}
+  - {fileID: 11400000, guid: 3cfe58a5b923f014297b4ddaff539446, type: 2}
+  - {fileID: 11400000, guid: c07727c8fc88b6e42a0d286b37582583, type: 2}

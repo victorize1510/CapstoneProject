@@ -240,6 +240,8 @@ namespace Capstone.Game.HudSystem {
                 int index=i;var slot=V.Rect(skillRegion,"SkillSlot"+(i+1));V.Top(slot,i*92,0,80,106);
                 var button=HubR11Art.Button(slot,"Skill","Components/skill-slot");V.Top((RectTransform)button.transform,0,0,80,80);
                 button.onClick.AddListener(()=>RequestSkill(index));
+                var tooltip=button.gameObject.AddComponent<Capstone.Game.UISystem.SkillHudTooltip>();
+                tooltip.Bind(root,()=>{var data=Provider?.GetSkills();return data!=null&&index<data.Count?data[index]:default;});
                 var content=HubR11Art.Mask(button.transform,"Components/skill-slot",80);
                 var view=new SkillView{button=button,content=content.gameObject.AddComponent<CanvasGroup>()};
                 view.icon=V.Image(content,"SkillIcon");V.Stretch(view.icon.rectTransform,11);
@@ -260,8 +262,10 @@ namespace Capstone.Game.HudSystem {
         void RequestSkill(int index) {
             if (InventoryInputController.GameplayInputBlocked || !PetSkillsAvailable || Provider == null) return;
             IReadOnlyList<SkillHudData> data = Provider.GetSkills();
-            if (index >= 0 && index < data.Count && data[index].unlocked && data[index].usable && !data[index].IsCoolingDown)
+            if (index >= 0 && index < data.Count && data[index].unlocked && data[index].usable && !data[index].IsCoolingDown) {
                 Provider.RequestSkill(index);
+                RefreshSkills(); // Include short cooldowns on the frame the cast is accepted.
+            }
         }
         void RefreshHud() {
             if(root==null||radial==null)return;
@@ -280,19 +284,28 @@ namespace Capstone.Game.HudSystem {
                 SkillHudData skill = has ? data[i] : default;
                 bool ready = PetSkillsAvailable && has && skill.usable && !skill.IsCoolingDown;
                 view.button.interactable = ready; view.content.alpha = 1f;
-                V.Icon(view.icon, skill.icon); view.empty.gameObject.SetActive(skill.icon == null);
-                view.empty.text = has ? skill.displayName : "—";
+                Sprite skillIcon = skill.icon != null ? skill.icon : has ? LatestMenuCompanionAssets.Load("Masks/skills") : null;
+                V.Icon(view.icon, skillIcon); view.empty.gameObject.SetActive(skillIcon == null);
+                view.empty.text = has ? "?" : "—";
                 view.key.text = SkillKeyLabel(i); view.cooldown.fillAmount = skill.CooldownPercent;
                 view.cooldown.gameObject.SetActive(has && skill.IsCoolingDown);
-                view.countdown.text = skill.cooldownRemainingSeconds > .001f ? Mathf.CeilToInt(skill.cooldownRemainingSeconds).ToString() : "CD";
+                view.countdown.text = skill.cooldownRemainingSeconds > .001f
+                    ? skill.cooldownRemainingSeconds < 2 ? skill.cooldownRemainingSeconds.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : Mathf.CeilToInt(skill.cooldownRemainingSeconds).ToString()
+                    : "";
                 view.countdown.gameObject.SetActive(has && skill.IsCoolingDown);
             }
         }
         void SyncVisibility() {
             if (root == null) return;
+            if (PetEvolutionPresentationController.AnyPlaying) {
+                CancelTransientHud();
+                if(root.gameObject.activeSelf)root.gameObject.SetActive(false);
+                return;
+            }
             PetController activePet = commandInput != null ? commandInput.activePet : null;
             bool skillsVisible = skillBarDisplayMode == SkillBarDisplayMode.AlwaysVisible
-                || (activePet != null && activePet.IsSummoned && !activePet.IsSummonPresentationPending);
+                || (activePet != null && activePet.isActiveAndEnabled && activePet.CanReceiveCommands
+                    && !activePet.IsSummonPresentationPending && commandInput.CanUsePetSkills);
             if (skillRegion != null && skillRegion.gameObject.activeSelf != skillsVisible) {
                 RefreshSkills();
                 skillRegion.gameObject.SetActive(skillsVisible);

@@ -1,5 +1,8 @@
 # Rồng, skill, VFX và âm thanh — hướng dẫn nhanh 29/10/2026
 
+> **Hướng dẫn hiện hành 09/11/2026:** [Pet-Skills-VFX-Audio-Guide-2026-11-09.md](../../../../Docs/Pet-Skills-VFX-Audio-Guide-2026-11-09.md).
+> Nội dung bên dưới là bản lịch sử. Các đoạn nói prefab legacy/Pilot là nguồn chính, profile VFX trống, Impact chưa nối combat hoặc Timed là preset rồng không còn mô tả hiện trạng. Runtime hiện dùng CreatureSystem/Runtime, normalized animation, combat executor thật, buff/bleed và số damage. Xem hướng dẫn mới trước khi chỉnh.
+
 Các đường dẫn dưới đây nằm trong cửa sổ Project của Unity, bắt đầu bằng Assets/.
 
 ## Ba mục Cẩm nang
@@ -12,9 +15,9 @@ Các đường dẫn dưới đây nằm trong cửa sổ Project của Unity, b
 
 Số Cẩm nang độc lập số dạng tiến hóa/tên file. Vẫn tiến hóa Dusk → Nightfall → Darkness. Sửa danh mục tại **Game/CodexSystem/Resources/PetCodex/PetCodexCatalog.asset**; menu **Game Tools → GameToolThang → Pets → Create or Select Dragon Codex** chọn nhanh asset này.
 
-Ba prefab hiện dùng chung icon cũ. Avatar ô thú lấy từ **Pet Hud Runtime Stats → Icon**; ảnh riêng Cẩm nang có thể gán vào **Portrait** của từng dòng catalog. Chưa tạo ảnh/model mới. Phần mô tả đang lấy metadata có sẵn của prefab (các dạng sau còn sao chép mô tả Dusk), cần nội dung riêng khi bạn hoàn thiện dữ liệu loài.
+Avatar hiện tra theo **CreatureSystem/Data/Families → đúng Form → Avatar**, sau đó Bake lightweight avatar catalog; không còn lấy cố định ảnh dạng 01. Prefab ngoài thư viện vẫn giữ Icon legacy. Ảnh lớn Cẩm nang gán riêng vào Portrait, không phóng avatar thành hero. Chưa tạo ảnh/model mới. Phần mô tả đang lấy metadata có sẵn của prefab (các dạng sau còn sao chép mô tả Dusk), cần nội dung riêng khi bạn hoàn thiện dữ liệu loài.
 
-Provider runtime đọc danh mục đã soạn và nhận biết dạng đang sở hữu từ đội/Kho thật. Không lấy danh sách đội/Kho làm catalog. Loài chưa sở hữu vẫn che tên/hệ/ảnh theo quy tắc unknown; tìm bằng số vẫn được. Mở lại Cẩm nang sẽ cập nhật dữ liệu. Chưa có lịch sử khám phá hoặc favorite Cẩm nang lưu riêng; nút favorite theo loài còn khóa. Favorite cá thể Pet/BOX không bị đổi.
+Provider runtime đọc danh mục đã soạn và nhận biết dạng đang sở hữu từ đội/Kho thật. Không lấy danh sách đội/Kho làm catalog. Loài chưa sở hữu vẫn che tên/hệ/ảnh theo quy tắc unknown; tìm bằng số vẫn được. Mở lại Cẩm nang sẽ cập nhật dữ liệu. Cẩm nang hiện lưu lịch sử và favorite theo dạng bằng các trường tùy chọn trong profile save v13, tương thích file cũ thiếu trường. Favorite không phụ thuộc favorite cá thể; ghi lỗi được rollback. Favorite cá thể Pet/BOX không bị đổi.
 
 ## Thêm / sửa skill
 
@@ -40,3 +43,11 @@ Provider runtime đọc danh mục đã soạn và nhận biết dạng đang s�
 - VFX gọi/thu đã có: **Game/PetSummon/PetVFX_Default.asset**, với Spawn Prefab / Recall Prefab; component sử dụng là **Pet Summon Release Effect → Vfx Profile**.
 - Profile gọi/thu hiện **không có ô AudioClip**. Chưa có profile/hook âm thanh tập trung cho gọi/thu, tiếng kêu, trúng đòn, chết hay bước chân trong hệ Pet đang đọc. Không nhầm chúng với Sound của skill.
 - Hướng dẫn đầy đủ: **Game/Skills/README_VI.md**. Kiểm thư viện: **Tools → Capstone → Pet Skills → Validate Library**.
+
+## Cập nhật 05/11: DemoScene, badge và tiến hóa
+
+- Xác nhận từ Companion/BAG dùng controller cinematic của DemoScene; dịch vụ đổi dữ liệu/model tại nhịp che trắng, rồi trả pet về scene/parent cũ. HUB/camera/input phục hồi khi kết thúc hoặc hủy; hủy sau commit không hoàn tác dữ liệu đã lưu.
+- ElementUi là danh mục trình bày 9 hệ R2. Các enum mới chỉ nối thêm; không chuyển Wind thành Flying hoặc Unknown thành Normal. Dữ liệu legacy ngoài 9 hệ hiện Chưa phân loại cho đến khi tác giả duyệt.
+- Skill Definition → Optional UI classification cấu hình nhãn Vật lý/Phép/không gây sát thương và các mô tả hiệu ứng. Chưa cấu hình thì UI nói thiếu dữ liệu. Đây không phải hệ gây sát thương/buff mới.
+- Cơ hội bắt: CaptureOpportunitySignal chỉ nhận BeginOpportunity/EndOpportunity hoặc SetOpportunity từ sự kiện combat thật trên WildPetCaptureTarget. HUD đọc tín hiệu của đúng mục tiêu đang khóa; mặc định tắt. Chưa có luật combat phát tín hiệu thì không hiện cảnh báo; không suy ra từ HP hoặc xác suất.
+- Xem Docs/Creature-Runtime-Pilot.md về bộ rồng thử; các root đó chưa thay catalog/spawn chính.

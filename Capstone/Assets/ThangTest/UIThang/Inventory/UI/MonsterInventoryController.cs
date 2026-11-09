@@ -691,7 +691,9 @@ namespace Capstone.Game.Inventory {
             Capstone.Game.UISystem.PanelFocusUtility.Open(bagEvolutionOverlay);
         }
 
+        bool bagEvolutionRunning;
         void ConfirmBagEvolution() {
+            if(bagEvolutionRunning)return;
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "bag-evolution-confirm")) return;
             bagEvolutionConfirm?.SetEnabled(false);
             try { ConfirmBagEvolutionCore(); }
@@ -702,25 +704,25 @@ namespace Capstone.Game.Inventory {
             if (bagEvolutionComplete) { CloseBagEvolutionConfirmation(); return; }
             PetEvolutionService service = GetComponent<PetEvolutionService>();
             if (service == null || bagEvolutionPet == null) return;
-            bool success = service.TryEvolve(bagEvolutionPet, out string message,
-                PetEvolutionMethod.Item, bagEvolutionItemId);
-            if (bagEvolutionFeedback != null) bagEvolutionFeedback.text = message;
-            if (!success) {
-                bagEvolutionConfirm?.SetEnabled(false);
-                return;
-            }
-            bagEvolutionComplete = true;
-            if (bagEvolutionText != null) bagEvolutionText.text = "Tiến hóa hoàn tất";
-            if (bagEvolutionConfirm != null) bagEvolutionConfirm.text = "TIẾP TỤC";
-            FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();
-            RefreshFromAdapter();
+            var pet=bagEvolutionPet;string itemId=bagEvolutionItemId;bagEvolutionRunning=true;
+            PetEvolutionPresentationController.Present(gameObject.scene,service,pet,PetEvolutionMethod.Item,itemId,(success,message)=>{
+                bagEvolutionRunning=false;
+                if(this==null||!isActiveAndEnabled||bagEvolutionPet!=pet||bagEvolutionItemId!=itemId)return;
+                if(bagEvolutionFeedback!=null)bagEvolutionFeedback.text=message;
+                if(!success){bagEvolutionConfirm?.SetEnabled(service.CreatePreview(pet,PetEvolutionMethod.Item,itemId).CanEvolve);return;}
+                bagEvolutionComplete=true;
+                if(bagEvolutionText!=null)bagEvolutionText.text="Tiến hóa hoàn tất";
+                if(bagEvolutionConfirm!=null){bagEvolutionConfirm.text="TIẾP TỤC";bagEvolutionConfirm.SetEnabled(true);}
+                FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();RefreshFromAdapter();
+            });
         }
 
         void CloseBagEvolutionConfirmation() {
             BagTooltip.HideAll(document?.rootVisualElement);
             Capstone.Game.UISystem.PanelFocusUtility.Close(bagEvolutionOverlay);
             if (bagEvolutionOverlay != null) bagEvolutionOverlay.style.display = DisplayStyle.None;
-            bagEvolutionPet = null;
+            var closingPet=bagEvolutionPet;bagEvolutionPet=null;
+            if(bagEvolutionRunning){bagEvolutionRunning=false;PetEvolutionPresentationController.CancelFor(closingPet);}
             bagEvolutionItemId = null;
             bagEvolutionComplete = false;
         }
@@ -804,6 +806,7 @@ namespace Capstone.Game.Inventory {
 
         public bool TryCloseTopmostPanel() {
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "close-top")) return true; // Already handled: do not close the underlying panel.
+            if (Capstone.Game.UISystem.ElementLibraryPopup.TryClose())return true;
             if (Capstone.Game.UISystem.PanelFocusUtility.TryCloseNativeDropdown(document?.rootVisualElement)) return true;
             var assignment = document?.rootVisualElement.Q("quick-item-assignment")?.userData as GameplayHudQuickItemsView;
             if (assignment != null && assignment.TryCloseAssignment()) return true;

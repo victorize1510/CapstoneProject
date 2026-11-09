@@ -42,7 +42,7 @@ namespace Capstone.Game.UISystem {
             RegisterCallback<PointerDownEvent>(_=>Focus(),TrickleDown.TrickleDown);
             RegisterCallback<KeyDownEvent>(e=>{if(!enabledInHierarchy||(e.keyCode!=KeyCode.Return&&e.keyCode!=KeyCode.KeypadEnter&&e.keyCode!=KeyCode.Space))return;selection?.Invoke();e.StopImmediatePropagation();},TrickleDown.TrickleDown);
         }
-        public void SetPresentation(string name,string element,Sprite icon){NameLabel.SetValue(name);Element.text=element;tooltip=name;CompanionArt.SetSkillImage(Icon,Fallback,icon);var face=Icon.Q<AngularSurface>("latest-skill-surface");if(face!=null)face.SkinTexture=LatestMenuCompanionAssets.Load("Surfaces/skill-oct_primary_56_56")?.texture;}
+        public void SetPresentation(string name,string element,Sprite icon){NameLabel.SetValue(name);Element.text=element;var token=ElementUi.Named(element);ElementUi.Label(Element,token!=null?token.element:PetElement.Unknown);tooltip=name;CompanionArt.SetSkillImage(Icon,Fallback,icon);var face=Icon.Q<AngularSurface>("latest-skill-surface");if(face!=null)face.SkinTexture=LatestMenuCompanionAssets.Load("Surfaces/skill-oct_primary_56_56")?.texture;}
     }
     /// <summary>Two lines at the original font size; elision preserves Vietnamese graphemes.</summary>
     public sealed class SkillNameLabel : Label {

@@ -1,5 +1,8 @@
 # Hướng dẫn kho kỹ năng thú — 22/10/2026
 
+> **Đọc hướng dẫn hiện hành trước:** [Pet-Skills-VFX-Audio-Guide-2026-11-09.md](../../../../Docs/Pet-Skills-VFX-Audio-Guide-2026-11-09.md).
+> Bản dưới đây giữ để tham khảo API/luồng authoring ban đầu. Giới hạn “chưa có executor/damage/Impact”, prefab legacy, timing Timed và cách bind socket đã được cập nhật qua các lượt runtime 06–08/11. Không dùng chúng để kết luận tính năng hiện tại còn thiếu.
+
 ## 1. Hệ thống nằm ở đâu?
 
 Trong cửa sổ **Project**, mở `Assets/Game/Skills/`:

@@ -5,8 +5,10 @@ namespace Capstone.Game.HudSystem {
     public sealed class PetEvolutionVisualController : MonoBehaviour {
         [SerializeField] Transform visualRoot = null;
         [SerializeField] GameObject baseVisual = null;
+        [SerializeField] GameObject baseVisualPrefab = null;
 
         GameObject runtimeVisual;
+        GameObject runtimePrefab;
         Renderer[] baseRenderers;
         Animator baseAnimator;
         public Transform ActiveVisualTransform => runtimeVisual != null ? runtimeVisual.transform
@@ -44,6 +46,9 @@ namespace Capstone.Game.HudSystem {
                 return true;
             }
 
+            if (runtimeVisual != null && runtimePrefab == modelOnlyPrefab) { error = string.Empty; return true; }
+            if (baseVisualPrefab != null && baseVisualPrefab == modelOnlyPrefab) { RestoreBaseVisual(); error = string.Empty; return true; }
+
             if (visualRoot == null) visualRoot = transform;
             CacheBaseVisual();
 
@@ -69,10 +74,12 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
             if (runtimeVisual != null) {
+                GetComponentInParent<PetHudRuntimeStats>()?.GetComponent<Capstone.Game.Skills.PetSkillPresentationPlayer>()?.CancelPresentation();
                 runtimeVisual.SetActive(false);
                 Destroy(runtimeVisual);
             }
             runtimeVisual = nextVisual;
+            runtimePrefab = modelOnlyPrefab;
             PetController pet = GetComponentInParent<PetController>();
             foreach (Renderer renderer in baseRenderers) {
                 if (renderer == null) continue;
@@ -102,11 +109,17 @@ namespace Capstone.Game.HudSystem {
                 TryApply(previousPrefab, out _);
                 return;
             }
+            RestoreBaseVisual();
+        }
+
+        void RestoreBaseVisual() {
+            GetComponentInParent<PetHudRuntimeStats>()?.GetComponent<Capstone.Game.Skills.PetSkillPresentationPlayer>()?.CancelPresentation();
             if (runtimeVisual != null) {
                 runtimeVisual.SetActive(false);
                 Destroy(runtimeVisual);
             }
             runtimeVisual = null;
+            runtimePrefab = null;
             CacheBaseVisual();
             PetController pet = GetComponentInParent<PetController>();
             foreach (Renderer renderer in baseRenderers) {

@@ -17,7 +17,10 @@ namespace Capstone.Game.HudSystem {
         Ice,
         Light,
         Dark,
-        Dragon
+        Dragon,
+        Fighting = 11,
+        Flying = 12,
+        Normal = 13
     }
 
     public enum PetRarity {
@@ -151,7 +154,7 @@ namespace Capstone.Game.HudSystem {
             ? rule.TargetDisplayName
             : string.Empty;
         public Sprite NextEvolutionIcon => TryGetNextEvolutionRule(out PetEvolutionRule rule)
-            ? rule.TargetIcon
+            ? Capstone.Game.CreatureSystem.CreatureAvatarCatalog.Resolve(DefinitionId, rule.TargetFormId, rule.TargetIcon)
             : null;
         public bool NextEvolutionDiscovered => nextEvolutionDiscovered;
         public int EvolutionLevelRequirement => TryGetNextEvolutionRule(out PetEvolutionRule rule)

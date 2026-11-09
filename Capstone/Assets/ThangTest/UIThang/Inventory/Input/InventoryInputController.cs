@@ -231,6 +231,7 @@ namespace Capstone.Game.Inventory {
             registeredPanelRoot?.RegisterCallback<NavigationCancelEvent>(HandleNativeDropdownCancel, TrickleDown.TrickleDown);
         }
         void HandleNativeDropdownCancel(NavigationCancelEvent _) {
+            if(Capstone.Game.UISystem.ElementLibraryPopup.TryClose()){_.StopImmediatePropagation();return;}
             if (registeredPanelRoot?.Q(className: "unity-base-dropdown__container-outer") == null) return;
             handledFrame = Time.frameCount;
             shortcutRouter?.MarkShortcutHandled(closeKey);

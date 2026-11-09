@@ -15,18 +15,31 @@ MonoBehaviour:
   skillId: bite
   legacyIds:
   - bite
-  displayName: Bite
-  description: Close-range bite attack.
+  displayName: "C\u1EAFn"
+  description: "C\u1EAFn g\xE2y 120% ATK s\xE1t th\u01B0\u01A1ng v\u1EADt l\xFD.
+    G\xE2y ch\u1EA3y m\xE1u 10% ATK m\u1ED7i gi\xE2y trong 3 gi\xE2y; c\xF9ng ngu\u1ED3n
+    l\xE0m m\u1EDBi, kh\xF4ng c\u1ED9ng d\u1ED3n."
   element: 1
   icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-  cooldownSeconds: 1.2
+  cooldownSeconds: 2
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:
   - Bite Attack
   - Bite Attack Low
   animationDuration: 0.8
-  animationFade: 0.08
-  windupSeconds: 0.1
-  recoverySeconds: 0.3
+  animationFade: 0.09
+  windupSeconds: 0
+  recoverySeconds: 0
   presentation: {fileID: 11400000, guid: dc7629cd6a32b8b4f89141d47fead566, type: 2}
+  combat: {fileID: 11400000, guid: 802395080c383774fbb45d730c46c248, type: 2}
+  uiMetadata:
+    damageKind: 2
+    effects:
+    - role: 0
+      description: "C\u1EAFn g\xE2y 120% ATK s\xE1t th\u01B0\u01A1ng v\u1EADt l\xFD.
+        G\xE2y ch\u1EA3y m\xE1u 10% ATK m\u1ED7i gi\xE2y trong 3 gi\xE2y; c\xF9ng
+        ngu\u1ED3n l\xE0m m\u1EDBi, kh\xF4ng c\u1ED9ng d\u1ED3n."
+    - role: 10
+      description: "Ch\u1EA3y m\xE1u 10% ATK \xD7 3 nh\u1ECBp; kh\xF4ng ch\xED m\u1EA1ng."
+    facts: []

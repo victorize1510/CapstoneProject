@@ -74,6 +74,12 @@ namespace Capstone.Game.MapSystem.UI {
             for (int i = 0; i < candidates.Count; i++) candidates[i].SetClustered(grouped[i]);
             for (int i = used; i < pool.Count; i++)
                 if (pool[i].Button.gameObject.activeSelf) pool[i].Button.gameObject.SetActive(false);
+            // Clusters and late-spawned POIs must not cover the player at the same
+            // projected point. Keep popup overlays above both priority markers.
+            int top = parent.childCount - 1;
+            if (popupHost == parent && IsPopupOpen) top -= popupBlocker != null && popupBlocker.gameObject.activeSelf ? 2 : 1;
+            foreach (var view in views)
+                if (view != null && view.IsVisible && view.Data.type == MapMarkerType.Player && view.transform.GetSiblingIndex() != top) view.transform.SetSiblingIndex(top);
             if (IsPopupOpen && popup.GetSiblingIndex() != popupHost.childCount - 1) popup.SetAsLastSibling();
         }
 

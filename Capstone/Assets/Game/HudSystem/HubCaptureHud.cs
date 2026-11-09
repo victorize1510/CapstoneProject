@@ -53,6 +53,7 @@ namespace Capstone.Game.HudSystem {
         public KeyCode CaptureKey=>captureKey;
         void Resolve(){inventory??=FindFirstObjectByType<MonsterInventoryAdapter>(FindObjectsInactive.Include);coordinator??=FindFirstObjectByType<PetCaptureCoordinator>(FindObjectsInactive.Include);bag??=FindFirstObjectByType<MonsterInventoryController>(FindObjectsInactive.Include);}
         public void Build(RectTransform root) {
+            if(opportunitySource==null){var source=GetComponent<LockedCaptureOpportunitySource>();if(source==null)source=gameObject.AddComponent<LockedCaptureOpportunitySource>();opportunitySource=source;}
             host=root;Resolve();var group=V.Rect(root,"CaptureG");V.Place(group,new Vector2(1,0),new Vector2(1,0),new Vector2(-76,164),new Vector2(80,80));
             pulse=group.gameObject.AddComponent<CanvasGroup>();
             var button=HubR11Art.Button(group,"Throw","CaptureButton/capture-circle");V.Top((RectTransform)button.transform,0,0,80,80);button.onClick.AddListener(()=>TryThrow());

@@ -48,6 +48,7 @@ namespace Capstone.Game.HudSystem {
         [Min(1)] public int skillLevel;
         [Min(1)] public int requiredPetLevel;
         public PetElement element;
+        public Capstone.Game.Skills.SkillUiMetadata uiMetadata;
         [TextArea] public string description;
         public Sprite icon;
         public string[] animatorStates;

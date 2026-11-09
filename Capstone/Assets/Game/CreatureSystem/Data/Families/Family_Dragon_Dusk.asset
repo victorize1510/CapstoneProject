@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0342a19e0b38cbe4cbbfcf9620e979a6, type: 3}
+  m_Name: Family_Dragon_Dusk
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureFamilyDefinition
+  definitionId: Dragon Dusk
+  displayName: "D\xF2ng r\u1ED3ng b\xF3ng t\u1ED1i"
+  legacyDefinitionIds:
+  - Dragon Nightfall
+  - Dragon Darkness
+  - Dragon Dusk Winged
+  - Dragon Dusk Elder
+  evolutionRulesReviewed: 1
+  forms:
+  - formId: 01
+    displayName: "R\u1ED3ng Ch\u1EA1ng V\u1EA1ng"
+    sourcePrefab: {fileID: 7172953654767793680, guid: 5099dccfff2bbf940bd1cdec5e3073f9, type: 3}
+    avatar: {fileID: 21300000, guid: 7f5438365e3289243ac5dbf19f2d7b66, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 21fd592fe40e42bfaa90c037879756f9, type: 2}
+    skillSet: {fileID: 11400000, guid: e034d8e1a64a50d44a254f3ceb58152b, type: 2}
+    visualPrefab: {fileID: 177950151289750202, guid: 43cb094e5d4040a4b86d91d526f0eec0, type: 3}
+    petPrefab: {fileID: 6932692690579572187, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
+    wildPrefab: {fileID: 8813761678292755814, guid: 84a59a7325cf8c84d8ce816971f47b9e, type: 3}
+    enemyPrefab: {fileID: 2974067211035169508, guid: c690ec4e113c6a24695950ef3be6b04c, type: 3}
+    animationProfile: {fileID: 11400000, guid: 086e7a5d625b11a4b95a6f018c3d5800, type: 2}
+  - formId: 02
+    displayName: "R\u1ED3ng \u0110\xEAm T\u1ED1i"
+    sourcePrefab: {fileID: 5200905135537977952, guid: c4af6a689c59c96438e018ccb4980e50, type: 3}
+    avatar: {fileID: 21300000, guid: 76b9541a488b2cd44b579d65568cb7a3, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 2ea7c413ed224ff886252d77bc00c48f, type: 2}
+    skillSet: {fileID: 11400000, guid: 6bc01a0d401bc3c458b2452ee9b5ce47, type: 2}
+    visualPrefab: {fileID: 3622403656948730236, guid: d7f5ca7d8986eab439e3c5fc8fdc04cc, type: 3}
+    petPrefab: {fileID: 4749939975475678044, guid: a8a0a8ba78a7e3b42aae4e69b4b949f9, type: 3}
+    wildPrefab: {fileID: 3250620669686794744, guid: a2f65d3db87aa454da65810469869963, type: 3}
+    enemyPrefab: {fileID: 282814459843967714, guid: 5f1418f5ace66dd49be1de449113b421, type: 3}
+    animationProfile: {fileID: 11400000, guid: cc38d837ecc70e049b81368a527f78ef, type: 2}
+  - formId: 03
+    displayName: "Dragon B\xF3ng T\u1ED1i"
+    sourcePrefab: {fileID: 189714618256958346, guid: c6a775135ae59a04ea396ecdf847e510, type: 3}
+    avatar: {fileID: 21300000, guid: 52c2bf9b2e45e0744b0d3c3eb1bd932c, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 75e2e9975346452b831d4f404c230732, type: 2}
+    skillSet: {fileID: 11400000, guid: b0ca97568a017a3439ba3d62c035ce85, type: 2}
+    visualPrefab: {fileID: 8647867395065679038, guid: f21187517c109334388efb15595ca318, type: 3}
+    petPrefab: {fileID: 212456052354837003, guid: 284aa75eddf305b42bbf659c8ea239f9, type: 3}
+    wildPrefab: {fileID: 3530890171033796778, guid: 5dcdc518c0d72af41a16e2f4a8c3eb68, type: 3}
+    enemyPrefab: {fileID: 6217943452314763075, guid: 70fb0218195db1c4d92775e53a2b981c, type: 3}
+    animationProfile: {fileID: 11400000, guid: df607102c9f4d634e98d77d31ff5b104, type: 2}

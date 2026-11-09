@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7f1116f7c195dd409831484324f7479, type: 3}
+  m_Name: Dragon01
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureAnimationProfile
+  definitionId: Dragon Dusk
+  formId: 01
+  actions:
+  - action: 1
+    state: Idle
+  - action: 2
+    state: Move
+  - action: 5
+    state: Fly Forward In Place
+  - action: 6
+    state: Spawn
+  - action: 7
+    state: Bite Attack
+  - action: 8
+    state: Bite Attack
+  - action: 9
+    state: Cast Spell
+  - action: 10
+    state: Blast Attack
+  - action: 11
+    state: Projectile Attack
+  - action: 12
+    state: Wing Attack
+  - action: 13
+    state: Take Damage
+  - action: 14
+    state: Die
+  skills:
+  - skillId: bite
+    action: 8
+  - skillId: blast
+    action: 10
+  - skillId: projectile
+    action: 11
+  - skillId: wing strike
+    action: 12

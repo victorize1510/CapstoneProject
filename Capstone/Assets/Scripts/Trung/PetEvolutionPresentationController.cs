@@ -85,11 +85,75 @@ namespace Capstone.Game.HudSystem {
         public Key congratsContinueKey = Key.Space;
 
         GameObject activeRingVfx;
+        static PetEvolutionPresentationController active;
+        public static bool AnyPlaying => active != null && active.IsPlaying;
+        EvolutionPresentationScope scope;
+        PetController currentPet;
+        public static void CancelFor(PetController pet){if(active!=null&&active.currentPet==pet)active.Cancel();}
+        WhiteoutOverlay activeOverlay;
+        Coroutine running;
+        AsyncOperation loading;
+        bool ownsScene, committed, completing;
+        Action<bool> completion;
+        Transform growing;
+        Vector3 growingScale;
+        public string LastError { get; private set; }
+        public static void Present(Scene context, PetEvolutionService service, PetController pet, PetEvolutionMethod method, string itemId, Action<bool,string> complete) {
+            var presenter=FindFor(context)??(pet!=null?FindFor(pet.gameObject.scene):null);
+            if(presenter==null) { complete?.Invoke(false,"Scene này chưa có controller trình diễn tiến hóa.");return; }
+            var preview=service!=null?service.CreatePreview(pet,method,itemId):null;
+            if(preview==null||!preview.CanEvolve) { complete?.Invoke(false,preview?.DisabledReason??"Không tìm thấy dịch vụ tiến hóa.");return; }
+            string message="Đã hủy trình diễn tiến hóa.";
+            presenter.Play(pet,preview.CurrentName,preview.TargetName,
+                ()=>service.TryEvolve(pet,out message,method,itemId),
+                success=>complete?.Invoke(success,string.IsNullOrEmpty(presenter.LastError)?message:presenter.LastError));
+        }
+        public static PetEvolutionPresentationController FindFor(Scene scene) {
+            foreach(var value in FindObjectsByType<PetEvolutionPresentationController>(FindObjectsSortMode.None))
+                if(value.gameObject.scene==scene&&value.isActiveAndEnabled)return value;
+            return null;
+        }
 
         public bool IsPlaying { get; private set; }
 
         void Awake() => Instance = this;
-        void OnDestroy() { if (Instance == this) Instance = null; }
+        void OnDisable() => Cancel();
+        void OnDestroy() { Cancel(); if (Instance == this) Instance = null; }
+        public void Cancel() {
+            if(!IsPlaying)return;
+            if(running!=null)StopCoroutine(running);
+            running=null; Finish();
+        }
+        void Finish() {
+            if(completing||!IsPlaying)return; completing=true;
+            activeOverlay?.Cleanup(); activeOverlay=null;
+            if(growing!=null)growing.localScale=growingScale;
+            StopAllCoroutines(); DespawnGroundRing();
+            scope?.Dispose(); scope=null;
+            if(EvolutionUI.Instance!=null)EvolutionUI.Instance.Hide();
+            if(ownsScene) {
+                string sceneName=evolutionSceneName;
+                if(loading!=null&&!loading.isDone)loading.completed+=_=>UnloadOwned(sceneName);
+                else UnloadOwned(sceneName);
+            }
+            loading=null; ownsScene=false; IsPlaying=false;currentPet=null;
+            if(active==this)active=null;
+            var callback=completion; completion=null; running=null; completing=false;
+            try { callback?.Invoke(committed); } catch(Exception e) { Debug.LogException(e,this); }
+        }
+        static void UnloadOwned(string name) { var scene=SceneManager.GetSceneByName(name);if(scene.IsValid()&&scene.isLoaded)SceneManager.UnloadSceneAsync(scene); }
+        IEnumerator Guarded(IEnumerator routine) {
+            var stack=new System.Collections.Generic.Stack<IEnumerator>();stack.Push(routine);
+            while(stack.Count>0) {
+                bool more=false;object value=null;Exception failure=null;
+                try { more=stack.Peek().MoveNext();if(more)value=stack.Peek().Current; }
+                catch(Exception e) { failure=e; }
+                if(failure!=null) { LastError="Không thể hoàn tất trình diễn tiến hóa.";Debug.LogException(failure,this);break; }
+                if(!more) { (stack.Pop() as IDisposable)?.Dispose();continue; }
+                if(value is IEnumerator nested)stack.Push(nested);else yield return value;
+            }
+            Finish();
+        }
 
         /// <summary>
         /// Chạy toàn bộ animation + scene-transition tiến hóa cho 1 pet.
@@ -99,49 +163,35 @@ namespace Capstone.Game.HudSystem {
         /// </summary>
         public void Play(PetController pet, string currentName, string targetName,
             Func<bool> applyEvolution, Action<bool> onComplete) {
-            if (pet == null || applyEvolution == null) {
-                Debug.LogWarning($"{name}: Play() thiếu pet hoặc applyEvolution.");
-                onComplete?.Invoke(false);
-                return;
+            LastError=string.Empty;
+            if(pet==null||applyEvolution==null||AnyPlaying||!isActiveAndEnabled) {
+                LastError="Thao tác tiến hóa chưa sẵn sàng hoặc đang chạy.";onComplete?.Invoke(false);return;
             }
-            if (IsPlaying) {
-                Debug.LogWarning($"{name}: đang chạy 1 animation tiến hóa khác, bỏ qua yêu cầu mới.");
-                onComplete?.Invoke(false);
-                return;
+            if(!Application.CanStreamedLevelBeLoaded(evolutionSceneName)||SceneManager.GetSceneByName(evolutionSceneName).isLoaded||whiteOverlayMaterial==null) {
+                LastError="Chưa cấu hình scene hoặc vật liệu trình diễn tiến hóa.";onComplete?.Invoke(false);return;
             }
-            StartCoroutine(PlayRoutine(pet, currentName, targetName, applyEvolution, onComplete));
+            IsPlaying=true;active=this;committed=false;completion=onComplete;growing=null;currentPet=pet;
+            try {
+                scope=new EvolutionPresentationScope(this,pet,disableDuringEvolution);
+                running=StartCoroutine(Guarded(PlayRoutine(pet,currentName,targetName,applyEvolution,onComplete)));
+            }catch(Exception error){LastError="Không thể bắt đầu trình diễn tiến hóa.";Debug.LogException(error,this);Finish();}
         }
 
         IEnumerator PlayRoutine(PetController pet, string currentName, string targetName,
             Func<bool> applyEvolution, Action<bool> onComplete) {
-            IsPlaying = true;
-            Transform petTransform = pet.transform;
-            PetEvolutionVisualController visual = pet.GetComponentInChildren<PetEvolutionVisualController>(true);
-
-            // Lưu lại trạng thái gốc để trả về đúng chỗ sau khi xong.
-            Transform originalParent = petTransform.parent;
-            Scene originalScene = pet.gameObject.scene;
-            Vector3 originalPos = petTransform.position;
-            Quaternion originalRot = petTransform.rotation;
-            int originalRootLayer = pet.gameObject.layer;
-            bool wasControllerEnabled = pet.enabled;
-
-            // Tạm khóa state machine/AI của pet + các script phụ trong lúc tiến hóa.
-            pet.enabled = false;
-            SetControllingScriptsEnabled(false);
-
-            // Phải là ROOT (không parent) mới chuyển sang Scene khác được.
-            if (originalParent != null)
-                petTransform.SetParent(null, true);
-
-            Camera camToHide = gameplayCamera != null ? gameplayCamera : Camera.main;
-            if (camToHide != null) camToHide.gameObject.SetActive(false);
-            else Debug.LogWarning($"{name}: không có Gameplay Camera / Camera.main để tắt — 2 scene có thể chồng hình.");
-
-            yield return SceneManager.LoadSceneAsync(evolutionSceneName, LoadSceneMode.Additive);
-            Scene evoScene = SceneManager.GetSceneByName(evolutionSceneName);
-            SceneManager.MoveGameObjectToScene(pet.gameObject, evoScene);
-
+            Transform petTransform=pet.transform;
+            PetEvolutionVisualController visual=pet.GetComponentInChildren<PetEvolutionVisualController>(true);
+            petTransform.SetParent(null,true);
+            ownsScene=true;
+            loading=SceneManager.LoadSceneAsync(evolutionSceneName,LoadSceneMode.Additive);
+            if(loading==null)throw new InvalidOperationException("Không tải được scene tiến hóa.");
+            yield return loading;
+            Scene evoScene=SceneManager.GetSceneByName(evolutionSceneName);
+            if(!evoScene.IsValid()||!evoScene.isLoaded)throw new InvalidOperationException("Scene tiến hóa chưa sẵn sàng.");
+            SceneManager.MoveGameObjectToScene(pet.gameObject,evoScene);
+            foreach(var renderer in pet.GetComponentsInChildren<Renderer>(true))
+                if(visual==null||visual.IsCurrentVisualRenderer(renderer))renderer.enabled=true;
+            if(visual!=null&&visual.ActiveAnimator!=null)visual.ActiveAnimator.enabled=true;
             int evoLayer = LayerMask.NameToLayer(evolutionOnlyLayerName);
             if (evoLayer == -1)
                 Debug.LogWarning($"{name}: không tìm thấy Layer '{evolutionOnlyLayerName}'. Tạo layer này trong Project Settings.");
@@ -158,7 +208,7 @@ namespace Capstone.Game.HudSystem {
 
             if (showStartText && EvolutionUI.Instance != null) {
                 EvolutionUI.Instance.Show(string.Format(startMessageFormat, currentName));
-                yield return new WaitForSeconds(startMessageDisplayTime);
+                yield return new WaitForSecondsRealtime(startMessageDisplayTime);
                 EvolutionUI.Instance.Hide();
             }
 
@@ -172,12 +222,12 @@ namespace Capstone.Game.HudSystem {
             // cả petTransform — vì model cũ không bị Destroy (chỉ bị tắt renderer để còn phục hồi lúc
             // load save), nếu quét cả petTransform sẽ dính luôn "bóng" của model cũ đang ẩn.
             Transform overlayTarget = visual != null ? visual.ActiveVisualTransform : petTransform;
-            WhiteoutOverlay overlay = new WhiteoutOverlay(overlayTarget, whiteOverlayMaterial, whiteoutEmissionIntensity);
+            WhiteoutOverlay overlay = activeOverlay = new WhiteoutOverlay(overlayTarget, whiteOverlayMaterial, whiteoutEmissionIntensity);
             yield return SpinAndFade(petTransform, overlay,
                 spinUpDuration, spinUpCurve, glowStartDelay, whiteoutFadeInDuration, 0f, 1f);
 
             // --- Màn hình đang trắng hoàn toàn: đổi dữ liệu/model THẬT ngay lúc này ---
-            bool success = applyEvolution();
+            bool success = committed = applyEvolution();
             overlay.Cleanup();
 
             // QUAN TRỌNG: model MỚI vừa Instantiate ra (bên trong applyEvolution/TryApply) KHÔNG tự
@@ -187,17 +237,22 @@ namespace Capstone.Game.HudSystem {
             if (evoLayer != -1)
                 SetLayerRecursively(pet.gameObject, evoLayer);
 
+            foreach(var renderer in pet.GetComponentsInChildren<Renderer>(true))
+                if(visual==null||visual.IsCurrentVisualRenderer(renderer))renderer.enabled=true;
+            if(visual!=null&&visual.ActiveAnimator!=null)visual.ActiveAnimator.enabled=true;
+
             // 2) Ép animation model MỚI (nếu đổi thành công) đứng yên ở Idle ngay khi vừa xuất hiện,
             //    rồi cho nó "lớn dần" song song lúc xoay + mờ dần lộ ra.
             if (success && visual != null) {
                 ForceIdle(visual.ActiveAnimator);
-                StartCoroutine(GrowRoutine(visual.ActiveVisualTransform));
+                growing=visual.ActiveVisualTransform;growingScale=growing.localScale;
+                StartCoroutine(GrowRoutine(growing));
             }
 
             // Model mới đã thay xong -> overlayTarget cũng phải lấy lại (ActiveVisualTransform giờ trỏ
             // sang model MỚI), không dùng lại overlayTarget cũ (đang trỏ model cũ).
             overlayTarget = visual != null ? visual.ActiveVisualTransform : petTransform;
-            overlay = new WhiteoutOverlay(overlayTarget, whiteOverlayMaterial, whiteoutEmissionIntensity);
+            overlay = activeOverlay = new WhiteoutOverlay(overlayTarget, whiteOverlayMaterial, whiteoutEmissionIntensity);
             overlay.SetIntensity(1f);
             yield return SpinAndFade(petTransform, overlay,
                 spinDownDuration, spinDownCurve, 0f, whiteoutFadeOutDuration, 1f, 0f);
@@ -208,28 +263,13 @@ namespace Capstone.Game.HudSystem {
 
             if (success && showCongratsText && EvolutionUI.Instance != null) {
                 EvolutionUI.Instance.Show(string.Format(congratsMessageFormat, currentName, targetName));
-                yield return new WaitForSeconds(congratsMinDisplayTime);
+                yield return new WaitForSecondsRealtime(congratsMinDisplayTime);
                 while (!(Keyboard.current != null && Keyboard.current[congratsContinueKey].wasPressedThisFrame))
                     yield return null;
                 EvolutionUI.Instance.Hide();
             }
 
-            if (evoLayer != -1)
-                SetLayerRecursively(pet.gameObject, originalRootLayer);
-
-            SceneManager.MoveGameObjectToScene(pet.gameObject, originalScene);
-            petTransform.position = originalPos;
-            petTransform.rotation = originalRot;
-            if (originalParent != null)
-                petTransform.SetParent(originalParent, true);
-
-            if (camToHide != null) camToHide.gameObject.SetActive(true);
-            yield return SceneManager.UnloadSceneAsync(evoScene);
-
-            pet.enabled = wasControllerEnabled;
-            SetControllingScriptsEnabled(true);
-            IsPlaying = false;
-            onComplete?.Invoke(success);
+            // Guarded/Finish restores exact prior camera, HUD, input, layers and controller states.
         }
 
         /// <summary>Y nguyên kỹ thuật auto-correction 360° từ EvolutionController.cs, chỉ đổi target thành Transform truyền vào.</summary>
@@ -256,7 +296,7 @@ namespace Capstone.Game.HudSystem {
             float rotatedSoFar = 0f;
 
             while (t < total) {
-                float dt = Time.deltaTime;
+                float dt = Time.unscaledDeltaTime;
                 t += dt;
 
                 if (spinDuration > 0f) {
@@ -284,7 +324,7 @@ namespace Capstone.Game.HudSystem {
             Vector3 finalScale = target.localScale;
             float t = 0f;
             while (t < growDuration) {
-                t += Time.deltaTime;
+                t += Time.unscaledDeltaTime;
                 float k = growCurve.Evaluate(Mathf.Clamp01(t / growDuration));
                 target.localScale = finalScale * k;
                 yield return null;

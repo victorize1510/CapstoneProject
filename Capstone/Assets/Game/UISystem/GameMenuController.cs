@@ -161,6 +161,7 @@ namespace Capstone.Game.UISystem {
         bool RouteShortcut(KeyCode key, bool reverse) {
             var hud=GameplayHudController.Live;
             if (key == closeKey) {
+                if(ElementLibraryPopup.TryClose())return true;
                 if(hud!=null&&hud.TryCloseTransientHud())return true;
                 if (inventory != null && inventory.IsEvolutionScreenOpen) { inventory.DismissEvolutionScreen(); return true; }
                 if (CurrentMode == GameInputMode.Gameplay) OpenSettingsFromGameplay(); else CloseTopUi();

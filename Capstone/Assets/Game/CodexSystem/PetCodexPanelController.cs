@@ -33,8 +33,7 @@ namespace Capstone.Game.CodexSystem {
         VisualElement detailPortrait, evolution;
         Label evolutionUnknown;
         bool detailsDirty = true, changingFavorite;
-        static readonly CodexType?[] Types = { null, CodexType.Fire, CodexType.Water, CodexType.Nature,
-            CodexType.Electric, CodexType.Ice, CodexType.Earth, CodexType.Wind, CodexType.Dark, CodexType.Light, CodexType.Mythic, CodexType.Dragon };
+        static readonly CodexType?[] Types = { null,CodexType.Fire,CodexType.Water,CodexType.Nature,CodexType.Electric,CodexType.Fighting,CodexType.Flying,CodexType.Normal,CodexType.Dark,CodexType.Dragon };
         static readonly string[] SortNames = { "Theo số thứ tự", "Theo hệ", "Theo khu vực", "Độ hiếm", "Theo tên" };
         static readonly string[] DiscoveryNames = { "Mọi trạng thái", "Chưa khám phá", "Đã gặp", "Đã ghi nhận", "Đã thu phục" };
         IPetCodexProvider provider;
@@ -82,6 +81,7 @@ namespace Capstone.Game.CodexSystem {
             discovery = root.Q<DropdownField>("codex-discovery"); extraSort = root.Q<DropdownField>("codex-extra-sort");
             cards.AddRange(grid.Query<Button>(className: "codex-card").ToList());
             categories.AddRange(root.Query<Button>(className: "codex-category").ToList());
+            while(categories.Count>Types.Length){var last=categories[categories.Count-1];last.RemoveFromHierarchy();categories.RemoveAt(categories.Count-1);}
             pageButtons.AddRange(root.Query<Button>(className: "codex-page-button").ToList());
             sorts.AddRange(root.Query<Button>(className: "codex-sort").ToList());
             foreach (var card in cards) cardViews.Add(new CardView {
@@ -96,6 +96,7 @@ namespace Capstone.Game.CodexSystem {
             for (int i = 0; i < categories.Count; i++) {
                 int index = i;
                 categories[i].Q<Label>("category-name").text = Types[i].HasValue ? PetCodexQuery.TypeName(Types[i].Value) : "Tất cả";
+                if(i>0){var glyph=categories[i].Q(className:"codex-category-glyph");var token=ElementUi.All[i-1];if(glyph!=null)glyph.style.backgroundImage=new StyleBackground(ElementUi.Art(token.id+"-glyph"));}
                 Click(categories[i], () => { query.Type = Types[index]; ApplyQuery(); });
             }
             for (int i = 0; i < sorts.Count; i++) { int index = i; Click(sorts[i], () => { query.Sort = (CodexSort)index; ApplyQuery(); }); }
@@ -232,7 +233,10 @@ namespace Capstone.Game.CodexSystem {
                 view.Portrait.style.unityBackgroundImageTintColor = entry.Known ? Color.white : new Color(0, 0, 0, .22f);
                 card.tooltip = entry.Known ? entry.Name : "Chưa khám phá";
             }
-            for (int i = 0; i < categories.Count; i++) categories[i].EnableInClassList("is-selected", Types[i] == query.Type);
+            for (int i = 0; i < categories.Count; i++) {
+                bool selected=Types[i]==query.Type;categories[i].EnableInClassList("is-selected",selected);
+                if(i>0){categories[i].Q(className:"codex-category-glyph")?.RemoveFromHierarchy();ElementUi.Filter(categories[i],ElementUi.All[i-1],selected);}
+            }
             for (int i = 0; i < sorts.Count; i++) sorts[i].EnableInClassList("is-selected", i == (int)query.Sort);
             extraSort.SetValueWithoutNotify(SortNames[(int)query.Sort]);
             RenderPagination(); RenderDetails();
@@ -277,7 +281,7 @@ namespace Capstone.Game.CodexSystem {
             Sprite sprite = entry.Portrait != null ? entry.Portrait : entry.Icon;
             detailPortrait.style.backgroundImage = sprite != null ? new StyleBackground(sprite) : StyleKeyword.None;
             detailPortrait.style.unityBackgroundImageTintColor = entry.Known ? Color.white : new Color(0, 0, 0, .22f);
-            for (int i = 0; i < badges.Count; i++) { var type = !entry.Known ? CodexType.Unknown : i == 0 ? entry.PrimaryType : entry.SecondaryType; badges[i].text = entry.Known ? PetCodexQuery.TypeName(type) : string.Empty; Show(badges[i].parent, entry.Known && type != CodexType.Unknown); }
+            for (int i = 0; i < badges.Count; i++) { var type = !entry.Known ? CodexType.Unknown : i == 0 ? entry.PrimaryType : entry.SecondaryType; badges[i].text = entry.Known ? PetCodexQuery.TypeName(type) : string.Empty; if(entry.Known&&Enum.TryParse<PetElement>(type.ToString(),out var badgeType))ElementUi.Label(badges[i],badgeType); Show(badges[i].parent, entry.Known && type != CodexType.Unknown); }
             LabelText("codex-basic", entry.Known ? $"Chiều cao: {Value(entry.Height)}\nCân nặng: {Value(entry.Weight)}\nKhu vực sinh sống: {Value(entry.Habitat)}\nĐặc tính: {Value(entry.Trait)}\nThức ăn ưa thích: {Value(entry.FavoriteFood)}\nĐộ hiếm: {VietnameseUI.Rarity(entry.Rarity)}" : VietnameseUI.Unknown);
             favorite.text = entry.Known && entry.Favorite ? "★  Đã yêu thích" : "Đánh dấu yêu thích";
             favorite.SetEnabled(entry.Known && provider?.CanSetFavorite == true);

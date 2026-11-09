@@ -134,7 +134,8 @@ namespace Capstone.Game.HudSystem {
         }
 
         public void Close() {
-            targetPet = null;
+            var closingPet=targetPet;targetPet=null;
+            if(confirmationRunning){confirmationRunning=false;PetEvolutionPresentationController.CancelFor(closingPet);}
             preview = null;
             resultShown = false;
             openedAutomatically = false;
@@ -194,43 +195,27 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ConfirmEvolution() {
-            if (confirmationRunning || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "confirm")) return;
-            confirmationRunning = true;
-            confirmButton?.SetEnabled(false);
-            try { ConfirmEvolutionCore(); }
-            finally { confirmationRunning = false; if (IsOpen) confirmButton?.SetEnabled(resultShown || preview?.CanEvolve == true); }
-        }
-
-        void ConfirmEvolutionCore() {
-            if (resultShown) {
-                Dismiss();
-                return;
-            }
-
-            if (evolutionService == null || preview == null) return;
-            Sprite evolvedIcon = preview.TargetIcon ?? preview.CurrentIcon;
-            string evolvedName = preview.TargetName;
-            bool success = evolutionService.TryEvolve(targetPet, out string message,
-                PetEvolutionMethod.Level);
-            if (!success) {
-                Refresh();
-                if (feedback != null) feedback.text = message;
-                return;
-            }
-
-            CommandProvider?.NotifyHudDataChanged();
-            resultShown = true;
-            SetPortrait(targetPortrait, targetFallback, evolvedIcon, evolvedName);
-            if (targetName != null) targetName.text = evolvedName;
-            if (dialogue != null) dialogue.text = message;
-            if (requirement != null) requirement.text = "Tiến hóa hoàn tất";
-            if (feedback != null) feedback.text = "Dữ liệu, chỉ số và vị trí Đội hình/Kho thú đã được giữ nguyên.";
-            if (itemRow != null) itemRow.style.display = DisplayStyle.None;
-            if (laterButton != null) laterButton.style.display = DisplayStyle.None;
-            if (confirmButton != null) {
-                confirmButton.text = "TIẾP TỤC";
-                confirmButton.SetEnabled(!confirmationRunning);
-            }
+            if(confirmationRunning||!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this,"confirm"))return;
+            if(resultShown){Dismiss();return;}
+            if(evolutionService==null||preview==null||targetPet==null)return;
+            confirmationRunning=true;confirmButton?.SetEnabled(false);
+            var pet=targetPet;var icon=preview.TargetIcon??preview.CurrentIcon;string name=preview.TargetName;
+            screenDocument.rootVisualElement.style.display=DisplayStyle.None;
+            PetEvolutionPresentationController.Present(gameObject.scene,evolutionService,pet,PetEvolutionMethod.Level,null,(success,message)=>{
+                confirmationRunning=false;
+                if(this==null||!isActiveAndEnabled||targetPet!=pet)return;
+                screenDocument.rootVisualElement.style.display=DisplayStyle.Flex;
+                if(!success){Refresh();if(feedback!=null)feedback.text=message;confirmButton?.SetEnabled(preview?.CanEvolve==true);return;}
+                CommandProvider?.NotifyHudDataChanged();resultShown=true;
+                SetPortrait(targetPortrait,targetFallback,icon,name);
+                if(targetName!=null)targetName.text=name;
+                if(dialogue!=null)dialogue.text=message;
+                if(requirement!=null)requirement.text="Tiến hóa hoàn tất";
+                if(feedback!=null)feedback.text="Dữ liệu, kỹ năng và vị trí Đội hình/Kho thú đã được giữ nguyên.";
+                if(itemRow!=null)itemRow.style.display=DisplayStyle.None;
+                if(laterButton!=null)laterButton.style.display=DisplayStyle.None;
+                if(confirmButton!=null){confirmButton.text="TIẾP TỤC";confirmButton.SetEnabled(true);}
+            });
         }
 
         void ResolveReferences() {
