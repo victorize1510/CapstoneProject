@@ -82,8 +82,6 @@
 .ga-popup .ga-button .angular-button-caption {font-size:21px;-unity-font-style:bold;color:#EDE9E1;-unity-text-align:middle-center;}
 .ga-popup .ga-button:disabled .angular-button-caption {color:#202B45;}
 .ga-popup .ga-close .angular-button-caption {font-size:24px;}
-.ga-popup .ga-details-scroll .unity-scroll-view__vertical-scroller {position:absolute;right:-10px;top:0;bottom:0;width:6px;}
-.ga-popup .ga-details-scroll .unity-scroller__low-button, .ga-popup .ga-details-scroll .unity-scroller__high-button {display:none;}
 .ga-popup .ga-details-scroll .unity-base-slider__tracker {background-color:#8996B0;border-width:0;}
 .ga-popup .ga-details-scroll .unity-base-slider__dragger {background-color:#CCAD83;border-width:0;border-radius:0;}
 .ga-popup .pet-details-skill-fallback {width:28px;height:28px;align-self:center;color:transparent;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#202B45;}

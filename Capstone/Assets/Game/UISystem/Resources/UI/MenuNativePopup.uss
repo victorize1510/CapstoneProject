@@ -1,6 +1,7 @@
-/* Native menus live outside the document template, so give the popup its own theme. */
-.menu-native-popup { -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf"); font-size: 17px; color: #244d34; background-color: #fffdf6; border-width: 1px; border-color: #a9bd9c; border-radius: 6px; }
-.menu-native-popup .unity-base-dropdown__container-inner { background-color: #fffdf6; border-width: 0; }
-.menu-native-popup .unity-base-dropdown__item { min-height: 32px; color: #244d34; background-color: #fffdf6; }
-.menu-native-popup .unity-base-dropdown__item:hover { background-color: #e4edda; }
-.menu-native-popup .unity-base-dropdown__label { color: #244d34; font-size: 17px; -unity-font: url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf"); }
+/* Plain fallback for native runtime menus; no game frame, bevel or checkmark. */
+.menu-native-popup { font-size:18px;-unity-font:url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf");-unity-font-style:bold;color:#202B45;background-color:#B9C2D2;border-width:1px;border-color:#8996B0;border-radius:6px;padding:6px; }
+.menu-native-popup .unity-base-dropdown__container-inner { background-color:transparent;border-width:0; }
+.menu-native-popup .unity-base-dropdown__item { min-height:44px;color:#202B45;background-color:transparent; }
+.menu-native-popup .unity-base-dropdown__item:hover { background-color:#D2D8E3; }
+.menu-native-popup .unity-base-dropdown__label { color:#202B45;font-size:18px;-unity-font-style:bold;-unity-font:url("../../../../TextMesh Pro/Fonts/LiberationSans.ttf"); }
+.menu-native-popup .unity-base-dropdown__checkmark { display:none; }

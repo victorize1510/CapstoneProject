@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Capstone.Game.CodexSystem {
     public enum CodexDiscovery { Unknown, Seen, Recorded, Captured }
     // Codex includes Mythic without changing gameplay's PetElement enum.
-    public enum CodexType { Unknown, Fire, Water, Nature, Electric, Ice, Earth, Wind, Dark, Light, Mythic, Dragon }
+    public enum CodexType { Unknown, Fire, Water, Nature, Electric, Ice, Earth, Wind, Dark, Light, Mythic, Dragon, Fighting = 12, Flying = 13, Normal = 14 }
     public enum CodexSort { Number, Type, Region, Rarity, Name }
 
     [Serializable]

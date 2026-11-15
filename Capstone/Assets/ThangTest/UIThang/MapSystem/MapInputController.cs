@@ -204,6 +204,10 @@ namespace Capstone.Game.MapSystem {
             Vector2 pointer = ReadPointerPosition();
             bool overMap = worldMap.MapInteractionRect != null
                 && RectTransformUtility.RectangleContainsScreenPoint(worldMap.MapInteractionRect, pointer, null);
+            var presentation=worldMap.Presentation;
+            var contour=worldMap.MapInteractionRect!=null?worldMap.MapInteractionRect.GetComponent<UI.MapR5Contour>():null;
+            if(contour!=null)overMap=overMap&&contour.IsRaycastLocationValid(pointer,null);
+            if(presentation!=null&&(!presentation.MapSourceReady||presentation.BlocksMapPointer)){dragging=false;return;}
 
             float scroll = ReadScrollDelta();
             if (overMap && Mathf.Abs(scroll) > 0.01f) {

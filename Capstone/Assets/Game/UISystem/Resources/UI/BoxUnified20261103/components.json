@@ -1,0 +1,164 @@
+{
+  "components": [
+    {
+      "id": "party-section",
+      "width": 1196,
+      "height": 202,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "storage-panel",
+      "width": 1196,
+      "height": 674,
+      "shape": "panel",
+      "corner": 18,
+      "inset": 3
+    },
+    {
+      "id": "inspector",
+      "width": 656,
+      "height": 888,
+      "shape": "panel",
+      "corner": 18,
+      "inset": 3
+    },
+    {
+      "id": "party-slot",
+      "width": 188,
+      "height": 126,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "storage-slot",
+      "width": 136,
+      "height": 100,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "portrait-frame",
+      "width": 260,
+      "height": 332,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "personality-card",
+      "width": 260,
+      "height": 218,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "health-exp-card",
+      "width": 344,
+      "height": 128,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "action",
+      "width": 616,
+      "height": 48,
+      "shape": "parallel",
+      "corner": 0,
+      "inset": 3
+    },
+    {
+      "id": "secondary-action",
+      "width": 302,
+      "height": 48,
+      "shape": "parallel",
+      "corner": 0,
+      "inset": 3
+    },
+    {
+      "id": "input",
+      "width": 296,
+      "height": 38,
+      "shape": "panel",
+      "corner": 8,
+      "inset": 3
+    },
+    {
+      "id": "filter-button",
+      "width": 136,
+      "height": 38,
+      "shape": "parallel",
+      "corner": 0,
+      "inset": 3
+    },
+    {
+      "id": "sort-button",
+      "width": 230,
+      "height": 38,
+      "shape": "parallel",
+      "corner": 0,
+      "inset": 3
+    },
+    {
+      "id": "page-button",
+      "width": 38,
+      "height": 38,
+      "shape": "parallel",
+      "corner": 0,
+      "inset": 3
+    },
+    {
+      "id": "expand-button",
+      "width": 32,
+      "height": 34,
+      "shape": "parallel",
+      "corner": 0,
+      "inset": 3
+    },
+    {
+      "id": "footer",
+      "width": 1864,
+      "height": 30,
+      "shape": "panel",
+      "corner": 8,
+      "inset": 3
+    },
+    {
+      "id": "filter-popup",
+      "width": 510,
+      "height": 104,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "sort-popup",
+      "width": 224,
+      "height": 220,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "purchase-popup",
+      "width": 492,
+      "height": 400,
+      "shape": "panel",
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "metadata-card",
+      "width": 200,
+      "height": 58,
+      "shape": "panel",
+      "corner": 8,
+      "inset": 3
+    }
+  ]
+}

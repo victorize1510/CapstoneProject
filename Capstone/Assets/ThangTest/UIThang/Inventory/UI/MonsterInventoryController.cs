@@ -691,7 +691,9 @@ namespace Capstone.Game.Inventory {
             Capstone.Game.UISystem.PanelFocusUtility.Open(bagEvolutionOverlay);
         }
 
+        bool bagEvolutionRunning;
         void ConfirmBagEvolution() {
+            if(bagEvolutionRunning)return;
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "bag-evolution-confirm")) return;
             bagEvolutionConfirm?.SetEnabled(false);
             try { ConfirmBagEvolutionCore(); }
@@ -702,25 +704,25 @@ namespace Capstone.Game.Inventory {
             if (bagEvolutionComplete) { CloseBagEvolutionConfirmation(); return; }
             PetEvolutionService service = GetComponent<PetEvolutionService>();
             if (service == null || bagEvolutionPet == null) return;
-            bool success = service.TryEvolve(bagEvolutionPet, out string message,
-                PetEvolutionMethod.Item, bagEvolutionItemId);
-            if (bagEvolutionFeedback != null) bagEvolutionFeedback.text = message;
-            if (!success) {
-                bagEvolutionConfirm?.SetEnabled(false);
-                return;
-            }
-            bagEvolutionComplete = true;
-            if (bagEvolutionText != null) bagEvolutionText.text = "Tiến hóa hoàn tất";
-            if (bagEvolutionConfirm != null) bagEvolutionConfirm.text = "TIẾP TỤC";
-            FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();
-            RefreshFromAdapter();
+            var pet=bagEvolutionPet;string itemId=bagEvolutionItemId;bagEvolutionRunning=true;
+            PetEvolutionPresentationController.Present(gameObject.scene,service,pet,PetEvolutionMethod.Item,itemId,(success,message)=>{
+                bagEvolutionRunning=false;
+                if(this==null||!isActiveAndEnabled||bagEvolutionPet!=pet||bagEvolutionItemId!=itemId)return;
+                if(bagEvolutionFeedback!=null)bagEvolutionFeedback.text=message;
+                if(!success){bagEvolutionConfirm?.SetEnabled(service.CreatePreview(pet,PetEvolutionMethod.Item,itemId).CanEvolve);return;}
+                bagEvolutionComplete=true;
+                if(bagEvolutionText!=null)bagEvolutionText.text="Tiến hóa hoàn tất";
+                if(bagEvolutionConfirm!=null){bagEvolutionConfirm.text="TIẾP TỤC";bagEvolutionConfirm.SetEnabled(true);}
+                FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();RefreshFromAdapter();
+            });
         }
 
         void CloseBagEvolutionConfirmation() {
             BagTooltip.HideAll(document?.rootVisualElement);
             Capstone.Game.UISystem.PanelFocusUtility.Close(bagEvolutionOverlay);
             if (bagEvolutionOverlay != null) bagEvolutionOverlay.style.display = DisplayStyle.None;
-            bagEvolutionPet = null;
+            var closingPet=bagEvolutionPet;bagEvolutionPet=null;
+            if(bagEvolutionRunning){bagEvolutionRunning=false;PetEvolutionPresentationController.CancelFor(closingPet);}
             bagEvolutionItemId = null;
             bagEvolutionComplete = false;
         }
@@ -804,6 +806,7 @@ namespace Capstone.Game.Inventory {
 
         public bool TryCloseTopmostPanel() {
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "close-top")) return true; // Already handled: do not close the underlying panel.
+            if (Capstone.Game.UISystem.ElementLibraryPopup.TryClose())return true;
             if (Capstone.Game.UISystem.PanelFocusUtility.TryCloseNativeDropdown(document?.rootVisualElement)) return true;
             var assignment = document?.rootVisualElement.Q("quick-item-assignment")?.userData as GameplayHudQuickItemsView;
             if (assignment != null && assignment.TryCloseAssignment()) return true;
@@ -1167,6 +1170,7 @@ namespace Capstone.Game.Inventory {
                     ConfigureActionButton(dropButton, InventoryActionType.DropItem, "BỎ");
                     break;
                 case GameItemCategory.CaptureBall:
+                    ConfigureActionButton(useButton, InventoryActionType.UseItem, "BẮT THÚ");
                     ConfigureActionButton(dropButton, InventoryActionType.DropItem, "BỎ");
                     break;
                 case GameItemCategory.Material:
@@ -1216,6 +1220,11 @@ namespace Capstone.Game.Inventory {
         string GetUnavailableActionReason(InventoryActionType actionType, InventoryItemSnapshot item) {
             if (item == null) return "Chọn vật phẩm để thực hiện thao tác.";
             if (item.Quantity <= 0) return "Bạn không còn vật phẩm này.";
+            if (actionType == InventoryActionType.UseItem && item.Category == GameItemCategory.CaptureBall) {
+                var capture = FindFirstObjectByType<PetCaptureCoordinator>();
+                if(capture==null)return "Chưa kết nối hệ thống thu phục.";
+                capture.CanCaptureFromBag(item.ItemBase as MonsterItemDefinition,adapter,out string reason);return reason;
+            }
             if (actionType == InventoryActionType.UseItem && !SupportsUse(item))
                 return "Vật phẩm này không thể sử dụng trực tiếp từ túi.";
             if (actionType == InventoryActionType.GiveItem && !HasSelectedTargetMonster())
@@ -1233,6 +1242,7 @@ namespace Capstone.Game.Inventory {
 
         bool IsActionAvailable(InventoryActionType actionType, InventoryItemSnapshot item) {
             if (item == null || item.Quantity <= 0 || !IsActionAllowed(actionType, item)) return false;
+            if(actionType==InventoryActionType.UseItem&&item.Category==GameItemCategory.CaptureBall){var capture=FindFirstObjectByType<PetCaptureCoordinator>();return capture!=null&&capture.CanCaptureFromBag(item.ItemBase as MonsterItemDefinition,adapter,out _);}
             if (actionType == InventoryActionType.UseItem && IsSelectedPetEvolutionItem(item)) return true;
             if (actionType == InventoryActionType.UseItem && IsHealingItem(item)) return true;
             return allowPlaceholderActions || HasGameplayHandler(actionType);
@@ -1241,6 +1251,7 @@ namespace Capstone.Game.Inventory {
         bool IsActionAllowed(InventoryActionType actionType, InventoryItemSnapshot item) {
             if (item == null) return false;
             if (actionType == InventoryActionType.UseItem && IsSelectedPetEvolutionItem(item)) return true;
+            if(actionType==InventoryActionType.UseItem&&item.Category==GameItemCategory.CaptureBall)return true;
 
             switch (actionType) {
                 case InventoryActionType.UseItem:
@@ -1281,7 +1292,7 @@ namespace Capstone.Game.Inventory {
                     actionType = InventoryActionType.UseItem;
                     return true;
                 case GameItemCategory.CaptureBall:
-                    return false;
+                    return true;
                 case GameItemCategory.Material:
                     actionType = InventoryActionType.DropItem;
                     return true;
@@ -1362,6 +1373,14 @@ namespace Capstone.Game.Inventory {
 
         void RequestActionCore(InventoryActionType actionType, int quantity) {
             if (selectedItem == null || !IsActionAvailable(actionType, selectedItem)) return;
+            if(actionType==InventoryActionType.UseItem&&selectedItem.Category==GameItemCategory.CaptureBall){
+                var capture=FindFirstObjectByType<PetCaptureCoordinator>();
+                string error="Chưa kết nối hệ thống thu phục.";
+                if(capture!=null&&capture.TryCaptureFromBag(selectedItem.ItemBase as MonsterItemDefinition,adapter,out var result,out error)){
+                    Close();capture.Present(result,document);
+                }else bagPresentation?.Feedback(error);
+                return;
+            }
             if (actionType == InventoryActionType.UseItem
                 && petEvolutionPanelController != null
                 && petEvolutionPanelController.TryOpenFromInventory(selectedItem)) return;
@@ -1619,51 +1638,7 @@ namespace Capstone.Game.Inventory {
     /// otherwise enables both axes and shows a horizontal bar for long labels.
     /// </summary>
     public static class VerticalDropdownPopup {
-        const float PopupMinWidth = 220f;
-        const float PopupMaxHeight = 250f;
-        static StyleSheet popupStyle;
-
-        public static void Bind(DropdownField field) {
-            field?.RegisterCallback<PointerDownEvent>(ScheduleConfiguration, TrickleDown.TrickleDown);
-            field?.RegisterCallback<NavigationSubmitEvent>(ScheduleKeyboardConfiguration);
-        }
-
-        public static void Unbind(DropdownField field) {
-            field?.UnregisterCallback<PointerDownEvent>(ScheduleConfiguration, TrickleDown.TrickleDown);
-            field?.UnregisterCallback<NavigationSubmitEvent>(ScheduleKeyboardConfiguration);
-        }
-        static void ScheduleKeyboardConfiguration(NavigationSubmitEvent evt) => Schedule(evt.currentTarget as DropdownField);
-
-        static void ScheduleConfiguration(PointerDownEvent evt) {
-            Schedule(evt.currentTarget as DropdownField);
-        }
-        static void Schedule(DropdownField field) { field?.schedule.Execute(() => Configure(field)).ExecuteLater(1); }
-
-        static void Configure(DropdownField field) {
-            VisualElement panelRoot = field?.panel?.visualTree;
-            VisualElement outer = panelRoot?.Q<VisualElement>(className: "unity-base-dropdown__container-outer");
-            if (outer == null) return;
-            if (popupStyle == null) popupStyle = Resources.Load<StyleSheet>("UI/MenuNativePopup");
-            if (popupStyle != null && !outer.styleSheets.Contains(popupStyle)) outer.styleSheets.Add(popupStyle);
-            outer.AddToClassList("menu-native-popup");
-
-            float popupWidth = Mathf.Max(PopupMinWidth, field.resolvedStyle.width);
-            outer.style.minWidth = popupWidth;
-            outer.style.maxHeight = PopupMaxHeight;
-
-            VisualElement inner = outer.Q<VisualElement>(className: "unity-base-dropdown__container-inner");
-            if (inner != null) {
-                inner.style.minWidth = popupWidth - 2f;
-                inner.style.maxHeight = PopupMaxHeight - 8f;
-            }
-
-            ScrollView scrollView = inner as ScrollView ?? inner?.Q<ScrollView>() ?? outer.Q<ScrollView>();
-            if (scrollView == null) return;
-
-            scrollView.mode = ScrollViewMode.Vertical;
-            scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
-            scrollView.verticalScrollerVisibility = ScrollerVisibility.Auto;
-            scrollView.contentContainer.style.minWidth = popupWidth - 6f;
-        }
+        public static void Bind(DropdownField field)=>Capstone.Game.UISystem.RuntimeChoiceMenus.Bind(field);
+        public static void Unbind(DropdownField field)=>Capstone.Game.UISystem.RuntimeChoiceMenus.Unbind(field);
     }
 }

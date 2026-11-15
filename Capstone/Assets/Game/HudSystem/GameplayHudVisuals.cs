@@ -40,6 +40,7 @@ namespace Capstone.Game.HudSystem {
             text.font = Font != null ? Font : Capstone.Game.UISystem.MenuTypography.Font;
             text.text = value; text.fontSize = size;var frame=parent.GetComponentInParent<HudFrameGraphic>();text.color=frame!=null&&frame.IsDarkReading?Capstone.Game.UISystem.GreenAngularGeometry.Light:Forest; text.alignment = align;
             text.horizontalOverflow = HorizontalWrapMode.Wrap; text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.alignByGeometry = true;
             text.raycastTarget = false; return text;
         }
         public static Image Image(Transform parent, string name) {

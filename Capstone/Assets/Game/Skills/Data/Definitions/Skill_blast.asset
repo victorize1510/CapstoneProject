@@ -15,18 +15,27 @@ MonoBehaviour:
   skillId: blast
   legacyIds:
   - blast
-  displayName: Blast
-  description: Short magic blast.
+  displayName: "G\u1EA7m c\u01B0\u1EDDng h\xF3a"
+  description: "G\u1EA7m l\xEAn, t\u0103ng 20% ATK v\xE0 SP.ATK trong 6 gi\xE2y.
+    Kh\xF4ng c\u1ED9ng d\u1ED3n. H\u1ED3i chi\xEAu 10 gi\xE2y."
   element: 8
   icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
-  cooldownSeconds: 3.8
+  cooldownSeconds: 10
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:
   - Blast Attack
   - Cast Spell
-  animationDuration: 1
-  animationFade: 0.08
-  windupSeconds: 0.1
-  recoverySeconds: 0.3
+  animationDuration: 1.5
+  animationFade: 0.09
+  windupSeconds: 0
+  recoverySeconds: 0
   presentation: {fileID: 11400000, guid: c0f0d6245b0db2d4088f457d57a38e8d, type: 2}
+  combat: {fileID: 11400000, guid: 802e1bd6e41f701418a480411ff1797a, type: 2}
+  uiMetadata:
+    damageKind: 1
+    effects:
+    - role: 1
+      description: "G\u1EA7m l\xEAn, t\u0103ng 20% ATK v\xE0 SP.ATK trong 6 gi\xE2y.
+        Kh\xF4ng c\u1ED9ng d\u1ED3n. H\u1ED3i chi\xEAu 10 gi\xE2y."
+    facts: []

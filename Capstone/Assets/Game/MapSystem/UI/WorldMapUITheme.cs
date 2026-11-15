@@ -9,6 +9,8 @@ namespace Capstone.Game.MapSystem.UI {
     public sealed class WorldMapUITheme : ScriptableObject {
         [Serializable] public struct MarkerStyle { public Sprite icon; public Color color; }
         public TMP_FontAsset font;
+        public TMP_FontAsset titleFont;
+        public int presentationRevision;
         public Sprite roundedPanel;
         public Sprite circle;
         public Sprite roundedBorder;

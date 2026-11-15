@@ -31,36 +31,28 @@
       </ui:VisualElement>
       <ui:VisualElement name="skills-equipped-row" class="skills-equipped-row">
         <ga:AngularButton name="skills-equipped-slot-1" text="" class="skills-equipped-slot" shape="parallel" role="shell">
-          <ui:Label text="1" class="skills-slot-number" />
           <ui:VisualElement class="skills-equipped-icon">
             <ui:Label text="+" class="skills-icon-fallback" />
           </ui:VisualElement>
           <ui:Label text="EMPTY" class="skills-equipped-name" />
-          <ui:Label text="Chọn kỹ năng rồi chọn ô" class="skills-equipped-meta" />
         </ga:AngularButton>
         <ga:AngularButton name="skills-equipped-slot-2" text="" class="skills-equipped-slot" shape="parallel" role="shell">
-          <ui:Label text="2" class="skills-slot-number" />
           <ui:VisualElement class="skills-equipped-icon">
             <ui:Label text="+" class="skills-icon-fallback" />
           </ui:VisualElement>
           <ui:Label text="EMPTY" class="skills-equipped-name" />
-          <ui:Label text="Chọn kỹ năng rồi chọn ô" class="skills-equipped-meta" />
         </ga:AngularButton>
         <ga:AngularButton name="skills-equipped-slot-3" text="" class="skills-equipped-slot" shape="parallel" role="shell">
-          <ui:Label text="3" class="skills-slot-number" />
           <ui:VisualElement class="skills-equipped-icon">
             <ui:Label text="+" class="skills-icon-fallback" />
           </ui:VisualElement>
           <ui:Label text="EMPTY" class="skills-equipped-name" />
-          <ui:Label text="Chọn kỹ năng rồi chọn ô" class="skills-equipped-meta" />
         </ga:AngularButton>
         <ga:AngularButton name="skills-equipped-slot-4" text="" class="skills-equipped-slot" shape="parallel" role="shell">
-          <ui:Label text="4" class="skills-slot-number" />
           <ui:VisualElement class="skills-equipped-icon">
             <ui:Label text="+" class="skills-icon-fallback" />
           </ui:VisualElement>
           <ui:Label text="EMPTY" class="skills-equipped-name" />
-          <ui:Label text="Chọn kỹ năng rồi chọn ô" class="skills-equipped-meta" />
         </ga:AngularButton>
       </ui:VisualElement>
       <ui:Label name="skills-helper-label" text="Chọn kỹ năng đã học, sau đó chọn ô cần thay." class="skills-helper-label" />

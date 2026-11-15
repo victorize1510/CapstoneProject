@@ -1,0 +1,100 @@
+{
+  "components": [
+    {
+      "id": "A-sidebar",
+      "shape": "panel",
+      "width": 354,
+      "height": 888,
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "A-products",
+      "shape": "panel",
+      "width": 960,
+      "height": 888,
+      "corner": 18,
+      "inset": 3
+    },
+    {
+      "id": "A-details",
+      "shape": "panel",
+      "width": 522,
+      "height": 888,
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "A-category",
+      "shape": "parallel",
+      "width": 322,
+      "height": 84,
+      "corner": 16.5794,
+      "inset": 3
+    },
+    {
+      "id": "A-product-card",
+      "shape": "panel",
+      "width": 176,
+      "height": 256,
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "A-portrait",
+      "shape": "panel",
+      "width": 490,
+      "height": 240,
+      "corner": 12,
+      "inset": 3
+    },
+    {
+      "id": "A-search",
+      "shape": "panel",
+      "width": 656,
+      "height": 46,
+      "corner": 8,
+      "inset": 3
+    },
+    {
+      "id": "sort-field",
+      "shape": "parallel",
+      "width": 308,
+      "height": 46,
+      "corner": 8.5023,
+      "inset": 3
+    },
+    {
+      "id": "quantity-face",
+      "shape": "panel",
+      "width": 234,
+      "height": 46,
+      "corner": 8,
+      "inset": 3
+    },
+    {
+      "id": "icon-button",
+      "shape": "parallel",
+      "width": 48,
+      "height": 48,
+      "corner": 8.9274,
+      "inset": 3
+    },
+    {
+      "id": "max-button",
+      "shape": "parallel",
+      "width": 90,
+      "height": 48,
+      "corner": 8.9274,
+      "inset": 3
+    },
+    {
+      "id": "A-buy",
+      "shape": "parallel",
+      "width": 490,
+      "height": 58,
+      "corner": 11.0529,
+      "inset": 3
+    }
+  ]
+}

@@ -15,8 +15,10 @@ MonoBehaviour:
   skillId: wing strike
   legacyIds:
   - wing strike
-  displayName: Wing Strike
-  description: Wing strike attack.
+  displayName: "Ch\xE9m gi\xF3"
+  description: "V\u1ED7 c\xE1nh ph\xF3ng l\u01B0\u1EE1i gi\xF3 g\xE2y 180% ATK s\xE1t
+    th\u01B0\u01A1ng v\u1EADt l\xFD. L\xF9i nhanh khi \u0111\u1ECBch \xE1p s\xE1t;
+    m\u1ED9t m\u1EE5c ti\xEAu m\u1ED7i \u0111\xF2n."
   element: 4
   icon: {fileID: 0}
   cooldownSeconds: 4.2
@@ -24,8 +26,17 @@ MonoBehaviour:
   criticalDamageBonus: 0
   animatorStates:
   - Wing Attack
-  animationDuration: 1
-  animationFade: 0.08
-  windupSeconds: 0.1
-  recoverySeconds: 0.3
+  animationDuration: 0.667
+  animationFade: 0.09
+  windupSeconds: 0
+  recoverySeconds: 0
   presentation: {fileID: 11400000, guid: 80a366fdb3154bc45918954e38d03498, type: 2}
+  combat: {fileID: 11400000, guid: 071c0f39680264448a1771943bab61ea, type: 2}
+  uiMetadata:
+    damageKind: 2
+    effects:
+    - role: 0
+      description: "V\u1ED7 c\xE1nh ph\xF3ng l\u01B0\u1EE1i gi\xF3 g\xE2y 180% ATK
+        s\xE1t th\u01B0\u01A1ng v\u1EADt l\xFD. L\xF9i nhanh khi \u0111\u1ECBch \xE1p
+        s\xE1t; m\u1ED9t m\u1EE5c ti\xEAu m\u1ED7i \u0111\xF2n."
+    facts: []

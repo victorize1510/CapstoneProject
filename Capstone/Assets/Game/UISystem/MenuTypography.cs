@@ -18,6 +18,25 @@ namespace Capstone.Game.UISystem {
         public const int HeaderHeight = GuiKitPalette.HeaderHeight;
         public const int BackWidth = GuiKitPalette.BackWidth;
         public const int BackHeight = GuiKitPalette.BackHeight;
+        // Presentation only: preserve the provider value and the configured font size.
+        public static string FitSingleLine(Text label, string value) {
+            value = value ?? string.Empty;
+            var settings = label.GetGenerationSettings(Vector2.zero);
+            float width = Mathf.Max(0, label.rectTransform.rect.width - 4) * label.pixelsPerUnit;
+            var generator = label.cachedTextGeneratorForLayout;
+            if (generator.GetPreferredWidth(value, settings) <= width) return value;
+            // Work with text elements so a Vietnamese combining mark is never split off.
+            var elements = System.Globalization.StringInfo.ParseCombiningCharacters(value);
+            int low = 0, high = elements.Length;
+            while (low < high) {
+                int middle = (low + high + 1) / 2;
+                int end = middle == elements.Length ? value.Length : elements[middle];
+                if (generator.GetPreferredWidth(value.Substring(0, end) + "…", settings) <= width) low = middle;
+                else high = middle - 1;
+            }
+            int length = low == elements.Length ? value.Length : elements[low];
+            return value.Substring(0, length) + "…";
+        }
         public static void StyleBack(Button button) {
             button.targetGraphic.color = GuiKitPalette.Surface;
             var colors = button.colors;

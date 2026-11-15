@@ -12,43 +12,49 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 252f753a61ef66945ac6f56d4dce8c94, type: 3}
   m_Name: Presentation_projectile
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillPresentationProfile
-  releaseMode: 0
+  releaseMode: 2
+  releaseNormalized: 0.3
+  chainNormalized: 0.85
+  playbackSpeed: 1
   releaseDelaySeconds: 0.25
-  impactWindowSeconds: 5
+  impactWindowSeconds: 4
   mixerGroup: {fileID: 0}
   spatialBlend: 1
   minDistance: 2
   maxDistance: 35
   cast:
-    effectPrefab: {fileID: 0}
-    sound: {fileID: 0}
-    socket: Body
-    followSocket: 1
-    localOffset: {x: 0, y: 0, z: 0}
-    localEulerAngles: {x: 0, y: 0, z: 0}
-    scale: 1
-    volume: 1
-    pitch: 1
-    lifetimeSeconds: 3
-  release:
-    effectPrefab: {fileID: 0}
+    effectPrefab: {fileID: 215936400765531865, guid: dcc50f9edaf43594d9874ae6a454e7c1, type: 3}
     sound: {fileID: 0}
     socket: Mouth
+    followSocket: 1
+    actorSpace: 1
+    localOffset: {x: 0, y: 0, z: 0}
+    localEulerAngles: {x: 0, y: 0, z: 0}
+    scale: 0.3
+    volume: 1
+    pitch: 1
+    lifetimeSeconds: 1.2
+  release:
+    effectPrefab: {fileID: 0}
+    sound: {fileID: 8300000, guid: 84e1cf0e5dff35745b6881671cec1a7e, type: 3}
+    socket: Mouth
     followSocket: 0
+    actorSpace: 1
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 1
-    volume: 1
+    volume: 0.2
     pitch: 1
-    lifetimeSeconds: 3
+    lifetimeSeconds: 0.3
   impact:
-    effectPrefab: {fileID: 0}
-    sound: {fileID: 0}
+    effectPrefab: {fileID: 2762857040043822122, guid: 470b3c099b8488d4c8af4751ab776f87, type: 3}
+    sound: {fileID: 8300000, guid: 670e80edafca1094ea452901fd5d9d64, type: 3}
     socket: 
     followSocket: 0
+    actorSpace: 1
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 1
-    volume: 1
+    volume: 0.18
     pitch: 1
-    lifetimeSeconds: 3
+    lifetimeSeconds: 0.3

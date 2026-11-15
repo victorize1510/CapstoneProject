@@ -184,10 +184,14 @@ namespace Capstone.Game.HudSystem {
                     Vector2 direction = Point(Vector2.zero, 1f, i);
                     Vector2 anchor = Point(rect.center, radius + 12f, i);
                     Label label = axisLabels[i];
-                    label.style.width = 58f;
-                    label.style.height = 20f;
-                    label.style.left = anchor.x - (direction.x < -0.1f ? 58f : direction.x > 0.1f ? 0f : 29f);
-                    label.style.top = anchor.y - (direction.y < -0.9f ? 20f : direction.y > 0.9f ? 0f : 10f);
+                    const float labelWidth = 68f, labelHeight = 24f;
+                    label.style.width = labelWidth;
+                    label.style.height = labelHeight;
+                    label.style.paddingLeft = label.style.paddingRight = 1f;
+                    label.style.paddingTop = label.style.paddingBottom = 0f;
+                    label.style.whiteSpace = WhiteSpace.NoWrap;
+                    label.style.left = anchor.x - (direction.x < -0.1f ? labelWidth : direction.x > 0.1f ? 0f : labelWidth * .5f);
+                    label.style.top = anchor.y - (direction.y < -0.9f ? labelHeight : direction.y > 0.9f ? 0f : labelHeight * .5f);
                     label.style.unityTextAlign = direction.x < -0.1f ? TextAnchor.MiddleRight
                         : direction.x > 0.1f ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter;
                 }
@@ -215,12 +219,12 @@ namespace Capstone.Game.HudSystem {
                 Painter2D painter = context.painter2D;
 
                 painter.lineWidth = 1f;
-                painter.strokeColor = new Color(0.45f, 0.72f, 0.80f, 0.52f);
+                painter.strokeColor = new Color(0.43f, 0.49f, 0.62f, 0.52f);
                 for (int ring = 1; ring <= 3; ring++) {
                     DrawPolygon(painter, center, radius * ring / 3f, null);
                 }
 
-                painter.strokeColor = new Color(0.49f, 0.72f, 0.78f, 0.48f);
+                painter.strokeColor = new Color(0.43f, 0.49f, 0.62f, 0.42f);
                 for (int i = 0; i < AxisCount; i++) {
                     painter.BeginPath();
                     painter.MoveTo(center);
@@ -228,8 +232,8 @@ namespace Capstone.Game.HudSystem {
                     painter.Stroke();
                 }
 
-                painter.fillColor = new Color(0.22f, 0.62f, 0.96f, 0.34f);
-                painter.strokeColor = new Color(0.16f, 0.48f, 0.91f, 0.95f);
+                painter.fillColor = new Color(0.61f, 0.56f, 0.72f, 0.34f);
+                painter.strokeColor = new Color(0.43f, 0.39f, 0.59f, 0.95f);
                 painter.lineWidth = 2f;
                 DrawPolygon(painter, center, radius, values);
             }
@@ -345,6 +349,7 @@ namespace Capstone.Game.HudSystem {
             root = docRoot.Q<VisualElement>("monster-inventory-root");
             panel = docRoot.Q<VisualElement>("box-panel");
             if(panel!=null)Capstone.Game.UISystem.UiReadability.SoftenGroups(panel,"box-stat-cell","box-skill-chip","box-selected-meta");
+            BoxUnifiedSkin.Attach(panel);
             partyRow = docRoot.Q<VisualElement>("box-party-row");
             storageGrid = docRoot.Q<VisualElement>("box-storage-grid");
             storageScroll = docRoot.Q<ScrollView>("box-storage-scroll");
@@ -548,9 +553,10 @@ namespace Capstone.Game.HudSystem {
             sortOptionButtons.Clear();
             for (int i = 0; i < SortChoices.Length; i++) {
                 int optionIndex = i;
-                var option = new Button { name = "box-sort-option-" + i, text = SortChoices[i] };
+                var option = new BoxUnifiedButton { name = "box-sort-option-" + i, text = SortChoices[i] };
                 option.AddToClassList("box-sort-option");
                 option.EnableInClassList("is-selected", i == sortIndex);
+                BoxUnifiedSkin.Face(option, "secondary-action");
                 RegisterButton(option, () => SelectSortOption(optionIndex));
                 sortOptionButtons.Add(option);
                 sortScroll.Add(option);
@@ -609,7 +615,7 @@ namespace Capstone.Game.HudSystem {
             for (int i = 0; i < PartySize; i++) {
                 int slotIndex = i;
                 PetSnapshot snapshot = BuildSnapshot(provider.GetPartyPet(i));
-                var card = new Button {
+                var card = new BoxUnifiedButton {
                     name = $"box-party-slot-{i + 1}",
                     text = string.Empty,
                     userData = i,
@@ -650,6 +656,7 @@ namespace Capstone.Game.HudSystem {
                 if (snapshot.pet != null && snapshot.favorite) card.Add(CreateLabel("\u2605", "box-favorite-badge"));
                 if (snapshot.pet != null) card.Q<VisualElement>(className: "box-party-portrait")
                     .Add(CreateLabel($"Cấp {Mathf.Max(1, snapshot.level)}", "box-party-level"));
+                BoxUnifiedSkin.Card(card, true);
                 partyCards.Add(card);
                 partyRow.Add(card);
             }
@@ -683,7 +690,7 @@ namespace Capstone.Game.HudSystem {
                 bool selected = selectionSource == SelectionSource.Storage
                     && local.providerIndex >= 0 && selectedPet == local.snapshot.pet && local.snapshot.pet != null;
                 if (!empty) occupiedOnPage++;
-                var card = new Button {
+                var card = new BoxUnifiedButton {
                     text = string.Empty,
                     userData = local.providerIndex,
                     tooltip = !empty
@@ -707,6 +714,7 @@ namespace Capstone.Game.HudSystem {
                     card.Add(CreateStorageCardInfo(local.snapshot));
                 }
                 if (local.snapshot.favorite) card.Add(CreateLabel("\u2605", "box-storage-favorite"));
+                BoxUnifiedSkin.Card(card, false);
                 storageCards.Add(card);
                 storageGrid.Add(card);
             }
@@ -859,6 +867,7 @@ namespace Capstone.Game.HudSystem {
             PetSnapshot snapshot = BuildSnapshot(selectedPet);
             SetSelectedPortrait(snapshot);
             if (selectedName != null) selectedName.text = snapshot.pet != null ? snapshot.displayName : "Chọn một thú";
+            if (selectedName != null) selectedName.tooltip = snapshot.pet != null ? snapshot.displayName : string.Empty;
             if (selectedLocation != null) {
                 int index = snapshot.pet == null
                     ? -1
@@ -1017,12 +1026,14 @@ namespace Capstone.Game.HudSystem {
                 partyCards[i].EnableInClassList(
                     "is-swap-source",
                     pendingSwapSource == SelectionSource.Party && pendingSwapSourceIndex == i);
+                BoxUnifiedSkin.RefreshCard(partyCards[i]);
             }
             for (int i = 0; i < storageCards.Count && i < visibleStorage.Count; i++) {
                 storageCards[i].EnableInClassList(
                     "is-swap-source",
                     pendingSwapSource == SelectionSource.Storage
                     && pendingSwapSourceIndex == visibleStorage[i].providerIndex);
+                BoxUnifiedSkin.RefreshCard(storageCards[i]);
             }
         }
 
@@ -1057,6 +1068,7 @@ namespace Capstone.Game.HudSystem {
             if (filterPanel == null) return;
             if (sortPopup != null) sortPopup.style.display = DisplayStyle.None;
             filterPanel.style.display = filterPanel.resolvedStyle.display == DisplayStyle.None ? DisplayStyle.Flex : DisplayStyle.None;
+            if(filterPanel.resolvedStyle.display!=DisplayStyle.None||filterPanel.style.display.value==DisplayStyle.Flex)RuntimeChoiceGrid.Refresh(filterPanel);
         }
 
         void ToggleSortPopup() {
@@ -1065,6 +1077,7 @@ namespace Capstone.Game.HudSystem {
             sortPopup.style.display = sortPopup.resolvedStyle.display == DisplayStyle.None
                 ? DisplayStyle.Flex
                 : DisplayStyle.None;
+            if(sortPopup.style.display.value==DisplayStyle.Flex)RuntimeChoiceStyle.FitList(sortPopup,sortButton);
         }
 
         void ToggleElement(PetElement element) {
@@ -1082,8 +1095,10 @@ namespace Capstone.Game.HudSystem {
 
         void RefreshFilterButtons() {
             allFilterButton?.EnableInClassList("is-selected", selectedElements.Count == 0);
+            BoxUnifiedSkin.RefreshCard(allFilterButton);
             foreach (KeyValuePair<PetElement, Button> pair in elementButtons) {
                 pair.Value.EnableInClassList("is-selected", selectedElements.Contains(pair.Key));
+                BoxUnifiedSkin.RefreshCard(pair.Value);
             }
         }
 
@@ -1276,8 +1291,7 @@ namespace Capstone.Game.HudSystem {
 
         void SetSelectedPortrait(PetSnapshot snapshot) {
             if (selectedPortrait != null) {
-                if (snapshot.icon != null) selectedPortrait.style.backgroundImage = new StyleBackground(snapshot.icon);
-                else selectedPortrait.style.backgroundImage = StyleKeyword.None;
+                BoxUnifiedSkin.SetPortrait(selectedPortrait, snapshot.icon);
             }
             if (selectedPortraitFallback != null) {
                 selectedPortraitFallback.text = snapshot.pet != null ? FirstLetter(snapshot.displayName) : "?";
@@ -1301,7 +1315,9 @@ namespace Capstone.Game.HudSystem {
         static VisualElement CreateEmptySlotContent() {
             var content = new VisualElement { pickingMode = PickingMode.Ignore };
             content.AddToClassList("box-empty-slot-content");
-            content.Add(CreateLabel("🐾", "box-empty-slot-icon"));
+            var icon = CreateLabel(string.Empty, "box-empty-slot-icon");
+            BoxUnifiedSkin.EmptyParty(icon);
+            content.Add(icon);
             content.Add(CreateLabel("Trống", "box-empty-slot-text"));
             return content;
         }
@@ -1309,8 +1325,8 @@ namespace Capstone.Game.HudSystem {
         static VisualElement CreatePortrait(PetSnapshot snapshot, string className) {
             var portrait = new VisualElement();
             portrait.AddToClassList(className);
-            if (snapshot.icon != null) portrait.style.backgroundImage = new StyleBackground(snapshot.icon);
-            else portrait.Add(CreateLabel(FirstLetter(snapshot.displayName), "box-portrait-fallback"));
+            BoxUnifiedSkin.SetPortrait(portrait, snapshot.icon);
+            if (snapshot.icon == null) portrait.Add(CreateLabel(FirstLetter(snapshot.displayName), "box-portrait-fallback"));
             return portrait;
         }
 
@@ -1325,7 +1341,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         static Label CreateLabel(string text, string className) {
-            var label = new Label(text);
+            var label = new Label(text) { pickingMode = PickingMode.Ignore };
             label.AddToClassList(className);
             return label;
         }

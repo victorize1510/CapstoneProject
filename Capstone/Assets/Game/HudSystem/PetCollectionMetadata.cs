@@ -17,7 +17,10 @@ namespace Capstone.Game.HudSystem {
         Ice,
         Light,
         Dark,
-        Dragon
+        Dragon,
+        Fighting = 11,
+        Flying = 12,
+        Normal = 13
     }
 
     public enum PetRarity {
@@ -55,6 +58,7 @@ namespace Capstone.Game.HudSystem {
         [Header("Pet Details")]
         [SerializeField] string captureDate = string.Empty;
         [SerializeField] string captureLocation = string.Empty;
+        [SerializeField] string captureBallId = string.Empty;
         [SerializeField] string trainerName = string.Empty;
         [SerializeField] string personality = string.Empty;
 
@@ -125,6 +129,10 @@ namespace Capstone.Game.HudSystem {
         public long ObtainedOrder => obtainedOrder;
         public string CaptureDate => captureDate ?? string.Empty;
         public string CaptureLocation => captureLocation ?? string.Empty;
+        public string CaptureBallId => captureBallId ?? string.Empty;
+        public bool HasGenetics => geneticsInitialized;
+        internal void SetCaptureBall(string id) { captureBallId = id ?? string.Empty; }
+        internal void RecordCaptureInfo() { codexRegistered=true;if(string.IsNullOrWhiteSpace(captureDate))captureDate=DateTime.UtcNow.ToString("yyyy-MM-dd");if(string.IsNullOrWhiteSpace(captureLocation))captureLocation=gameObject.scene.name; }
         public string TrainerName => trainerName ?? string.Empty;
         public string Personality => personality ?? string.Empty;
         public PetStatValues IndividualValues { get { EnsureLegacyGenetics(); return individualValues; } }
@@ -146,7 +154,7 @@ namespace Capstone.Game.HudSystem {
             ? rule.TargetDisplayName
             : string.Empty;
         public Sprite NextEvolutionIcon => TryGetNextEvolutionRule(out PetEvolutionRule rule)
-            ? rule.TargetIcon
+            ? Capstone.Game.CreatureSystem.CreatureAvatarCatalog.Resolve(DefinitionId, rule.TargetFormId, rule.TargetIcon)
             : null;
         public bool NextEvolutionDiscovered => nextEvolutionDiscovered;
         public int EvolutionLevelRequirement => TryGetNextEvolutionRule(out PetEvolutionRule rule)
@@ -195,7 +203,12 @@ namespace Capstone.Game.HudSystem {
             nature = PetNature.RandomName;
             geneticsInitialized = true;
             captureGeneticsRolled = true;
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
+        }
+        internal void InitializeWildIndividual() {
+            if (captureGeneticsRolled) return;
+            petId = "wild-" + Guid.NewGuid().ToString("N");
+            RollGeneticsForNewCapture();
         }
 
         public bool GrantEffortValues(PetStatValues reward) {
@@ -214,7 +227,7 @@ namespace Capstone.Game.HudSystem {
             }
             if (!changed) return false;
             SyncRuntimeHealth(GetComponentInChildren<PetHudRuntimeStats>(true));
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
             return true;
         }
 
@@ -253,21 +266,21 @@ namespace Capstone.Game.HudSystem {
             }
 
             nickname = next;
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
             error = string.Empty;
             return true;
         }
 
         public bool ToggleFavorite() {
             favorite = !favorite;
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
             return favorite;
         }
 
         public void SetReleased(bool value) {
             if (released == value) return;
             released = value;
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
         }
 
         public void RecordResourceInvestment(ItemBase itemBase, string itemId, string displayName, int quantity, bool refundable = true) {
@@ -286,7 +299,7 @@ namespace Capstone.Game.HudSystem {
                 if (investment == null || !investment.Matches(resolvedId)) continue;
 
                 investment.Add(itemBase, displayName, quantity, refundable);
-                Changed?.Invoke();
+                Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
                 return;
             }
 
@@ -296,13 +309,13 @@ namespace Capstone.Game.HudSystem {
                 displayName,
                 quantity,
                 refundable));
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
         }
 
         public void SetProgress(int currentExperience, int requiredExperience) {
             experience = Mathf.Max(0, currentExperience);
             experienceToNextLevel = Mathf.Max(0, requiredExperience);
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
         }
 
         public bool TryGetNextEvolutionRule(out PetEvolutionRule rule) {
@@ -347,7 +360,7 @@ namespace Capstone.Game.HudSystem {
             if (rule.TargetSecondaryElement != PetElement.Unknown) secondaryElement = rule.TargetSecondaryElement;
             if (rule.TargetRarity != PetRarity.Unknown) rarity = rule.TargetRarity;
             nextEvolutionDiscovered = false;
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
             return true;
         }
 
@@ -364,7 +377,7 @@ namespace Capstone.Game.HudSystem {
             if (string.IsNullOrWhiteSpace(evolutionId) || WasEvolutionPrompted(evolutionId)) return;
             promptedEvolutionIds ??= new List<string>();
             promptedEvolutionIds.Add(evolutionId.Trim());
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
         }
 
         public void RestoreEvolutionPresentation(PetHudRuntimeStats runtimeStats) {
@@ -416,6 +429,7 @@ namespace Capstone.Game.HudSystem {
                 obtainedOrder = ObtainedOrder,
                 captureDate = CaptureDate,
                 captureLocation = CaptureLocation,
+                captureBallId = CaptureBallId,
                 trainerName = TrainerName,
                 personality = Personality,
                 hasGenetics = true,
@@ -447,6 +461,7 @@ namespace Capstone.Game.HudSystem {
             obtainedOrder = saveData.obtainedOrder;
             captureDate = saveData.captureDate ?? string.Empty;
             captureLocation = saveData.captureLocation ?? string.Empty;
+            captureBallId = saveData.captureBallId ?? string.Empty;
             trainerName = saveData.trainerName ?? string.Empty;
             personality = saveData.personality ?? string.Empty;
             if (saveData.hasGenetics) {
@@ -473,7 +488,7 @@ namespace Capstone.Game.HudSystem {
                 ? new List<string>(saveData.promptedEvolutionIds)
                 : new List<string>();
 
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
         }
 
         void OnValidate() {

@@ -1,0 +1,48 @@
+/* Scoped FINAL adapter. Native controls keep their input behavior. */
+.settings-design {color:#202B45;opacity:1;}
+.settings-design .settings-canvas {position:absolute;width:1600px;height:900px;}
+.settings-design .settings-canvas Label {color:#202B45;opacity:1;}
+.settings-design .settings-current-group {margin:0;padding:0;border-width:0;border-radius:0;background-color:transparent;min-width:0;min-height:0;flex-basis:auto;flex-grow:0;}
+.settings-design .settings-section-scroll {margin:0;padding:6px 12px;min-height:0;flex-grow:1;background-color:transparent;}
+.settings-design .settings-section-scroll .unity-scroll-view__content-container {padding:0;}
+.settings-design .settings-section-scroll TemplateContainer {margin:0;flex-shrink:0;}
+.settings-design .final-setting-row {position:relative;min-height:108px;height:auto;flex-shrink:0;align-items:center;margin:0;padding:16px 8px 16px 42px;border-bottom-width:1px;border-bottom-color:rgba(137,150,176,.4);background-color:transparent;}
+.settings-design #settings-audio-group .final-setting-row {min-height:114px;}
+.settings-design .settings-row-copy {flex-grow:1;flex-shrink:1;min-width:0;}
+.settings-design .settings-row-label {width:auto;margin:0 12px 8px 0;font-size:21px;-unity-font-style:bold;color:#202B45;white-space:normal;}
+.settings-design #setting-description {font-size:17px;color:#39455E;white-space:normal;margin-right:16px;}
+.settings-design .settings-percent {width:84px;min-width:84px;margin:0 0 0 16px;font-size:22px;color:#202B45;}
+.settings-design .settings-slider {position:relative;flex-grow:0;flex-shrink:0;width:296px;min-width:296px;height:44px;min-height:44px;margin:0;padding:0;}
+.settings-design .settings-slider .unity-base-field__input {margin:0;padding:0;min-height:44px;height:44px;}
+.settings-design .settings-slider .unity-base-slider__drag-container {position:absolute;left:0;right:0;top:0;bottom:0;margin:0;padding:0;}
+.settings-design .settings-slider .unity-base-slider__tracker {background-color:transparent;border-width:0;opacity:0;}
+.settings-design .settings-slider .unity-base-slider__dragger {width:22px;min-width:22px;max-width:22px;height:32px;min-height:32px;max-height:32px;top:4px;margin:0;padding:0;rotate:0deg;border-width:0;background-color:transparent;opacity:0;}
+.settings-design .settings-slider .unity-base-slider__dragger-border {display:none;}
+.settings-design .settings-switch {width:44px;min-width:44px;height:44px;min-height:44px;margin:0;padding:0;flex-shrink:0;}
+.settings-design .settings-switch .unity-toggle__input {width:40px;min-width:40px;max-width:40px;height:40px;min-height:40px;max-height:40px;margin:0;padding:0;border-width:0;border-radius:0;background-color:transparent;background-size:contain;}
+.settings-design .settings-switch .unity-toggle__checkmark {display:none;}
+.settings-design .settings-toggle-value,.settings-design .settings-toggle-value.is-on {width:84px;min-width:84px;margin-left:16px;color:#202B45;font-size:20px;-unity-text-align:middle-right;}
+.settings-design .settings-switch:focus .unity-toggle__input {padding:0;border-width:0;}
+.settings-design .settings-dropdown {height:44px;min-height:44px;min-width:256px;width:256px;flex-grow:0;flex-shrink:0;margin:0;padding:0;}
+.settings-design .settings-dropdown .unity-base-field__input {position:relative;background-color:transparent;border-width:0;border-radius:0;padding:8px 12px;height:42px;margin:0;}
+.settings-design .settings-dropdown .unity-popup-field__text {color:#202B45;font-size:18px;}
+.settings-design .settings-note {font-size:18px;color:#39455E;margin:0;padding:12px;white-space:normal;}
+.settings-design #settings-camera-unavailable {height:220px;-unity-text-align:middle-center;font-size:21px;}
+.settings-design #settings-display-note {font-size:16px;}
+.settings-design .settings-footer-action .settings-row {position:relative;min-height:44px;height:44px;padding:0;margin:0;border-width:0;}
+.settings-design .settings-footer-action #setting-button {position:absolute;left:0;top:0;right:0;bottom:0;width:auto;min-width:0;height:44px;margin:0;}
+.settings-design Button {background-color:transparent;background-image:none;border-width:0;border-radius:0;padding:0;margin:0;min-width:0;min-height:0;}
+.settings-design Button:hover,.settings-design Button:focus {border-width:0;background-color:transparent;}
+.settings-design .settings-canvas .angular-button-caption {left:46px;right:12px;top:0;bottom:0;margin:0;padding:0;font-size:20px;color:#EDE9E1;white-space:nowrap;-unity-font-style:normal;-unity-text-align:middle-center;}
+.settings-design :disabled {opacity:1;}
+.settings-design :disabled .settings-row-label,.settings-design :disabled .settings-toggle-value {color:#39455E;}
+.settings-design .settings-modal {background-color:rgba(20,27,46,.62);align-items:center;justify-content:center;}
+.settings-design .settings-modal-card {position:relative;width:784px;min-height:454px;height:454px;max-height:none;max-width:none;padding:28px;border-width:0;border-radius:0;background-color:transparent;}
+.settings-design.settings-guide-open .settings-modal-card {width:1040px;height:704px;}
+.settings-design .settings-modal-title {font-size:28px;-unity-font-style:bold;color:#202B45;margin:0 48px 20px 0;min-height:42px;}
+.settings-design .settings-modal-scroll {flex-grow:1;flex-shrink:1;min-height:0;max-height:none;margin-bottom:12px;}
+.settings-design .settings-modal-text {font-size:21px;white-space:normal;color:#202B45;}
+.settings-design .settings-modal-error {font-size:18px;color:#783B40;min-height:48px;margin:8px 0;white-space:normal;}
+.settings-design .settings-modal-actions {height:48px;min-height:48px;margin:0;flex-direction:row;justify-content:flex-end;}
+.settings-design .settings-modal-actions Button {width:304px;min-width:304px;height:44px;min-height:44px;flex-grow:0;margin-left:16px;}
+.settings-design #settings-modal-close .angular-button-caption {left:0;right:0;font-size:26px;}

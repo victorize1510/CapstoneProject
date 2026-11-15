@@ -16,7 +16,9 @@ MonoBehaviour:
   legacyIds:
   - projectile
   displayName: Projectile
-  description: Ranged projectile attack.
+  description: "Ph\xF3ng \u0111\u1EA1n g\xE2y 160% SP.ATK s\xE1t th\u01B0\u01A1ng
+    ph\xE9p. L\xF9i nhanh khi \u0111\u1ECBch \xE1p s\xE1t; \u0111\u1EA1n d\u1EEBng
+    \u1EDF m\u1EE5c ti\xEAu \u0111\u1EA7u ti\xEAn ho\u1EB7c v\u1EADt c\u1EA3n."
   element: 2
   icon: {fileID: 0}
   cooldownSeconds: 3
@@ -26,7 +28,16 @@ MonoBehaviour:
   - Projectile Attack
   - Projectile Attack Low
   animationDuration: 0.95
-  animationFade: 0.08
-  windupSeconds: 0.1
-  recoverySeconds: 0.3
+  animationFade: 0.09
+  windupSeconds: 0
+  recoverySeconds: 0
   presentation: {fileID: 11400000, guid: ee5385b3e5e4775429a5b4180a7b1bb6, type: 2}
+  combat: {fileID: 11400000, guid: 6951663469e9bce48997c188a0f2bab6, type: 2}
+  uiMetadata:
+    damageKind: 0
+    effects:
+    - role: 0
+      description: "Ph\xF3ng \u0111\u1EA1n g\xE2y 160% SP.ATK s\xE1t th\u01B0\u01A1ng
+        ph\xE9p. L\xF9i nhanh khi \u0111\u1ECBch \xE1p s\xE1t; \u0111\u1EA1n d\u1EEBng
+        \u1EDF m\u1EE5c ti\xEAu \u0111\u1EA7u ti\xEAn ho\u1EB7c v\u1EADt c\u1EA3n."
+    facts: []

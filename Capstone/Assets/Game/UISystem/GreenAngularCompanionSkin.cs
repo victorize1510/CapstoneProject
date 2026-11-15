@@ -18,6 +18,7 @@ namespace Capstone.Game.UISystem {
             foreach(var label in design.Query<Label>().ToList())if(label.ClassListContains("companion-title")||label.ClassListContains("companion-name")||label.ClassListContains("companion-section-label"))label.style.unityFontDefinition=FontDefinition.FromFont(TrainerMenuArt.Serif);
             foreach(var icon in design.Query<VisualElement>(className:"companion-icon").ToList())foreach(string cls in icon.GetClasses())if(cls.StartsWith("ci-")){
                 string id=cls.Substring(3);if(icon.parent?.name=="pets-tab-growth")id="grow";if(id=="illustration")id="portrait";if(id=="view3d")id="view3d";if(id=="evolve")id="evolve";if(id=="details")id="profile";
+                if(Capstone.Game.SettingsSystem.SettingsFinalArt.StatIcon(icon,id,id=="hp"))continue;
                 icon.style.backgroundImage=new StyleBackground(InteractionR3Assets.Load("Masks/"+id));
             }
             var emblem=design.Q("companion-emblem");if(emblem!=null)emblem.style.backgroundImage=new StyleBackground(Capstone.Game.HudSystem.CompanionArt.Load("Art/companion-title-emblem"));
@@ -96,14 +97,16 @@ namespace Capstone.Game.UISystem {
             return new SlotBinding{Button=slot,Empty=content,Info=info,Feedback=slot.Surface.FeedbackOverlay};
         }
         static void StyleSkillButton(AngularButton b){
-            b.SetAngularContext(true);b.Surface.Role=b.name=="r3-equip-confirm"?"primary":b.ClassListContains("skills-filter-button")&&b.ClassListContains("is-selected")?"filter-selected":"raised";
-            if(b.ClassListContains("skills-filter-button"))b.Surface.Material=false;
-            b.Surface.Shape=b.ClassListContains("skills-filter-button")||b.name=="r3-equip-confirm"?"parallel":"panel";
+            bool workflowAction=b.name=="r3-equip-confirm"||b.name=="skills-change-mode";
+            b.SetAngularContext(true);b.Surface.Role=b.ClassListContains("filter-rail-arrow")?"filter-arrow":workflowAction?"primary":b.ClassListContains("skills-filter-button")?(b.ClassListContains("is-selected")?"filter-selected":"filter-off"):"raised";
+            if(b.ClassListContains("skills-filter-button")||b.ClassListContains("filter-rail-arrow"))b.Surface.Material=false;
+            if(b.ClassListContains("skills-filter-button"))b.Surface.StateSelected=null;
+            b.Surface.Shape=b.ClassListContains("skills-filter-button")||workflowAction?"parallel":"panel";
         }
         static void BindSkills(Bindings cache,VisualElement skills){
             cache.SkillHost=skills;cache.SkillButtons=skills.Query<AngularButton>().Build();
-            if(skills.Q("green-learned-panel")==null){var plate=new AngularSurface{name="green-learned-panel",Role="raised"};Place(plate,0,192,468,217);skills.Insert(0,plate);
-                var filters=skills.Q(className:"skills-filter-row");if(filters!=null){var rail=new CompanionFilterRail(filters);Place(rail,0,136,468,44);skills.Add(rail);}}
+            if(skills.Q("green-learned-panel")==null){var plate=new AngularSurface{name="green-learned-panel",Role="raised"};Place(plate,0,164,468,245);plate.style.height=StyleKeyword.Auto;plate.style.bottom=12;skills.Insert(0,plate);
+                var filters=skills.Q(className:"skills-filter-row");if(filters!=null){var rail=new CompanionFilterRail(filters);Place(rail,0,112,468,44);skills.Add(rail);}}
             var detail=skills.Q(className:"companion-inline-detail");
             Add(detail,"panel","raised");UiPanelSections.Frame(detail);
         }

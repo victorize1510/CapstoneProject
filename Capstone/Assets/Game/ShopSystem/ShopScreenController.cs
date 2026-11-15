@@ -21,11 +21,12 @@ namespace Capstone.Game.ShopSystem {
         TextField search;
         DropdownField sort;
         IntegerField quantity;
-        Button minus, plus, max, buy;
+        Button minus, plus, max, buy, clear;
         ShopSource source, defaultSource;
         MonsterInventoryAdapter inventory;
         PlayerCurrencyWallet wallet;
         ShopPurchaseService service;
+        ShopSortPopup sortPopup;
         VisualTreeAsset cardTemplate;
         ShopCategory category;
         ShopOffer selected;
@@ -46,6 +47,7 @@ namespace Capstone.Game.ShopSystem {
             if (root == null) return;
             UiReadability.Bind(documentRoot);
             foreach(var group in root.Query<VisualElement>(className:"shop-detail-copy").ToList())UiReadability.Add(group);
+            ShopASkin.Attach(root);
             cardTemplate = Resources.Load<VisualTreeAsset>("UI/ShopProductCard");
             grid = root.Q("shop-grid"); detail = root.Q("shop-detail"); purchase = root.Q("shop-purchase");
             productScroll = root.Q<ScrollView>(className: "shop-grid-scroll");
@@ -58,14 +60,15 @@ namespace Capstone.Game.ShopSystem {
             reasonLabel = root.Q<Label>("shop-reason");
             quantity = root.Q<IntegerField>("shop-quantity"); minus = root.Q<Button>("shop-minus"); plus = root.Q<Button>("shop-plus");
             max = root.Q<Button>("shop-max"); buy = root.Q<Button>("shop-buy");
-            sort.choices = SortNames; sort.SetValueWithoutNotify(SortNames[0]); VerticalDropdownPopup.Bind(sort);
+            sort.choices = SortNames; sort.SetValueWithoutNotify(SortNames[0]); sortPopup = new ShopSortPopup(sort,root);
             categories.AddRange(root.Query<Button>(className: "shop-category").ToList());
             for (int i = 0; i < categories.Count; i++) {
                 int index = i; categories[i].Q<Label>(className: "shop-category-name").text = ShopPresentation.CategoryNames[i];
                 Click(categories[i], () => { category = (ShopCategory)index; selected = null; search.SetValueWithoutNotify(""); ApplyQuery(); });
             }
             Click(root.Q<Button>("shop-back"), () => BackRequested?.Invoke());
-            Click(root.Q<Button>("shop-clear"), () => { search.value = ""; search.Focus(); });
+            clear = root.Q<Button>("shop-clear");
+            Click(clear, () => { search.value = ""; search.Focus(); });
             Click(minus, () => SetQuantity(quantity.value - 1));
             Click(plus, () => SetQuantity(quantity.value + 1));
             Click(max, () => SetQuantity(service.Maximum(selected, out _)));
@@ -102,7 +105,7 @@ namespace Capstone.Game.ShopSystem {
             Show(root, true); PanelFocusUtility.Open(root); Refresh();
         }
         bool HasCategory(ShopCategory value) { foreach (var offer in source.Offers) if (ShopPresentation.Category(offer) == value) return true; return false; }
-        public void Close() { open = false; Unsubscribe(); Show(root, false); PanelFocusUtility.Close(root); }
+        public void Close() { open = false; Unsubscribe(); sortPopup?.Close(false); ShopASkin.Suspend(root); Show(root, false); PanelFocusUtility.Close(root); }
         void OnDisable() => Close();
         void OnDestroy() { Close(); Unbind(); }
         void Subscribe() {
@@ -123,7 +126,7 @@ namespace Capstone.Game.ShopSystem {
         void OnGoldChanged(int _) => OnChanged();
         void Unbind() {
             foreach (var action in unbind) action(); unbind.Clear();
-            VerticalDropdownPopup.Unbind(sort);
+            sortPopup?.Dispose(); sortPopup = null;
             foreach (var card in cards) card.Dispose(); cards.Clear(); categories.Clear(); searchNames.Clear();
         }
         void Click(Button button, Action action) {
@@ -147,6 +150,7 @@ namespace Capstone.Game.ShopSystem {
         void ApplyQuery() {
             if (root == null) return;
             filtered.Clear(); string key = VietnameseUI.SearchKey(search.value);
+            Show(clear, !string.IsNullOrEmpty(search.value));
             if (source != null) foreach (var offer in source.Offers) {
                 if (ShopPresentation.Category(offer) != category) continue;
                 if (!searchNames.TryGetValue(offer.Id, out string name)) { name = VietnameseUI.SearchKey(offer.Item.Name); searchNames[offer.Id] = name; }
@@ -155,7 +159,7 @@ namespace Capstone.Game.ShopSystem {
             var mode = (ShopSort)Mathf.Max(0, sort.index);
             if (mode != ShopSort.Default) filtered.Sort((a, b) => Compare(a, b, mode));
             if (selected == null || !filtered.Contains(selected)) { selected = filtered.Count > 0 ? filtered[0] : null; quantity.SetValueWithoutNotify(1); }
-            for (int i = 0; i < categories.Count; i++) categories[i].EnableInClassList("is-selected", (int)category == i);
+            for (int i = 0; i < categories.Count; i++) { categories[i].EnableInClassList("is-selected", (int)category == i); ShopASkin.Refresh(categories[i]); }
             if (cardTemplate == null) { empty.text = "Không tìm thấy mẫu ô vật phẩm."; Show(empty, true); return; }
             while (cards.Count < filtered.Count) { var card = new ShopProductCardView(cardTemplate, Select); cards.Add(card); grid.Add(card.Root); }
             for (int i = 0; i < cards.Count; i++) cards[i].Render(i < filtered.Count ? filtered[i] : null, selected?.Id);
@@ -185,12 +189,12 @@ namespace Capstone.Game.ShopSystem {
             portrait.sprite = item.Icon; Show(portrait.parent, item.Icon != null);
             if (item.Icon != null) {
                 // Keep existing low resolution sprites at their native design size.
-                portrait.style.width = Mathf.Min(220, item.Icon.rect.width);
-                portrait.style.height = Mathf.Min(220, item.Icon.rect.height);
+                portrait.style.width = Mathf.Min(128, item.Icon.rect.width) / 1.2f;
+                portrait.style.height = Mathf.Min(128, item.Icon.rect.height) / 1.2f;
             }
             itemName.text = item.Name; owned.text = "Đang có: " + service.Owned(selected);
             badge.text = ShopPresentation.CategoryNames[(int)category]; rarity.text = VietnameseUI.Rarity(item.Rarity.ToString());
-            description.text = VietnameseUI.ItemText(item.Description); Show(description, !string.IsNullOrWhiteSpace(item.Description));
+            description.text = VietnameseUI.ItemText(item.Description); Show(description.parent, !string.IsNullOrWhiteSpace(item.Description));
             effect.text = VietnameseUI.ItemText(item.Effect); Show(effect.parent, !string.IsNullOrWhiteSpace(item.Effect));
             stock.text = selected.Stock >= 0 ? "Còn trong cửa hàng: " + selected.Stock : ""; Show(stock, selected.Stock >= 0);
             selectedPrice = selected.GoldPrice; SetQuantity(quantity.value);

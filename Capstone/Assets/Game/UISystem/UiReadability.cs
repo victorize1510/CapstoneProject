@@ -8,10 +8,16 @@ namespace Capstone.Game.UISystem {
     public static class UiReadability {
         public const float LightAlpha = .24f, DarkAlpha = .44f, Feather = 24f;
         public static void Bind(VisualElement root) {
-            if (root == null || root.ClassListContains("readability-ui")) return;
+            if (root == null) return;
+            RuntimeScrollbars.Bind(root);
+            RuntimeChoiceMenus.BindAll(root);
+            if (root.ClassListContains("readability-ui")) return;
             root.AddToClassList("readability-ui");
             var sheet = Resources.Load<StyleSheet>("UI/Readability20261026/Readability");
             if (sheet != null && !root.styleSheets.Contains(sheet)) root.styleSheets.Add(sheet);
+            var textSheet = Resources.Load<StyleSheet>("UI/TextLayout20261030/TextLayout");
+            if (textSheet != null && !root.styleSheets.Contains(textSheet)) root.styleSheets.Add(textSheet);
+            SkillPresentation.Bind(root);
             foreach(string id in new[]{"box-panel","codex-panel","shop-panel","settings-panel"}) {
                 var legacy=root.Q(id);if(legacy==null)continue;
                 foreach(var header in legacy.Query<VisualElement>(className:"screen-header").ToList()){header.style.backgroundColor=Color.clear;Add(header,false,"rect");}

@@ -146,6 +146,7 @@ namespace Capstone.Game.MapSystem {
         public bool IsOpen => worldMapOpen;
         public RectTransform OverlayRoot => overlayRoot;
         public UI.WorldMapUIController Presentation => presentation;
+        internal bool IsWaypointMarker(MapMarker marker) => marker!=null&&marker==waypointMarker;
 
         public void UsePresentation(UI.WorldMapUIController view, RectTransform overlay) {
             UnwireButtons();
@@ -309,6 +310,12 @@ namespace Capstone.Game.MapSystem {
             if (mapManager == null || mapCamera == null) return;
 
             float rectHeight = mapInteractionRect != null ? Mathf.Max(1f, mapInteractionRect.rect.height) : Mathf.Max(1f, Screen.height);
+            if(mapInteractionRect!=null&&mapInteractionRect.GetComponent<UI.MapR5Contour>()!=null) {
+                var rect=mapInteractionRect.rect;
+                var bottom=RectTransformUtility.WorldToScreenPoint(null,mapInteractionRect.TransformPoint(new Vector3(0,rect.yMin,0)));
+                var top=RectTransformUtility.WorldToScreenPoint(null,mapInteractionRect.TransformPoint(new Vector3(0,rect.yMax,0)));
+                rectHeight=Mathf.Max(1,Vector2.Distance(bottom,top));
+            }
             float worldUnitsPerPixel = mapManager.GetCameraOrthograpicSize() * 2f / rectHeight;
             Vector3 position = mapManager.GetCameraPosition();
             Vector3 pan = new Vector3(-screenDelta.x, 0f, -screenDelta.y) * worldUnitsPerPixel * panSpeed;
@@ -318,6 +325,8 @@ namespace Capstone.Game.MapSystem {
 
         public bool TrySetWaypoint(Vector2 screenPosition) {
             ResolveReferences();
+            var contour=mapInteractionRect!=null?mapInteractionRect.GetComponent<UI.MapR5Contour>():null;
+            if(contour!=null&&!contour.IsRaycastLocationValid(screenPosition,null))return false;
             if (!ScreenPointToWorld(screenPosition, out Vector3 worldPosition)) return false;
 
             EnsureWaypointMarker();

@@ -45,6 +45,16 @@ namespace Capstone.Game.HudSystem {
         float nextCooldownHudRefreshAt;
         bool restoredLoadout;
         PetSpeciesSkillSet initializedSkillSet;
+        PetCollectionMetadata avatarMetadata;
+        bool avatarMetadataResolved;
+        Capstone.Game.CreatureSystem.CreatureAnimationDriver animationDriver;
+        PetCollectionMetadata cooldownIdentity;
+        string CooldownKey {
+            get {
+                if (cooldownIdentity == null) cooldownIdentity = GetComponent<PetCollectionMetadata>();
+                return cooldownIdentity != null ? cooldownIdentity.PetId : GetInstanceID().ToString();
+            }
+        }
         public PetSpeciesSkillSet SpeciesSkillSet => speciesSkillSet;
         public Animator VisualAnimator => animator;
         public event Action PersistentDataChanged;
@@ -55,10 +65,30 @@ namespace Capstone.Game.HudSystem {
         public float MaxHealth => Mathf.Max(0f, maxHealth);
         public float Energy => maxEnergy > 0f ? Mathf.Clamp(energy, 0f, maxEnergy) : 0f;
         public float MaxEnergy => Mathf.Max(0f, maxEnergy);
-        public Sprite Icon => icon;
+        public Sprite Icon {
+            get {
+                if (!avatarMetadataResolved) {
+                    avatarMetadata = GetComponentInParent<PetCollectionMetadata>(true);
+                    avatarMetadataResolved = true;
+                }
+                return avatarMetadata != null
+                    ? Capstone.Game.CreatureSystem.CreatureAvatarCatalog.Resolve(avatarMetadata.DefinitionId, avatarMetadata.CurrentFormId, icon)
+                    : icon;
+            }
+        }
         public void BindVisualAnimator(Animator nextAnimator) {
             if (nextAnimator != null) animator = nextAnimator;
-            GetComponent<PetSkillPresentationPlayer>()?.BindAnimator(animator);
+            animationDriver = GetComponentInParent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>();
+            var binding = animator != null ? animator.GetComponent<Capstone.Game.CreatureSystem.CreatureVisualBinding>() : null;
+            if (animationDriver != null && (animationDriver.BoundAnimator != animator || animationDriver.Profile != binding?.animationProfile)) animationDriver.Bind(animator);
+            GetComponentInParent<Capstone.Game.CreatureSystem.CreatureCombatant>()?.BindVisual(animator);
+            if (binding != null && binding.skillSet != null && binding.skillSet != speciesSkillSet) ConfigureSkillSet(binding.skillSet, true);
+            var presentation = GetComponent<PetSkillPresentationPlayer>();
+            if (presentation != null) {
+                presentation.CancelPresentation();
+                if (binding != null) presentation.sockets = new List<PetSkillSocket>(binding.sockets);
+                presentation.BindAnimator(animator);
+            }
         }
         public int EquippedSkillSlotCount => Mathf.Clamp(equippedSkillSlotCount, 2, 4);
 
@@ -83,6 +113,7 @@ namespace Capstone.Game.HudSystem {
             if (speciesSkillSet != null && GetComponent<PetSkillPresentationPlayer>() == null)
                 gameObject.AddComponent<PetSkillPresentationPlayer>();
             GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
+            BindVisualAnimator(animator);
         }
 
         void Update() {
@@ -357,6 +388,19 @@ namespace Capstone.Game.HudSystem {
         }
 
         public void RequestSkill(int skillIndex) {
+            if (Application.isPlaying) {
+                EnsureSkillList(false);
+                if (skillIndex >= 0 && skillIndex < skills.Count) {
+                    var presentation = GetSkillPresentation(ResolveSkillId(skills[skillIndex]));
+                    var currentAction = GetComponent<PetCombatActionDriver>();
+                    if (currentAction != null && currentAction.IsSkillBusy && (presentation == null || presentation.releaseMode != PetSkillReleaseMode.NormalizedAnimation)) return;
+                    if (presentation != null && presentation.releaseMode == PetSkillReleaseMode.NormalizedAnimation) {
+                        var action = GetComponent<PetCombatActionDriver>();
+                        if (action == null) action = gameObject.AddComponent<PetCombatActionDriver>();
+                        action.Submit(skillIndex); return;
+                    }
+                }
+            }
             ResolveAnimationReferences();
             if (Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
                 || petController == null || !petController.isActiveAndEnabled || !petController.CanReceiveCommands) return;
@@ -367,12 +411,29 @@ namespace Capstone.Game.HudSystem {
             if (skillIndex < cooldownRemaining.Count && cooldownRemaining[skillIndex] > 0.001f) return;
 
             SkillHudData skill = skills[skillIndex];
+            var execution = GetComponent<PetSkillCombatExecutor>();
+            var combatProfile = speciesSkillSet != null && speciesSkillSet.TryGet(ResolveSkillId(skill), out var combatEntry) ? combatEntry.skill.combat : null;
+            // Legacy scene actors keep their prefab GUIDs. Add the same execution
+            // adapter when a configured shared skill is first used there.
+            if (combatProfile != null && execution == null && Application.isPlaying) execution = gameObject.AddComponent<PetSkillCombatExecutor>();
+            if (combatProfile != null && (execution == null || !execution.Prepare(ResolveSkillId(skill), combatProfile))) return;
             if (!skill.unlocked || !skill.usable || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
+            // Keep animation/release clocks aligned with the same accepted retreat plan.
+            if (execution != null) skill.windupSeconds += execution.PreparedRetreatSeconds;
+            if (animationDriver != null && animationDriver.Profile != null) {
+                if (!animationDriver.TryGetSkillStates(ResolveSkillId(skill), out skill.animatorStates)) {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    Debug.LogWarning(animationDriver.LastError, this);
+#endif
+                    return;
+                }
+            }
+            if (!PlaySkillAnimation(skill)) return;
             SkillRequested?.Invoke(skillIndex);
-            if (PlaySkillAnimation(skill)) SkillAnimationAccepted?.Invoke(skill);
+            SkillAnimationAccepted?.Invoke(skill);
 
             if (skill.cooldownSeconds > 0f && skillIndex < cooldownRemaining.Count) {
-                cooldownRemaining[skillIndex] = skill.cooldownSeconds;
+                StartCooldown(skillIndex, skill.cooldownSeconds);
                 HudDataChanged?.Invoke();
             }
         }
@@ -385,6 +446,37 @@ namespace Capstone.Game.HudSystem {
             if (cooldownRemaining.Count > skills.Count) {
                 cooldownRemaining.RemoveRange(skills.Count, cooldownRemaining.Count - skills.Count);
             }
+            if (Application.isPlaying) for (int i = 0; i < cooldownRemaining.Count; i++)
+                cooldownRemaining[i] = PetSkillCooldowns.Remaining(CooldownKey, ResolveSkillId(skills[i]));
+        }
+
+        internal bool PrepareCoordinatedSkill(int index, out SkillHudData skill) {
+            skill = default; ResolveAnimationReferences(); EnsureSkillList(false); EnsureCooldownStorage();
+            if (Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked || petController == null || !petController.CanReceiveCommands) return false;
+            var input = petController.owner != null ? petController.owner.GetComponent<PetCommandInput>() : null;
+            if (input != null && (input.activePet != petController || !input.CanUsePetSkills)) return false;
+            if (index < 0 || index >= skills.Count || cooldownRemaining[index] > .001f) return false;
+            skill = skills[index];
+            if (!skill.unlocked || !skill.usable) return false;
+            if (animationDriver != null && animationDriver.Profile != null && !animationDriver.TryGetSkillStates(ResolveSkillId(skill), out skill.animatorStates)) return false;
+            if (animator == null || skill.animatorStates == null) return false;
+            bool valid = false;
+            foreach (string state in skill.animatorStates) if (!string.IsNullOrWhiteSpace(state) && TryGetAnimatorStateHash(state, out _)) { valid = true; break; }
+            return valid;
+        }
+        internal bool CommitCoordinatedSkill(int index, SkillHudData skill) {
+            var combatProfile = speciesSkillSet != null && speciesSkillSet.TryGet(ResolveSkillId(skill), out var entry) ? entry.skill.combat : null;
+            if (combatProfile == null) return false;
+            var execution = GetComponent<PetSkillCombatExecutor>();
+            if (execution == null) execution = gameObject.AddComponent<PetSkillCombatExecutor>();
+            if (!execution.Prepare(ResolveSkillId(skill), combatProfile)) return false;
+            if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + index)) return false;
+            StartCooldown(index, skill.cooldownSeconds);
+            SkillRequested?.Invoke(index); SkillAnimationAccepted?.Invoke(skill); HudDataChanged?.Invoke(); return true;
+        }
+        void StartCooldown(int index, float seconds) {
+            cooldownRemaining[index] = Mathf.Max(0, seconds);
+            if (Application.isPlaying) PetSkillCooldowns.Set(CooldownKey, ResolveSkillId(skills[index]), seconds);
         }
 
         void EnsureSkillList(bool sendChangeEvent = true) {
@@ -541,14 +633,23 @@ namespace Capstone.Game.HudSystem {
                 float remaining = cooldownRemaining[i];
                 if (remaining <= 0f) continue;
 
-                cooldownRemaining[i] = Mathf.Max(0f, remaining - deltaTime);
-                changed = true;
+                float next = Application.isPlaying ? PetSkillCooldowns.Remaining(CooldownKey, ResolveSkillId(skills[i])) : Mathf.Max(0f, remaining - deltaTime);
+                cooldownRemaining[i] = next;
+                changed |= !Mathf.Approximately(remaining, next);
             }
 
             return changed;
         }
 
+        internal float[] SnapshotCooldowns() { EnsureCooldownStorage(); return cooldownRemaining.ToArray(); }
+        internal void RestoreCooldowns(float[] snapshot) {
+            EnsureCooldownStorage();
+            for (int i = 0; i < cooldownRemaining.Count; i++) StartCooldown(i, snapshot != null && i < snapshot.Length ? Mathf.Max(0, snapshot[i]) : 0);
+            HudDataChanged?.Invoke();
+        }
+
         void ResolveAnimationReferences() {
+            if (animationDriver == null) animationDriver = GetComponentInParent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>();
             if (!autoFindAnimationReferences) return;
             if (petController == null) petController = GetComponentInParent<PetController>();
             if (animator == null) animator = GetComponentInChildren<Animator>();
@@ -700,11 +801,18 @@ namespace Capstone.Game.HudSystem {
 
         /// <summary>Explicit binding for authoring/new pets. The default preserves individual progress and slot order.</summary>
         public void ConfigureSkillSet(PetSpeciesSkillSet set, bool preserveProgress = true) {
+            var retainedCooldowns = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+            if (preserveProgress) for (int i = 0; i < skills.Count && i < cooldownRemaining.Count; i++) {
+                string id = ResolveSkillId(skills[i]);
+                if (!string.IsNullOrWhiteSpace(id)) retainedCooldowns[id] = cooldownRemaining[i];
+            }
             GetComponent<PetSkillPresentationPlayer>()?.CancelPresentation();
             speciesSkillSet = set; initializedSkillSet = null;
             if (!preserveProgress) { skills.Clear(); learnedSkills.Clear(); restoredLoadout = false; }
             EnsureSkillList(false); EnsureLearnedSkillList(false);
             cooldownRemaining.Clear(); EnsureCooldownStorage();
+            if (preserveProgress) for (int i = 0; i < skills.Count && i < cooldownRemaining.Count; i++)
+                if (retainedCooldowns.TryGetValue(ResolveSkillId(skills[i]), out float remaining)) cooldownRemaining[i] = remaining;
             if (Application.isPlaying && set != null && GetComponent<PetSkillPresentationPlayer>() == null)
                 gameObject.AddComponent<PetSkillPresentationPlayer>();
             HudDataChanged?.Invoke();

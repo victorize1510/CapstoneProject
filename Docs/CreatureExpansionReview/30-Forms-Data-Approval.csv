@@ -1,0 +1,31 @@
+﻿family_id,form_id,display_name,approved_primary_element,approved_secondary_element,base_HP,base_ATK,base_SP_ATK,base_DEF,base_SP_DEF,base_SPD,base_CRIT_RATE_percent,base_CRIT_DMG_percent,is_catchable,base_catch_rate,approved_learnset_skillId_at_level,initial_slot_1_skillId,initial_slot_2_skillId,initial_slot_3_skillId,initial_slot_4_skillId,movement_mode,approved_world_scale,approved_by,status,notes
+bat,01,Dơi Nhỏ,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+bat,02,Dơi Ma Cà Rồng,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+bat,03,Dơi Chúa Tể,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+cat-electric,01,Mèo Điện,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+cat-electric,02,Mèo Tia Chớp,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+cat-electric,03,Mèo Sấm Sét,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+chick,01,Chim Con,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+chick,02,Gà Lôi,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+chick,03,Gà Gió Lốc,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+dragon-fire,01,Khủng Long Lửa,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+dragon-fire,02,Rồng Lửa Bay,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+dragon-fire,03,Rồng Lửa Địa Ngục,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+egg-shadow,01,Trứng Ma Quái,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+egg-shadow,02,Quái Trứng Quỷ,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+egg-shadow,03,Quái Trứng Lực SĨ,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+ghost,01,Ma Nhỏ,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+ghost,02,Ma Mặt Nạ,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+ghost,03,Ma Nguyền Rủa,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+shell,01,Ốc Nhà,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+shell,02,Ốc Gai,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+shell,03,Ốc Mượn Hồn Vua,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+snake-fire,01,Rắn Lửa,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+snake-fire,02,Rắn Bùng Cháy,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+snake-fire,03,Rắn 3 Đầu,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+sun-blossom,01,Hướng Dương Nảy Mầm,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+sun-blossom,02,Hướng Dương Tiên,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+sun-blossom,03,Hướng Dương Nữ Hoàng,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+wolf,01,Sói Tí Nị,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+wolf,02,Sói Bóng Tối,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.
+wolf,03,Người Sói Quỷ,,,,,,,,,,,,,,,,,,,,,CHUA_DUYET,Không sao prototype/fallback của nguồn; không tự điền số cân bằng.

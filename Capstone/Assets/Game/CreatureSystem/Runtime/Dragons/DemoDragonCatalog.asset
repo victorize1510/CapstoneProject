@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5e52bb38c05434c9df74c15a8e13a72, type: 3}
+  m_Name: DemoDragonCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetPrefabCatalog
+  entries:
+  - definitionId: Dragon Dusk
+    formId: 01
+    prefab: {fileID: 1286864715442068702, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
+  - definitionId: Dragon Dusk
+    formId: 02
+    prefab: {fileID: 1254074276041623987, guid: a8a0a8ba78a7e3b42aae4e69b4b949f9, type: 3}
+  - definitionId: Dragon Dusk
+    formId: 03
+    prefab: {fileID: 4883341114098912031, guid: 284aa75eddf305b42bbf659c8ea239f9, type: 3}

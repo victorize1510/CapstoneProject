@@ -124,7 +124,7 @@ namespace Capstone.Game.ProfileSystem {
 
             if (!SetProgressValue(metricId, value)) return;
             EvaluateUnlocks();
-            AchievementsChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "AchievementsChanged", () => AchievementsChanged?.Invoke());
         }
 
         public void SetProgressBatch(IEnumerable<KeyValuePair<string, int>> updates) {
@@ -138,7 +138,7 @@ namespace Capstone.Game.ProfileSystem {
 
             if (!changed) return;
             EvaluateUnlocks();
-            AchievementsChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "AchievementsChanged", () => AchievementsChanged?.Invoke());
         }
 
         bool SetProgressValue(string metricId, int value) {
@@ -202,7 +202,7 @@ namespace Capstone.Game.ProfileSystem {
             }
 
             EvaluateUnlocks();
-            AchievementsChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "AchievementsChanged", () => AchievementsChanged?.Invoke());
         }
 
         public void ResetForNewGame() {

@@ -40,6 +40,18 @@ namespace Capstone.Game.ProfileSystem {
         float saveTimer;
         readonly HashSet<string> capturedSpeciesIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        readonly HashSet<string> discoveredCodexForms=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        readonly HashSet<string> favoriteCodexForms=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public bool KnowsCodexForm(string key)=>!string.IsNullOrWhiteSpace(key)&&discoveredCodexForms.Contains(key);
+        public bool IsCodexFavorite(string key)=>KnowsCodexForm(key)&&favoriteCodexForms.Contains(key);
+        public void RecordCodexForm(string key,bool notify=true) {
+            if(!string.IsNullOrWhiteSpace(key)&&discoveredCodexForms.Add(key.Trim())&&notify)NotifyChanged();
+        }
+        public bool SetCodexFavorite(string key,bool value) {
+            if(!KnowsCodexForm(key))return false;
+            bool changed=value?favoriteCodexForms.Add(key):favoriteCodexForms.Remove(key);
+            if(changed)NotifyChanged();return true;
+        }
         public event Action ProfileChanged;
 
         public bool CanChangeAvatar => avatarOptions != null && avatarOptions.Any(sprite => sprite != null);
@@ -134,7 +146,7 @@ namespace Capstone.Game.ProfileSystem {
             displayName = cleanName;
             error = string.Empty;
             RequestSave();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
             return true;
         }
 
@@ -161,7 +173,7 @@ namespace Capstone.Game.ProfileSystem {
 
             avatarIndex = nextAvatarIndex;
             RequestSave();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
             return true;
         }
 
@@ -240,7 +252,7 @@ namespace Capstone.Game.ProfileSystem {
 
         void NotifyChanged() {
             RequestSave();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         public PlayerProfileSaveData CreateSaveData() {
@@ -263,6 +275,8 @@ namespace Capstone.Game.ProfileSystem {
                 totalBattles = totalBattles
             };
             saveData.capturedSpeciesIds.AddRange(capturedSpeciesIds.OrderBy(id => id, StringComparer.OrdinalIgnoreCase));
+            saveData.discoveredCodexForms.AddRange(discoveredCodexForms.OrderBy(id=>id,StringComparer.OrdinalIgnoreCase));
+            saveData.favoriteCodexForms.AddRange(favoriteCodexForms.OrderBy(id=>id,StringComparer.OrdinalIgnoreCase));
             return saveData;
         }
 
@@ -284,15 +298,18 @@ namespace Capstone.Game.ProfileSystem {
             bossesDefeated = saveData.bossesDefeated;
             totalBattles = saveData.totalBattles;
             capturedSpeciesIds.Clear();
+            discoveredCodexForms.Clear();favoriteCodexForms.Clear();
             foreach (string speciesId in saveData.capturedSpeciesIds ?? new List<string>()) {
                 if (!string.IsNullOrWhiteSpace(speciesId)) capturedSpeciesIds.Add(speciesId.Trim());
             }
+            foreach(string key in saveData.discoveredCodexForms??new List<string>())if(!string.IsNullOrWhiteSpace(key))discoveredCodexForms.Add(key.Trim());
+            foreach(string key in saveData.favoriteCodexForms??new List<string>())if(!string.IsNullOrWhiteSpace(key)&&discoveredCodexForms.Contains(key.Trim()))favoriteCodexForms.Add(key.Trim());
             if (capturedSpeciesIds.Count > 0) {
                 speciesCaptured = Mathf.Max(speciesCaptured, capturedSpeciesIds.Count);
             }
             EnsureIdentity();
             SyncAchievementMetrics();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         public void ResetForNewGame() {
@@ -311,8 +328,9 @@ namespace Capstone.Game.ProfileSystem {
             bossesDefeated = -1;
             totalBattles = -1;
             capturedSpeciesIds.Clear();
+            discoveredCodexForms.Clear();favoriteCodexForms.Clear();
             EnsureIdentity();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         Sprite GetCurrentAvatar() {
@@ -407,16 +425,16 @@ namespace Capstone.Game.ProfileSystem {
         void OnQuestsChanged() {
             GetStoryProgress(out int storyCompleted, out _);
             SyncAchievementMetrics(storyCompleted);
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         void OnAchievementsChanged() {
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         void OnActiveSceneChanged(Scene previous, Scene current) {
             ResolveQuestManager();
-            ProfileChanged?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
         }
 
         void EnsureIdentity() {

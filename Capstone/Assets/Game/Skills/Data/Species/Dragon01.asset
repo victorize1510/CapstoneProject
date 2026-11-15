@@ -22,9 +22,9 @@ MonoBehaviour:
     - Bite Attack
     - Bite Attack Low
     animationDuration: 0.8
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.3
+    animationFade: 0.09
+    windupSeconds: 0
+    recoverySeconds: 0
     presentationOverride: {fileID: 0}
   - skill: {fileID: 11400000, guid: f4f605f9756e3c840a6ef10fbdb064d8, type: 2}
     learnAtLevel: 1
@@ -32,10 +32,10 @@ MonoBehaviour:
     animatorStates:
     - Blast Attack
     - Cast Spell
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.3
+    animationDuration: 1.5
+    animationFade: 0.09
+    windupSeconds: 0
+    recoverySeconds: 0
     presentationOverride: {fileID: 0}
   - skill: {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
     learnAtLevel: 1
@@ -44,19 +44,19 @@ MonoBehaviour:
     - Projectile Attack
     - Projectile Attack Low
     animationDuration: 0.95
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.3
+    animationFade: 0.09
+    windupSeconds: 0
+    recoverySeconds: 0
     presentationOverride: {fileID: 0}
   - skill: {fileID: 11400000, guid: 67c3331c9c0221e479c2e4c1e893a3a9, type: 2}
     learnAtLevel: 1
     overrideAnimation: 1
     animatorStates:
     - Wing Attack
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.3
+    animationDuration: 0.667
+    animationFade: 0.09
+    windupSeconds: 0
+    recoverySeconds: 0
     presentationOverride: {fileID: 0}
   defaultLoadout:
   - {fileID: 11400000, guid: 860a06bc9fd1baa42bde56e65bef868b, type: 2}

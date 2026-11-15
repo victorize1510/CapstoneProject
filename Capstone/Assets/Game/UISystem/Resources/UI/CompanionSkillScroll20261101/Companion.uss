@@ -1,0 +1,25 @@
+/* Management-panel roles. The combat HUD does not use this sheet. */
+.skill-presentation .skills-slot-number,.skill-presentation .skills-equipped-meta {display:none;}
+.skill-presentation .skills-equipped-row {height:80px;min-height:80px;}
+.skill-presentation .skills-equipped-slot {height:80px;min-height:80px;flex-direction:row;align-items:center;padding:12px 10px;border-width:0;}
+.skill-presentation .skills-equipped-icon {width:56px;height:56px;flex-shrink:0;}
+.skill-presentation .skills-equipped-slot .skills-equipped-name {width:auto;min-width:0;flex-grow:1;flex-shrink:1;margin:0 0 0 10px;font-size:18px;white-space:normal;overflow:hidden;text-overflow:ellipsis;max-height:45px;-unity-text-align:middle-left;color:#202B45;}
+.skill-presentation .skills-learned-grid {flex-direction:column;flex-wrap:nowrap;width:auto;align-self:stretch;align-items:stretch;padding:6px;}
+.skill-presentation .skills-learned-scroll .skills-learned-grid .skill-list-row {position:relative;width:100%;min-width:0;max-width:none;height:60px;min-height:60px;flex-shrink:0;flex-direction:row;align-items:center;margin:0 0 2px 0;padding:8px 12px;border-width:0;background-color:transparent;}
+.skill-presentation .skill-list-row:hover,.skill-presentation .skill-list-row:focus,.skill-presentation .skill-list-row.is-selected {border-width:0;}
+.skill-presentation .skills-learned-scroll .skill-list-row .skills-learned-icon {width:44px;min-width:44px;height:44px;min-height:44px;flex-shrink:0;margin:0;background-color:transparent;}
+.skill-presentation .skills-learned-scroll .skill-list-row .skills-learned-copy {flex-grow:1;flex-shrink:1;flex-basis:0;min-width:0;margin:0 12px;}
+.skill-presentation .skills-learned-scroll .skill-list-row .skills-learned-name {font-size:18px;-unity-font-style:bold;white-space:normal;max-height:45px;overflow:hidden;text-overflow:ellipsis;-unity-text-align:middle-left;margin:0;padding:0;color:#202B45;}
+.skill-presentation .skills-learned-scroll .skill-list-row .skills-learned-element {width:88px;min-width:88px;max-width:88px;flex-shrink:0;font-size:16px;white-space:nowrap;-unity-text-align:middle-right;margin:0;padding:0;}
+.readability-ui .companion-design .companion-embedded-skills .skills-equipped-row {height:80px;min-height:80px;}
+.readability-ui .companion-design .companion-embedded-skills .skills-equipped-slot {height:80px;min-height:80px;}
+.readability-ui .companion-design .companion-embedded-skills .skills-equipped-icon {top:12px;}
+.readability-ui .companion-design .companion-embedded-skills .skills-equipped-name {top:17px;left:76px;right:10px;height:auto;max-height:45px;font-size:18px;margin:0;}
+.readability-ui .companion-design .companion-embedded-skills .skills-learned-scroll {top:164px;bottom:12px;height:auto;padding:0;width:468px;}
+.readability-ui .companion-design .companion-embedded-skills .skills-learned-grid {width:auto;flex-direction:column;flex-wrap:nowrap;}
+.readability-ui .companion-design .companion-inline-detail {top:164px;bottom:12px;height:auto;}
+.readability-ui .companion-design .companion-stats {top:78px;height:156px;padding-top:10px;padding-bottom:10px;}
+.readability-ui .companion-design .companion-stat-row {height:34px;min-height:34px;}
+.readability-ui .companion-design .companion-skill-summary {top:246px;height:72px;padding-top:3px;padding-bottom:3px;}
+.readability-ui .companion-design .companion-growth {top:130px;padding-top:0;border-top-width:1px;border-top-color:rgba(204,173,131,.65);}
+.skill-presentation .compact-skill-card .pet-details-skill-name {font-size:18px;max-height:45px;min-height:0;}

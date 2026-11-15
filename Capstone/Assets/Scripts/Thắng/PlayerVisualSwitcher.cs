@@ -71,6 +71,9 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
         if (switchKey != KeyCode.None && Input.GetKeyDown(switchKey) && !IsGameplayInputBlocked())
         {
+            // Gameplay G belongs to capture. Preserve the configured visual switch with explicit Shift+G context.
+            if(switchKey==KeyCode.G&&Capstone.Game.HudSystem.HubCaptureHud.OwnsCaptureKey
+                &&!Capstone.Game.HudSystem.HubCaptureHud.ModelSwitchModifier)return;
             SwitchToNext();
         }
     }

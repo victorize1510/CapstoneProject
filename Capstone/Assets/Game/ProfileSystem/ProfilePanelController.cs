@@ -299,9 +299,10 @@ namespace Capstone.Game.ProfileSystem {
             PlayerProfileSnapshot snapshot = provider.GetSnapshot();
 
             if (displayNameText != null) {
-                displayNameText.text = string.IsNullOrWhiteSpace(snapshot.DisplayName)
+                string fullName = string.IsNullOrWhiteSpace(snapshot.DisplayName)
                     ? "Tên người chơi"
                     : snapshot.DisplayName;
+                displayNameText.text = Capstone.Game.UISystem.MenuTypography.FitSingleLine(displayNameText, fullName);
             }
 
             if (levelText != null) levelText.text = snapshot.Level > 0 ? snapshot.Level.ToString() : "-";
@@ -433,6 +434,7 @@ namespace Capstone.Game.ProfileSystem {
             text.fontStyle = style;
             text.color = color;
             text.alignment = alignment;
+            text.alignByGeometry = true;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
             text.raycastTarget = false;

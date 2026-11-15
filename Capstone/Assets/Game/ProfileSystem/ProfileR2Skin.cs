@@ -51,6 +51,7 @@ namespace Capstone.Game.ProfileSystem {
             var background=Graphic(root,"R2Background","rect",UnifiedPanelHeader.Texture("Art/page"),Color.white);background.transform.SetAsFirstSibling();
             // The supplied component fills already bake material at 50% and the specified reading surface. Display at 1.
             Skin((RectTransform)designSurface.Find("MainProfilePanel"),"summary-panel");
+            BuildIdentityZones((RectTransform)designSurface.Find("MainProfilePanel"));
             Skin((RectTransform)designSurface.Find("PlayerInfoPanel"),"info-panel");
             Skin((RectTransform)designSurface.Find("StatsOverviewPanel"),"stats-panel");
             var header=(RectTransform)designSurface.Find("HeaderBar");header.GetComponent<Image>().color=Color.clear;
@@ -79,6 +80,17 @@ namespace Capstone.Game.ProfileSystem {
                 feedback.KeepDisabledFace=true;
             }
             ApplyUnifiedBack();RefreshR2Skin(provider!=null?provider.GetSnapshot():default);FitR2Modals();
+        }
+        void BuildIdentityZones(RectTransform summary){
+            // Native-1920 coordinates. The content rects and 3x2 team are not moved.
+            void Zone(string name,float x,float width){
+                var frame=Graphic(summary,name,"panel",null,new Color(82/255f,96/255f,122/255f,.18f));
+                SetTopLeft(frame.rectTransform,x,16,width,summary.rect.height-32);
+                frame.LogicalScale=1.2f;frame.GradientFill=true;frame.BottomColor=new Color(82/255f,96/255f,122/255f,.12f);
+                frame.Edge=true;frame.EdgeWidth=1.5f;frame.EdgeColor=new Color(38/255f,51/255f,75/255f,.8f);
+                frame.transform.SetSiblingIndex(2);frame.SetVerticesDirty();
+            }
+            Zone("PlayerIdentityZone",16,1244);Zone("CurrentTeamZone",1278,560);
         }
         void FitR2Modals(){if(root==null)return;float scale=Mathf.Min(root.rect.width/1600,root.rect.height/900);foreach(var canvas in modalCanvases)if(canvas!=null)canvas.localScale=Vector3.one*scale;}
         void RefreshR2Skin(PlayerProfileSnapshot snapshot){
@@ -124,6 +136,7 @@ namespace Capstone.Game.ProfileSystem {
             var scroll=CreatePanel(list,"AvatarScroll",Color.clear,true);SetInset(scroll,8);avatarScroll=scroll.gameObject.AddComponent<ScrollRect>();avatarScroll.horizontal=false;avatarScroll.vertical=true;avatarScroll.movementType=ScrollRect.MovementType.Clamped;avatarScroll.scrollSensitivity=34;
             var viewport=CreatePanel(scroll,"Viewport",Color.clear,true);Stretch(viewport);viewport.gameObject.AddComponent<RectMask2D>();
             avatarGrid=CreatePanel(viewport,"AvatarGrid",Color.clear,false);avatarGrid.anchorMin=new Vector2(0,1);avatarGrid.anchorMax=Vector2.one;avatarGrid.pivot=new Vector2(.5f,1);avatarGrid.sizeDelta=Vector2.zero;avatarGrid.anchoredPosition=Vector2.zero;avatarScroll.content=avatarGrid;avatarScroll.viewport=viewport;
+            RuntimeScrollbars.Apply(avatarScroll,1.2f);
             var current=CreatePanel(card,"CurrentAvatarPanel",Color.clear,false);SetTopLeft(current,576,96,384,244);Skin(current,"stat-card");
             var caption=CreateText(current,"Caption","ẢNH HIỆN TẠI",15,FontStyle.Bold,Muted,TextAnchor.MiddleCenter);SetTopStretch(caption.rectTransform,12,8,12,30);
             var circle=CreatePanel(current,"CurrentAvatarCircle",Color.clear,false);SetTopLeft(circle,116,46,152,152);Skin(circle,"avatar-circle","circle");

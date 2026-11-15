@@ -49,7 +49,7 @@ namespace Capstone.Game.UISystem {
             void Secondary(string id,string caption,string icon,float x,float y){var b=Card(id,x,y,380,120,"parallel");var g=b.GetComponent<GreenAngularGraphic>();g.SurfaceTexture=LatestMenuCompanionAssets.Polish("secondary-base")?.texture;g.Outline=true;g.AccentRails=true;
                 var illustration=Surface(b.transform,"Illustration",0,0,380,120,"parallel",Color.white);illustration.SurfaceTexture=LatestMenuCompanionAssets.Polish("scene-"+icon)?.texture;illustration.Outline=false;illustration.CoverTexture=true;illustration.FadeLeftStart=.20f;illustration.FadeLeftEnd=.78f;
                 var badge=Image(b.transform,"IconDisc",LatestMenuCompanionAssets.Load("Icons/badge-"+icon),Color.white);Place(badge.rectTransform,25,30,60,60);FocusLayer(b);var text=Label(b.transform,"Label",caption,21,99,39,216,44);text.fontStyle=FontStyle.Bold;Symbol(b.transform,"Chevron","chevron",348,48,16,24,GreenAngularGeometry.Light);b.Configure(GuiButtonKind.Secondary,text,null,null,GreenAngularGeometry.Ink);b.transition=Selectable.Transition.None;}
-            GuiKitButton ActionButton(string id,string caption,string icon,float x,float y,Color color){var b=Card(id,x,y,380,80,"parallel",color);Skin(b.GetComponent<GreenAngularGraphic>(),"parallel_"+(id=="Back"?"primary":"shell")+"_380_80");FocusLayer(b);var symbol=Symbol(b.transform,"Icon",icon,20,26,28,28,GreenAngularGeometry.Light);if(id=="Settings")symbol.sprite=LatestMenuCompanionAssets.Polish("settings");var label=Label(b.transform,"Label",caption,21,70,0,230,80);label.fontStyle=FontStyle.Bold;label.color=GreenAngularGeometry.Light;label.alignment=TextAnchor.MiddleCenter;b.Configure(GuiButtonKind.Secondary,label,symbol,null,GreenAngularGeometry.Light);b.transition=Selectable.Transition.None;return b;}
+            GuiKitButton ActionButton(string id,string caption,string icon,float x,float y,Color color){var b=Card(id,x,y,380,80,"parallel",color);Skin(b.GetComponent<GreenAngularGraphic>(),"parallel_"+(id=="Back"?"primary":"shell")+"_380_80");FocusLayer(b);var symbol=Symbol(b.transform,"Icon",icon,20,26,28,28,GreenAngularGeometry.Light);if(id=="Settings"){symbol.sprite=Capstone.Game.SettingsSystem.SettingsFinalArt.Sprite("Icons/settings-mask");symbol.color=Color.white;Place(symbol.rectTransform,22,28,24,24);}var label=Label(b.transform,"Label",caption,21,70,0,230,80);label.fontStyle=FontStyle.Bold;label.color=GreenAngularGeometry.Light;label.alignment=TextAnchor.MiddleCenter;b.Configure(GuiButtonKind.Secondary,label,symbol,null,GreenAngularGeometry.Light);b.transition=Selectable.Transition.None;return b;}
         }
         static void Skin(GreenAngularGraphic g,string name){g.SurfaceTexture=LatestMenuCompanionAssets.Load("Surfaces/"+name)?.texture;g.Outline=g.SurfaceTexture==null;}
         public void Fit(Vector2 viewport) {
@@ -70,17 +70,7 @@ namespace Capstone.Game.UISystem {
             Set(party, partyCount.HasValue ? partyCount.Value + " / 6" : "— / 6");
         }
         static string Ellipsis(Text label, string value) {
-            var settings = label.GetGenerationSettings(Vector2.zero);
-            float width = label.rectTransform.rect.width * label.pixelsPerUnit;
-            var generator = label.cachedTextGeneratorForLayout;
-            if (generator.GetPreferredWidth(value, settings) <= width) return value;
-            int low = 0, high = value.Length;
-            while (low < high) {
-                int middle = (low + high + 1) / 2;
-                if (generator.GetPreferredWidth(value.Substring(0, middle) + "…", settings) <= width) low = middle;
-                else high = middle - 1;
-            }
-            return value.Substring(0, low) + "…";
+            return MenuTypography.FitSingleLine(label, value);
         }
         static void Set(Text label, string value) { if (label.text != value) label.text = value; }
         static void FocusLayer(GuiKitButton b){var source=b.GetComponent<GreenAngularGraphic>();var overlay=Surface(b.transform,"PolygonStates",0,0,source.rectTransform.rect.width,source.rectTransform.rect.height,source.Shape,Color.clear);overlay.Outline=false;overlay.StateLayer=true;source.StateOverlay=overlay;}

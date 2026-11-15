@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 
 namespace Capstone.Game.Skills {
-    public enum PetSkillReleaseMode { Timed, AnimationEvent }
+    public enum PetSkillReleaseMode { Timed, AnimationEvent, NormalizedAnimation }
     [Serializable]
     public sealed class PetSkillCue {
         [Tooltip("A prefab containing ParticleSystem and/or VisualEffect components. Optional.")]
@@ -12,6 +12,8 @@ namespace Capstone.Game.Skills {
         [Tooltip("Key from the pet's presentation player socket list. Empty = pet root.")]
         public string socket;
         public bool followSocket;
+        [Tooltip("Position follows the socket, but rotation/offset use the actor axes (useful for jaw VFX).")]
+        public bool actorSpace;
         public Vector3 localOffset;
         public Vector3 localEulerAngles;
         [Min(0.01f)] public float scale = 1;
@@ -22,6 +24,9 @@ namespace Capstone.Game.Skills {
     [CreateAssetMenu(menuName = "Capstone/Pet Skills/Presentation", fileName = "Presentation_")]
     public sealed class PetSkillPresentationProfile : ScriptableObject {
         public PetSkillReleaseMode releaseMode;
+        [Range(.05f, .95f)] public float releaseNormalized = .36f;
+        [Range(.1f, 1)] public float chainNormalized = .85f;
+        [Range(.75f, 1.25f)] public float playbackSpeed = 1;
         [Tooltip("Seconds after animation START, in addition to the skill's pre-animation windup.")]
         [Min(0)] public float releaseDelaySeconds = 0.25f;
         [Tooltip("Accept real collision impact callbacks for at most this long; does not create a projectile or damage.")]

@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(UIDocument))]
-    public sealed class PetSkillsPanelController : MonoBehaviour {
+    public sealed partial class PetSkillsPanelController : MonoBehaviour {
         [SerializeField] UIDocument document = null;
         [SerializeField] MonoBehaviour petHudProvider = null;
         [SerializeField] bool autoFindProvider = true;
@@ -69,12 +69,11 @@ namespace Capstone.Game.HudSystem {
             var learnedTitle=dialog.Q<Label>(className:"skills-learned-title");if(learnedTitle!=null)learnedTitle.text="Đã học";
             tooltip.style.left=StyleKeyword.Null;tooltip.style.top=StyleKeyword.Null;
             tooltip.AddToClassList("companion-inline-detail");dialog.Add(tooltip);tooltip.style.display=DisplayStyle.Flex;
-            selectedLearnedIndex=-1;renderedLearned.Clear();Refresh();EnsureEquipAction();if(equipConfirm!=null)equipConfirm.style.display=DisplayStyle.Flex;if(equipPreview!=null)equipPreview.style.display=DisplayStyle.Flex;
-            ResetEmbeddedDetails();
+            selectedLearnedIndex=-1;renderedLearned.Clear();EnsureEquipAction();AttachSkillWorkflow();Refresh();CancelSkillWorkflow(false);
         }
         public void CloseEmbedded(){
             if(!IsEmbedded)return;
-            CancelEquipPreview();embeddedHost=null;embeddedPet=null;
+            CancelEquipPreview();DetachSkillWorkflow();embeddedHost=null;embeddedPet=null;
             foreach(var button in dialog.Query<Capstone.Game.UISystem.AngularButton>().ToList())button.SetAngularContext(false);
             foreach(var image in dialog.Query<VisualElement>(className:"companion-skill-art").ToList())image.RemoveFromClassList("companion-skill-art");
             foreach(var fallback in dialog.Query<Label>(className:"companion-skill-fallback").ToList()){fallback.RemoveFromClassList("companion-skill-fallback");fallback.style.backgroundImage=StyleKeyword.Null;}
@@ -84,6 +83,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void ResetEmbeddedDetails(){
+            tooltip?.Q("skill-r2-metadata")?.RemoveFromHierarchy();
             if(tooltipName!=null)tooltipName.text="Chi tiết kỹ năng";
             if(tooltipDescription!=null)tooltipDescription.text="Chọn kỹ năng đã học, sau đó chọn ô cần thay.";
             if(tooltipElement!=null)tooltipElement.text="—";
@@ -146,7 +146,7 @@ namespace Capstone.Game.HudSystem {
 
             PetStatusHudData status = IsEmbedded&&LoadoutProvider!=null?LoadoutProvider.StatusFor(ContextPet):Provider != null ? Provider.GetSelectedPetStatus() : default;
             if(IsEmbedded&&embeddedPet!=ContextPet){
-                embeddedPet=ContextPet;CancelEquipPreview();
+                embeddedPet=ContextPet;CancelEquipPreview();inspectedEquippedSlot=-1;selectedSkillId=null;
                 ResetEmbeddedDetails();
             }
             selectedPetElement = LoadoutProvider != null ? LoadoutProvider.ElementFor(ContextPet) : PetElement.Unknown;
@@ -191,6 +191,7 @@ namespace Capstone.Game.HudSystem {
         void CacheElements() {
             if (document == null || document.rootVisualElement == null) return;
             VisualElement root = document.rootVisualElement;
+            Capstone.Game.UISystem.SkillPresentation.Bind(root);
             overlay = root.Q<VisualElement>("skills-modal-overlay");
             dialog = root.Q<VisualElement>("skills-modal-dialog");
             petPortrait = root.Q<VisualElement>("skills-pet-portrait");
@@ -205,6 +206,12 @@ namespace Capstone.Game.HudSystem {
             tooltip = root.Q<VisualElement>("skills-hover-tooltip");
             tooltipName = root.Q<Label>("skills-tooltip-name");
             tooltipElement = root.Q<Label>("skills-tooltip-element");
+            if(tooltipElement!=null&&!tooltipElement.ClassListContains("element-library-link")){
+                tooltipElement.AddToClassList("element-library-link");tooltipElement.focusable=true;tooltipElement.pickingMode=PickingMode.Position;
+                void OpenElement(){var type=selectedLearnedIndex>=0&&selectedLearnedIndex<learnedSnapshot.Count?learnedSnapshot[selectedLearnedIndex].element:PetElement.Unknown;Capstone.Game.UISystem.ElementLibraryPopup.Open(tooltipElement,type);}
+                tooltipElement.RegisterCallback<ClickEvent>(_=>OpenElement());
+                tooltipElement.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Return||e.keyCode==KeyCode.Space){OpenElement();e.StopImmediatePropagation();}});
+            }
             tooltipLevel = root.Q<Label>("skills-tooltip-level");
             tooltipCooldown = root.Q<Label>("skills-tooltip-cooldown");
             tooltipDescription = root.Q<Label>("skills-tooltip-description");
@@ -220,15 +227,16 @@ namespace Capstone.Game.HudSystem {
 
             allFilterButton = root.Q<Button>("skills-filter-all");
             filterButtons.Clear();
-            AddFilterReference(root, "skills-filter-nature", PetElement.Nature);
-            AddFilterReference(root, "skills-filter-fire", PetElement.Fire);
-            AddFilterReference(root, "skills-filter-water", PetElement.Water);
-            AddFilterReference(root, "skills-filter-wind", PetElement.Wind);
-            AddFilterReference(root, "skills-filter-earth", PetElement.Earth);
-            AddFilterReference(root, "skills-filter-electric", PetElement.Electric);
-            AddFilterReference(root, "skills-filter-ice", PetElement.Ice);
-            AddFilterReference(root, "skills-filter-light", PetElement.Light);
-            AddFilterReference(root, "skills-filter-dark", PetElement.Dark);
+            var rail=allFilterButton?.parent;
+            if(rail!=null&&!rail.ClassListContains("elements-r2-ready")) {
+                rail.AddToClassList("elements-r2-ready");
+                foreach(var old in rail.Query<Button>(className:"skills-filter-button").ToList())if(old!=allFilterButton)old.RemoveFromHierarchy();
+                foreach(var token in Capstone.Game.UISystem.ElementUi.All) {
+                    var button=new Capstone.Game.UISystem.AngularButton{name="skills-filter-"+token.element.ToString().ToLowerInvariant(),text=token.name};
+                    button.AddToClassList("skills-filter-button");button.style.width=button.style.minWidth=100;button.style.height=32;button.SetAngularContext(true);rail.Add(button);
+                }
+            }
+            foreach(var token in Capstone.Game.UISystem.ElementUi.All)AddFilterReference(root,"skills-filter-"+token.element.ToString().ToLowerInvariant(),token.element);
         }
 
         void AddFilterReference(VisualElement root, string name, PetElement element) {
@@ -280,7 +288,7 @@ namespace Capstone.Game.HudSystem {
             Action guarded = Capstone.Game.UISystem.PlayerActionGate.Guard(this, "button:" + button.name, callback);
             button.clicked += guarded;
             buttonCallbacks.Add(button, guarded);
-            if(button.ClassListContains("skills-filter-button")){
+            {
                 button.focusable=true;
                 EventCallback<PointerDownEvent> focus=_=>button.Focus();
                 EventCallback<KeyDownEvent> submit=evt=>{
@@ -322,11 +330,12 @@ namespace Capstone.Game.HudSystem {
         void RefreshEquippedSlots() {
             for (int i = 0; i < equippedSlots.Count; i++) {
                 Button slot = equippedSlots[i];
+                Capstone.Game.UISystem.SkillPresentation.Compact(slot,"skills-equipped-name");
                 bool visible = i < activeEquippedSlotCount;
                 slot.style.display = visible || IsEmbedded ? DisplayStyle.Flex : DisplayStyle.None;
                 slot.SetEnabled(visible);
                 if (!visible) {
-                    if(IsEmbedded){SetText(slot,"skills-equipped-name","Chưa mở");SetText(slot,"skills-equipped-meta","Theo số ô của thú");var locked=slot.Q<VisualElement>(className:"skills-equipped-icon");CompanionArt.SetSkillImage(locked,locked?.Q<Label>(),null,true);}
+                    if(IsEmbedded){SetText(slot,"skills-equipped-name","Chưa mở");var locked=slot.Q<VisualElement>(className:"skills-equipped-icon");CompanionArt.SetSkillImage(locked,locked?.Q<Label>(),null,true);}
                     continue;
                 }
                 bool available = i < equippedSnapshot.Count && equippedSnapshot[i].unlocked;
@@ -335,7 +344,6 @@ namespace Capstone.Game.HudSystem {
                 slot.userData = i;
 
                 SetText(slot, "skills-equipped-name", available ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Trống");
-                SetText(slot, "skills-equipped-meta", available ? FormatCooldown(skill) : "Chọn kỹ năng rồi chọn ô");
                 VisualElement icon = slot.Q<VisualElement>(className: "skills-equipped-icon");
                 Label fallback = icon?.Q<Label>(className: "skills-icon-fallback");
                 if(IsEmbedded)CompanionArt.SetSkillImage(icon,fallback,available?skill.icon:null,!available);
@@ -351,13 +359,11 @@ namespace Capstone.Game.HudSystem {
                 var skill=learnedSnapshot[i];string key=string.IsNullOrEmpty(skill.skillId)?"missing-id:"+i:skill.skillId;
                 if(!alive.Add(key))continue;
                 if(!learnedById.TryGetValue(key,out var card)){card=CreateLearnedCard(skill,i);learnedById.Add(key,card);learnedGrid.Add(card);}
-                if(!(card.userData is int oldIndex)||oldIndex!=i)card.userData=i;card.EnableInClassList("is-selected",skill.skillId==selectedSkillId&&!string.IsNullOrEmpty(selectedSkillId));
+                if(!(card.userData is int oldIndex)||oldIndex!=i)card.userData=i;card.EnableInClassList("is-selected",!IsEmbedded&&skill.skillId==selectedSkillId&&!string.IsNullOrEmpty(selectedSkillId));
                 bool show=skill.unlocked&&MatchesFilter(EffectiveElement(skill));card.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
                 if(show)visible++;learnedCards.Add(card);
                 if(!renderedLearned.TryGetValue(key,out var old)||old.displayName!=skill.displayName||old.element!=skill.element||old.icon!=skill.icon||old.cooldownSeconds!=skill.cooldownSeconds||old.skillLevel!=skill.skillLevel){
-                    SetText(card,"skills-learned-name",SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)));
-                    SetText(card,"skills-learned-element",FormatElement(EffectiveElement(skill)));SetText(card,"skills-learned-meta",FormatCooldown(skill));
-                    var icon=card.Q("learned-icon");var fallback=icon?.Q<Label>();if(IsEmbedded)CompanionArt.SetSkillImage(icon,fallback,skill.icon);else SetPortrait(icon,fallback,skill.icon,skill.displayName);
+                    if(card is Capstone.Game.UISystem.SkillListRow row)row.SetPresentation(SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)),FormatElement(EffectiveElement(skill)),skill.icon);
                     renderedLearned[key]=skill;
                 }
             }
@@ -367,27 +373,11 @@ namespace Capstone.Game.HudSystem {
         }
 
         Button CreateLearnedCard(SkillHudData skill, int learnedIndex) {
-            var card = new Capstone.Game.UISystem.AngularButton { text = string.Empty, userData = learnedIndex, Role="raised" };
-            card.AddToClassList("skills-learned-card");
+            var card = new Capstone.Game.UISystem.SkillListRow { userData = learnedIndex };
             card.EnableInClassList("is-selected", learnedIndex == selectedLearnedIndex);
+            card.SetPresentation(SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)),FormatElement(EffectiveElement(skill)),skill.icon);
 
-            var icon = new VisualElement { name = "learned-icon" };
-            icon.AddToClassList("skills-learned-icon");
-            var fallback = new Label(FirstLetter(skill.displayName));
-            fallback.AddToClassList("skills-icon-fallback");
-            icon.Add(fallback);
-            if(IsEmbedded)CompanionArt.SetSkillImage(icon,fallback,skill.icon);
-            else SetPortrait(icon, fallback, skill.icon, skill.displayName);
-            card.Add(icon);
-
-            var copy = new VisualElement();
-            copy.AddToClassList("skills-learned-copy");
-            copy.Add(CreateLabel(SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)), "skills-learned-name"));
-            copy.Add(CreateLabel(FormatElement(EffectiveElement(skill)), "skills-learned-element"));
-            copy.Add(CreateLabel(FormatCooldown(skill), "skills-learned-meta"));
-            card.Add(copy);
-
-            card.clicked += () => {if(card.userData is int index)SelectLearnedSkill(index);};
+            card.BindSelection(() => {if(card.userData is int index)SelectLearnedSkill(index);});
             card.RegisterCallback<PointerEnterEvent>(_ => {if(card.userData is int index&&index<learnedSnapshot.Count)ShowTooltip(card, learnedSnapshot[index]);});
             card.RegisterCallback<PointerLeaveEvent>(_ => HideTooltip());
             return card;
@@ -395,6 +385,7 @@ namespace Capstone.Game.HudSystem {
 
         void SelectLearnedSkill(int learnedIndex) {
             if (learnedIndex < 0 || learnedIndex >= learnedSnapshot.Count) return;
+            if(IsEmbedded){SelectWorkflowSkill(learnedIndex);return;}
             equipFeedback=null;
             selectedLearnedIndex = selectedLearnedIndex == learnedIndex ? -1 : learnedIndex;
             selectedSkillId=selectedLearnedIndex>=0?learnedSnapshot[selectedLearnedIndex].skillId:null;previewPet=ContextPet;
@@ -417,9 +408,7 @@ namespace Capstone.Game.HudSystem {
             if(equippedSlotIndex<0||equippedSlotIndex>=activeEquippedSlotCount)return;
             equipFeedback=null;
             if(!IsEmbedded){if(selectedLearnedIndex>=0)TryEquip(selectedLearnedIndex,equippedSlotIndex);return;}
-            previewDestination=equippedSlotIndex;previewPet=ContextPet;
-            destinationSkillId=equippedSlotIndex<equippedSnapshot.Count?equippedSnapshot[equippedSlotIndex].skillId:string.Empty;
-            RefreshEquipPreview();
+            SelectWorkflowSlot(equippedSlotIndex);
         }
 
         void TryEquip(int learnedSkillIndex, int equippedSlotIndex) {
@@ -442,9 +431,10 @@ namespace Capstone.Game.HudSystem {
         }
 
 
-        internal bool HasEquipPreview=>previewDestination>=0||!string.IsNullOrEmpty(selectedSkillId);
+        internal bool HasEquipPreview=>IsEmbedded?skillWorkflowMode!=SkillWorkflowMode.View:previewDestination>=0||!string.IsNullOrEmpty(selectedSkillId);
         internal bool TryCancelEquipPreview(){if(!HasEquipPreview)return false;CancelEquipPreview();return true;}
         internal void CancelEquipPreview(){
+            if(IsEmbedded){CancelSkillWorkflow(true);return;}
             selectedLearnedIndex=-1;selectedSkillId=null;previewDestination=-1;destinationSkillId=null;previewPet=null;equipSaving=false;equipFeedback=null;
             foreach(var card in learnedCards)card.EnableInClassList("is-selected",false);
             foreach(var card in equippedSlots)card.EnableInClassList("is-selected",false);
@@ -453,23 +443,15 @@ namespace Capstone.Game.HudSystem {
         }
         void EnsureEquipAction(){
             if(tooltip==null||equipConfirm!=null)return;
-            if(tooltipDescription!=null){var scroll=new ScrollView(ScrollViewMode.Vertical){name="r3-skill-description-scroll"};scroll.horizontalScrollerVisibility=ScrollerVisibility.Hidden;scroll.verticalScrollerVisibility=ScrollerVisibility.Auto;int index=tooltip.IndexOf(tooltipDescription);tooltip.Insert(index,scroll);scroll.Add(tooltipDescription);}
+            if(!IsEmbedded&&tooltipDescription!=null){var scroll=Capstone.Game.UISystem.RuntimeScrollbars.Create();scroll.name="r3-skill-description-scroll";scroll.horizontalScrollerVisibility=ScrollerVisibility.Hidden;scroll.verticalScrollerVisibility=ScrollerVisibility.Auto;int index=tooltip.IndexOf(tooltipDescription);tooltip.Insert(index,scroll);scroll.Add(tooltipDescription);}
             equipPreview=new Label{name="r3-equip-preview",pickingMode=PickingMode.Ignore};equipPreview.AddToClassList("r3-equip-preview");tooltip.Add(equipPreview);
-            var button=new Capstone.Game.UISystem.AngularButton(ConfirmEquipPreview){name="r3-equip-confirm",text="Trang bị",Shape="parallel",Role="primary"};button.Surface.SkinTexture=Capstone.Game.UISystem.InteractionR3Assets.Texture("Assets/Interaction/cta-equip");equipConfirm=button;tooltip.Add(equipConfirm);equipConfirm.SetEnabled(false);
+            var button=new Capstone.Game.UISystem.AngularButton{name="r3-equip-confirm",text="Trang bị",Shape="parallel",Role="primary"};button.Surface.SkinTexture=Capstone.Game.UISystem.InteractionR3Assets.Texture("Assets/Interaction/cta-equip");equipConfirm=button;RegisterButton(button,ConfirmEquipPreview);tooltip.Add(equipConfirm);equipConfirm.SetEnabled(false);
         }
         void RefreshEquipPreview(){
-            if(!IsEmbedded)return;EnsureEquipAction();
-            bool learned=selectedLearnedIndex>=0&&selectedLearnedIndex<learnedSnapshot.Count&&!string.IsNullOrEmpty(selectedSkillId);
-            bool destination=previewDestination>=0&&previewDestination<activeEquippedSlotCount;
-            bool same=learned&&destination&&destinationSkillId==selectedSkillId;
-            bool stale=destination&&(previewDestination<equippedSnapshot.Count?equippedSnapshot[previewDestination].skillId:string.Empty)!=destinationSkillId;
-            for(int i=0;i<equippedSlots.Count;i++)equippedSlots[i].EnableInClassList("is-selected",i==previewDestination);
-            string next=learned?Capstone.Game.UISystem.VietnameseUI.Skill(learnedSnapshot[selectedLearnedIndex].displayName):"kỹ năng";
-            string old=destination&&previewDestination<equippedSnapshot.Count?Capstone.Game.UISystem.VietnameseUI.Skill(equippedSnapshot[previewDestination].displayName):"Trống";
-            if(equipPreview!=null)equipPreview.text=equipFeedback??(stale?"Ô đã đổi; chọn lại ô đích.":same?"Kỹ năng đã ở ô này.":learned&&destination?$"Ô {previewDestination+1}: {old} → {next}":"Chọn kỹ năng và ô đích.");
-            equipConfirm?.SetEnabled(learned&&destination&&!same&&!stale&&!equipSaving&&previewPet!=null&&previewPet==ContextPet);
+            if(IsEmbedded)RefreshSkillWorkflow();
         }
         void ConfirmEquipPreview(){
+            if(IsEmbedded){ConfirmSkillWorkflow();return;}
             if(equipSaving||previewPet==null||previewPet!=ContextPet||LoadoutProvider==null||!LoadoutProvider.ContainsPet(previewPet))return;
             var fresh=LoadoutProvider.LearnedFor(previewPet);int index=-1;for(int i=0;i<fresh.Count;i++)if(fresh[i].skillId==selectedSkillId&&fresh[i].unlocked){index=i;break;}
             var equipped=LoadoutProvider.SkillsFor(previewPet);string current=previewDestination>=0&&previewDestination<equipped.Count?equipped[previewDestination].skillId:string.Empty;
@@ -485,6 +467,7 @@ namespace Capstone.Game.HudSystem {
             selectedElements.Clear();
             RefreshFilterState();
             RebuildLearnedGrid();
+            if(IsEmbedded)RefreshSkillWorkflow();
         }
 
         void ToggleElement(PetElement element) {
@@ -494,6 +477,7 @@ namespace Capstone.Game.HudSystem {
             if (selectedElements.Count == filterButtons.Count) selectedElements.Clear();
             RefreshFilterState();
             RebuildLearnedGrid();
+            if(IsEmbedded)RefreshSkillWorkflow();
         }
 
         void RefreshFilterState() {
@@ -502,6 +486,7 @@ namespace Capstone.Game.HudSystem {
             foreach (KeyValuePair<PetElement, Button> pair in filterButtons) {
                 bool selected = selectedElements.Contains(pair.Key);
                 SetFilterSelected(pair.Value, selected, selected ? "Đang lọc hệ này · Bấm để bỏ chọn" : "Bấm để thêm hệ này vào bộ lọc");
+                Capstone.Game.UISystem.ElementUi.Filter(pair.Value,Capstone.Game.UISystem.ElementUi.Find(pair.Key),selected);
             }
         }
 
@@ -509,22 +494,17 @@ namespace Capstone.Game.HudSystem {
             if (button == null) return;
             button.EnableInClassList("is-selected", selected);
             button.tooltip = hint;
-            var mark = button.Q<Label>("filter-selection-mark");
-            if (mark == null) {
-                mark = new Label { name = "filter-selection-mark", pickingMode = PickingMode.Ignore };
-                mark.AddToClassList("filter-selection-mark");
-                button.Add(mark);
-            }
-            mark.text = selected ? "✓" : "";
+            button.Q<Label>("filter-selection-mark")?.RemoveFromHierarchy();
             if (button is Capstone.Game.UISystem.AngularButton angular) {
-                string role = selected ? "filter-selected" : "raised";
+                string role = selected ? "filter-selected" : "filter-off";
+                angular.Surface.StateSelected = null;
                 if(angular.Surface.Role!=role || angular.Surface.Material){
                     angular.Surface.Role = role;
                     angular.Surface.Material = false;
                     angular.Surface.MarkDirtyRepaint();
                 }
                 var caption=angular.Q<Label>(className:"angular-button-caption");
-                if(caption!=null){caption.style.left=24;caption.style.right=6;}
+                if(caption!=null){caption.style.left=6;caption.style.right=6;}
             }
         }
 
@@ -533,7 +513,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         PetElement EffectiveElement(SkillHudData skill) {
-            return skill.element != PetElement.Unknown ? skill.element : selectedPetElement;
+            return skill.element; // Missing skill classification must not inherit the pet type.
         }
 
         void ShowEquippedTooltip(int slotIndex) {
@@ -547,11 +527,12 @@ namespace Capstone.Game.HudSystem {
             // Embedded details follow the clicked selection, not incidental pointer hover.
             if(IsEmbedded&&anchor!=dialog)return;
             if (tooltipName != null) tooltipName.text = SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName));
-            if (tooltipElement != null) tooltipElement.text = FormatElement(EffectiveElement(skill));
+            Capstone.Game.UISystem.ElementUi.Label(tooltipElement,EffectiveElement(skill));
             if (tooltipLevel != null) tooltipLevel.text = Mathf.Max(1, skill.skillLevel).ToString();
             if (tooltipCooldown != null) tooltipCooldown.text = skill.cooldownSeconds > 0f ? $"{skill.cooldownSeconds:0.#} giây" : "-";
             if (tooltipDescription != null) tooltipDescription.text = Capstone.Game.UISystem.VietnameseUI.SkillDescription(skill.description);
 
+            Capstone.Game.UISystem.ElementUi.Details(IsEmbedded&&workflowDetailsScroll!=null?(VisualElement)workflowDetailsScroll:tooltip,skill);
             if(IsEmbedded){tooltip.style.display=DisplayStyle.Flex;return;}
 
             Rect anchorBounds = anchor.worldBound;
@@ -581,7 +562,7 @@ namespace Capstone.Game.HudSystem {
 
         static void SetText(VisualElement root, string className, string value) {
             Label label = root?.Q<Label>(className: className);
-            if (label != null) label.text = value;
+            Capstone.Game.UISystem.SkillPresentation.SetName(label,value);
         }
 
         static void SetPortrait(VisualElement target, Label fallback, Sprite sprite, string name) {

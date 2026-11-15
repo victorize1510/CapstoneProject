@@ -6,6 +6,9 @@ namespace Capstone.Game.UISystem {
     /// Shared by uGUI meshes, Toolkit meshes, artwork clipping, and hit testing. No nine-slice distortion.</summary>
     public static class GreenAngularGeometry {
         public static readonly Color Primary=Hex("3C4772"), Shell=Hex("66748E"), Panel=Hex("AEB8CD"), Raised=Hex("C1C3D3"), Ink=Hex("202B45"), Muted=Hex("39455E"), Gold=Hex("CCAD83"), Light=Hex("EDE9E1"), Disabled=Hex("9298AA"), Edge=Hex("8996B0"), Lavender=Hex("A596BB"), Hp=Hex("C47D8B"), Exp=Hex("76A6C3");
+        // Filter state uses brightness, independently of lavender navigation tabs.
+        public static readonly Color FilterOn=Hex("DEE5F2"), FilterOff=Hex("99A3B5");
+        public static Color FilterGlyph(bool visible)=>visible?Color.white:new Color(.75f,.78f,.83f,.62f);
         public static Color Hex(string s){ColorUtility.TryParseHtmlString("#"+s,out var c);return c;}
         static readonly Dictionary<(string,float,float,float,int),Vector2[]> polygonCache=new Dictionary<(string,float,float,float,int),Vector2[]>();
         static readonly Dictionary<Vector2[],int[]> triangleCache=new Dictionary<Vector2[],int[]>();

@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0342a19e0b38cbe4cbbfcf9620e979a6, type: 3}
+  m_Name: Family_wolf
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureFamilyDefinition
+  definitionId: wolf
+  displayName: "D\xF2ng s\xF3i"
+  legacyDefinitionIds: []
+  evolutionRulesReviewed: 0
+  forms:
+  - formId: 01
+    displayName: "S\xF3i T\xED N\u1ECB"
+    sourcePrefab: {fileID: 7293581909736218518, guid: 30603124225ec6e46baaf58ba7077971, type: 3}
+    avatar: {fileID: 21300000, guid: fca5f40bf7e17f441acae646345e619f, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 0}
+    skillSet: {fileID: 0}
+  - formId: 02
+    displayName: "S\xF3i B\xF3ng T\u1ED1i"
+    sourcePrefab: {fileID: 1590014999396076727, guid: 4e18ea68b07b2d34a8999eee25fd3160, type: 3}
+    avatar: {fileID: 21300000, guid: 361040a0e64957b45a1f1904f9197c53, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 0}
+    skillSet: {fileID: 0}
+  - formId: 03
+    displayName: "Ng\u01B0\u1EDDi S\xF3i Qu\u1EF7"
+    sourcePrefab: {fileID: 5481489653480362986, guid: 801a7269fef46394a864e996c85e914c, type: 3}
+    avatar: {fileID: 21300000, guid: 9b30e715e5a37a341bbfcf682fa8852f, type: 3}
+    heroPortrait: {fileID: 0}
+    statProfile: {fileID: 0}
+    skillSet: {fileID: 0}

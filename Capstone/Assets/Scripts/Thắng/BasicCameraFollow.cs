@@ -411,6 +411,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void UpdateCursorLock()
     {
+        if(Capstone.Game.HudSystem.GameplayHudController.WantsHudCursor){UnlockCursor();return;}
         if (IsGameplayInputBlocked())
         {
             UnlockCursor();
@@ -1198,7 +1199,7 @@ public class BasicCameraFollow : MonoBehaviour
             DrawCenterReticle();
         }
 
-        if (showLockMarker && lockedEnemy != null && lockedEnemy.IsAlive)
+        if (showLockMarker && !IsGameplayInputBlocked() && lockedEnemy != null && lockedEnemy.IsAlive)
         {
             DrawLockMarker();
         }

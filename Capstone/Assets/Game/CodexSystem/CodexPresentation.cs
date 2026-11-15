@@ -38,12 +38,17 @@ namespace Capstone.Game.CodexSystem {
                 var parent=badge.parent;badge.RemoveFromHierarchy();var host=new VisualElement();host.AddToClassList("codex-badge");CodexSurface.Behind(host,"badge");host.Add(badge);host.Add(Glyph("codex-badge-glyph","book"));parent.Add(host);
             }
             var categories=root.Query<CodexButton>(className:"codex-category").ToList();
-            for(int i=0;i<categories.Count;i++){var icon=Glyph("codex-category-glyph",glyphs[i]);categories[i].Insert(1,icon);}
+            root.AddToClassList("runtime-choice-list");RuntimeChoiceStyle.Sheet(root);
+            for(int i=0;i<categories.Count;i++){var category=categories[i];var icon=Glyph("codex-category-glyph",glyphs[i]);category.Insert(1,icon);
+                category.PlainChoice=true;category.Surface.RemoveFromHierarchy();RuntimeChoiceStyle.Category(category);
+                category.parent.style.height=category.parent.style.minHeight=48;
+                category.style.paddingLeft=44;category.style.paddingRight=12;icon.style.top=10;
+            }
             search=root.Q<TextField>("codex-search");search.textEdition.placeholder="Tên hoặc số…";
             var searchGroup=search.parent;searchGroup.name="codex-search-group";CodexSurface.Behind(searchGroup,"input");searchGroup.Add(Glyph("codex-search-glyph","search"));
             clearSearch=root.Q<CodexButton>("codex-clear");clearSearch.Kind="input";clearSearch.Surface.ClearFace=true;SearchState();
-            filters=root.Q("codex-filters");CodexSurface.Behind(filters,"shelf");
-            foreach(var pair in new[]{new[]{"codex-region","Khu vực"},new[]{"codex-rarity","Độ hiếm"},new[]{"codex-discovery","Trạng thái"},new[]{"codex-extra-sort","Sắp xếp"}}){var field=root.Q<DropdownField>(pair[0]);field.label=pair[1];var input=field.Q(className:"unity-base-field__input");if(input!=null)CodexSurface.Behind(input,"input");}
+            filters=root.Q("codex-filters");RuntimeChoiceStyle.Panel(filters);
+            foreach(var pair in new[]{new[]{"codex-region","Khu vực"},new[]{"codex-rarity","Độ hiếm"},new[]{"codex-discovery","Trạng thái"},new[]{"codex-extra-sort","Sắp xếp"}}){var field=root.Q<DropdownField>(pair[0]);field.label=pair[1];RuntimeChoiceMenus.Bind(field);var input=field.Q(className:"unity-base-field__input");if(input!=null)CodexSurface.Behind(input,"input");}
             root.Q("codex-filter-toggle").Insert(1,Glyph("codex-filter-glyph","filter"));
             gridScroll=root.Q<ScrollView>(className:"codex-grid-scroll");filters.RegisterCallback<GeometryChangedEvent>(_=>FitFilters());
             var empty=root.Q<Label>("codex-empty");emptyGroup=new VisualElement{name="codex-empty-state"};empty.RemoveFromHierarchy();emptyGroup.Add(Book("codex-empty-book"));emptyGroup.Add(empty);var hint=new Label{name="codex-empty-hint",pickingMode=PickingMode.Ignore};emptyHint=hint;emptyGroup.Add(hint);gridScroll.Add(emptyGroup);
@@ -68,7 +73,7 @@ namespace Capstone.Game.CodexSystem {
         static VisualElement Book(string cls){var e=new VisualElement{pickingMode=PickingMode.Ignore};e.AddToClassList(cls);e.style.backgroundImage=new StyleBackground(Resources.Load<Texture2D>("UI/TrainerMenu/05-codex-book-corner"));e.style.backgroundSize=new BackgroundSize(BackgroundSizeType.Contain);return e;}
         static void Place(VisualElement e,float x,float y,float w,float h)=>UnifiedPanelHeader.Place(e,new Rect(x,y,w,h));
         void Fit(){float w=root.resolvedStyle.width,h=root.resolvedStyle.height;if(!float.IsFinite(w)||!float.IsFinite(h)||w<=0||h<=0)return;float scale=Mathf.Min(w/1600,h/900);canvas.style.left=(w-1600*scale)/2;canvas.style.top=(h-900*scale)/2;canvas.style.scale=new Scale(new Vector3(scale,scale,1));FitFilters();}
-        public void FitFilters(){if(gridScroll==null)return;bool visible=filters.resolvedStyle.display!=DisplayStyle.None;root.EnableInClassList("filters-open",visible);gridScroll.style.top=visible?308:108;}
+        public void FitFilters(){if(gridScroll==null)return;bool visible=filters.resolvedStyle.display!=DisplayStyle.None;root.EnableInClassList("filters-open",visible);float height=filters.resolvedStyle.height>0?filters.resolvedStyle.height:256;gridScroll.style.top=visible?112+height+16:108;}
         public void Refresh(PetCodexEntryViewData selected,bool available,int resultCount){
             SearchState();
             bool empty=resultCount==0;emptyGroup.style.display=empty?DisplayStyle.Flex:DisplayStyle.None;root.Q<Label>("codex-empty").text=available?"Không tìm thấy sinh vật phù hợp.":"Cẩm nang chưa có thông tin sinh vật.";((Label)emptyHint).text=available?"Hãy thử bộ lọc khác.":"Sẽ khả dụng khi có thông tin cẩm nang.";

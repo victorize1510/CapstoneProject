@@ -40,21 +40,15 @@ namespace Capstone.Game.HudSystem {
         }
         public void Build(RectTransform region, PetCommandHudProvider provider) {
             pets = provider; Resolve();
-            var line = V.Frame(region, "Connector", HudFrameGraphic.Shape.Chamfered, V.Forest, Color.clear, 0, 0);
-            V.Bottom(line.rectTransform, 60, 69, 152, 1.4f);
-            for (int i = 0; i < 2; i++) {
-                int index = i;
-                RectTransform slot = V.Rect(region, "QuickItem" + (i + 1)); V.Bottom(slot, i * 142, 0, 124, 142);
-                buttons[i] = V.Button(slot, "Item", HudFrameGraphic.Shape.Circle);
-                V.Top((RectTransform)buttons[i].transform, 0, 0, 124, 124);
-                buttons[i].onClick.AddListener(() => Use(index));
-                var rim = V.Frame(buttons[i].transform, "InsetRim", HudFrameGraphic.Shape.Circle, Color.clear, V.Sage, 1f); V.Stretch(rim.rectTransform, 9);
-                V.Diamond(buttons[i].transform, "TopAccent", 0, 62, V.Forest);
-                icons[i] = V.Image(buttons[i].transform, "ItemIcon"); V.Stretch(icons[i].rectTransform, 19);
-                empty[i] = V.Text(buttons[i].transform, "EmptyOrMissingIcon", "—", 18, TextAnchor.MiddleCenter); V.Stretch(empty[i].rectTransform, 20);
-                quantities[i] = V.Text(buttons[i].transform, "Quantity", "", 19, TextAnchor.MiddleRight);
-                V.Bottom(quantities[i].rectTransform, 66, 17, 37, 24);
-                labels[i] = V.Keycap(slot, Key(i).ToString().ToUpperInvariant(), 38, 0, 48, 38);
+            for(int i=0;i<2;i++) {
+                int index=i;var slot=V.Rect(region,"QuickItem"+(i+1));V.Top(slot,i*96,0,80,106);
+                buttons[i]=HubR11Art.Button(slot,"Item","Components/quick-item");V.Top((RectTransform)buttons[i].transform,0,0,80,80);
+                buttons[i].onClick.AddListener(()=>Use(index));
+                var content=HubR11Art.Mask(buttons[i].transform,"Components/quick-item",80);
+                icons[i]=V.Image(content,"ItemIcon");V.Stretch(icons[i].rectTransform,8);
+                empty[i]=HubR11Art.Label(content,"EmptyOrMissingIcon","—",15);V.Stretch(empty[i].rectTransform,8);
+                quantities[i]=HubR11Art.Label(buttons[i].transform,"Quantity","",17,TextAnchor.MiddleRight);V.Top(quantities[i].rectTransform,49,42,25,22);
+                labels[i]=HubR11Art.Badge(slot,Key(i).ToString().ToUpperInvariant());
             }
             Refresh();
         }

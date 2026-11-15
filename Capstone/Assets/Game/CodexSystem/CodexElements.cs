@@ -30,7 +30,7 @@ namespace Capstone.Game.CodexSystem {
             indices=GreenAngularGeometry.Triangles(points);return points;
         }
         public bool Contains(Vector2 p)=>GreenAngularGeometry.Contains(Points(),p);
-        public void Animate(){animation?.Pause();float fromHover=Hover,fromPress=Press;double start=Time.realtimeSinceStartupAsDouble;animation=schedule.Execute(()=>{float t=(float)(Time.realtimeSinceStartupAsDouble-start);Hover=Mathf.Lerp(fromHover,Hovered?1:0,Mathf.Clamp01(t/InteractionFeedback.HoverSeconds));Press=Mathf.Lerp(fromPress,Pressed?1:0,Mathf.Clamp01(t/InteractionFeedback.PressSeconds));MarkDirtyRepaint();if(t>=InteractionFeedback.HoverSeconds)animation.Pause();}).Every(16);}
+        public void Animate(){animation?.Pause();if(panel==null)return;float fromHover=Hover,fromPress=Press;double start=Time.realtimeSinceStartupAsDouble;animation=schedule.Execute(()=>{float t=(float)(Time.realtimeSinceStartupAsDouble-start);Hover=Mathf.Lerp(fromHover,Hovered?1:0,Mathf.Clamp01(t/InteractionFeedback.HoverSeconds));Press=Mathf.Lerp(fromPress,Pressed?1:0,Mathf.Clamp01(t/InteractionFeedback.PressSeconds));MarkDirtyRepaint();if(t>=InteractionFeedback.HoverSeconds)animation.Pause();}).Every(16);}
         void Draw(MeshGenerationContext ctx){
             float w=layout.width,h=layout.height;if(!float.IsFinite(w)||!float.IsFinite(h)||w<7||h<7)return;var p=Points();
             if(ClearFace){if(Owner==null||Owner.enabledInHierarchy){var wash=InteractionFeedback.Wash(Hover,Press,Focused);if(wash.a>.001f)Paint(ctx,p,null,wash);}return;}
@@ -78,6 +78,7 @@ namespace Capstone.Game.CodexSystem {
     }
     [UxmlElement]public partial class CodexButton : Button {
         public readonly CodexSurface Surface;
+        public bool PlainChoice;
         readonly CodexClickable input=new CodexClickable();
         readonly Label caption;string content="";
         [UxmlAttribute]public string Kind {get=>Surface.Kind;set=>Surface.Kind=value;}
@@ -99,6 +100,6 @@ namespace Capstone.Game.CodexSystem {
             });
         }
         internal void SubmitKeyboard(EventBase source=null){if(enabledInHierarchy)input.Submit(source);}
-        public override bool ContainsPoint(Vector2 p)=>layout.width>=7&&layout.height>=7&&Surface.Contains(p);
+        public override bool ContainsPoint(Vector2 p)=>PlainChoice?base.ContainsPoint(p):layout.width>=7&&layout.height>=7&&Surface.Contains(p);
     }
 }

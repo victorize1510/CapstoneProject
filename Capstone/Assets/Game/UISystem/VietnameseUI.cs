@@ -24,21 +24,7 @@ namespace Capstone.Game.UISystem {
         }
         public static string SystemText(string value)=>(value??string.Empty).Replace("Leaf Berry","Quả lá").Replace("Dusk Stone","Đá hoàng hôn");
 
-        public static string Element(PetElement value) {
-            switch (value) {
-                case PetElement.Nature: return "Cỏ";
-                case PetElement.Fire: return "Lửa";
-                case PetElement.Water: return "Nước";
-                case PetElement.Wind: return "Gió";
-                case PetElement.Earth: return "Đất";
-                case PetElement.Electric: return "Điện";
-                case PetElement.Ice: return "Băng";
-                case PetElement.Light: return "Ánh sáng";
-                case PetElement.Dark: return "Bóng tối";
-                case PetElement.Dragon: return "Rồng";
-                default: return Unknown;
-            }
-        }
+        public static string Element(PetElement value) => ElementUi.Name(value);
 
         public static string Rarity(PetRarity value) => Rarity(value.ToString());
         public static string Rarity(string value) {

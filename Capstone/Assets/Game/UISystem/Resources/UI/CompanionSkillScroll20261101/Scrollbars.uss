@@ -1,0 +1,14 @@
+.runtime-scrollbars .runtime-scroll-vertical .unity-scroller__slider,
+.runtime-scrollbars .runtime-scroll-horizontal .unity-scroller__slider {position:absolute;left:0;right:0;top:0;bottom:0;margin:0;padding:0;background-color:transparent;border-width:0;}
+.runtime-scrollbars .runtime-scroll-vertical .unity-base-slider__tracker {position:absolute;left:5px;right:auto;top:0;bottom:0;width:2px;height:auto;margin:0;border-width:0;background-color:rgba(110,126,153,.47);}
+.runtime-scrollbars .runtime-scroll-horizontal .unity-base-slider__tracker {position:absolute;top:5px;bottom:auto;left:0;right:0;height:2px;width:auto;margin:0;border-width:0;background-color:rgba(110,126,153,.47);}
+.runtime-scrollbars .runtime-scroll-vertical .unity-base-slider__dragger {left:4px;width:4px;min-width:4px;max-width:4px;margin:0;border-width:0;border-radius:2px;background-color:#A4B3CB;}
+.runtime-scrollbars .runtime-scroll-horizontal .unity-base-slider__dragger {top:4px;height:4px;min-height:4px;max-height:4px;margin:0;border-width:0;border-radius:2px;background-color:#A4B3CB;}
+.runtime-scrollbars .runtime-scroll-vertical:hover .unity-base-slider__dragger,
+.runtime-scrollbars .runtime-scroll-vertical.runtime-scroll-focus .unity-base-slider__dragger {left:3px;width:6px;min-width:6px;max-width:6px;background-color:#A596BB;}
+.runtime-scrollbars .runtime-scroll-horizontal:hover .unity-base-slider__dragger,
+.runtime-scrollbars .runtime-scroll-horizontal.runtime-scroll-focus .unity-base-slider__dragger {top:3px;height:6px;min-height:6px;max-height:6px;background-color:#A596BB;}
+.runtime-scrollbars .runtime-scroll-vertical.runtime-scroll-pressed .unity-base-slider__dragger,
+.runtime-scrollbars .runtime-scroll-horizontal.runtime-scroll-pressed .unity-base-slider__dragger {background-color:#CCAD83;}
+.runtime-scrollbars .runtime-scroll-vertical .unity-base-slider__dragger-border,
+.runtime-scrollbars .runtime-scroll-horizontal .unity-base-slider__dragger-border {display:none;}

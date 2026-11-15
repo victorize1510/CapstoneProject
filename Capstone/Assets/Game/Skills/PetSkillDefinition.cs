@@ -22,11 +22,15 @@ namespace Capstone.Game.Skills {
         [Min(0)] public float windupSeconds;
         [Min(0)] public float recoverySeconds;
         public PetSkillPresentationProfile presentation;
+        [Header("Optional combat execution (shared across species)")]
+        public PetSkillCombatProfile combat;
+        [Header("Optional UI classification (does not change combat)")]
+        public SkillUiMetadata uiMetadata = new SkillUiMetadata();
 
         public string Id => (skillId ?? string.Empty).Trim();
         public SkillHudData CreateHudData(int requiredLevel = 1, bool unlocked = true) => new SkillHudData {
             skillId = Id, legacySkillIds = legacyIds, displayName = displayName, description = description,
-            element = element, icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds),
+            element = element, icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds), uiMetadata = uiMetadata,
             criticalRateBonus = criticalRateBonus, criticalDamageBonus = criticalDamageBonus,
             animatorStates = animatorStates, animationDuration = animationDuration, animationFade = animationFade,
             windupSeconds = windupSeconds, recoverySeconds = recoverySeconds,

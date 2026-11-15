@@ -348,6 +348,7 @@ namespace Capstone.Game.HudSystem {
             Button detailsButton = document?.rootVisualElement?.Q<Button>("pets-details-button");
             RegisterButton(detailsButton, () => OpenDetails());
             RegisterButton(detailsCloseButton, CloseDetails);
+            RegisterButton(document?.rootVisualElement?.Q<Button>("pet-details-advanced-toggle"), ToggleAdvancedDetails);
             RegisterButton(detailsEvolutionButton, () => OpenEvolutionPanel(detailsPet));
             RegisterCompanionControls();
 
@@ -447,6 +448,7 @@ namespace Capstone.Game.HudSystem {
             }
 
             detailsPet = target;
+            ResetAdvancedDetails();
             HideTooltip();
             HideRenamePopup();
             RefreshDetails();
@@ -456,10 +458,13 @@ namespace Capstone.Game.HudSystem {
         }
 
         public void CloseDetails() {
+            ResetAdvancedDetails();
             if (detailsOverlay != null) detailsOverlay.style.display = DisplayStyle.None;
             Capstone.Game.UISystem.PanelFocusUtility.Close(detailsOverlay);
             detailsPet = null;
         }
+        void ResetAdvancedDetails(){var ui=document?.rootVisualElement;var body=ui?.Q("pet-details-advanced-body");if(body!=null)body.style.display=DisplayStyle.None;var toggle=ui?.Q<Button>("pet-details-advanced-toggle");if(toggle!=null)toggle.text="Chi tiết nâng cao +";}
+        void ToggleAdvancedDetails(){var ui=document?.rootVisualElement;var body=ui?.Q("pet-details-advanced-body");if(body==null)return;bool show=body.resolvedStyle.display==DisplayStyle.None;body.style.display=show?DisplayStyle.Flex:DisplayStyle.None;ui.Q<Button>("pet-details-advanced-toggle").text=show?"Chi tiết nâng cao −":"Chi tiết nâng cao +";}
 
         void RefreshDetails() {
             if (detailsPet == null || document == null || document.rootVisualElement == null) return;
@@ -489,7 +494,8 @@ namespace Capstone.Game.HudSystem {
             SetFill(documentRoot.Q<VisualElement>("pet-details-exp-fill"), Percent(metadata.Experience, metadata.ExperienceToNextLevel));
             SetFill(documentRoot.Q<VisualElement>("pet-details-hp-fill"), Percent(health, maxHealth));
 
-            SetNamedText(documentRoot, "pet-details-id", DisplayOrDash(metadata.PetId));
+            string fullId=metadata.PetId;SetNamedText(documentRoot,"pet-details-id",fullId.Length>20?fullId.Substring(0,9)+"…"+fullId.Substring(fullId.Length-6):DisplayOrDash(fullId));
+            var idLabel=documentRoot.Q<Label>("pet-details-id");if(idLabel!=null)idLabel.tooltip=fullId;
             SetNamedText(documentRoot, "pet-details-capture-date", DisplayOrDash(metadata.CaptureDate));
             SetNamedText(documentRoot, "pet-details-capture-location", DisplayOrDash(metadata.CaptureLocation));
             SetNamedText(documentRoot, "pet-details-trainer", DisplayOrDash(metadata.TrainerName));
@@ -519,6 +525,11 @@ namespace Capstone.Game.HudSystem {
             SetNamedText(documentRoot, "pet-details-codex-description",
                 Capstone.Game.UISystem.VietnameseUI.PetDescription(metadata.CodexDescription));
             RefreshEvolution(documentRoot, metadata, source?.Icon, displayName);
+            bool configured=PetStatCalculator.TryGetProfile(metadata,out _);
+            var advancedToggle=documentRoot.Q<Button>("pet-details-advanced-toggle");if(advancedToggle!=null){advancedToggle.SetEnabled(configured);advancedToggle.tooltip=configured?"Xem IV, EV, tính khí và tổng chỉ số gốc.":"Chưa có dữ liệu chỉ số cho thú này.";}
+            var statsHost=documentRoot.Q(className:"ga-details-stats");
+            if(statsHost!=null){var missing=statsHost.Q<Label>("pet-details-stats-unavailable");if(missing==null){missing=new Label("Chưa có dữ liệu chỉ số."){name="pet-details-stats-unavailable",pickingMode=PickingMode.Ignore};statsHost.Insert(1,missing);}missing.style.display=configured?DisplayStyle.None:DisplayStyle.Flex;foreach(var row in statsHost.Query<VisualElement>(className:"ga-details-stat-row").ToList())row.style.display=configured?DisplayStyle.Flex:DisplayStyle.None;}
+            foreach(var pair in new[]{new[]{"pet-details-capture-date",metadata.CaptureDate},new[]{"pet-details-capture-location",metadata.CaptureLocation},new[]{"pet-details-trainer",metadata.TrainerName},new[]{"pet-details-personality",metadata.Personality}}){var label=documentRoot.Q<Label>(pair[0]);if(label!=null)label.parent.style.display=string.IsNullOrWhiteSpace(pair[1])?DisplayStyle.None:DisplayStyle.Flex;}
         }
 
         void RebuildDetailsSkills(IReadOnlyList<SkillHudData> skills, int requestedSlotCount) {
@@ -542,9 +553,9 @@ namespace Capstone.Game.HudSystem {
                 var text = new VisualElement();
                 text.AddToClassList("pet-details-skill-text");
                 text.Add(CreateLabel(hasSkill ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Chưa mở", "pet-details-skill-name"));
-                text.Add(CreateLabel(hasSkill ? FormatElement(skill.element) : "Hệ: -", "pet-details-skill-element"));
-                text.Add(CreateLabel("Lượt dùng: chưa có dữ liệu", "pet-details-skill-pp"));
                 card.Add(text);
+                Capstone.Game.UISystem.SkillPresentation.Compact(card,"pet-details-skill-name");
+                card.Q<Label>(className:"pet-details-skill-name").style.color=Capstone.Game.UISystem.GreenAngularGeometry.Ink;
                 detailsSkillsRow.Add(card);
             }
         }
@@ -802,24 +813,25 @@ namespace Capstone.Game.HudSystem {
             // Large 2D illustration is a separate presentation asset; never enlarge the HUD avatar here.
             RefreshCompanionPortrait(selectedController);
 
-            PetStatSnapshot scores = metadata != null ? metadata.CurrentStats : default;
-            if (statHealth != null) statHealth.text = metadata != null ? scores.Hp.ToString() : "—";
-            if (statAttack != null) statAttack.text = metadata != null ? scores.Attack.ToString() : "—";
-            if (statDefense != null) statDefense.text = metadata != null ? scores.Defense.ToString() : "—";
-            if (statSpeed != null) statSpeed.text = metadata != null ? scores.Speed.ToString() : "—";
-            if (statMagicAttack != null) statMagicAttack.text = metadata != null ? scores.MagicAttack.ToString() : "—";
-            if (statMagicDefense != null) statMagicDefense.text = metadata != null ? scores.MagicDefense.ToString() : "—";
-            if (statCriticalRate != null) statCriticalRate.text = metadata != null ? $"{scores.CriticalRate:0.#}%" : "—";
-            if (statCriticalDamage != null) statCriticalDamage.text = metadata != null ? $"{scores.CriticalDamage:0.#}%" : "—";
+            bool hasStatProfile=metadata!=null&&PetStatCalculator.TryGetProfile(metadata,out _);
+            PetStatSnapshot scores = hasStatProfile ? metadata.CurrentStats : default;
+            if (statHealth != null) statHealth.text = hasStatProfile ? scores.Hp.ToString() : "—";
+            if (statAttack != null) statAttack.text = hasStatProfile ? scores.Attack.ToString() : "—";
+            if (statDefense != null) statDefense.text = hasStatProfile ? scores.Defense.ToString() : "—";
+            if (statSpeed != null) statSpeed.text = hasStatProfile ? scores.Speed.ToString() : "—";
+            if (statMagicAttack != null) statMagicAttack.text = hasStatProfile ? scores.MagicAttack.ToString() : "—";
+            if (statMagicDefense != null) statMagicDefense.text = hasStatProfile ? scores.MagicDefense.ToString() : "—";
+            if (statCriticalRate != null) statCriticalRate.text = hasStatProfile ? $"{scores.CriticalRate:0.#}%" : "—";
+            if (statCriticalDamage != null) statCriticalDamage.text = hasStatProfile ? $"{scores.CriticalDamage:0.#}%" : "—";
 
-            SetFill(statHealthFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Hp, pet.level, PetCoreStat.Hp) : 0f);
-            SetFill(statAttackFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Attack, pet.level, PetCoreStat.Attack) : 0f);
-            SetFill(statDefenseFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Defense, pet.level, PetCoreStat.Defense) : 0f);
-            SetFill(statSpeedFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.Speed, pet.level, PetCoreStat.Speed) : 0f);
-            SetFill(statMagicAttackFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.MagicAttack, pet.level, PetCoreStat.MagicAttack) : 0f);
-            SetFill(statMagicDefenseFill, metadata != null ? PetStatCalculator.DisplayRatio(scores.MagicDefense, pet.level, PetCoreStat.MagicDefense) : 0f);
-            SetFill(statCriticalRateFill, metadata != null ? scores.CriticalRate / CriticalRateDisplayMaximum : 0f);
-            SetFill(statCriticalDamageFill, metadata != null ? scores.CriticalDamage / CriticalDamageDisplayMaximum : 0f);
+            SetFill(statHealthFill, hasStatProfile ? PetStatCalculator.DisplayRatio(scores.Hp, pet.level, PetCoreStat.Hp) : 0f);
+            SetFill(statAttackFill, hasStatProfile ? PetStatCalculator.DisplayRatio(scores.Attack, pet.level, PetCoreStat.Attack) : 0f);
+            SetFill(statDefenseFill, hasStatProfile ? PetStatCalculator.DisplayRatio(scores.Defense, pet.level, PetCoreStat.Defense) : 0f);
+            SetFill(statSpeedFill, hasStatProfile ? PetStatCalculator.DisplayRatio(scores.Speed, pet.level, PetCoreStat.Speed) : 0f);
+            SetFill(statMagicAttackFill, hasStatProfile ? PetStatCalculator.DisplayRatio(scores.MagicAttack, pet.level, PetCoreStat.MagicAttack) : 0f);
+            SetFill(statMagicDefenseFill, hasStatProfile ? PetStatCalculator.DisplayRatio(scores.MagicDefense, pet.level, PetCoreStat.MagicDefense) : 0f);
+            SetFill(statCriticalRateFill, hasStatProfile ? scores.CriticalRate / CriticalRateDisplayMaximum : 0f);
+            SetFill(statCriticalDamageFill, hasStatProfile ? scores.CriticalDamage / CriticalDamageDisplayMaximum : 0f);
             if (!hasPet) {
                 SetFeedback("Chọn một ô có thú để xem thông tin.");
             }
@@ -1159,6 +1171,7 @@ namespace Capstone.Game.HudSystem {
                 : "-";
             SetNamedText(rootElement, $"pet-details-stat-{suffix}", valueText);
             SetFill(rootElement?.Q<VisualElement>($"pet-details-stat-{suffix}-fill"), percent);
+            Capstone.Game.SettingsSystem.SettingsFinalArt.BindStatRow(rootElement?.Q<Label>($"pet-details-stat-{suffix}")?.parent,suffix,"pet-detail-stat-key");
         }
 
         static void SetVisible(VisualElement element, bool visible) {

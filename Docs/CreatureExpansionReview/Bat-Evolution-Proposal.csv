@@ -1,0 +1,3 @@
+﻿family_id,source_form,target_form,proposed_rule_id,proposed_trigger,proposed_required_level,required_item_id,required_item_quantity,preserve_policy,target_is_final_proposed,approved_by,status,applied_to_runtime
+bat,01,02,bat.01-to-02.level,Level,18,,,Existing individual identity/genetics/loadout/save and HP evolution policy,false,,PROPOSED_NOT_APPROVED,false
+bat,02,03,bat.02-to-03.level,Level,36,,,Existing individual identity/genetics/loadout/save and HP evolution policy,true,,PROPOSED_NOT_APPROVED,false

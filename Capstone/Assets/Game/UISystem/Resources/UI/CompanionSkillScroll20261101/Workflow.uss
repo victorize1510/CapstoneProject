@@ -1,0 +1,27 @@
+/* Embedded Companion workflow only; original modal and combat HUD remain independent. */
+.readability-ui .companion-design .companion-embedded-skills.skill-workflow {display:flex;flex-direction:column;min-height:0;padding-bottom:12px;}
+.skill-workflow .skills-section-header {position:relative;height:32px;min-height:32px;flex-shrink:0;flex-direction:row;align-items:center;}
+.skill-workflow .skills-section-line {display:none;}
+.skill-workflow .skills-section-title {flex-grow:1;font-size:16px;}
+.skill-workflow .skill-workflow-toggle {width:144px;min-width:144px;height:32px;min-height:32px;flex-shrink:0;}
+.skill-workflow .skill-workflow-toggle .angular-button-caption {font-size:16px;color:#EDE9E1;}
+.readability-ui .companion-design .skill-workflow .skills-equipped-row {position:relative;left:auto;top:auto;width:100%;height:80px;min-height:80px;flex-shrink:0;margin:8px 0;}
+.readability-ui .companion-design .skill-workflow .skills-equipped-slot {height:80px;min-height:80px;}
+.skill-workflow .skill-workflow-lower {position:relative;flex-direction:row;flex-grow:1;flex-basis:0;min-height:0;}
+.skill-workflow .skill-workflow-catalog {position:relative;width:468px;min-width:0;flex-shrink:1;flex-direction:column;}
+.skill-workflow #companion-filter-rail {position:relative;left:auto;top:auto;width:468px;height:44px;min-height:44px;flex-shrink:0;}
+.readability-ui .companion-design .skill-workflow .skills-learned-scroll {position:relative;left:auto;top:auto;bottom:auto;width:100%;height:auto;flex-grow:1;flex-basis:0;min-height:0;margin:8px 0 0 0;padding:0;}
+.readability-ui .companion-design .skill-workflow .companion-inline-detail {position:relative;left:auto;top:auto;bottom:auto;width:324px;height:auto;flex-grow:1;flex-basis:0;min-width:0;min-height:0;margin-left:20px;padding:12px;flex-direction:column;}
+.skill-workflow #skills-helper-label {position:relative;left:auto;right:auto;top:auto;display:flex;min-height:24px;height:auto;flex-shrink:0;margin:0 0 8px 0;font-size:16px;-unity-font-style:bold;white-space:normal;color:#202B45;}
+.skill-workflow #skill-workflow-details {position:relative;flex-grow:1;flex-basis:0;min-height:0;margin:0;padding:0;}
+.skill-workflow #skill-workflow-details .skills-tooltip-description {height:auto;max-height:none;min-height:32px;white-space:normal;overflow:visible;margin-top:8px;}
+.skill-workflow #skill-workflow-details .skills-tooltip-name {height:auto;min-height:28px;white-space:normal;}
+.skill-workflow .skill-workflow-preview {position:relative;flex-shrink:0;margin-top:8px;padding:4px;background-color:rgba(56,67,96,.1);}
+.skill-workflow .skill-workflow-preview-row {min-height:40px;flex-shrink:0;flex-direction:row;align-items:center;}
+.companion-design .skill-workflow .workflow-preview-slot {width:30px;min-width:30px;font-size:12px;-unity-font-style:bold;}
+.skill-workflow .workflow-preview-icon {width:26px;height:26px;flex-shrink:0;}
+.companion-design .skill-workflow .workflow-preview-name {flex-grow:1;flex-basis:0;min-width:0;font-size:13px;white-space:normal;max-height:36px;overflow:hidden;text-overflow:ellipsis;margin:0 4px;}
+.skill-workflow .workflow-preview-arrow {width:16px;min-width:16px;font-size:16px;}
+.skill-workflow #r3-equip-preview {position:relative;left:auto;right:auto;top:auto;bottom:auto;height:auto;min-height:20px;flex-shrink:0;margin-top:6px;font-size:14px;white-space:normal;}
+.skill-workflow #r3-equip-confirm {position:relative;left:auto;right:auto;top:auto;bottom:auto;height:44px;min-height:44px;flex-shrink:0;margin-top:8px;}
+.readability-ui .companion-design .skill-workflow #r3-equip-confirm .angular-button-caption {font-size:18px;}

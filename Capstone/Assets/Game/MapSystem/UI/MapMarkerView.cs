@@ -5,13 +5,15 @@ using UnityEngine.UI;
 
 namespace Capstone.Game.MapSystem.UI {
     [RequireComponent(typeof(Button))]
-    public sealed class MapMarkerView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
+    public sealed class MapMarkerView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler {
         MapMarkerData data;
         Image selection;
         RectTransform rect;
         Transform icon;
         bool hovered;
         bool visible, clustered;
+        Image hoverGraphic,focusGraphic;
+        bool focused;
         Action<MapMarkerData> selected;
         Action<MapMarkerData, bool> tooltip;
         public MapMarkerData Data => data;
@@ -21,6 +23,7 @@ namespace Capstone.Game.MapSystem.UI {
             data = value; selection = halo; selected = callback; tooltip = hover; rect = (RectTransform)transform;
             visible = gameObject.activeSelf; clustered = false;
             icon = transform.Find("Icon");
+            hoverGraphic=transform.Find("Hover")?.GetComponent<Image>();focusGraphic=transform.Find("Focus")?.GetComponent<Image>();
             var button = GetComponent<Button>(); button.onClick.RemoveListener(Select); button.onClick.AddListener(Select);
         }
         public void SetPosition(Vector2 normalized, bool visible) {
@@ -39,10 +42,14 @@ namespace Capstone.Game.MapSystem.UI {
         void Select() => selected?.Invoke(data);
         public void OnPointerEnter(PointerEventData eventData) { hovered = true; UpdateHighlight(); tooltip?.Invoke(data, true); }
         public void OnPointerExit(PointerEventData eventData) { hovered = false; UpdateHighlight(); tooltip?.Invoke(data, false); }
-        void OnDisable() { if (hovered) tooltip?.Invoke(data, false); hovered = false; UpdateHighlight(); }
+        public void OnSelect(BaseEventData _) {focused=true;UpdateHighlight();}
+        public void OnDeselect(BaseEventData _) {focused=false;UpdateHighlight();}
+        void OnDisable() { if (hovered) tooltip?.Invoke(data, false); hovered = focused = false; UpdateHighlight(); }
         void UpdateHighlight() {
-            if (selection != null) selection.enabled = hovered || (data != null && data.isSelected);
-            transform.localScale = Vector3.one * (hovered || (data != null && data.isSelected) ? 1.12f : 1f);
+            bool selected=data!=null&&data.isSelected;
+            if(selection!=null)selection.enabled=selected&&!focused;
+            if(hoverGraphic!=null)hoverGraphic.enabled=hovered&&!selected;
+            if(focusGraphic!=null){focusGraphic.enabled=focused;focusGraphic.sprite=MapR5View.Sprite("Effects/marker-"+(selected?"selected-focus":"focus"));}
         }
     }
 }

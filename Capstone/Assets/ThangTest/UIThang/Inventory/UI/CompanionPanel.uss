@@ -59,7 +59,6 @@
 .companion-design .companion-embedded-skills .skills-empty-label {font-size:14px;color:#39455E;white-space:normal;}
 .companion-design .companion-inline-detail Label {font-size:14px;color:#202B45;white-space:normal;}
 .companion-design .companion-embedded-skills .skills-filter-button .angular-button-caption {font-size:13px;color:#202B45;}
-.companion-design .companion-embedded-skills .skills-learned-scroll .unity-scroll-view__vertical-scroller {position:absolute;right:0;top:0;bottom:0;width:6px;}
 .companion-design .companion-active-badge {position:absolute;left:34px;top:8px;width:28px;height:28px;-unity-background-scale-mode:scale-to-fit;-unity-background-image-tint-color:#CCAD83;}
 .companion-design #green-title-ribbon {opacity:.9;}
 .pets-panel.companion-panel {left:0;right:0;top:0;bottom:0;width:auto;height:auto;padding:0;margin:0;border-width:0;background-color:rgba(32,43,69,.14);background-image:none;color:#202B45;}
@@ -126,7 +125,6 @@
 .companion-design .companion-stat-value,.companion-design .companion-resource-value {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .companion-design #r3-skill-description-scroll {height:36px;max-height:36px;min-height:36px;margin:0;padding:0;}
 .companion-design #r3-skill-description-scroll .skills-tooltip-description {height:auto;max-height:none;overflow:visible;white-space:normal;}
-.companion-design #r3-skill-description-scroll .unity-scroll-view__vertical-scroller {width:6px;}
 .companion-design .companion-summary {height:101px;flex-shrink:0;border-bottom-width:1px;border-bottom-color:#8996B0;}
 .companion-design .companion-name-row {height:44px;flex-direction:row;align-items:center;min-height:44px;}
 .companion-design .companion-name {font-size:32px;-unity-font-style:bold;width:auto;max-width:none;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;min-width:0;flex-grow:1;white-space:nowrap;}

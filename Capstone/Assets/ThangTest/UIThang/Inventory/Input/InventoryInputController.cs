@@ -46,6 +46,10 @@ namespace Capstone.Game.Inventory {
         static readonly HashSet<object> ExternalGameplayInputBlockers = new HashSet<object>();
 
         public static bool GameplayInputBlocked => ExternalGameplayInputBlockers.Count > 0;
+        internal static bool IsBlockedByOtherThan(object owner) {
+            foreach(var blocker in ExternalGameplayInputBlockers)if(!ReferenceEquals(blocker,owner))return true;
+            return false;
+        }
 
         // Tracking is passive: mouse look, zoom, movement and pet commands still use
         // GameplayInputBlocked. Any additional UI owner restores the normal camera freeze.
@@ -227,6 +231,7 @@ namespace Capstone.Game.Inventory {
             registeredPanelRoot?.RegisterCallback<NavigationCancelEvent>(HandleNativeDropdownCancel, TrickleDown.TrickleDown);
         }
         void HandleNativeDropdownCancel(NavigationCancelEvent _) {
+            if(Capstone.Game.UISystem.ElementLibraryPopup.TryClose()){_.StopImmediatePropagation();return;}
             if (registeredPanelRoot?.Q(className: "unity-base-dropdown__container-outer") == null) return;
             handledFrame = Time.frameCount;
             shortcutRouter?.MarkShortcutHandled(closeKey);

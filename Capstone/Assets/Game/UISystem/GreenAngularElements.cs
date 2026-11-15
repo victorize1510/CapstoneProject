@@ -41,9 +41,11 @@ namespace Capstone.Game.UISystem {
             if(FeedbackSource!=null){HoverAmount=FeedbackSource.HoverAmount;PressAmount=FeedbackSource.PressAmount;IsFocused=FeedbackSource.IsFocused;}
             float w=layout.width,h=layout.height;if(w<=0||h<=0)return;var pts=GreenAngularGeometry.Polygon(Shape,w,h,h<12||w<12?0:3,ActiveTab);bool selected=Selected||(StateSelected?.Invoke(this)??false);
             Color fill=Role=="mode"?(selected?GreenAngularGeometry.Lavender:GreenAngularGeometry.Shell):Role=="primary"?GreenAngularGeometry.Primary:Role=="shell"?GreenAngularGeometry.Shell:Role=="raised"?GreenAngularGeometry.Raised:Role=="lavender"?GreenAngularGeometry.Lavender:Role=="hp"?GreenAngularGeometry.Hp:Role=="exp"?GreenAngularGeometry.Exp:Role=="track"?GreenAngularGeometry.Edge:GreenAngularGeometry.Panel;
-            if(Role=="filter-selected")fill=new Color32(222,227,242,255);
+            if(Role=="filter-selected")fill=GreenAngularGeometry.FilterOn;
+            if(Role=="filter-off")fill=GreenAngularGeometry.FilterOff;
+            if(Role=="filter-arrow")fill=Color.Lerp(GreenAngularGeometry.Raised,GreenAngularGeometry.Disabled,Mathf.Max(Mathf.Max(HoverAmount*.7f,PressAmount),IsFocused ? .5f : 0f));
             if(!enabledInHierarchy)fill=GreenAngularGeometry.Disabled;
-            if(enabledInHierarchy)fill=Color.Lerp(fill,GreenAngularGeometry.Ink,PressAmount*InteractionFeedback.PressedInkAlpha);
+            if(enabledInHierarchy&&Role!="filter-arrow")fill=Color.Lerp(fill,GreenAngularGeometry.Ink,PressAmount*InteractionFeedback.PressedInkAlpha);
             var key=(Shape,Role,Mathf.RoundToInt(w),Mathf.RoundToInt(h),ActiveTab,Material,NoFill);
             if(!key.Equals(skinKey)){skinKey=key;cachedSkin=Material&&!NoFill?LatestMenuCompanionAssets.Surface(Shape,Role,w,h,ActiveTab):null;}
             var skin=SkinTexture!=null?SkinTexture:cachedSkin;
@@ -54,7 +56,7 @@ namespace Capstone.Game.UISystem {
             if(Material&&!NoFill&&Art==null&&skin==null&&w>=110&&h>=40){var grain=LatestMenuCompanionAssets.Load("Assets/Art/steel-enamel-r2");if(grain!=null)PaintTexture(ctx,pts,grain.texture,w,h,new Color(1,1,1,.13f));string motif=Role=="shell"?"shell":Role=="primary"?"button":"content";var engraving=LatestMenuCompanionAssets.Load("Assets/Motifs/"+motif);if(engraving!=null)PaintTexture(ctx,pts,engraving.texture,w,h,Color.white);}
             if((!NoBorder&&(skin==null||selected))||(SelectionOutline&&FeedbackSource!=null&&selected))Stroke(ctx,pts,selected?(SelectionColor?.Invoke()??(Role=="filter-selected"?GreenAngularGeometry.Gold:GreenAngularGeometry.Lavender)):GreenAngularGeometry.Edge,selected?2.6f:1.35f);
             if(FeedbackOverlay!=null)return; // State contour must be above full-bleed child artwork.
-            if(enabledInHierarchy){var wash=InteractionFeedback.Wash(HoverAmount,PressAmount,IsFocused);if(wash.a>.001f)PaintTexture(ctx,pts,null,w,h,wash);}
+            if(enabledInHierarchy&&Role!="filter-arrow"){var wash=InteractionFeedback.Wash(HoverAmount,PressAmount,IsFocused);if(wash.a>.001f)PaintTexture(ctx,pts,null,w,h,wash);}
             if(skin!=null&&!enabledInHierarchy){var overlay=GreenAngularGeometry.Disabled;overlay.a=.3f;PaintTexture(ctx,pts,null,w,h,overlay);}
 
 

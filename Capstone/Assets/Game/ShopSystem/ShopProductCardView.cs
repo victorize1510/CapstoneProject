@@ -14,6 +14,7 @@ namespace Capstone.Game.ShopSystem {
             Root = template.CloneTree(); button = Root.Q<Button>("shop-card");
             name = Root.Q<Label>("card-name"); price = Root.Q<Label>("card-price"); status = Root.Q<Label>("card-status");
             icon = Root.Q("card-icon"); placeholder = Root.Q<Label>("card-placeholder");
+            ShopASkin.Face(button, "A-product-card");
             click = () => { if (offer != null) select(offer); }; button.clicked += click;
         }
         public void Render(ShopOffer value, string selectedId) {
@@ -28,6 +29,7 @@ namespace Capstone.Game.ShopSystem {
             button.EnableInClassList("is-selected", value.Id == selectedId);
             button.EnableInClassList("is-unavailable", !value.Unlocked || value.Stock == 0 || value.GoldPrice < 0);
             button.tooltip = value.Item.Name + " • " + price.text;
+            ShopASkin.Refresh(button);
         }
         public void Dispose() { button.clicked -= click; Root.RemoveFromHierarchy(); }
     }

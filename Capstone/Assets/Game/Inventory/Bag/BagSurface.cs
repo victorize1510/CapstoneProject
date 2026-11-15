@@ -17,6 +17,7 @@ namespace Capstone.Game.Inventory.Bag {
         public bool Hovered,Pressed,Focused;public float HoverAmount,PressAmount;
         public Func<bool> IsSelected;
         public PanelMaterialField Background;
+        public Texture2D MaterialFill;
         public bool ClearFace;
         IVisualElementScheduledItem animation;
         public string Shape=>kind.StartsWith("action")?"parallel":"panel";
@@ -30,18 +31,19 @@ namespace Capstone.Game.Inventory.Bag {
         public BagSurface(){pickingMode=PickingMode.Ignore;generateVisualContent+=Draw;RegisterCallback<DetachFromPanelEvent>(_=>Stop());}
         public override bool ContainsPoint(Vector2 p)=>GreenAngularGeometry.Contains(Points(),p);
         public void Stop(){animation?.Pause();Hovered=Pressed=Focused=false;HoverAmount=PressAmount=0;MarkDirtyRepaint();}
-        public void Animate(){animation?.Pause();float h=HoverAmount,p=PressAmount;double start=Time.realtimeSinceStartupAsDouble;animation=schedule.Execute(()=>{float dt=(float)(Time.realtimeSinceStartupAsDouble-start);HoverAmount=Mathf.Lerp(h,Hovered?1:0,Mathf.Clamp01(dt/InteractionFeedback.HoverSeconds));PressAmount=Mathf.Lerp(p,Pressed?1:0,Mathf.Clamp01(dt/InteractionFeedback.PressSeconds));MarkDirtyRepaint();if(dt>=InteractionFeedback.HoverSeconds)animation.Pause();}).Every(16);}
+        public void Animate(){animation?.Pause();if(panel==null)return;float h=HoverAmount,p=PressAmount;double start=Time.realtimeSinceStartupAsDouble;animation=schedule.Execute(()=>{float dt=(float)(Time.realtimeSinceStartupAsDouble-start);HoverAmount=Mathf.Lerp(h,Hovered?1:0,Mathf.Clamp01(dt/InteractionFeedback.HoverSeconds));PressAmount=Mathf.Lerp(p,Pressed?1:0,Mathf.Clamp01(dt/InteractionFeedback.PressSeconds));MarkDirtyRepaint();if(dt>=InteractionFeedback.HoverSeconds)animation.Pause();}).Every(16);}
         void Draw(MeshGenerationContext ctx){
             float w=layout.width,h=layout.height;if(w<=0||h<=0)return;
             if(ClearFace){var wash=InteractionFeedback.Wash(HoverAmount,PressAmount,Focused);if(wash.a>.001f)Paint(ctx,Points(),null,w,h,wash);return;}
             if(Background==null){fill??=BagArt.Texture("Components/"+kind+"__fill");motif??=BagArt.Texture("Components/"+kind+"__motif");}border??=BagArt.Texture("Components/"+kind+"__border");
             var points=Points();bool dark=kind=="category-panel"||kind=="category-row"||kind=="action-primary"||kind=="view-toggle"||kind=="tooltip";
             bool native=fill!=null&&Mathf.Abs(fill.width-w)<1&&Mathf.Abs(fill.height-h)<1;
-            if(Background!=null)Background.Draw(ctx,points);
+            if(MaterialFill!=null)Paint(ctx,points,MaterialFill,w,h,Color.white,true);
+            else if(Background!=null)Background.Draw(ctx,points);
             else if(native)Paint(ctx,points,fill,w,h,Color.white);
             else {Paint(ctx,points,null,w,h,kind=="action-danger"?GreenAngularGeometry.Hex("815C71"):dark?GreenAngularGeometry.Primary:GreenAngularGeometry.Panel);var grain=LatestMenuCompanionAssets.Load("Assets/Art/steel-enamel-r2");if(grain!=null)Paint(ctx,points,grain.texture,w,h,new Color(1,1,1,.13f));}
             if(IsSelected?.Invoke()==true)Paint(ctx,points,null,w,h,GreenAngularGeometry.Lavender);
-            if(Background==null)Paint(ctx,points,motif,w,h,Color.white,kind=="item-row"||kind=="item-square");
+            if(Background==null&&MaterialFill==null)Paint(ctx,points,motif,w,h,Color.white,kind=="item-row"||kind=="item-square");
             if(border!=null&&Mathf.Abs(border.width-w)<1&&Mathf.Abs(border.height-h)<1)Paint(ctx,points,border,w,h,Color.white);
             else {var edge=ctx.painter2D;edge.BeginPath();edge.MoveTo(points[0]);for(int i=1;i<points.Length;i++)edge.LineTo(points[i]);edge.ClosePath();edge.lineWidth=1.35f;edge.strokeColor=GreenAngularGeometry.Edge;edge.Stroke();}
             if(!enabledInHierarchy){var disabled=GreenAngularGeometry.Disabled;disabled.a=.75f;Paint(ctx,points,null,w,h,disabled);}
@@ -56,6 +58,7 @@ namespace Capstone.Game.Inventory.Bag {
     }
     [UxmlElement] public partial class BagButton:Button {
         public readonly BagSurface Surface;readonly Label caption;string logicalText="";
+        public bool PlainChoice;
         [UxmlAttribute]public string Kind{get=>Surface.Kind;set=>Surface.Kind=value;}
         public override string text{get=>base.text;set{logicalText=value??"";base.text="";if(caption!=null){caption.text=logicalText;caption.style.display=string.IsNullOrEmpty(logicalText)?DisplayStyle.None:DisplayStyle.Flex;}}}
         public BagButton(){
@@ -68,6 +71,6 @@ namespace Capstone.Game.Inventory.Bag {
             RegisterCallback<FocusEvent>(_=>{Surface.Focused=InteractionFeedback.KeyboardNavigation;Surface.MarkDirtyRepaint();});RegisterCallback<BlurEvent>(_=>{Surface.Focused=false;Surface.MarkDirtyRepaint();});RegisterCallback<DetachFromPanelEvent>(_=>Surface.Stop());
         }
         public BagButton(Action clicked):this(){this.clicked+=clicked;}
-        public override bool ContainsPoint(Vector2 point)=>Surface.ContainsPoint(point);
+        public override bool ContainsPoint(Vector2 point)=>PlainChoice?base.ContainsPoint(point):Surface.ContainsPoint(point);
     }
 }
