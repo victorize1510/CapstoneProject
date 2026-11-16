@@ -16,7 +16,7 @@ namespace Capstone.Game.PetSummon.Editor
         }
         static object Field(object value,string name) => value.GetType().GetField(name,Private|BindingFlags.Public).GetValue(value);
 
-        [MenuItem("Game Tools/Pets/Validate Summon Effects")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Validate Summon Effects")]
         public static void Run()
         {
             if (Application.isPlaying) { Debug.LogWarning("Stop Play Mode before validating summon effects."); return; }
@@ -417,7 +417,7 @@ namespace Capstone.Game.PetSummon.Editor
         }
 
         static double previewDeadline;
-        [MenuItem("Game Tools/Pets/Pause Next Summon Effect")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Pause Next Summon Effect")]
         static void PauseNextEffect()
         {
             if (!EditorApplication.isPlaying) { Debug.Log("Enter Play Mode before arming frame preview."); return; }

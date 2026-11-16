@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace Capstone.Game.HudSystem.Editor {
     public static class GameplayHudSetupEditor {
-        const string MenuPath = "Game Tools/GameToolThang/HUD/Create Gameplay HUD";
+        const string MenuPath = "Tools/Capstone/Advanced/HUD/Create Gameplay HUD";
         const string HudObjectName = "GameplayHUD";
         const string LegacyQuestTrackerObjectName = "QuestTrackerHUD";
 

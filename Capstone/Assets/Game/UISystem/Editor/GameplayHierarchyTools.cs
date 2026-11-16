@@ -17,7 +17,7 @@ namespace Capstone.Game.UISystem.Editor {
         static readonly string[] Groups={"01_Player","02_Pets","03_UI","04_Cameras","05_Systems"};
         const string UndoLabel="Group gameplay for scene copy";
 
-        [MenuItem("Game Tools/Scene/Group Gameplay for Copy")]
+        [MenuItem("Tools/Capstone/Advanced/Scene/Group Gameplay for Copy")]
         public static void GroupMenu(){var root=GroupCurrentScene();Selection.activeGameObject=root;}
 
         public static GameObject GroupCurrentScene(){
@@ -86,7 +86,7 @@ namespace Capstone.Game.UISystem.Editor {
             return references;
         }
 
-        [MenuItem("Game Tools/Scene/Export Gameplay Bundle Prefab")]
+        [MenuItem("Tools/Capstone/Advanced/Scene/Export Gameplay Bundle Prefab")]
         public static void ExportMenu(){var root=GroupCurrentScene();Export(root);Selection.activeObject=AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPath);}
         public static void Export(GameObject root){
             if(root==null||root.name!=RootName)throw new InvalidOperationException("Missing grouped gameplay root.");

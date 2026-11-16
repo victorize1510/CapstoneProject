@@ -36,7 +36,7 @@ namespace Capstone.Game.UISystem.Editor {
             await Task.Delay(250);
         }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Panel Visual Consistency")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Panel Visual Consistency")]
         public static async void RunPlay() {
             if(running || !Application.isPlaying) return;
             running=true; results.Clear();

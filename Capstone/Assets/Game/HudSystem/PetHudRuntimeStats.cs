@@ -65,6 +65,17 @@ namespace Capstone.Game.HudSystem {
         public float MaxHealth => Mathf.Max(0f, maxHealth);
         public float Energy => maxEnergy > 0f ? Mathf.Clamp(energy, 0f, maxEnergy) : 0f;
         public float MaxEnergy => Mathf.Max(0f, maxEnergy);
+        public string LastSkillRejection { get; private set; }
+        void InitializeMissingMana() {
+            if (maxEnergy > 0 || speciesSkillSet == null) return;
+            maxEnergy = Mathf.Max(0, speciesSkillSet.startingMana); energy = maxEnergy;
+        }
+        bool CanPayMana(SkillHudData skill) {
+            if (float.IsNaN(skill.manaCost) || float.IsInfinity(skill.manaCost) || skill.manaCost < 0) return false;
+            if (Energy + .0001f >= skill.manaCost) return true;
+            LastSkillRejection = "Không đủ MP để dùng kỹ năng."; return false;
+        }
+        void PayMana(SkillHudData skill) { energy = Mathf.Max(0, Energy - skill.manaCost); PersistentDataChanged?.Invoke(); }
         public Sprite Icon {
             get {
                 if (!avatarMetadataResolved) {
@@ -110,6 +121,7 @@ namespace Capstone.Game.HudSystem {
             }
             EnsureSkillList();
             EnsureLearnedSkillList();
+            InitializeMissingMana();
             if (speciesSkillSet != null && GetComponent<PetSkillPresentationPlayer>() == null)
                 gameObject.AddComponent<PetSkillPresentationPlayer>();
             GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
@@ -165,6 +177,7 @@ namespace Capstone.Game.HudSystem {
                     skill.cooldownPercent = 0f;
                 }
 
+                skill.usable &= Energy + .0001f >= skill.manaCost;
                 runtimeSkills.Add(skill);
             }
 
@@ -349,6 +362,7 @@ namespace Capstone.Game.HudSystem {
             GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
             maxEnergy = Mathf.Max(0f, saveData.maxEnergy);
             energy = maxEnergy > 0f ? Mathf.Clamp(saveData.energy, 0f, maxEnergy) : 0f;
+            InitializeMissingMana();
             equippedSkillSlotCount = Mathf.Clamp(saveData.equippedSkillSlotCount, 2, 4);
 
             EnsureSkillList(false);
@@ -411,6 +425,7 @@ namespace Capstone.Game.HudSystem {
             if (skillIndex < cooldownRemaining.Count && cooldownRemaining[skillIndex] > 0.001f) return;
 
             SkillHudData skill = skills[skillIndex];
+            LastSkillRejection = ""; if (!CanPayMana(skill)) return;
             var execution = GetComponent<PetSkillCombatExecutor>();
             var combatProfile = speciesSkillSet != null && speciesSkillSet.TryGet(ResolveSkillId(skill), out var combatEntry) ? combatEntry.skill.combat : null;
             // Legacy scene actors keep their prefab GUIDs. Add the same execution
@@ -429,6 +444,7 @@ namespace Capstone.Game.HudSystem {
                 }
             }
             if (!PlaySkillAnimation(skill)) return;
+            PayMana(skill);
             SkillRequested?.Invoke(skillIndex);
             SkillAnimationAccepted?.Invoke(skill);
 
@@ -457,6 +473,7 @@ namespace Capstone.Game.HudSystem {
             if (input != null && (input.activePet != petController || !input.CanUsePetSkills)) return false;
             if (index < 0 || index >= skills.Count || cooldownRemaining[index] > .001f) return false;
             skill = skills[index];
+            LastSkillRejection = ""; if (!CanPayMana(skill)) return false;
             if (!skill.unlocked || !skill.usable) return false;
             if (animationDriver != null && animationDriver.Profile != null && !animationDriver.TryGetSkillStates(ResolveSkillId(skill), out skill.animatorStates)) return false;
             if (animator == null || skill.animatorStates == null) return false;
@@ -465,12 +482,14 @@ namespace Capstone.Game.HudSystem {
             return valid;
         }
         internal bool CommitCoordinatedSkill(int index, SkillHudData skill) {
+            if (!CanPayMana(skill)) return false;
             var combatProfile = speciesSkillSet != null && speciesSkillSet.TryGet(ResolveSkillId(skill), out var entry) ? entry.skill.combat : null;
             if (combatProfile == null) return false;
             var execution = GetComponent<PetSkillCombatExecutor>();
             if (execution == null) execution = gameObject.AddComponent<PetSkillCombatExecutor>();
             if (!execution.Prepare(ResolveSkillId(skill), combatProfile)) return false;
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + index)) return false;
+            PayMana(skill);
             StartCooldown(index, skill.cooldownSeconds);
             SkillRequested?.Invoke(index); SkillAnimationAccepted?.Invoke(skill); HudDataChanged?.Invoke(); return true;
         }

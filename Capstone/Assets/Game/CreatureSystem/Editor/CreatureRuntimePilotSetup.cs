@@ -14,7 +14,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
         const string FamilyPath = "Assets/Game/CreatureSystem/Data/Families/Family_Dragon_Dusk.asset";
         const string Template = "Assets/Game/HudSystem/Prefabs/Dragon01Gameplay.prefab";
         public const string CatalogPath = Root + "DragonPilotCatalog.asset";
-        [MenuItem("Tools/Capstone/Creatures/4. Build three-form dragon runtime pilot")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/4. Build three-form dragon runtime pilot")]
         public static void Build() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Dừng Play Mode trước khi tạo prefab thử.");
             var family = AssetDatabase.LoadAssetAtPath<CreatureFamilyDefinition>(FamilyPath);

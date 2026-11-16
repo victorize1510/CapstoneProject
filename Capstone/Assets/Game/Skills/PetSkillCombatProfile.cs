@@ -29,5 +29,9 @@ namespace Capstone.Game.Skills {
         [Min(0)] public float retreatDistance;
         [Min(.1f)] public float retreatSpeed = 12;
         [Min(0)] public float preferredDistance = 5;
+        [Header("Per-cast projectile budget")]
+        [Tooltip("Wind volley: 2/3/4/5 shots with weights 10/40/40/10%; power remains TOTAL per cast.")]
+        public bool weightedWindVolley;
+        [Range(.01f,1)] public float burstEndNormalized = .78f;
     }
 }

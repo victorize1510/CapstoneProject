@@ -34,7 +34,7 @@ namespace Capstone.Game.PetSummon.Editor
             activeRunner=null;
         }
 
-        [MenuItem("Game Tools/Pets/Clear Temporary VFX Previews")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Clear Temporary VFX Previews")]
         static void ClearStalePreviews()
         {
             if (Application.isPlaying) { Debug.LogWarning("Stop Play Mode before clearing temporary previews."); return; }
@@ -53,15 +53,15 @@ namespace Capstone.Game.PetSummon.Editor
             Debug.Log("Temporary VFX preview resources cleared.");
         }
 
-        [MenuItem("Game Tools/Pets/Run Play Mode VFX Validation")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Run Play Mode VFX Validation")]
         static void RunAll() => Begin(0);
-        [MenuItem("Game Tools/Pets/Validate Recall Combat Facing %#F9")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Validate Recall Combat Facing %#F9")]
         static void RunCombat() => Begin(-1);
-        [MenuItem("Game Tools/Pets/Preview 3D VFX/Dusk")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Preview 3D VFX/Dusk")]
         static void PreviewDusk() => Begin(1);
-        [MenuItem("Game Tools/Pets/Preview 3D VFX/Nightfall")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Preview 3D VFX/Nightfall")]
         static void PreviewNightfall() => Begin(2);
-        [MenuItem("Game Tools/Pets/Preview 3D VFX/Darkness %#F8")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Preview 3D VFX/Darkness %#F8")]
         static void PreviewDarkness() => Begin(3);
 
         static void Begin(int previewForm)

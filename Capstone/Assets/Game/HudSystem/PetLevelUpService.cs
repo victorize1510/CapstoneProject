@@ -240,8 +240,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         void NotifyPetLeveledUp(PetController pet) {
-            PetLeveledUp?.Invoke(pet);
-            AnyPetLeveledUp?.Invoke(pet);
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"battle-level:"+pet.GetInstanceID(),()=>{PetLeveledUp?.Invoke(pet);AnyPetLeveledUp?.Invoke(pet);});
         }
 
         public void NotifyDebugLevelChange(PetController pet) => NotifyPetLeveledUp(pet);

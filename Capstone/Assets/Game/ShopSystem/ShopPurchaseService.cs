@@ -54,6 +54,8 @@ namespace Capstone.Game.ShopSystem {
                 // Every observer now sees both committed balances and stock. Existing
                 // PlayerSaveController subscribes to these events and schedules its save.
                 inventory.NotifyAtomicAddition(); source.NotifyChanged();
+                Capstone.Game.WorldFeedback.ItemAcquisitionFeedback.Publish(new Capstone.Game.WorldFeedback.ItemAcquisitionReceipt(
+                    Guid.NewGuid().ToString("N"), InventoryDefinition(offer), quantity, Capstone.Game.WorldFeedback.AcquisitionSource.Purchase));
                 message = "Đã mua " + quantity + " × " + offer.Item.Name + ".";
                 return true;
             } finally { buying = false; }

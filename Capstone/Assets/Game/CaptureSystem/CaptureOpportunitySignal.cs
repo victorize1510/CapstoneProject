@@ -5,7 +5,7 @@ namespace Capstone.Game.CaptureSystem {
     [DisallowMultipleComponent,RequireComponent(typeof(WildPetCaptureTarget))]
     public sealed class CaptureOpportunitySignal : MonoBehaviour {
         bool open;
-        public bool IsOpen=>open&&isActiveAndEnabled&&TryGetComponent<WildPetCaptureTarget>(out var target)&&target.IsWild&&target.Enemy!=null&&target.Enemy.IsAlive;
+        public bool IsOpen=>isActiveAndEnabled&&TryGetComponent<WildPetCaptureTarget>(out var target)&&target.IsWild&&target.Enemy!=null&&(target.Enemy.IsDownedAvailable||open&&target.Enemy.IsAlive);
         // Connect only to an actual authored combat event/window. Defaults off.
         public void SetOpportunity(bool value)=>open=value;
         public void BeginOpportunity()=>open=true;
@@ -15,11 +15,13 @@ namespace Capstone.Game.CaptureSystem {
     [DisallowMultipleComponent]
     public sealed class LockedCaptureOpportunitySource : MonoBehaviour,ICaptureOpportunitySource {
         BasicCameraFollow cameraSource;
+        PetCommandInput player;
         public bool HasCaptureOpportunity {
             get {
                 if(cameraSource==null)cameraSource=FindFirstObjectByType<BasicCameraFollow>();
-                return cameraSource!=null&&cameraSource.TryGetLockedEnemy(out var enemy)&&enemy!=null
-                    &&enemy.TryGetComponent<CaptureOpportunitySignal>(out var signal)&&signal.IsOpen;
+                if(player==null)player=FindFirstObjectByType<PetCommandInput>();
+                var target=WildCaptureTargeting.Find(player,cameraSource);
+                return target!=null&&(target.Enemy.IsDownedAvailable||target.TryGetComponent<CaptureOpportunitySignal>(out var signal)&&signal.IsOpen);
             }
         }
     }

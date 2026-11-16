@@ -42,7 +42,7 @@ namespace Capstone.Game.HudSystem.Editor {
         static Quaternion cameraRotation;
         static int lastWrittenFrame;
 
-        [MenuItem("Game Tools/Companion UI/Profile closed, 2D and 3D")]
+        [MenuItem("Tools/Capstone/Advanced/Companion UI/Profile closed, 2D and 3D")]
         static void RequestProfile() {
             if(running||File.Exists(Request)||File.Exists("Temp/VerifyCompanion.request")){Debug.LogWarning("Companion QA is already queued or running.");return;}
             Directory.CreateDirectory("Temp");File.WriteAllText(Request,"profile");

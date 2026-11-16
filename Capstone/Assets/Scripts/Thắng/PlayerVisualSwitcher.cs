@@ -30,7 +30,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
     [Header("Input")]
     [SerializeField] private bool allowRuntimeSwitch = true;
-    [SerializeField] private KeyCode switchKey = KeyCode.G;
+    [SerializeField] private KeyCode switchKey = KeyCode.F8;
     [SerializeField] private int defaultVisualIndex;
 
     private int activeVisualIndex = -1;
@@ -53,6 +53,8 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
     private void Awake()
     {
+        // Migrate only the previous conflicting default; preserve every other custom binding.
+        if (switchKey == KeyCode.G) switchKey = KeyCode.F8;
         if (movement == null)
         {
             movement = GetComponent<BasicPlayerMovement>();
@@ -71,9 +73,6 @@ public class PlayerVisualSwitcher : MonoBehaviour
 
         if (switchKey != KeyCode.None && Input.GetKeyDown(switchKey) && !IsGameplayInputBlocked())
         {
-            // Gameplay G belongs to capture. Preserve the configured visual switch with explicit Shift+G context.
-            if(switchKey==KeyCode.G&&Capstone.Game.HudSystem.HubCaptureHud.OwnsCaptureKey
-                &&!Capstone.Game.HudSystem.HubCaptureHud.ModelSwitchModifier)return;
             SwitchToNext();
         }
     }

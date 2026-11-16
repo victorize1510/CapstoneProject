@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Capstone.Game.CreatureSystem {
-    public enum CreatureAction { None, Idle, Move, Walk, Run, Fly, Spawn, Attack, Bite, Cast, Blast, Projectile, WingStrike, Hit, Death }
+    public enum CreatureAction { None, Idle, Move, Walk, Run, Fly, Spawn, Attack, Bite, Cast, Blast, Projectile, WingStrike, Hit, Death, Downed }
     [Serializable] public sealed class CreatureActionBinding {
         public CreatureAction action;
         [Tooltip("Exact Animator state path. Source clips and controllers keep their original names.")]

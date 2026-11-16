@@ -11,7 +11,7 @@ namespace Capstone.Game.Skills.Editor {
     public static class CombatFeelSetup {
         public const string Root = "Assets/Game/Skills/Data/CombatFeel/";
         public const string Qa = UISystem.QaArtifactPaths.Root + "combat-feel-playtest-2026-11-08/";
-        [MenuItem("Tools/Capstone/Creatures/14. Apply combat feel and skill balance")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/14. Apply combat feel and skill balance")]
         public static void Apply() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Dừng Play Mode trước.");
             Folder(Root.TrimEnd('/'));
@@ -32,14 +32,15 @@ namespace Capstone.Game.Skills.Editor {
             var aura = Effect("RoarAura", material, 8);
             var bleed = Effect("BleedTick", material, 9);
             string[] names = { "bite", "blast", "projectile", "wing_strike" };
-            float[] cooldown = { 2, 10, 3, 4.2f }, power = { 1.2f, 1, 1.6f, 1.8f }, marker = { .36f, .43f, .30f, .45f };
+            float[] cooldown = { 2, 10, 3, 4.2f }, power = { 1.2f, 1, 1.6f, 1.8f }, marker = { .36f, .43f, .30f, .30f }, mana = {8,15,12,18};
             for (int i = 0; i < names.Length; i++) {
                 var definition = AssetDatabase.LoadAssetAtPath<PetSkillDefinition>("Assets/Game/Skills/Data/Definitions/Skill_" + names[i] + ".asset");
                 if (definition == null || definition.combat == null || definition.presentation == null) throw new InvalidOperationException("Thiếu skill " + names[i]);
                 definition.cooldownSeconds = cooldown[i]; definition.animationFade = .09f; definition.windupSeconds = definition.recoverySeconds = 0;
+                definition.manaCost=mana[i];definition.combat.weightedWindVolley=i==3;definition.combat.burstEndNormalized=.78f;
                 definition.combat.power = power[i]; definition.combat.bleedPower = i == 0 ? .1f : 0;
                 var p = definition.presentation;
-                p.releaseMode = PetSkillReleaseMode.NormalizedAnimation; p.releaseNormalized = marker[i]; p.chainNormalized = i == 3 ? .9f : .85f;
+                p.releaseMode = PetSkillReleaseMode.NormalizedAnimation; p.releaseNormalized = marker[i]; p.chainNormalized = i == 3 ? .94f : .85f;
                 p.playbackSpeed = i == 1 ? 1.25f : 1; p.impactWindowSeconds = 4;
                 p.cast = Cue(i == 2 ? charge : null, i == 2 ? "Mouth" : "Body", true, i == 2 ? 1.2f : .8f, .3f);
                 p.release = Cue(i == 0 ? bite : i == 1 ? roar : null, i == 1 || i == 3 ? "Body" : "Mouth", i == 0, i == 1 ? 1.6f : .3f, 1);
@@ -60,7 +61,7 @@ namespace Capstone.Game.Skills.Editor {
                     definition.combat.projectileSpeed = i == 2 ? 12 : 16;
                     definition.combat.retreatDistance = 2.4f; definition.combat.retreatSpeed = 12; definition.combat.preferredDistance = 5;
                     definition.description = i == 2 ? "Phóng đạn gây 160% SP.ATK sát thương phép. Lùi nhanh khi địch áp sát; đạn dừng ở mục tiêu đầu tiên hoặc vật cản."
-                        : "Vỗ cánh phóng lưỡi gió gây 180% ATK sát thương vật lý. Lùi nhanh khi địch áp sát; một mục tiêu mỗi đòn.";
+                        : "Phóng 2–5 lưỡi gió, tổng sức mạnh 180% ATK chia theo số phát. Đạn hụt không chuyển damage sang đạn khác.";
                 }
                 definition.uiMetadata.effects.Clear();
                 definition.uiMetadata.effects.Add(new SkillEffectDescription { role = i == 1 ? SkillEffectLabel.Buff : SkillEffectLabel.Damage, description = definition.description });

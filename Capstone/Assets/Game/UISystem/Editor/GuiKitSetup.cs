@@ -9,7 +9,7 @@ namespace Capstone.Game.UISystem.Editor {
     /// <summary>Explicit setup, safe to repeat: updates kit prefabs while retaining their GUIDs.</summary>
     public static class GuiKitSetup {
         public const string PrefabFolder = "Assets/ThangTest/UIThang/GUIArt/Prefabs/";
-        [MenuItem("Game Tools/GameToolThang/GUI/Rebuild Shared Kit Prefabs")]
+        [MenuItem("Tools/Capstone/Advanced/GUI/Rebuild Shared Kit Prefabs")]
         public static void Rebuild() {
             Directory.CreateDirectory(PrefabFolder);
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);

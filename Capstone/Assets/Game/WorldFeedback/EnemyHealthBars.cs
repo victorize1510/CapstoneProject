@@ -1,0 +1,158 @@
+using System.Collections.Generic;
+using Capstone.Game.CreatureSystem;
+using Capstone.Game.HudSystem;
+using Capstone.Game.Inventory;
+using Capstone.Game.UISystem;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using V = Capstone.Game.HudSystem.GameplayHudVisuals;
+
+namespace Capstone.Game.WorldFeedback {
+
+
+    public sealed class EnemyHealthBars : MonoBehaviour {
+        const int Capacity = 32;
+        sealed class Bar {
+            public RectTransform Root, Fill; public CanvasGroup Group; public Text Title,Cue;
+            public DummyEnemy Enemy; public EnemyHealthAnchor Anchor; public BasicCreatureEnemy Brain;
+            public string Identity;public float NextTitle;
+            public float ActiveUntil, Health = -1, Maximum = -1, NextSight; public bool InSight;
+        }
+        static EnemyHealthBars live;
+        readonly List<Bar> bars = new List<Bar>(Capacity);
+        readonly List<DummyEnemy> candidates = new List<DummyEnemy>(64);
+        readonly RaycastHit[] sight = new RaycastHit[32];
+        RectTransform surface; Camera cameraSource; BasicCameraFollow cameraLock; PetCommandInput party;
+        float refreshAt;
+        public int VisibleCount { get; private set; }
+        public int PooledCount => bars.Count;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void Reset() => live = null;
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)] static void Install() {
+            if (live == null) new GameObject("Enemy Overhead Health", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler)).AddComponent<EnemyHealthBars>();
+        }
+        void Awake() {
+            if (live != null && live != this) { Destroy(gameObject); return; }
+            live = this; DontDestroyOnLoad(gameObject); surface = (RectTransform)transform;
+            // World annotations stay below the gameplay HUD/minimap and modal canvases.
+            var canvas = GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = -20;
+            var scaler = GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1600, 900); scaler.matchWidthOrHeight = .5f;
+            for (int i = 0; i < Capacity; i++) bars.Add(Build(i));
+            SceneManager.activeSceneChanged += SceneChanged;
+        }
+        void OnDestroy() { SceneManager.activeSceneChanged -= SceneChanged; foreach (var bar in bars) if (bar.Enemy != null) bar.Enemy.HealthChanged -= OnHealthChanged; if (live == this) live = null; }
+        void OnDisable() { foreach (var bar in bars) if (bar.Root != null) bar.Root.gameObject.SetActive(false); VisibleCount = 0; }
+        void OnEnable() { refreshAt = 0; }
+        void SceneChanged(Scene previous, Scene current) { foreach (var b in bars) Bind(b, null); cameraSource = null; cameraLock = null; party = null; refreshAt = 0; }
+        Bar Build(int index) {
+            var root = V.Rect(surface, "EnemyHealth" + index);
+            V.Place(root, new Vector2(.5f, .5f), new Vector2(.5f, 0), Vector2.zero, new Vector2(180, 34));
+            var title = V.Text(root, "Name", "", 14, TextAnchor.MiddleCenter);
+            title.fontStyle = FontStyle.Bold; title.raycastTarget = false; title.color = new Color(.97f, .96f, .92f);
+            V.Top(title.rectTransform, 0, 0, 180, 23);
+            var outline = title.gameObject.AddComponent<Outline>(); outline.effectColor = new Color(.04f, .05f, .09f, .95f);
+            outline.effectDistance = new Vector2(1, -1);
+            var track = V.Image(root, "Track"); track.preserveAspect = false; track.raycastTarget = false;
+            track.color = new Color(.10f, .13f, .20f, .9f); V.Top(track.rectTransform, 36, 25, 108, 7);
+            var fill = V.Image(track.transform, "Health"); fill.preserveAspect = false; fill.raycastTarget = false;
+            fill.color = new Color(.84f, .43f, .52f); V.Stretch(fill.rectTransform);
+            var group = root.gameObject.AddComponent<CanvasGroup>(); group.blocksRaycasts = false; group.interactable = false;
+            var cue=V.Text(root,"Downed cue","✦",18,TextAnchor.MiddleCenter);cue.color=new Color(1,.88f,.57f);cue.raycastTarget=false;V.Top(cue.rectTransform,78,34,24,24);cue.gameObject.SetActive(false);
+            root.gameObject.SetActive(false);
+            return new Bar { Root = root, Fill = fill.rectTransform, Group = group, Title = title,Cue=cue };
+        }
+        static bool Eligible(DummyEnemy enemy) {
+            if (enemy == null || !enemy.isActiveAndEnabled || !enemy.IsSelectable) return false;
+            var pet = enemy.GetComponent<PetController>();
+            return pet == null || pet.IsWildEncounter;
+        }
+        void RefreshCandidates() {
+            if (cameraSource == null) cameraSource = Camera.main;
+            if (cameraLock == null) cameraLock = FindFirstObjectByType<BasicCameraFollow>();
+            if (party == null) party = FindFirstObjectByType<PetCommandInput>();
+            candidates.Clear(); if (cameraSource == null) return;
+            Vector3 from = party != null ? party.transform.position : cameraSource.transform.position;
+            DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
+            foreach (var enemy in DummyEnemy.ActiveEnemies)
+                if (Eligible(enemy) && (enemy.transform.position - from).sqrMagnitude <= 625) candidates.Add(enemy);
+            candidates.Sort((a, b) => {
+                if (a == locked) return b == locked ? 0 : -1; if (b == locked) return 1;
+                bool aa = a.GetComponent<BasicCreatureEnemy>()?.Target != null, bb = b.GetComponent<BasicCreatureEnemy>()?.Target != null;
+                if (aa != bb) return aa ? -1 : 1;
+                return (a.transform.position - from).sqrMagnitude.CompareTo((b.transform.position - from).sqrMagnitude);
+            });
+            foreach (var bar in bars) if (bar.Enemy != null && (!Eligible(bar.Enemy) || candidates.IndexOf(bar.Enemy) < 0
+                || candidates.IndexOf(bar.Enemy) >= Capacity)) Bind(bar, null);
+            for (int i = 0; i < candidates.Count && i < Capacity; i++) {
+                bool bound = false; foreach (var b in bars) if (b.Enemy == candidates[i]) { bound = true; break; }
+                if (bound) continue;
+                foreach (var b in bars) if (b.Enemy == null) { Bind(b, candidates[i]); break; }
+            }
+        }
+        void Bind(Bar bar, DummyEnemy enemy) {
+            if (bar.Enemy != null) bar.Enemy.HealthChanged -= OnHealthChanged;
+            bar.Enemy = enemy; bar.Health = -1; bar.Maximum = -1; bar.ActiveUntil = 0; bar.NextSight = 0;
+            bar.Root.gameObject.SetActive(false);
+            if (enemy == null) return;
+            enemy.HealthChanged += OnHealthChanged;
+            bar.Anchor = enemy.GetComponent<EnemyHealthAnchor>(); if (bar.Anchor == null) bar.Anchor = enemy.gameObject.AddComponent<EnemyHealthAnchor>();
+            bar.Brain = enemy.GetComponent<BasicCreatureEnemy>();
+            var stats = enemy.GetComponent<PetHudRuntimeStats>();
+            string name = stats != null ? stats.DisplayName : enemy.name;
+            bar.Identity=name + (stats != null ? " • Cấp " + stats.Level : "");bar.Title.text = bar.Identity;bar.NextTitle=0;
+        }
+        void OnHealthChanged(DummyEnemy enemy) {
+            foreach (var bar in bars) if (bar.Enemy == enemy) {
+                if (bar.Health >= 0 && enemy.CurrentHealth < bar.Health) bar.ActiveUntil = Time.unscaledTime + 6;
+                bar.Health = -1;
+                break;
+            }
+        }
+        void LateUpdate() {
+            if (Time.unscaledTime >= refreshAt) { refreshAt = Time.unscaledTime + .25f; RefreshCandidates(); }
+            VisibleCount = 0;
+            bool hidden = cameraSource == null || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying;
+            DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
+            foreach (var bar in bars) {
+                if (hidden || !Eligible(bar.Enemy)) { bar.Root.gameObject.SetActive(false); continue; }
+                Vector3 anchor = bar.Anchor.Position;
+                Vector3 screen = cameraSource.WorldToViewportPoint(anchor);
+                bool inView = screen.z > 0 && screen.x > .01f && screen.x < .99f && screen.y > .02f && screen.y < .98f;
+                if (inView && Time.unscaledTime >= bar.NextSight) {
+                    bar.NextSight = Time.unscaledTime + .1f;
+                    bar.InSight = ClearSight(anchor, bar.Enemy);
+                }
+                bar.Root.gameObject.SetActive(inView && bar.InSight);
+                if (!bar.Root.gameObject.activeSelf) continue;
+                VisibleCount++;
+                if (bar.Health != bar.Enemy.CurrentHealth || bar.Maximum != bar.Enemy.maxHealth) {
+                    bar.Health = bar.Enemy.CurrentHealth; bar.Maximum = bar.Enemy.maxHealth;
+                    bar.Fill.anchorMax = new Vector2(bar.Maximum > 0 ? Mathf.Clamp01(bar.Health / bar.Maximum) : 0, 1);
+                }
+                bool active = bar.Enemy.IsDowned || bar.Enemy == locked || bar.Brain != null && bar.Brain.Target != null;
+                bar.Cue.gameObject.SetActive(bar.Enemy.IsDowned);if(bar.Enemy.IsDowned)bar.Cue.rectTransform.localScale=Vector3.one*(1+.08f*Mathf.Sin(Time.unscaledTime*5));
+                if(Time.unscaledTime>=bar.NextTitle){bar.NextTitle=Time.unscaledTime+.1f;bar.Title.text=bar.Enemy.IsDowned?"Gục • "+bar.Enemy.DownedSecondsRemaining.ToString("0.0")+"s":bar.Identity;}
+                if (active) bar.ActiveUntil = Time.unscaledTime + 6;
+                active |= Time.unscaledTime < bar.ActiveUntil;
+                bar.Group.alpha = Mathf.MoveTowards(bar.Group.alpha, active ? 1 : .45f, Time.unscaledDeltaTime * 5);
+                bar.Title.enabled = active;
+                Vector3 pixel = cameraSource.ViewportToScreenPoint(screen);
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(surface, pixel, null, out var point);
+                bar.Root.anchoredPosition = point;
+            }
+        }
+        bool ClearSight(Vector3 point, DummyEnemy enemy) {
+            Vector3 start = cameraSource.transform.position, delta = point - start;
+            int count = Physics.RaycastNonAlloc(start, delta.normalized, sight, delta.magnitude, ~0, QueryTriggerInteraction.Ignore);
+            if (count == sight.Length) return false;
+            for (int i = 0; i < count; i++) {
+                var collider = sight[i].collider;
+                if (collider == null || collider.transform.IsChildOf(enemy.transform)) continue;
+                if (party != null && collider.transform.IsChildOf(party.transform)) continue;
+                return false;
+            }
+            return true;
+        }
+    }
+}

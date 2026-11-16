@@ -16,12 +16,12 @@ MonoBehaviour:
   legacyIds:
   - projectile
   displayName: Projectile
-  description: "Ph\xF3ng \u0111\u1EA1n g\xE2y 160% SP.ATK s\xE1t th\u01B0\u01A1ng
-    ph\xE9p. L\xF9i nhanh khi \u0111\u1ECBch \xE1p s\xE1t; \u0111\u1EA1n d\u1EEBng
-    \u1EDF m\u1EE5c ti\xEAu \u0111\u1EA7u ti\xEAn ho\u1EB7c v\u1EADt c\u1EA3n."
+  description: "Ph\xF3ng m\u1ED9t \u0111\u1EA1n g\xE2y 160% SP.ATK. T\u1ED1n 12 MP;
+    \u0111\u1EA1n d\u1EEBng khi tr\xFAng m\u1EE5c ti\xEAu ho\u1EB7c v\u1EADt c\u1EA3n."
   element: 2
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 7c57ed918646a7d4ca072fbaf99c345e, type: 3}
   cooldownSeconds: 3
+  manaCost: 12
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:

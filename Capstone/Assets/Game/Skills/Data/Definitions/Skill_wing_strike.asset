@@ -16,17 +16,18 @@ MonoBehaviour:
   legacyIds:
   - wing strike
   displayName: "Ch\xE9m gi\xF3"
-  description: "V\u1ED7 c\xE1nh ph\xF3ng l\u01B0\u1EE1i gi\xF3 g\xE2y 180% ATK s\xE1t
-    th\u01B0\u01A1ng v\u1EADt l\xFD. L\xF9i nhanh khi \u0111\u1ECBch \xE1p s\xE1t;
-    m\u1ED9t m\u1EE5c ti\xEAu m\u1ED7i \u0111\xF2n."
+  description: "Ph\xF3ng 2\u20135 l\u01B0\u1EE1i gi\xF3, t\u1ED5ng s\u1EE9c m\u1EA1nh
+    180% ATK chia theo s\u1ED1 ph\xE1t. \u0110\u1EA1n h\u1EE5t kh\xF4ng chuy\u1EC3n
+    damage sang \u0111\u1EA1n kh\xE1c. T\u1ED1n 18 MP."
   element: 4
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: c88260c57e06710438605b4bca82b5be, type: 3}
   cooldownSeconds: 4.2
+  manaCost: 18
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:
   - Wing Attack
-  animationDuration: 0.667
+  animationDuration: 1.05
   animationFade: 0.09
   windupSeconds: 0
   recoverySeconds: 0

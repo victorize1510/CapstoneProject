@@ -29,7 +29,7 @@ namespace Capstone.Game.PetSummon.Editor
             AssemblyReloadEvents.beforeAssemblyReload += Stop;
         }
 
-        [MenuItem("Game Tools/Pets/Validate Director in Play Mode")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Validate Director in Play Mode")]
         static void Begin()
         {
             if (!Application.isPlaying || SceneManager.GetActiveScene().name != "TestChar") {

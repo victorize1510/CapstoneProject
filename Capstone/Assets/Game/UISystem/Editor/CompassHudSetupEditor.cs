@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace Capstone.Game.UISystem.Editor {
     public static class CompassHudSetupEditor {
-        const string MenuPath = "Game Tools/GameToolThang/HUD/Create Compass HUD";
+        const string MenuPath = "Tools/Capstone/Advanced/HUD/Create Compass HUD";
         const string ObjectName = "CompassHUD";
 
         [MenuItem(MenuPath)]

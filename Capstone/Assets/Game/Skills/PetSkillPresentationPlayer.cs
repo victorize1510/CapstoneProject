@@ -4,6 +4,8 @@ using Capstone.Game.HudSystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.VFX;
+using Unity.Profiling;
+using Capstone.Game.Inventory;
 
 namespace Capstone.Game.Skills {
     [Serializable]
@@ -26,12 +28,15 @@ namespace Capstone.Game.Skills {
         readonly List<Playback> playing = new List<Playback>(12);
         readonly List<Playback> pool = new List<Playback>(8);
         int nextToken;
+        static readonly ProfilerMarker CueMarker = new ProfilerMarker("Capstone.Combat.VFX.Cue");
         public int ActiveCastId { get; private set; }
         public int LiveEffectCount => playing.Count;
         public int PooledEffectCount => pool.Count;
         public int ReleasedCount { get; private set; }
+        public float VisualScale { get; private set; } = 1;
         public event Action<int, string> SkillReleased;
         public event Action<int, string> SkillCastStarted;
+        public event Action<int, string, int> SkillProjectileReleased;
         public Vector3 SocketPosition(string key) => ResolveSocket(key).position;
 
         sealed class Cast {
@@ -40,11 +45,13 @@ namespace Capstone.Game.Skills {
             public PetSkillPresentationProfile profile;
             public float animationStart, releaseAt, animationEnd, expiresAt;
             public bool released;
+            public int emissions = 1, releaseMask, resolvedMask;
         }
         sealed class Playback {
             public GameObject prefab, root;
             public ParticleSystem[] particles;
             public VisualEffect[] graphs;
+            public TrailRenderer[] trails;
             public AudioSource[] embeddedAudio;
             public AudioSource audio;
             public int token;
@@ -71,7 +78,10 @@ namespace Capstone.Game.Skills {
             if (effectsRoot != null) Destroy(effectsRoot.gameObject);
         }
         public void BindAnimator(Animator animator) {
+            if (boundAnimator != null && boundAnimator != animator) CancelPresentation();
             boundAnimator = animator;
+            var binding = animator != null ? animator.GetComponent<Capstone.Game.CreatureSystem.CreatureVisualBinding>() : null;
+            VisualScale = binding != null ? Mathf.Clamp(binding.presentationScale, .25f, 3) : 1;
             if (animator == null) return;
             var relay = animator.GetComponent<PetSkillAnimationRelay>();
             if (relay == null && Application.isPlaying) relay = animator.gameObject.AddComponent<PetSkillAnimationRelay>();
@@ -97,6 +107,7 @@ namespace Capstone.Game.Skills {
             SkillCastStarted?.Invoke(cast.token, skill.skillId);
         }
         void Update() {
+            if (InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying) { CancelPresentation(); return; }
             if ((casts.Count > 0 || playing.Count > 0) && (stats == null || !stats.isActiveAndEnabled || (pet != null && !pet.CanReceiveCommands))) {
                 CancelPresentation(); return;
             }
@@ -134,31 +145,47 @@ namespace Capstone.Game.Skills {
             }
         }
         void Release(Cast cast) {
-            cast.released = true; StopOwned(cast.token, true);
+            cast.released = true; cast.releaseMask |= 1; StopOwned(cast.token, true);
             PlayCue(cast.profile.release, cast, false, null, Quaternion.identity);
             ReleasedCount++; SkillReleased?.Invoke(cast.token, cast.skill.skillId);
         }
         /// <summary>The real collision/combat handler must supply the token from SkillReleased. A token can hit once.</summary>
-        public bool CanImpact(int castId) {
-            foreach (var cast in casts) if (cast.token == castId && cast.released && Time.time <= cast.expiresAt) return true;
+        public void ConfigureEmissions(int token, int count) { foreach(var cast in casts)if(cast.token==token){cast.emissions=Mathf.Clamp(count,1,8);return;} }
+        public int EmissionCount(int token) { foreach(var cast in casts)if(cast.token==token)return cast.emissions;return 1; }
+        public bool NotifySubRelease(int token,int emission) {
+            foreach(var cast in casts)if(cast.token==token&&cast.released&&emission>0&&emission<cast.emissions&&(cast.releaseMask&(1<<emission))==0){
+                cast.releaseMask|=1<<emission; PlayCue(cast.profile.release,cast,false,null,Quaternion.identity);
+                SkillProjectileReleased?.Invoke(token,cast.skill.skillId,emission);return true;
+            } return false;
+        }
+        public bool CanImpact(int castId) => CanImpact(castId,0);
+        public bool CanImpact(int castId,int emission) {
+            foreach (var cast in casts) if (cast.token == castId && emission>=0&&emission<cast.emissions&&(cast.releaseMask&(1<<emission))!=0&&(cast.resolvedMask&(1<<emission))==0&&Time.time <= cast.expiresAt) return true;
             return false;
         }
-        public bool NotifyImpact(int castId, Vector3 position, Vector3 normal) {
+        public bool NotifyImpact(int castId, Vector3 position, Vector3 normal) => NotifyImpact(castId,0,position,normal);
+        public bool NotifyImpact(int castId,int emission, Vector3 position, Vector3 normal) {
             for (int i = 0; i < casts.Count; i++) {
                 var cast = casts[i];
-                if (cast.token != castId || !cast.released || Time.time > cast.expiresAt) continue;
+                if (cast.token != castId || !CanImpact(castId,emission)) continue;
                 PlayCue(cast.profile.impact, cast, false, position, normal.sqrMagnitude > 0.001f ? Quaternion.FromToRotation(Vector3.up, normal.normalized) : Quaternion.identity);
-                casts.RemoveAt(i); if (ActiveCastId == castId) ActiveCastId = 0; return true;
+                ResolveEmission(i,emission); return true;
             }
             return false;
         }
-        public void CompleteMiss(int token) {
-            for (int i = casts.Count - 1; i >= 0; i--) if (casts[i].token == token) { StopOwned(token, true); casts.RemoveAt(i); }
-            if (ActiveCastId == token) ActiveCastId = 0;
+        void ResolveEmission(int index,int emission){var cast=casts[index];cast.resolvedMask|=1<<emission;if(cast.resolvedMask==((1<<cast.emissions)-1)){casts.RemoveAt(index);if(ActiveCastId==cast.token)ActiveCastId=0;}}
+        public void CompleteMiss(int token) => CompleteMiss(token,0);
+        public void CompleteMiss(int token,int emission) {
+            for (int i = casts.Count - 1; i >= 0; i--) if (casts[i].token == token&&emission>=0&&emission<casts[i].emissions) { StopOwned(token, true); ResolveEmission(i,emission);break; }
         }
         public void CancelPresentation() {
             casts.Clear(); ActiveCastId = 0;
             for (int i = playing.Count - 1; i >= 0; i--) Return(i);
+        }
+        public void CancelUnreleased() {
+            for (int i = casts.Count - 1; i >= 0; i--) if (!casts[i].released) {
+                StopOwned(casts[i].token, false); if (ActiveCastId == casts[i].token) ActiveCastId = 0; casts.RemoveAt(i);
+            }
         }
         Transform ResolveSocket(string key) {
             if (!string.IsNullOrWhiteSpace(key) && sockets != null) foreach (var socket in sockets)
@@ -166,6 +193,7 @@ namespace Capstone.Game.Skills {
             return transform;
         }
         void PlayCue(PetSkillCue cue, Cast cast, bool castCue, Vector3? worldPosition, Quaternion worldRotation) {
+            using (CueMarker.Auto()) {
             if (cue == null || (cue.effectPrefab == null && cue.sound == null)) return;
             if (playing.Count >= Mathf.Clamp(maxLiveEffects, 1, 32)) Return(0);
             Playback item = null;
@@ -179,7 +207,8 @@ namespace Capstone.Game.Skills {
             item.frame = frame;
             item.offset = cue.localOffset; item.rotation = Quaternion.Euler(cue.localEulerAngles);
             item.root.transform.SetPositionAndRotation(worldPosition.HasValue ? worldPosition.Value + worldRotation * cue.localOffset : anchor.position + frame.TransformVector(cue.localOffset), (worldPosition.HasValue ? worldRotation : frame.rotation) * item.rotation);
-            item.root.transform.localScale = Vector3.one * Mathf.Max(0.01f, cue.scale);
+            item.root.transform.localScale = Vector3.one * Mathf.Max(0.01f, cue.scale) * VisualScale;
+            foreach (var trail in item.trails) if (trail != null) trail.Clear();
             item.root.SetActive(true);
             foreach (var particle in item.particles) { particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear); particle.Play(false); }
             foreach (var graph in item.graphs) graph.Reinit();
@@ -191,6 +220,7 @@ namespace Capstone.Game.Skills {
             item.audio.clip = cue.sound;
             if (cue.sound != null) CombatAudioVoices.Play(item.audio);
             playing.Add(item);
+            }
         }
         Playback CreatePlayback(GameObject prefab) {
             if (effectsRoot == null) {
@@ -205,8 +235,11 @@ namespace Capstone.Game.Skills {
                 prefab = prefab, root = root, audio = audio,
                 particles = root.GetComponentsInChildren<ParticleSystem>(true),
                 graphs = root.GetComponentsInChildren<VisualEffect>(true),
+                trails = root.GetComponentsInChildren<TrailRenderer>(true),
                 embeddedAudio = visual != null ? visual.GetComponentsInChildren<AudioSource>(true) : Array.Empty<AudioSource>()
             };
+            // Embedded play-on-awake audio bypasses the shared voice budget. All cue audio goes through its owned source.
+            foreach (var embedded in result.embeddedAudio) if (embedded != null) { embedded.Stop(); embedded.playOnAwake = false; embedded.enabled = false; }
             return result;
         }
         void StopOwned(int token, bool castOnly) {
@@ -217,10 +250,12 @@ namespace Capstone.Game.Skills {
             if (item.root == null) return;
             foreach (var particle in item.particles) if (particle != null) particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
             foreach (var graph in item.graphs) if (graph != null) graph.Stop();
+            foreach (var trail in item.trails) if (trail != null) trail.Clear();
             foreach (var audio in item.embeddedAudio) if (audio != null) audio.Stop();
             item.audio.Stop(); item.audio.clip = null; item.follow = null; item.frame = null; item.root.SetActive(false);
             if (pool.Count < Mathf.Clamp(maxPooledEffects, 0, 24)) pool.Add(item);
             else Destroy(item.root);
         }
+        void OnApplicationFocus(bool value) { if (!value) CancelPresentation(); }
     }
 }

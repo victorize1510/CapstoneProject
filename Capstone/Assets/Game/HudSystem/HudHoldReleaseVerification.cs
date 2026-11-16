@@ -24,7 +24,7 @@ namespace Capstone.Game.HudSystem.Editor {
         static void Check(bool pass,string label){checks.Add((pass?"PASS ":"FAIL ")+label);Write("checks.txt",string.Join("\n",checks));if(!pass)throw new Exception(label);}
         static void Set(object o,string key,object value)=>o.GetType().GetField(key,Any).SetValue(o,value);
         static object Call(object o,string key,params object[] args)=>o.GetType().GetMethod(key,Any).Invoke(o,args);
-        [MenuItem("Game Tools/GameToolThang/HUD/R11/Verify hold release regression")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/R11/Verify hold release regression")]
         public static void Run(){
             if(EditorApplication.isPlayingOrWillChangePlaymode){Write("status.txt","NOT RUN: stop current Play Mode before isolated verification.");return;}
             SessionState.SetString(Session+"save",Root+"test-saves/"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff"));SessionState.SetBool(Session,true);SessionState.SetBool(Session+"enabled",EditorSettings.enterPlayModeOptionsEnabled);SessionState.SetInt(Session+"options",(int)EditorSettings.enterPlayModeOptions);EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;EditorApplication.EnterPlaymode();

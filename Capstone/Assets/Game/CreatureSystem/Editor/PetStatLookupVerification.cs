@@ -16,7 +16,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
         static readonly FieldInfo Cache = typeof(PetStatCalculator).GetField("profiles", BindingFlags.Static | BindingFlags.NonPublic);
         static readonly List<string> Checks = new List<string>();
 
-        [MenuItem("Tools/Capstone/Creatures/8. Verify scoped stat profile lookup")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/8. Verify scoped stat profile lookup")]
         public static void Run() {
             if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling)
                 throw new InvalidOperationException("Kiểm lookup ở Edit Mode sau khi compile xong.");

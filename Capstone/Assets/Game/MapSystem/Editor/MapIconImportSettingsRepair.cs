@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 
 namespace Capstone.Game.MapSystem.Editor {
@@ -14,7 +14,7 @@ namespace Capstone.Game.MapSystem.Editor {
             EditorApplication.delayCall += RepairIconImports;
         }
 
-        [MenuItem("Tools/ToolCuaThang/Game Map/Repair Map Icon Imports")]
+        [MenuItem("Tools/Capstone/Advanced/Game Map/Repair Map Icon Imports")]
         public static void RepairIconImports() {
             string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { IconFolder });
             bool changedAny = false;

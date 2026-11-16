@@ -5,6 +5,7 @@ namespace Capstone.Game.CaptureSystem {
     public sealed class CaptureSettings : ScriptableObject {
         [Tooltip("Off until a trustworthy unique-species source is connected.")] public bool enableCriticalCapture;
         public GameObject ballVisual;
+        [Min(1)] public float targetRange=15;
         public AudioClip successSound, escapeSound;
     }
     public static class CaptureAssets {

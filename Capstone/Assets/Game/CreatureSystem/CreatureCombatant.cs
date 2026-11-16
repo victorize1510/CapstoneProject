@@ -28,7 +28,7 @@ namespace Capstone.Game.CreatureSystem {
         public float OffenseMultiplier => Time.time < offenseBuffUntil ? offenseBuffMultiplier : 1;
         public float OffenseBuffRemaining => Mathf.Max(0, offenseBuffUntil - Time.time);
         void Awake() { stats = GetComponent<PetHudRuntimeStats>(); metadata = GetComponent<PetCollectionMetadata>(); pet = GetComponent<PetController>(); enemy = GetComponent<DummyEnemy>(); body = GetComponent<Collider>(); pet?.BindCombatant(this); BindVisual(stats.VisualAnimator); }
-        void OnEnable() { if (metadata != null) metadata.Changed += Invalidate; if (stats != null) stats.PersistentDataChanged += Invalidate; Invalidate(); }
+        void OnEnable() { if (Application.isPlaying&&GetComponent<PveCombatState>()==null)gameObject.AddComponent<PveCombatState>();if (metadata != null) metadata.Changed += Invalidate; if (stats != null) stats.PersistentDataChanged += Invalidate; Invalidate(); }
         void OnDisable() { if (metadata != null) metadata.Changed -= Invalidate; if (stats != null) stats.PersistentDataChanged -= Invalidate; ClearOffenseBuff(); }
         void Update() {
             if (offenseBuffUntil > 0 && (Time.time >= offenseBuffUntil || !IsAlive || (pet != null && !pet.CanReceiveCommands))) ClearOffenseBuff();
@@ -40,8 +40,10 @@ namespace Capstone.Game.CreatureSystem {
             offenseBuffUntil = Time.time + Mathf.Clamp(duration, .1f, 60);
             if (visual != null) {
                 offenseBuffVisual = Skills.CombatEffectPool.Rent(visual, Center, transform.rotation, transform);
-                offenseBuffVisual.transform.localPosition = transform.InverseTransformPoint(Center);
-                offenseBuffVisual.transform.localScale = Vector3.one * Mathf.Clamp(body != null ? body.bounds.extents.x * 1.6f : 1, .75f, 2);
+                if (offenseBuffVisual != null) {
+                    offenseBuffVisual.transform.localPosition = transform.InverseTransformPoint(Center);
+                    offenseBuffVisual.transform.localScale = Vector3.one * Mathf.Clamp(body != null ? body.bounds.extents.x * 1.6f : 1, .75f, 2);
+                }
             }
         }
         public void ClearOffenseBuff() {

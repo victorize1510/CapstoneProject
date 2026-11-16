@@ -24,7 +24,7 @@ namespace Capstone.Game.MapSystem.Editor {
     public static class MapR5AssetSetup {
         const string ThemePath="Assets/Game/MapSystem/Generated/UI/WorldMapUITheme.asset";
         static MapR5AssetSetup() {EditorApplication.delayCall+=Install;}
-        [MenuItem("Game Tools/GameToolThang/Map/Install Map R5 Assets")]
+        [MenuItem("Tools/Capstone/Advanced/Map/Install Map R5 Assets")]
         public static void Install() {
             if(EditorApplication.isPlayingOrWillChangePlaymode)return;
             if(EditorApplication.isCompiling||EditorApplication.isUpdating){EditorApplication.delayCall+=Install;return;}

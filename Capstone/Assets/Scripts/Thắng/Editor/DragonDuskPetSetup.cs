@@ -40,7 +40,7 @@ public static class DragonDuskPetSetup
         new SkillSpec("Wing Strike", "Wing strike attack.", 1, 4.2f, 1.0f, 0.08f, 0.1f, 0.3f, "Wing Attack")
     };
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Pet/Rebuild Dragon Dusk Runtime Animator")]
+    [MenuItem("Tools/Capstone/Advanced/Pet/Rebuild Dragon Dusk Runtime Animator")]
     public static void RebuildRuntimeAnimator()
     {
         AnimatorController controller = LoadOrCreateController();
@@ -88,7 +88,7 @@ public static class DragonDuskPetSetup
         Debug.Log("Dragon Dusk runtime animator rebuilt: " + RuntimeControllerPath);
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Pet/Setup Dragon Dusk In Open Scene")]
+    [MenuItem("Tools/Capstone/Advanced/Pet/Setup Dragon Dusk In Open Scene")]
     public static void SetupDragonDuskInOpenScene()
     {
         RebuildRuntimeAnimator();
@@ -115,7 +115,7 @@ public static class DragonDuskPetSetup
         Debug.Log("Dragon Dusk setup finished for " + pets.Count + " scene object(s).");
     }
 
-    [MenuItem("Tools/ToolCuaThang/Capstone/Pet/Setup Selected Dragon Dusk")]
+    [MenuItem("Tools/Capstone/Advanced/Pet/Setup Selected Dragon Dusk")]
     public static void SetupSelectedDragonDusk()
     {
         RebuildRuntimeAnimator();

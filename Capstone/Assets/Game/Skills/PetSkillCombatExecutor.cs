@@ -9,7 +9,7 @@ namespace Capstone.Game.Skills {
     [DisallowMultipleComponent, RequireComponent(typeof(PetSkillPresentationPlayer), typeof(CreatureCombatant))]
     public sealed class PetSkillCombatExecutor : MonoBehaviour {
         sealed class Shot {
-            public int token; public string id; public DummyEnemy target; public PetSkillCombatProfile profile;
+            public int token, emission; public string id; public DummyEnemy target; public PetSkillCombatProfile profile;
             public Vector3 position, direction; public float expires, remaining; public bool released;
             public GameObject visual; public CombatOffenseRoll damage; public float bleed;
         }
@@ -32,6 +32,9 @@ namespace Capstone.Game.Skills {
         public int HitCount { get; private set; }
         public int BuffAppliedCount { get; private set; }
         public int ActiveProjectileCount => shots.Count;
+        public int LastVolleyCount { get; private set; }
+        internal System.Func<float> VolleyRandomSource;
+        public float LastCastRawBudget { get; private set; }
         public string LastRejection { get; private set; }
         public bool IsRetreating => retreatRemaining > .001f;
         public Vector3 AimDirection => LastCastTarget != null && LastCastTarget.IsAlive ? LastCastTarget.TargetPosition - transform.position : castFacing;
@@ -39,8 +42,9 @@ namespace Capstone.Game.Skills {
         void OnEnable() {
             pet = GetComponent<PetController>(); combat = GetComponent<CreatureCombatant>(); stats = GetComponent<PetHudRuntimeStats>(); presentation = GetComponent<PetSkillPresentationPlayer>();
             presentation.SkillCastStarted += CastStarted; presentation.SkillReleased += Release;
+            presentation.SkillProjectileReleased += ReleaseEmission;
         }
-        void OnDisable() { if (presentation != null) { presentation.SkillCastStarted -= CastStarted; presentation.SkillReleased -= Release; } Cancel(); }
+        void OnDisable() { if (presentation != null) { presentation.SkillCastStarted -= CastStarted; presentation.SkillReleased -= Release; presentation.SkillProjectileReleased -= ReleaseEmission; } Cancel(); }
         public bool Prepare(string id, PetSkillCombatProfile profile) {
             preparedProfile = null; preparedTarget = null; preparedId = null; LastRejection = "";
             preparedRetreatDistance = 0;
@@ -49,7 +53,8 @@ namespace Capstone.Game.Skills {
             if (profile.delivery == PetSkillDelivery.SelfBuff) { preparedProfile = profile; preparedId = id; LastTargetMode = "Self"; return true; }
             DummyEnemy target = null;
             var input = pet != null && pet.owner != null ? pet.owner.GetComponent<PetCommandInput>() : null;
-            if (input != null && input.cameraLock != null && input.cameraLock.TryGetLockedEnemy(out var pinned) && InReach(pinned, profile, combat.Center)) { target = pinned; LastTargetMode = "Locked"; }
+            if (input != null && InReach(input.SelectedEnemy, profile, combat.Center)) { target = input.SelectedEnemy; LastTargetMode = "Selected"; }
+            if (target == null && input != null && input.cameraLock != null && input.cameraLock.TryGetLockedEnemy(out var pinned) && InReach(pinned, profile, combat.Center)) { target = pinned; LastTargetMode = "Locked"; }
             if (target == null && pet != null && InReach(pet.CombatTarget, profile, combat.Center)) { target = pet.CombatTarget; LastTargetMode = "Combat"; }
             if (target == null && profile.autoAcquireTarget) { target = Nearest(profile, combat.Center, transform.forward, false); if (target != null) LastTargetMode = "Nearest"; }
             if (target != null && profile.delivery != PetSkillDelivery.Melee && profile.retreatDistance > 0) {
@@ -66,14 +71,22 @@ namespace Capstone.Game.Skills {
             retreatDirection = -castFacing; retreatDirection.y = 0; retreatDirection.Normalize(); retreatRemaining = preparedRetreatDistance;
             retreatSpeed = Mathf.Max(.1f, preparedProfile.retreatSpeed); retreatUntil = Time.time + PreparedRetreatSeconds;
             for (int i = shots.Count - 1; i >= 0; i--) if (!shots[i].released) Remove(i);
-            if (shots.Count >= 8) Remove(0);
-            shots.Add(new Shot { token = token, id = id, target = preparedTarget, profile = preparedProfile, direction = preparedDirection,
-                damage = preparedProfile.delivery == PetSkillDelivery.SelfBuff ? default : combat.RollOffense(preparedProfile.damageKind, preparedProfile.power),
+            float countRoll=preparedProfile.weightedWindVolley?Mathf.Min(VolleyRandomSource?.Invoke()??Random.value,.999999f):0;
+            int count=preparedProfile.weightedWindVolley&&preparedProfile.delivery==PetSkillDelivery.Projectile?PveBalanceRules.WindVolleyCount(countRoll):1;
+            var rolled=preparedProfile.delivery==PetSkillDelivery.SelfBuff?default:combat.RollOffense(preparedProfile.damageKind,preparedProfile.power);
+            LastVolleyCount=count;LastCastRawBudget=rolled.RawDamage;
+            presentation.ConfigureEmissions(token,count);
+            for(int emission=0;emission<count;emission++){
+            if (shots.Count >= 24) Remove(0);
+            shots.Add(new Shot { token = token, emission=emission, id = id, target = preparedTarget, profile = preparedProfile, direction = preparedDirection,
+                damage = new CombatOffenseRoll(rolled.RawDamage/count,rolled.Critical),
                 bleed = preparedProfile.bleedPower > 0 ? combat.NonCriticalOffense(CreatureDamageKind.Physical, preparedProfile.bleedPower) : 0, expires = Time.time + 10 });
+            }
             preparedProfile = null; preparedTarget = null; preparedRetreatDistance = 0;
         }
-        void Release(int token, string id) {
-            foreach (var shot in shots) if (shot.token == token && !shot.released) {
+        void Release(int token, string id) => ReleaseEmission(token,id,0);
+        void ReleaseEmission(int token, string id,int emission) {
+            foreach (var shot in shots) if (shot.token == token && shot.emission==emission && !shot.released) {
                 shot.released = true;
                 if (shot.profile.delivery == PetSkillDelivery.SelfBuff) {
                     if (presentation.NotifyImpact(token, combat.Center, Vector3.up)) {
@@ -96,7 +109,7 @@ namespace Capstone.Game.Skills {
                 if (ResolveInitialOverlap(shot)) { shot.expires = 0; return; }
                 if (shot.profile.projectileVisual != null) {
                     shot.visual = CombatEffectPool.Rent(shot.profile.projectileVisual, start, Quaternion.LookRotation(shot.direction));
-                    shot.visual.transform.localScale = Vector3.one * shot.profile.visualScale;
+                    if (shot.visual != null) shot.visual.transform.localScale = Vector3.one * shot.profile.visualScale * presentation.VisualScale;
                 }
                 return;
             }
@@ -121,7 +134,7 @@ namespace Capstone.Game.Skills {
                     var hit = hits[nearest];
                     var victim = hit.collider.GetComponentInParent<DummyEnemy>();
                     if (Valid(victim)) Hit(shot, victim, hit.point, hit.normal);
-                    else presentation.NotifyImpact(shot.token, hit.point, hit.normal); // Surface impact only: no damage/result/recoil.
+                    else presentation.NotifyImpact(shot.token,shot.emission, hit.point, hit.normal); // Surface impact only: no damage/result/recoil.
                     Remove(i); continue;
                 }
                 shot.position += shot.direction * step; shot.remaining -= step;
@@ -172,15 +185,20 @@ namespace Capstone.Game.Skills {
             Hit(shot, victim, shot.position, -shot.direction); return true;
         }
         void Hit(Shot shot, DummyEnemy victim, Vector3 point, Vector3 normal) {
-            if (!Valid(victim) || !presentation.CanImpact(shot.token)) { LastRejection = "Mục tiêu hoặc token va chạm không còn hợp lệ."; return; }
-            var hit = new CombatHit(gameObject, shot.id, shot.token, shot.damage.RawDamage, shot.profile.damageKind, shot.damage.Critical, false, point);
+            if (!Valid(victim) || !presentation.CanImpact(shot.token,shot.emission)) { LastRejection = "Mục tiêu hoặc token va chạm không còn hợp lệ."; return; }
+            var hit = new CombatHit(gameObject, shot.id, shot.token, shot.damage.RawDamage, shot.profile.damageKind, shot.damage.Critical, false, point,shot.emission);
             var result = victim.ApplyCombatHit(hit);
             if (result.HpLost > 0) {
-                presentation.NotifyImpact(shot.token, point, normal); HitCount++;
+                presentation.NotifyImpact(shot.token,shot.emission, point, normal); HitCount++;
                 if (!result.Killed && shot.bleed > 0) CombatBleed.Apply(victim, hit, shot.bleed);
             }
         }
-        void Remove(int index) { if (shots[index].visual != null) CombatEffectPool.Return(shots[index].visual); presentation?.CompleteMiss(shots[index].token); shots.RemoveAt(index); }
+        void Remove(int index) { if (shots[index].visual != null) CombatEffectPool.Return(shots[index].visual); presentation?.CompleteMiss(shots[index].token,shots[index].emission); shots.RemoveAt(index); }
         public void Cancel() { for (int i = shots.Count - 1; i >= 0; i--) Remove(i); preparedProfile = null; preparedTarget = null; preparedId = null; preparedRetreatDistance = 0; retreatRemaining = 0; }
+        void OnApplicationFocus(bool value) { if (!value) { presentation?.CancelPresentation(); Cancel(); } }
+        public void CancelWindup() {
+            for (int i = shots.Count - 1; i >= 0; i--) if (!shots[i].released) Remove(i);
+            preparedProfile = null; preparedTarget = null; preparedId = null; preparedRetreatDistance = retreatRemaining = 0;
+        }
     }
 }

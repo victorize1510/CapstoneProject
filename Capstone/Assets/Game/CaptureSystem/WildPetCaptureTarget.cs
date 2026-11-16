@@ -7,6 +7,7 @@ namespace Capstone.Game.CaptureSystem {
         [SerializeField] bool encounterCaptureAllowed = true;
         PetController pet; DummyEnemy enemy; PetCollectionMetadata metadata; PetHudRuntimeStats stats;
         bool transferred;
+        bool presentationHold;float presentationHoldUntil;
         public PetController Pet => pet != null ? pet : pet = GetComponent<PetController>();
         public PetCollectionMetadata Metadata => metadata != null ? metadata : metadata = GetComponentInChildren<PetCollectionMetadata>(true);
         public DummyEnemy Enemy => enemy != null ? enemy : enemy = GetComponent<DummyEnemy>();
@@ -14,6 +15,7 @@ namespace Capstone.Game.CaptureSystem {
         internal bool StagedForSave { get; set; }
         public bool IsWild => !transferred && Pet != null && Pet.IsWildEncounter;
         public bool Allowed => encounterCaptureAllowed && Enemy != null && !Enemy.IsBoss;
+        public bool CanEnterDowned => IsWild&&Allowed&&!Enemy.IsTrainingDummy&&Metadata!=null&&PetStatCalculator.TryGetProfile(Metadata,out var profile)&&profile.IsCatchable;
         void Awake() {
             if (!IsWild) { if(Enemy!=null)Enemy.enabled=false; return; }
             if (Metadata == null || Stats == null) return;
@@ -25,10 +27,13 @@ namespace Capstone.Game.CaptureSystem {
         public void SyncHealthFromEnemy() {
             if (IsWild && Stats != null) Stats.SetStatus(Enemy.CurrentHealth, Enemy.maxHealth, Stats.Energy, Stats.MaxEnergy);
         }
-        internal void Lock(bool locked) { if (Enemy != null) Enemy.CaptureLocked = locked; }
+        internal void Lock(bool locked) { if (Enemy != null) Enemy.CaptureLocked = locked||presentationHold; }
+        internal void HoldDownedPresentation(){if(Enemy==null||!Enemy.IsDowned)return;presentationHold=true;presentationHoldUntil=Time.time+10;Lock(true);}
+        internal void EndPresentationHold(){presentationHold=false;Lock(false);}
+        void Update(){if(presentationHold&&Time.time>=presentationHoldUntil)EndPresentationHold();}
         internal void Complete(Transform owner) {
-            transferred = true; StagedForSave = false; Enemy.FinishCaptureWithoutDefeat(); Pet.FinishWildCapture(owner);
+            transferred = true; presentationHold=false; StagedForSave = false; Enemy.FinishCaptureWithoutDefeat(); Pet.FinishWildCapture(owner);
         }
-        void OnDisable() { if (!transferred) Lock(false); }
+        void OnDisable() { if (!transferred) EndPresentationHold(); }
     }
 }

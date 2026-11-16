@@ -9,7 +9,7 @@ namespace Capstone.Game.PetSummon.Editor
         const string Root = "Assets/Game/PetSummon";
 
         // Explicit installation only. Domain reload never rebuilds profiles or scenes.
-        [MenuItem("Game Tools/Pets/Install 3D Summon VFX")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Install 3D Summon VFX")]
         public static void Install()
         {
             if (EditorApplication.isPlayingOrWillChangePlaymode) {

@@ -28,9 +28,9 @@ namespace Capstone.Game.HudSystem.Editor {
         static void Check(bool pass,string message){checks.Add((pass?"PASS ":"FAIL ")+message);Write("checks.txt",string.Join("\n",checks));if(!pass)throw new Exception(message);}
         static void Set(object o,string field,object value)=>o.GetType().GetField(field,Any).SetValue(o,value);
         static object Call(object o,string method,params object[] args)=>o.GetType().GetMethod(method,Any).Invoke(o,args);
-        [MenuItem("Game Tools/GameToolThang/HUD/R11/Verify isolated runtime")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/R11/Verify isolated runtime")]
         public static void Run()=>Begin(false);
-        [MenuItem("Game Tools/GameToolThang/HUD/R11/Manual isolated keyboard check")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/R11/Manual isolated keyboard check")]
         public static void Manual()=>Begin(true);
         static void Begin(bool manual){if(EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling)return;SessionState.SetBool(Session+"manual",manual);AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("Capstone.Game.HudSystem.Editor.HubR11AssetImporter")).First(t=>t!=null).GetMethod("Reimport").Invoke(null,null);SessionState.SetString(Session+"save",Root+"test-saves/"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff"));SessionState.SetBool(Session,true);SessionState.SetBool(Session+"enabled",EditorSettings.enterPlayModeOptionsEnabled);SessionState.SetInt(Session+"options",(int)EditorSettings.enterPlayModeOptions);EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;EditorApplication.EnterPlaymode();}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]static void Boot(){if(!SessionState.GetBool(Session,false))return;

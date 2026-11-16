@@ -33,6 +33,8 @@ namespace Capstone.Game.Skills {
     [CreateAssetMenu(menuName = "Capstone/Pet Skills/Species Skill Set", fileName = "Species_")]
     public sealed class PetSpeciesSkillSet : ScriptableObject {
         public string speciesId;
+        [Min(0), Tooltip("MP ban đầu; độc lập cấp và tám chỉ số. Save có MaxEnergy hợp lệ được giữ nguyên.")]
+        public float startingMana = 100;
         public PetSkillCatalog catalog;
         public List<PetSpeciesSkillEntry> learnset = new List<PetSpeciesSkillEntry>();
         [Tooltip("Initial equipped skills for a NEW pet only. Loading a save never refills empty slots.")]

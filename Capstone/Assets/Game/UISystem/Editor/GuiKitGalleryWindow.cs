@@ -12,7 +12,7 @@ namespace Capstone.Game.UISystem.Editor {
             "heart", "mana", "stats", "rename", "trash", "info", "lock", "sort", "compass", "camera", "leaf",
             "volume", "mouse", "keyboard", "refresh", "exit", "warning"
         };
-        [MenuItem("Game Tools/GameToolThang/GUI/Open Shared GUI Gallery")]
+        [MenuItem("Tools/Capstone/Advanced/GUI/Open Shared GUI Gallery")]
         public static void Open() {
             var window = GetWindow<GuiKitGalleryWindow>("Bộ GUI dùng chung");
             window.minSize = new Vector2(600, 500);

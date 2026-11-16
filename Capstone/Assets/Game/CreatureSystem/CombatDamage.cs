@@ -13,14 +13,18 @@ namespace Capstone.Game.CreatureSystem {
         public readonly GameObject Source;
         public readonly string SkillId;
         public readonly int CastId;
+        public readonly int EmissionIndex;
         public readonly float RawDamage;
         public readonly CreatureDamageKind Kind;
         public readonly bool Critical, DamageOverTime;
         public readonly Vector3 Point;
         public CombatHit(GameObject source, string skillId, int castId, float rawDamage,
-            CreatureDamageKind kind, bool critical, bool damageOverTime, Vector3 point) {
+            CreatureDamageKind kind, bool critical, bool damageOverTime, Vector3 point)
+            : this(source, skillId, castId, rawDamage, kind, critical, damageOverTime, point, 0) { }
+        public CombatHit(GameObject source, string skillId, int castId, float rawDamage,
+            CreatureDamageKind kind, bool critical, bool damageOverTime, Vector3 point, int emissionIndex) {
             Source = source; SkillId = skillId; CastId = castId; RawDamage = rawDamage;
-            Kind = kind; Critical = critical; DamageOverTime = damageOverTime; Point = point;
+            Kind = kind; Critical = critical; DamageOverTime = damageOverTime; Point = point; EmissionIndex = emissionIndex;
         }
     }
 
@@ -40,6 +44,7 @@ namespace Capstone.Game.CreatureSystem {
         static void Reset() { Applied = null; }
         internal static void Publish(CombatDamageResult result) {
             if (!(result.HpLost > 0) || float.IsInfinity(result.HpLost) || float.IsNaN(result.HpLost)) return;
+            PveCombatState.Record(result);
             HudSystem.FloatingCombatText.ShowDamage(result);
             CombatFeedback.Show(result);
             Applied?.Invoke(result);

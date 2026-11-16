@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Capstone.Game.SaveSystem {
     public static class PlayerSaveMigration {
-        static readonly string[] Sections = { "quest", "inventory", "currency", "pets", "profile", "achievements" };
+        static readonly string[] Sections = { "quest", "inventory", "currency", "pets", "profile", "achievements", "pveRewards" };
 
         public static PlayerSaveData Read(string json, out int sourceVersion) {
             JObject root = Parse(json);
@@ -32,6 +32,7 @@ namespace Capstone.Game.SaveSystem {
             if (Absent(root, "pets")) data.pets = null;
             if (Absent(root, "profile")) data.profile = null;
             if (Absent(root, "achievements")) data.achievements = null;
+            if (Absent(root, "pveRewards")) data.pveRewards = null;
             if (data.pets != null) {
                 JObject petsRoot = root["pets"] as JObject;
                 bool hasBoxSlots = petsRoot?["boxSlots"] is JArray;
@@ -85,6 +86,7 @@ namespace Capstone.Game.SaveSystem {
             if (data.pets == null) root["pets"] = JValue.CreateNull();
             if (data.profile == null) root["profile"] = JValue.CreateNull();
             if (data.achievements == null) root["achievements"] = JValue.CreateNull();
+            if (data.pveRewards == null) root["pveRewards"] = JValue.CreateNull();
             if (data.pets?.petStates != null && root["pets"]?["petStates"] is JArray states) {
                 for (int i = 0; i < data.pets.petStates.Count; i++) {
                     var pet = data.pets.petStates[i];
@@ -117,6 +119,15 @@ namespace Capstone.Game.SaveSystem {
         public static void Validate(PlayerSaveData data) {
             if (data == null) throw new InvalidDataException("Player save data is null.");
             if (data.version != PlayerSaveData.CurrentVersion) throw new InvalidDataException("Migrate the save before writing it.");
+            if(data.pveRewards?.captured==true){
+                if(data.pveRewards.pending==null)throw new InvalidDataException("Invalid pending PvE rewards.");
+                var ids=new HashSet<string>(StringComparer.Ordinal);
+                foreach(var record in data.pveRewards.pending){
+                    if(record==null||string.IsNullOrWhiteSpace(record.transactionId)||!ids.Add(record.transactionId)||record.gold<0||record.items==null||record.pets==null||float.IsNaN(record.x)||float.IsInfinity(record.x)||float.IsNaN(record.y)||float.IsInfinity(record.y)||float.IsNaN(record.z)||float.IsInfinity(record.z))throw new InvalidDataException("Invalid pending reward transaction.");
+                    foreach(var item in record.items)if(item==null||string.IsNullOrWhiteSpace(item.itemId)||item.quantity<1)throw new InvalidDataException("Invalid pending reward item.");
+                    foreach(var pet in record.pets)if(pet==null||string.IsNullOrWhiteSpace(pet.petId)||pet.experience<0)throw new InvalidDataException("Invalid pending pet reward.");
+                }
+            }
             if (data.inventory?.captured == true) {
                 if (data.inventory.capacity < 1 || data.inventory.items == null) throw new InvalidDataException("Invalid inventory capacity/items.");
                 var itemIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

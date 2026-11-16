@@ -142,6 +142,8 @@ namespace Capstone.Game.PetSummon
                 return RejectSummon($"Slot {slotIndex + 1} không có pet.");
             }
 
+            var status=selectedPet.GetComponentInChildren<Capstone.Game.HudSystem.PetHudRuntimeStats>(true);
+            if(status!=null&&status.Health<=0)return RejectSummon("Thú đã gục. Hãy hồi phục trước khi gọi.");
             if (IsSequenceRunning)
             {
                 if (State != SequenceState.Recall && pendingSlotIndex == slotIndex)

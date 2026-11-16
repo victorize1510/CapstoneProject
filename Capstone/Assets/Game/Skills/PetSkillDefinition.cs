@@ -13,6 +13,7 @@ namespace Capstone.Game.Skills {
         public PetElement element;
         public Sprite icon;
         [Min(0)] public float cooldownSeconds;
+        [Min(0)] public float manaCost;
         [Range(0, 100)] public float criticalRateBonus;
         [Range(0, 100)] public float criticalDamageBonus;
         [Header("Default animation (species can override)")]
@@ -30,7 +31,7 @@ namespace Capstone.Game.Skills {
         public string Id => (skillId ?? string.Empty).Trim();
         public SkillHudData CreateHudData(int requiredLevel = 1, bool unlocked = true) => new SkillHudData {
             skillId = Id, legacySkillIds = legacyIds, displayName = displayName, description = description,
-            element = element, icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds), uiMetadata = uiMetadata,
+            element = element, icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds), manaCost = Mathf.Max(0, manaCost), uiMetadata = uiMetadata,
             criticalRateBonus = criticalRateBonus, criticalDamageBonus = criticalDamageBonus,
             animatorStates = animatorStates, animationDuration = animationDuration, animationFade = animationFade,
             windupSeconds = windupSeconds, recoverySeconds = recoverySeconds,

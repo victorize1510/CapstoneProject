@@ -20,8 +20,9 @@ MonoBehaviour:
     G\xE2y ch\u1EA3y m\xE1u 10% ATK m\u1ED7i gi\xE2y trong 3 gi\xE2y; c\xF9ng ngu\u1ED3n
     l\xE0m m\u1EDBi, kh\xF4ng c\u1ED9ng d\u1ED3n."
   element: 1
-  icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
+  icon: {fileID: 21300000, guid: 15a7d912e4d8ac543bc697d3baf264ec, type: 3}
   cooldownSeconds: 2
+  manaCost: 8
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:

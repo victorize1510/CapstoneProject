@@ -39,6 +39,8 @@ MonoBehaviour:
     state: Take Damage
   - action: 14
     state: Die
+  - action: 15
+    state: Downed
   skills:
   - skillId: bite
     action: 8

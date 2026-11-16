@@ -17,9 +17,9 @@ namespace Capstone.Game.HudSystem.Editor {
         const string Request="Temp/VerifyCompanion.request",OwnPlay="CompanionVerification.OwnPlay";
         static bool running;
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
-        [MenuItem("Game Tools/Companion UI/Capture three tabs")]
+        [MenuItem("Tools/Capstone/Advanced/Companion UI/Capture three tabs")]
         static void RequestCapture()=>Queue("after");
-        [MenuItem("Game Tools/Companion UI/Validate interactions")]
+        [MenuItem("Tools/Capstone/Advanced/Companion UI/Validate interactions")]
         static void RequestValidation()=>Queue("test");
         static void Queue(string command){
             if(running||File.Exists(Request)||File.Exists("Temp/ProfileCompanion.request")){Debug.LogWarning("Companion QA is already queued or running.");return;}

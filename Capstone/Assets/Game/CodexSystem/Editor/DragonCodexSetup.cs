@@ -9,7 +9,7 @@ namespace Capstone.Game.CodexSystem.Editor {
     public static class DragonCodexSetup {
         public const string Path = "Assets/Game/CodexSystem/Resources/PetCodex/PetCodexCatalog.asset";
         static DragonCodexSetup() { EditorApplication.delayCall += InstallIfMissing; }
-        [MenuItem("Game Tools/GameToolThang/Pets/Create or Select Dragon Codex")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Create or Select Dragon Codex")]
         public static void CreateOrSelect() {
             InstallIfMissing(); Selection.activeObject = AssetDatabase.LoadAssetAtPath<PetCodexCatalog>(Path);
         }

@@ -15,7 +15,7 @@ namespace Capstone.Game.SaveSystem {
             if (amount <= 0) return;
 
             gold = (int)Math.Min(int.MaxValue, (long)Gold + amount);
-            GoldChanged?.Invoke(Gold);
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"gold",()=>GoldChanged?.Invoke(Gold));
         }
 
         public bool TrySpendGold(int amount) {
@@ -55,7 +55,7 @@ namespace Capstone.Game.SaveSystem {
             if (saveData == null || !saveData.captured) return;
 
             gold = Mathf.Max(0, saveData.gold);
-            GoldChanged?.Invoke(Gold);
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"gold",()=>GoldChanged?.Invoke(Gold));
         }
 
         void OnValidate() {

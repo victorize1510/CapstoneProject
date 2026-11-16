@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 namespace Capstone.Game.MapSystem.Editor {
     public static class WorldMapUIValidation {
-        [MenuItem("Tools/ToolCuaThang/Game Map/Validate World Map UI in Play Mode")]
+        [MenuItem("Tools/Capstone/Advanced/Game Map/Validate World Map UI in Play Mode")]
         public static void Validate() {
             if (!Application.isPlaying) { Debug.LogWarning("Enter Play Mode before validating World Map UI."); return; }
             var map = UnityEngine.Object.FindFirstObjectByType<WorldMapController>();

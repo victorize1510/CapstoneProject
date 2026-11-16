@@ -403,7 +403,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 1827226128182048838, guid: f46cdfe178b404f48b92d16aa22245e7, type: 3}
+  m_Motion: {fileID: 7400000, guid: 37bbd0b9e5a02514e983b8489d7ae955, type: 2}
   m_Tag: 
   m_SpeedParameter: CombatSpeed
   m_MirrorParameter: 
@@ -948,6 +948,32 @@ AnimatorStateTransition:
   m_InterruptionSource: 0
   m_OrderedInterruption: 1
   m_CanTransitionToSelf: 1
+--- !u!1102 &220754859917596743
+AnimatorState:
+  serializedVersion: 6
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Downed
+  m_Speed: 1
+  m_CycleOffset: 0
+  m_Transitions: []
+  m_StateMachineBehaviours: []
+  m_Position: {x: 50, y: 50, z: 0}
+  m_IKOnFeet: 0
+  m_WriteDefaultValues: 1
+  m_Mirror: 0
+  m_SpeedParameterActive: 0
+  m_MirrorParameterActive: 0
+  m_CycleOffsetParameterActive: 0
+  m_TimeParameterActive: 0
+  m_Motion: {fileID: 7400000, guid: 8f42ca1eae6b4bc47ae2b59ed8b443c0, type: 2}
+  m_Tag: 
+  m_SpeedParameter: 
+  m_MirrorParameter: 
+  m_CycleOffsetParameter: 
+  m_TimeParameter: 
 --- !u!1102 &297933813293423102
 AnimatorState:
   serializedVersion: 6
@@ -1567,6 +1593,9 @@ AnimatorStateMachine:
   - serializedVersion: 1
     m_State: {fileID: -5648924276320855541}
     m_Position: {x: 430, y: 540, z: 0}
+  - serializedVersion: 1
+    m_State: {fileID: 220754859917596743}
+    m_Position: {x: 465, y: 605, z: 0}
   m_ChildStateMachines: []
   m_AnyStateTransitions: []
   m_EntryTransitions: []

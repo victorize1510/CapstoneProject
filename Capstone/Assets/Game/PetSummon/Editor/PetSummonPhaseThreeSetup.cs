@@ -21,7 +21,7 @@ namespace Capstone.Game.PetSummon.Editor
             EditorApplication.playModeStateChanged += HandlePlayModeStateChanged;
         }
 
-        [MenuItem("Tools/Capstone/Pet Summon/Run Phase 3 Setup")]
+        [MenuItem("Tools/Capstone/Advanced/Pet Summon/Run Phase 3 Setup")]
         public static void RunFromMenu()
         {
             RunSetup(true);

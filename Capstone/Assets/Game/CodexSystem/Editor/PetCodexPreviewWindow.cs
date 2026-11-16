@@ -22,7 +22,7 @@ namespace Capstone.Game.CodexSystem.Editor {
         static bool closeAfterValidation;
         static readonly Vector2[] Viewports = { new Vector2(1920,1080), new Vector2(1366,768), new Vector2(1920,1200), new Vector2(2560,1080) };
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Preview Pet Codex")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Preview Pet Codex")]
         public static void OpenPreview() {
             var window = GetWindow<PetCodexPreviewWindow>("Cẩm nang — xem thử");
             window.position = new Rect(40, 70, 1366, 768); window.Show();
@@ -66,7 +66,7 @@ namespace Capstone.Game.CodexSystem.Editor {
             public bool TrySetFavorite(string id, bool favorite) { var entry = entries.Find(e => e.Id == id); if (entry == null) return false; entry.Favorite = favorite; Changed?.Invoke(); return true; }
         }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate UI Completion")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate UI Completion")]
         public static async void Validate() {
             if (validating) return;
             validating = true;

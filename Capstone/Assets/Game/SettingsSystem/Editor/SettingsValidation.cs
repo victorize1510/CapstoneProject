@@ -22,7 +22,7 @@ namespace Capstone.Game.SettingsSystem.Editor {
         internal SettingsState Model;
         GameObject owner;
         const string UI = "Assets/ThangTest/UIThang/Inventory/UI/SettingsScreen.uxml";
-        [MenuItem("Game Tools/GameToolThang/HUD/Preview Settings (Editor fixture)")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Preview Settings (Editor fixture)")]
         public static SettingsPreviewWindow OpenPreview() {
             var window = GetWindow<SettingsPreviewWindow>("Cài đặt — xem thử");
             window.position = new Rect(40, 70, 1366, 768); window.Show(); return window;
@@ -61,7 +61,7 @@ namespace Capstone.Game.SettingsSystem.Editor {
         static Button Button(VisualElement root, string row) => root.Q(row).Q<Button>("setting-button");
         static void Write(string file) { Directory.CreateDirectory(Output); File.WriteAllLines(Output + file, results); }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Settings")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Settings")]
         public static async void Run() {
             if (running || EditorApplication.isPlaying) return;
             running = true; results.Clear(); SettingsPreviewWindow window = null;
@@ -149,7 +149,7 @@ namespace Capstone.Game.SettingsSystem.Editor {
             finally { window?.Close(); running=false; }
         }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Settings in Play Mode")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Settings in Play Mode")]
         public static async void RunPlay() {
             if (running || !Application.isPlaying) return;
             running=true; results.Clear();

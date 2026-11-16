@@ -48,7 +48,7 @@ namespace Capstone.Game.Inventory.Editor {
             public void Dispose() => Object.DestroyImmediate(root);
         }
 
-        [MenuItem("Game Tools/GameToolThang/Inventory/Validate Recovery Samples")]
+        [MenuItem("Tools/Capstone/Advanced/Inventory/Validate Recovery Samples")]
         public static void Run() {
             if (Application.isPlaying) return;
             results.Clear();

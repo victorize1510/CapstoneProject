@@ -8,7 +8,7 @@ public static class TestCharFreeLookSetup
 {
     public const string ScenePath = "Assets/Scenes/TestChar.unity";
 
-    [MenuItem("Tools/ToolCuaThang/Camera/Setup TestChar FreeLook")]
+    [MenuItem("Tools/Capstone/Advanced/Camera/Setup TestChar FreeLook")]
     public static void SetupActiveScene()
     {
         if (Application.isPlaying || EditorSceneManager.GetActiveScene().path != ScenePath)
