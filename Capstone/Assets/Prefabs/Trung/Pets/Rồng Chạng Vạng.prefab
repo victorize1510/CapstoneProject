@@ -1088,6 +1088,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PetController
   owner: {fileID: 0}
+  wildEncounter: 0
   animator: {fileID: 8761768664145449400}
   agent: {fileID: 6026007895675806108}
   followOffset: {x: -1.4, y: 0, z: -1.6}
@@ -1218,7 +1219,11 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 9
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Close-range bite attack.
     icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
     animatorStates:
@@ -1241,6 +1246,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Short magic blast.
     icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
     animatorStates:
@@ -1263,6 +1272,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 2
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Ranged projectile attack.
     icon: {fileID: 0}
     animatorStates:
@@ -1285,6 +1298,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 4
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Wing strike attack.
     icon: {fileID: 0}
     animatorStates:
@@ -1307,6 +1324,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 1
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Close-range bite attack.
     icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
     animatorStates:
@@ -1329,6 +1350,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Short magic blast.
     icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
     animatorStates:
@@ -1351,6 +1376,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 2
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Ranged projectile attack.
     icon: {fileID: 0}
     animatorStates:
@@ -1373,6 +1402,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 4
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Wing strike attack.
     icon: {fileID: 0}
     animatorStates:
@@ -1418,6 +1451,7 @@ MonoBehaviour:
   obtainedOrder: 1
   captureDate: 
   captureLocation: TestChar
+  captureBallId: 
   trainerName: Player
   personality: Curious
   geneticsInitialized: 0
@@ -1506,6 +1540,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetEvolutionVisualController
   visualRoot: {fileID: 0}
   baseVisual: {fileID: 0}
+  baseVisualPrefab: {fileID: 0}
 --- !u!114 &4113235985986183296
 MonoBehaviour:
   m_ObjectHideFlags: 0

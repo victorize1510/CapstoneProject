@@ -467,6 +467,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PetController
   owner: {fileID: 0}
+  wildEncounter: 0
   animator: {fileID: 8776237147806666196}
   agent: {fileID: -630953420829189075}
   followOffset: {x: -1.4, y: 0, z: -1.6}
@@ -567,17 +568,21 @@ MonoBehaviour:
   equippedSkillSlotCount: 4
   usePrototypeSkillsWhenEmpty: 1
   skills:
-  - skillId: bite
+  - skillId: 001
     legacySkillIds:
     - bite
     unlocked: 1
     usable: 1
-    displayName: Bite
+    displayName: "M\u1ED5"
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 12
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Basic close-range bite attack.
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 18286c71b45cbed458fc6a20f4c692b2, type: 3}
     animatorStates:
     - Bite Attack
     - Bite Attack Low
@@ -589,6 +594,7 @@ MonoBehaviour:
     recoverySeconds: 0.3
     cooldownPercent: 0
     cooldownSeconds: 1.2
+    manaCost: 0
   - skillId: blast
     legacySkillIds:
     - blast
@@ -598,6 +604,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: A short roar-like magic blast.
     icon: {fileID: 0}
     animatorStates:
@@ -611,6 +621,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3.8
+    manaCost: 0
   - skillId: projectile
     legacySkillIds:
     - projectile
@@ -620,6 +631,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 2
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Fires a ranged projectile.
     icon: {fileID: 0}
     animatorStates:
@@ -633,6 +648,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3
+    manaCost: 0
   - skillId: wing strike
     legacySkillIds:
     - wing strike
@@ -642,6 +658,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 4
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: A wing attack that knocks the air forward.
     icon: {fileID: 0}
     animatorStates:
@@ -654,6 +674,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 4.2
+    manaCost: 0
   learnedSkills:
   - skillId: bite
     legacySkillIds:
@@ -664,6 +685,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 1
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Basic close-range bite attack.
     icon: {fileID: 0}
     animatorStates:
@@ -677,6 +702,7 @@ MonoBehaviour:
     recoverySeconds: 0.3
     cooldownPercent: 0
     cooldownSeconds: 1.2
+    manaCost: 0
   - skillId: blast
     legacySkillIds:
     - blast
@@ -686,6 +712,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: A short roar-like magic blast.
     icon: {fileID: 0}
     animatorStates:
@@ -699,6 +729,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3.8
+    manaCost: 0
   - skillId: projectile
     legacySkillIds:
     - projectile
@@ -708,6 +739,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 2
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Fires a ranged projectile.
     icon: {fileID: 0}
     animatorStates:
@@ -721,6 +756,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3
+    manaCost: 0
   - skillId: wing strike
     legacySkillIds:
     - wing strike
@@ -730,6 +766,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 4
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: A wing attack that knocks the air forward.
     icon: {fileID: 0}
     animatorStates:
@@ -742,6 +782,88 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 4.2
+    manaCost: 0
+  - skillId: 0
+    legacySkillIds:
+    - bite
+    unlocked: 1
+    usable: 1
+    displayName: Bite
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 1
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: Basic close-range bite attack.
+    icon: {fileID: 0}
+    animatorStates:
+    - Bite Attack
+    - Bite Attack Low
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 0.8
+    animationFade: 0.08
+    windupSeconds: 0.12
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 1.2
+    manaCost: 0
+  - skillId: 00
+    legacySkillIds:
+    - bite
+    unlocked: 1
+    usable: 1
+    displayName: Bite
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 1
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: Basic close-range bite attack.
+    icon: {fileID: 0}
+    animatorStates:
+    - Bite Attack
+    - Bite Attack Low
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 0.8
+    animationFade: 0.08
+    windupSeconds: 0.12
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 1.2
+    manaCost: 0
+  - skillId: 001
+    legacySkillIds:
+    - bite
+    unlocked: 1
+    usable: 1
+    displayName: Bite
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 1
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: Basic close-range bite attack.
+    icon: {fileID: 0}
+    animatorStates:
+    - Bite Attack
+    - Bite Attack Low
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 0.8
+    animationFade: 0.08
+    windupSeconds: 0.12
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 1.2
+    manaCost: 0
   petController: {fileID: -6361860027511618956}
   animator: {fileID: 8776237147806666196}
   autoFindAnimationReferences: 1
@@ -797,6 +919,7 @@ MonoBehaviour:
   obtainedOrder: 0
   captureDate: 
   captureLocation: 
+  captureBallId: 
   trainerName: 
   personality: 
   geneticsInitialized: 0
@@ -885,6 +1008,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetEvolutionVisualController
   visualRoot: {fileID: 0}
   baseVisual: {fileID: 0}
+  baseVisualPrefab: {fileID: 0}
 --- !u!1 &4807008568348598127
 GameObject:
   m_ObjectHideFlags: 0

@@ -11,30 +11,61 @@ using UnityEngine;
 using UnityEngine.AI;
 
 namespace Capstone.Game.CreatureSystem.Editor {
-    // Legacy authoring commands are explicit menu actions, never reload/update hooks.
-    // Optional QA storage must not poison type initialization or reapply old assets.
+    [InitializeOnLoad]
     public static class PveGameplaySetup {
-        public const string Qa=QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
+        // Thư mục QA, thử lần lượt:
+        //   1. QaArtifactPaths.Root (ổ E: của máy gốc) nếu ổ đó tồn tại
+        //   2. C:/UnityWork/CapstoneProjectData/Artifacts/
+        //   3. <project>/Library/QaArtifacts/ (Git bỏ qua, Unity không xóa khi đóng editor)
+        public static readonly string Qa=ResolveQa("pve-combat-hub-2026-11-11/");
+        static string ResolveQa(string task){
+            string[] roots={
+                QaArtifactPaths.Root,
+                "C:/UnityWork/CapstoneProjectData/Artifacts/",
+                Path.GetFullPath(Path.Combine(Application.dataPath,"..","Library","QaArtifacts"))
+            };
+            foreach(string r in roots){
+                if(string.IsNullOrEmpty(r))continue;
+                string dir=r.Replace('\\','/');if(!dir.EndsWith("/"))dir+="/";dir+=task;
+                try{
+                    string drive=Path.GetPathRoot(Path.GetFullPath(dir));
+                    if(string.IsNullOrEmpty(drive)||!Directory.Exists(drive))continue;
+                    Directory.CreateDirectory(dir);
+                    return dir;
+                }catch(Exception){}
+            }
+            Debug.LogWarning("[PveGameplaySetup] Không tạo được thư mục QA nào.");
+            return roots[2].Replace('\\','/')+"/"+task;
+        }
         public const string Version="pve-input-mana-volley-2026-11-12-v2";
         public const string NavigationVersion="pve-demo-navigation-2026-11-12-v2";
-        internal static bool TryPrepareQaOutput(string directory, out string error) {
-            try { Directory.CreateDirectory(directory); error=string.Empty; return true; }
-            catch(Exception exception) when(exception is IOException || exception is UnauthorizedAccessException) {
-                error=exception.Message;
-                return false;
-            }
+        public const string FinalizeVersion="pve-save-demo-preserved-2026-11-12-v1";
+        static double pollAt;
+        static PveGameplaySetup(){
+            EditorApplication.update+=Poll;
+            try{Directory.CreateDirectory(Qa);File.WriteAllText(Qa+"authoring-loaded.txt",Version);}
+            catch(Exception e){Debug.LogWarning("[PveGameplaySetup] Bỏ qua ghi file QA: "+e.Message);}
         }
-        static bool PrepareQaOutput() {
-            if(TryPrepareQaOutput(Qa,out string error))return true;
-            Debug.LogError("Không thể tạo thư mục QA: "+Qa+"\nHãy kiểm tra ổ E và quyền truy cập. Lệnh authoring chưa được thực hiện.\n"+error);
-            return false;
+        static void Poll(){
+            if(EditorApplication.timeSinceStartup<pollAt||EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode)return;
+            pollAt=EditorApplication.timeSinceStartup+1;
+            try{if(!File.Exists(Qa+"authoring.request"))return;}catch(Exception){return;}string request=File.ReadAllText(Qa+"authoring.request").Trim();if(request!=Version&&request!=NavigationVersion&&request!=FinalizeVersion)return;
+            File.Delete(Qa+"authoring.request");try{if(request==NavigationVersion)BuildDemoNavigation();else if(request==FinalizeVersion)SavePreservedScene();else Apply();}catch(Exception e){File.WriteAllText(Qa+"authoring-status.txt","FAILED\n"+e);Debug.LogException(e);}
+        }
+        static void SavePreservedScene(){
+            var scene=EditorSceneManager.GetActiveScene();
+            if(EditorApplication.isPlayingOrWillChangePlaymode||scene.path!="Assets/Scenes/DemoScene.unity")throw new InvalidOperationException("Chỉ lưu DemoScene ngoài Play Mode.");
+            string backup=Qa+"scene-backups/pre-final-save.unity";Directory.CreateDirectory(Path.GetDirectoryName(backup));
+            if(!EditorSceneManager.SaveScene(scene,backup,true)||new FileInfo(backup).Length<1000)throw new IOException("Chưa bảo toàn scene đang mở, không ghi scene gốc.");
+            File.AppendAllText(Qa+"created-paths.txt",backup+"\n");
+            if(!EditorSceneManager.SaveScene(scene))throw new IOException("Không lưu được DemoScene.");
+            File.WriteAllText(Qa+"scene-save-status.txt","SAVED all currently loaded scene changes; full pre-save copy: "+backup);
         }
         [MenuItem("Tools/Capstone/Advanced/PvE/3. Build bounded DemoScene navigation")]
         public static void BuildDemoNavigation(){
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Dừng Play Mode trước.");
             var scene=EditorSceneManager.GetActiveScene();if(scene.name!="DemoScene")throw new InvalidOperationException("Chỉ bake phần scene DemoScene đang mở.");
             var player=UnityEngine.Object.FindFirstObjectByType<PetCommandInput>();if(player==null)throw new InvalidOperationException("Thiếu player trong scene.");
-            if(!PrepareQaOutput())return;
             Directory.CreateDirectory(Qa+"scene-backups");EditorSceneManager.SaveScene(scene,Qa+"scene-backups/before-navigation.unity",true);
             var root=GameObject.Find("Demo PvE Navigation");if(root==null){root=new GameObject("Demo PvE Navigation");Undo.RegisterCreatedObjectUndo(root,"Demo PvE Navigation");}
             var surface=root.GetComponent<NavMeshSurface>();if(surface==null)surface=Undo.AddComponent<NavMeshSurface>(root);
@@ -62,7 +93,6 @@ namespace Capstone.Game.CreatureSystem.Editor {
         [MenuItem("Tools/Capstone/Advanced/PvE/1. Apply approved input mana and volley assets")]
         public static void Apply(){
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Dừng Play Mode trước.");
-            if(!PrepareQaOutput())return;
             string[] names={"bite","blast","projectile","wing_strike"};float[] cost={8,15,12,18};
             for(int i=0;i<names.Length;i++){
                 var skill=AssetDatabase.LoadAssetAtPath<PetSkillDefinition>("Assets/Game/Skills/Data/Definitions/Skill_"+names[i]+".asset");

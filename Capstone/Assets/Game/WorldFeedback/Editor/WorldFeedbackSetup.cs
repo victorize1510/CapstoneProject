@@ -15,18 +15,42 @@ namespace Capstone.Game.WorldFeedback.Editor {
     [InitializeOnLoad]
     public static class WorldFeedbackSetup {
         public const string Root = "Assets/Game/WorldFeedback/";
-        public const string Qa = QaArtifactPaths.Root + "pve-model-camera-feedback-2026-11-10/";
+        // Thư mục QA, thử lần lượt:
+        //   1. QaArtifactPaths.Root (ổ E: của máy gốc) nếu ổ đó tồn tại
+        //   2. C:/UnityWork/CapstoneProjectData/Artifacts/
+        //   3. <project>/Library/QaArtifacts/ (Git bỏ qua, Unity không xóa khi đóng editor)
+        public static readonly string Qa = ResolveQa("pve-model-camera-feedback-2026-11-10/");
+        static string ResolveQa(string task) {
+            string[] roots = {
+                QaArtifactPaths.Root,
+                "C:/UnityWork/CapstoneProjectData/Artifacts/",
+                Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Library", "QaArtifacts"))
+            };
+            foreach (string r in roots) {
+                if (string.IsNullOrEmpty(r)) continue;
+                string dir = r.Replace('\\', '/'); if (!dir.EndsWith("/")) dir += "/"; dir += task;
+                try {
+                    string drive = Path.GetPathRoot(Path.GetFullPath(dir));
+                    if (string.IsNullOrEmpty(drive) || !Directory.Exists(drive)) continue;
+                    Directory.CreateDirectory(dir);
+                    return dir;
+                } catch (Exception) { }
+            }
+            Debug.LogWarning("[WorldFeedback] Không tạo được thư mục QA nào.");
+            return roots[2].Replace('\\', '/') + "/" + task;
+        }
         public const string CommonBall = "Assets/Game/PetSummon/Prefabs/BallGreenClose.prefab"; // Existing GUID/physics contract.
         public const string SafeVersion = "safe-copy-scene-2026-11-11-v2";
         static double nextPoll;
         static WorldFeedbackSetup() {
             EditorApplication.update += Poll;
-            Directory.CreateDirectory(Qa); File.WriteAllText(Qa + "setup-loaded-version.txt", SafeVersion);
+            try { Directory.CreateDirectory(Qa); File.WriteAllText(Qa + "setup-loaded-version.txt", SafeVersion); }
+            catch (Exception e) { Debug.LogWarning("[WorldFeedback] Bỏ qua ghi file QA: " + e.Message); }
         }
         static void Poll() {
             if (EditorApplication.timeSinceStartup < nextPoll || EditorApplication.isCompiling || EditorApplication.isUpdating) return;
             nextPoll = EditorApplication.timeSinceStartup + 1;
-            if (!File.Exists(Qa + "setup.request") || EditorApplication.isPlayingOrWillChangePlaymode) return;
+            try { if (!File.Exists(Qa + "setup.request") || EditorApplication.isPlayingOrWillChangePlaymode) return; } catch (Exception) { return; }
             if (File.ReadAllText(Qa + "setup.request").Trim() != SafeVersion) return;
             File.Delete(Qa + "setup.request");
             try { Build(); } catch (Exception e) { File.WriteAllText(Qa + "setup-error.txt", e.ToString()); Debug.LogException(e); }
