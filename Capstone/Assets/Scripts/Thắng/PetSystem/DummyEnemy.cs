@@ -210,7 +210,7 @@ public class DummyEnemy : MonoBehaviour
         GetComponent<Capstone.Game.CaptureSystem.WildPetCaptureTarget>()?.SyncHealthFromEnemy();
         RefreshName();
         bool shouldDown=health<=0&&!trainingDummy&&!IsBoss&&GetComponent<Capstone.Game.CaptureSystem.WildPetCaptureTarget>() is var wild&&wild!=null&&wild.CanEnterDowned;
-        if(shouldDown){alive=false;downed=true;downedSource=hit.Source;downedUntil=Time.time+5;GetComponent<Capstone.Game.CreatureSystem.CombatBleed>()?.ClearWounds();}
+        if(shouldDown){alive=false;downed=true;downedSource=hit.Source;downedUntil=Time.time+Capstone.Game.CreatureSystem.PveBalanceRules.DownedCaptureSeconds;GetComponent<Capstone.Game.CreatureSystem.CombatBleed>()?.ClearWounds();}
         var result = new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, previousHealth - health, health <= 0f&&!shouldDown);
 
         if (health <= 0f)

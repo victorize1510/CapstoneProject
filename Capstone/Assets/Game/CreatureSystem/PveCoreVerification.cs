@@ -59,14 +59,15 @@ namespace Capstone.Game.CreatureSystem {
                 Check(director!=null&&director.RequestSummonSlot(0),"real summon request accepted: "+director?.LastFailureReason);
                 for(int i=0;i<120&&director.IsSequenceRunning;i++)await Gap();Check(player.CanUsePetSkills,"real summoned pet ready");
                 var pet=player.activePet;var stats=pet.GetComponent<PetHudRuntimeStats>();
-                Check(stats.MaxEnergy==100&&stats.Energy==100,"new pet starts with configured 100 MP");
+                Check(stats.MaxEnergy==0&&stats.Energy==0,"legacy mana is retired; skills use cooldowns");
                 string[] names={"bite","blast","projectile","wing_strike"};var skills=new List<SkillHudData>();
                 foreach(var name in names)skills.Add(AssetDatabase.LoadAssetAtPath<PetSkillDefinition>("Assets/Game/Skills/Data/Definitions/Skill_"+name+".asset").CreateHudData(1,true));stats.SetSkills(skills);
                 var action=pet.GetComponent<PetCombatActionDriver>();if(action==null)action=pet.gameObject.AddComponent<PetCombatActionDriver>();
-                stats.RequestSkill(0);await Gap();Check(action.StartedCount==1&&Math.Abs(stats.Energy-92)<.001f&&stats.GetSkills()[0].IsCoolingDown,"accepted bite spends 8 MP and starts one cooldown");
+                stats.RequestSkill(0);await Gap();Check(action.StartedCount==1&&stats.Energy==0&&stats.GetSkills()[0].IsCoolingDown,"accepted bite starts one cooldown without mana");
                 for(int i=0;i<40&&action.IsSkillBusy;i++)await Gap();
                 stats.SetStatus(stats.Health,stats.MaxHealth,7,stats.MaxEnergy);int started=action.StartedCount;stats.RequestSkill(1);await Gap();
-                Check(action.StartedCount==started&&stats.Energy==7&&!stats.GetSkills()[1].IsCoolingDown,"insufficient MP rejects without cooldown or resource loss");
+                Check(action.StartedCount==started+1&&stats.Energy==0&&stats.GetSkills()[1].IsCoolingDown,"legacy MP cannot block a ready skill");
+                for(int i=0;i<40&&action.IsSkillBusy;i++)await Gap();
                 stats.SetStatus(stats.Health,stats.MaxHealth,100,stats.MaxEnergy);
                 var presentation=pet.GetComponent<PetSkillPresentationPlayer>();int emissions=0;
                 Action<int,string> first=(_,id)=>{if(id==skills[3].skillId)emissions++;};Action<int,string,int> child=(_,id,__)=>{if(id==skills[3].skillId)emissions++;};
@@ -75,7 +76,7 @@ namespace Capstone.Game.CreatureSystem {
                 for(int i=0;i<40&&(action.IsSkillBusy||emissions<count);i++)await Gap();
                 presentation.SkillReleased-=first;presentation.SkillProjectileReleased-=child;
                 Check(count>=2&&count<=5&&emissions==count,"animation markers emit all "+count+" wind projectiles exactly once");
-                Check(Math.Abs(stats.Energy-82)<.001f&&stats.GetSkills()[3].IsCoolingDown,"volley spends 18 MP and cooldown exactly once");
+                Check(stats.Energy==0&&stats.GetSkills()[3].IsCoolingDown,"volley starts cooldown once without mana");
                 var capture=Object.FindFirstObjectByType<HubCaptureHud>();capture.OpenPicker();await Gap();
                 Check(capture.IsPickerOpen&&GameplayHudController.Live.PresentationRoot.GetComponentsInChildren<Transform>(true).Count(t=>t.name.StartsWith("BallChoice",StringComparison.Ordinal))==3,"G picker shows exactly three ball cells");
                 capture.ClosePicker();await Gap();Check(!capture.IsPickerOpen&&!Inventory.InventoryInputController.GameplayInputBlocked,"picker closes and restores gameplay input");

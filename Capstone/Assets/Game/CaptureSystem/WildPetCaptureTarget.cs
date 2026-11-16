@@ -32,7 +32,10 @@ namespace Capstone.Game.CaptureSystem {
         internal void EndPresentationHold(){presentationHold=false;Lock(false);}
         void Update(){if(presentationHold&&Time.time>=presentationHoldUntil)EndPresentationHold();}
         internal void Complete(Transform owner) {
-            transferred = true; presentationHold=false; StagedForSave = false; Enemy.FinishCaptureWithoutDefeat(); Pet.FinishWildCapture(owner);
+            transferred = true; presentationHold=false; StagedForSave = false;
+            var brain=GetComponent<CreatureSystem.BasicCreatureEnemy>();if(brain!=null)brain.enabled=false;
+            var status=GetComponent<CreatureSystem.DownedStatusVisual>();if(status!=null)status.enabled=false;
+            Enemy.FinishCaptureWithoutDefeat(); Pet.FinishWildCapture(owner);
         }
         void OnDisable() { if (!transferred) EndPresentationHold(); }
     }

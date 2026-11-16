@@ -14,6 +14,10 @@ namespace Capstone.Game.CreatureSystem {
         Quaternion baseRotation;
         float recoilAt = -1, pauseUntil, previousSpeed, nextPause;
         bool rotated;
+        CreatureAnimationDriver driver;
+        BasicCreatureEnemy enemy;
+        float hitUntil, nextHit;
+        public bool IsHitPlaying => Time.time < hitUntil;
         void Awake() { stats = GetComponent<PetHudRuntimeStats>(); pet = GetComponent<PetController>(); Bind(); }
         void Bind() {
             if (stats == null && resolved) return;
@@ -21,7 +25,18 @@ namespace Capstone.Game.CreatureSystem {
             if (animator == next) return;
             Restore(); animator = next; visual = next != null && next.transform != transform ? next.transform : null;
         }
-        public void Recoil() { Bind(); recoilAt = Time.unscaledTime; }
+        public void Recoil() {
+            Bind();
+            if (stats != null && stats.Health <= 0) return;
+            recoilAt = Time.unscaledTime;
+            if (Time.time < nextHit) return;
+            if (driver == null) driver = GetComponent<CreatureAnimationDriver>();
+            if (enemy == null) enemy = GetComponent<BasicCreatureEnemy>();
+            var action = GetComponent<Skills.PetCombatActionDriver>();
+            // Never restart a committed attack or a coordinated cast to show a hit clip.
+            if ((enemy != null && enemy.HasCommittedAttack) || (action != null && action.IsSkillBusy) || (pet != null && pet.BasicSkillDelay > 0)) return;
+            if (driver != null && driver.TryPlay(CreatureAction.Hit, .06f)) { hitUntil = Time.time + .28f; nextHit = Time.time + .35f; pet?.HoldHitReaction(.28f); }
+        }
         public void Pause(float seconds) {
             Bind(); if (seconds <= 0 || animator == null || !animator.enabled || Time.unscaledTime < nextPause) return;
             RestorePause(); nextPause = Time.unscaledTime + .2f;
@@ -30,6 +45,11 @@ namespace Capstone.Game.CreatureSystem {
         }
         void Update() {
             Bind(); RestoreRotation();
+            if (hitUntil > 0 && Time.time >= hitUntil) {
+                hitUntil = 0;
+                pet?.FinishHitReaction();
+                enemy?.FinishHitReaction();
+            }
             if (pausedAnimator != null && Time.unscaledTime >= pauseUntil) RestorePause();
             if (InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying || (pet != null && !pet.CanReceiveCommands)) Restore();
         }
@@ -42,7 +62,7 @@ namespace Capstone.Game.CreatureSystem {
         }
         void RestorePause() { if (pausedAnimator != null && Mathf.Approximately(pausedAnimator.speed, 0)) pausedAnimator.speed = previousSpeed; pausedAnimator = null; }
         void RestoreRotation() { if (rotated && visual != null) visual.localRotation = baseRotation; rotated = false; }
-        void Restore() { RestorePause(); RestoreRotation(); recoilAt = -1; }
+        void Restore() { RestorePause(); RestoreRotation(); recoilAt = -1; if(hitUntil>0){hitUntil=0;pet?.FinishHitReaction();enemy?.FinishHitReaction();} }
         void OnDisable() { Restore(); }
         void OnApplicationFocus(bool value) { if (!value) Restore(); }
     }

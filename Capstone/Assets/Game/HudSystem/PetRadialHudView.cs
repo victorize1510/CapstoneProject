@@ -27,7 +27,7 @@ namespace Capstone.Game.HudSystem {
             portrait=V.Image(mask,"Portrait");V.Stretch(portrait.rectTransform);portrait.preserveAspect=false;
             HubR11Art.Layer(avatar,"PetRadial/avatar-circle__border");HubR11Art.Layer(avatar,"PetRadial/avatar-circle__decoration");
             hp=Arc(center,"HPArc",126,6,new Color32(110,204,210,255));mp=Arc(center,"MPArc",104,5,new Color32(117,177,210,255));
-            hpLabel=Curved(center,"HP",142);mpLabel=Curved(center,"MP",84);mpLabel.color=new Color32(172,192,224,255);
+            hpLabel=Curved(center,"HP",142);mpLabel=Curved(center,"EXP",84);mpLabel.color=new Color32(172,192,224,255);
             nameLabel=HubR11Art.Label(center,"PetName","Chưa chọn thú",22);V.Top(nameLabel.rectTransform,-105,76,210,32);
             nameLabel.font=Capstone.Game.UISystem.TrainerMenuArt.Serif??V.Font;
             nameLabel.horizontalOverflow=HorizontalWrapMode.Wrap;
@@ -64,8 +64,8 @@ namespace Capstone.Game.HudSystem {
             string fullName=status.hasPet?status.displayName:"Chưa chọn thú";
             if(fullName!=lastName){lastName=fullName;nameLabel.text=FitName(fullName);}
             levelLabel.text=status.hasPet&&status.level>0?"Cấp "+status.level:"Cấp —";
-            portrait.sprite=status.icon;portrait.enabled=status.icon!=null;hp.SetAmount(status.HealthPercent);mp.SetAmount(status.EnergyPercent);
-            hpLabel.text="HP "+Amount(status.health,status.maxHealth);mpLabel.text="MP "+Amount(status.energy,status.maxEnergy);
+            portrait.sprite=status.icon;portrait.enabled=status.icon!=null;hp.SetAmount(status.HealthPercent);mp.SetAmount(status.ExperiencePercent);
+            hpLabel.text="HP "+Amount(status.health,status.maxHealth);mpLabel.text="EXP "+Amount(status.experience,status.experienceToNextLevel);
             expFill.anchorMax=new Vector2(status.ExperiencePercent,1);expLabel.text=status.hasPet?"EXP "+status.experience+" / "+(status.experienceToNextLevel>0?status.experienceToNextLevel.ToString():"—"):"EXP —";
             int count=0;for(int i=0;i<6;i++){var d=data!=null&&i<data.Count?data[i]:default;var s=slots[i];s.Button.interactable=d.occupied;s.Portrait.sprite=d.icon;s.Portrait.enabled=d.occupied&&d.icon!=null;s.Empty.enabled=!s.Portrait.enabled;s.Active.enabled=d.occupied&&d.selected;if(d.occupied)count++;}
             hint.text=Time.unscaledTime<feedbackUntil?feedback:mode==PartyPickerMode.Hold?(open?"Thả phím để đóng":"Giữ để chọn"):open?"Đóng đội thú":"Đội thú "+count+" / 6";

@@ -62,7 +62,10 @@ namespace Capstone.Game.HudSystem {
                 : 0f;
             preview.ActualHealAmount = Mathf.Max(0f, preview.ResultHealth - preview.CurrentHealth);
 
-            if (!preview.IsValid) {
+            if (preview.CurrentHealth <= 0f) {
+                preview.DisabledReason = "Thú đã gục. Cần hồi sinh trước khi dùng vật phẩm hồi phục.";
+            }
+            else if (!preview.IsValid) {
                 preview.DisabledReason = preview.RestoresEnergy ? "Thú này chưa sử dụng MP." : "Thú chưa có Max HP hợp lệ.";
             }
             else if (preview.IsFullResource) {

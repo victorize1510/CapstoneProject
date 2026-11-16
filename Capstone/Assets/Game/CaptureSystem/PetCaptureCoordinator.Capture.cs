@@ -70,12 +70,16 @@ namespace Capstone.Game.HudSystem {
             if(success&&(!roster.HasCaptureRoom||roster.Contains(pet))){error=CaptureMessages.For(roster.Contains(pet)?CaptureFailure.AlreadyOwned:CaptureFailure.NoRoom);return false;}
             var profileBefore=profileProvider.CreateSaveData();var questBefore=questManager.CreateSaveData();var achievementsBefore=achievementManager?.CreateSaveData();
             var metadataBefore=metadata.CreateSaveData();string oldId=metadata.PersistentId;
+            var runtimeStats=pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+            var runtimeBefore=runtimeStats!=null?runtimeStats.CreateSaveData():null;
             var slotsBefore=inventory?.CaptureSlots();PetBoxRuntimeProvider.CapturePlacement placement=null;
             bool saved=false;
             using(var batch=new CaptureEventBatch()){
                 try{
                     if(ball!=null&&!inventory.TryRemoveItemAtomic(ball,1)){error=CaptureMessages.For(CaptureFailure.NoBall);return false;}
                     if(success){
+                        if(runtimeStats==null){error=CaptureMessages.For(CaptureFailure.MissingConfiguration);return false;}
+                        runtimeStats.SetStatus(CreatureSystem.PveBalanceRules.CapturedHealth(runtimeStats.Health,runtimeStats.MaxHealth),runtimeStats.MaxHealth,runtimeStats.Energy,runtimeStats.MaxEnergy);
                         if(!roster.TryStageCapture(pet,out placement)){error=CaptureMessages.For(CaptureFailure.NoRoom);return false;}
                         if(target!=null)target.StagedForSave=true;
                         if(!string.IsNullOrWhiteSpace(id))metadata.AssignPersistentId(id);
@@ -100,6 +104,7 @@ namespace Capstone.Game.HudSystem {
                     if(!saved){
                         if(target!=null)target.StagedForSave=false;
                         roster.RollbackCapture(placement);metadata.RestoreFromSaveData(metadataBefore);metadata.AssignPersistentId(oldId);
+                        if(runtimeBefore!=null)runtimeStats.RestoreFromSaveData(runtimeBefore);
                         if(inventory!=null&&slotsBefore!=null)inventory.RestoreCaptureSlots(slotsBefore);
                         profileProvider.RestoreFromSaveData(profileBefore);questManager.RestoreFromSaveData(questBefore);
                         if(achievementsBefore!=null)achievementManager.RestoreFromSaveData(achievementsBefore);

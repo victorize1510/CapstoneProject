@@ -147,7 +147,8 @@ namespace Capstone.Game.HudSystem {
                 return FindFirstEmptyBoxSlot() >= 0;
             }
         }
-        internal bool TryStageCapture(PetController pet, out CapturePlacement placement) {
+        internal bool TryStageCapture(PetController pet, out CapturePlacement placement) => TryStageOwnedPet(pet, out placement);
+        internal bool TryStageOwnedPet(PetController pet, out CapturePlacement placement) {
             placement = null; Initialize(); if (pet == null || ContainsPet(pet)) return false;
             var input = ResolveInput(); var token = new CapturePlacement { Pet = pet, PreviousActive = input != null ? input.activePet : null };
             if (input?.petSlots != null) for (int i = 0; i < Mathf.Min(6,input.petSlots.Length); i++) if (input.petSlots[i] == null) {

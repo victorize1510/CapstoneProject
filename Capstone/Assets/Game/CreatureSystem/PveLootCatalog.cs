@@ -1,12 +1,33 @@
 using Capstone.Game.Inventory;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 namespace Capstone.Game.CreatureSystem {
     [CreateAssetMenu(menuName="Capstone/PvE/Loot catalog")]
     public sealed class PveLootCatalog:ScriptableObject {
+        [Serializable] public sealed class Entry {
+            public MonsterItemDefinition item;
+            [Min(1)] public int weight=1;
+            [Min(1)] public int quantity=1;
+        }
+        public List<Entry> entries=new List<Entry>();
         public MonsterItemDefinition potion,healingApple,manaPotion;
         public Sprite goldIcon;
         public Material glowMaterial;
         [Range(0,1)] public float itemChance=.35f;
         [Min(0)] public int minimumGold=2,maximumGold=5;
+        public bool TrySelect(float unit,out MonsterItemDefinition item,out int quantity) {
+            item=null;quantity=0;
+            if(float.IsNaN(unit)||float.IsInfinity(unit)||unit<0||unit>=1)return false;
+            if(entries!=null&&entries.Count>0){
+                long total=0;foreach(var entry in entries)if(entry!=null&&entry.item!=null&&entry.weight>0&&entry.quantity>0)total+=entry.weight;
+                if(total==0)return false;
+                double choice=unit*total;
+                foreach(var entry in entries){if(entry==null||entry.item==null||entry.weight<=0||entry.quantity<=0)continue;choice-=entry.weight;if(choice<0){item=entry.item;quantity=entry.quantity;return true;}}
+                return false;
+            }
+            // Existing authored catalogs retain their old distribution until migrated.
+            item=unit<.4f?potion:unit<.8f?healingApple:manaPotion;quantity=item!=null?1:0;return item!=null;
+        }
     }
 }

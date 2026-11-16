@@ -20,7 +20,8 @@ namespace Capstone.Game.CreatureSystem {
         readonly Dictionary<string,float> flights=new Dictionary<string,float>();
         readonly Dictionary<string,InventoryItemRarity> rarityCache=new Dictionary<string,InventoryItemRarity>();
         PlayerSaveController save;MonsterInventoryAdapter inventory;PlayerCurrencyWallet wallet;PetCommandInput player;
-        PetLevelUpService levels;PveLootCatalog catalog;PveLootView view;
+        PetLevelUpService levels;PveLootView view;
+        [SerializeField] PveLootCatalog catalog;
         bool busy;float nextLookup,nextPoll,retryAt;int writeFailures;
         public string LastFailure{get;private set;}
         public int PendingCount=>pending.Count;
@@ -39,6 +40,7 @@ namespace Capstone.Game.CreatureSystem {
             if(levels==null)levels=Object.FindFirstObjectByType<PetLevelUpService>();
             if(catalog==null)catalog=Resources.Load<PveLootCatalog>("Pve/LootCatalog");
         }
+        public void ConfigureLoot(PveLootCatalog value) { catalog=value; }
         public PveRewardsSaveData CreateSaveData()=>new PveRewardsSaveData{captured=true,pending=new List<PendingPveRewardSaveData>(pending)};
         public void RestoreFromSaveData(PveRewardsSaveData data){
             if(view!=null)view.Clear();pending.Clear();journaled.Clear();completed.Clear();completedOrder.Clear();flights.Clear();rarityCache.Clear();
@@ -60,14 +62,23 @@ namespace Capstone.Game.CreatureSystem {
             var record=new PendingPveRewardSaveData{transactionId=id,scene=enemy.gameObject.scene.name,x=enemy.transform.position.x,y=enemy.transform.position.y,z=enemy.transform.position.z,createdUtcTicks=DateTime.UtcNow.Ticks};
             record.gold=UnityEngine.Random.Range(Mathf.Max(0,catalog.minimumGold),Mathf.Max(catalog.minimumGold,catalog.maximumGold)+1);
             if(UnityEngine.Random.value<catalog.itemChance){
-                float itemRoll=UnityEngine.Random.value;var item=itemRoll<.4f?catalog.potion:itemRoll<.8f?catalog.healingApple:catalog.manaPotion;
-                if(item!=null)record.items.Add(new PveItemRewardSaveData{itemId=item.StableId,quantity=1});
+                if(catalog.TrySelect(UnityEngine.Random.value,out var item,out int quantity))record.items.Add(new PveItemRewardSaveData{itemId=item.StableId,quantity=quantity});
             }
             int enemyLevel=enemy.GetComponent<PetHudRuntimeStats>().Level;
-            var amounts=new Dictionary<string,double>(StringComparer.Ordinal);
-            foreach(var part in contributions){if(string.IsNullOrWhiteSpace(part.petId)||part.level<1)continue;amounts.TryGetValue(part.petId,out double old);amounts[part.petId]=old+enemy.ExperienceReward*part.healthLost/total*PveBalanceRules.ExperienceFactor(part.level,enemyLevel);}
             string finalPet=source!=null?source.GetComponent<PetCollectionMetadata>()?.PetId:null;
-            foreach(var part in amounts)record.pets.Add(new PvePetRewardSaveData{petId=part.Key,experience=(int)Math.Min(int.MaxValue,Math.Floor(part.Value+.5)),effort=part.Key==finalPet?enemy.EffortYield:default});
+            var helpers=new HashSet<string>(StringComparer.Ordinal);
+            foreach(var part in contributions)if(part.healthLost>0&&!string.IsNullOrWhiteSpace(part.petId))helpers.Add(part.petId);
+            var awarded=new HashSet<string>(StringComparer.Ordinal);
+            // Freeze eligibility at terminal defeat, not when a delayed journal is retried.
+            if(player!=null&&player.petSlots!=null)foreach(var member in player.petSlots){
+                if(member==null||member.IsWildEncounter)continue;
+                var identity=member.GetComponent<PetCollectionMetadata>();var stats=member.GetComponent<PetHudRuntimeStats>();
+                if(identity==null||stats==null||!awarded.Add(identity.PetId))continue;
+                bool finisher=identity.PetId==finalPet;
+                double share=PveBalanceRules.PartyExperienceShare(stats.Health>0,finisher,helpers.Contains(identity.PetId));
+                if(share<=0)continue;
+                record.pets.Add(new PvePetRewardSaveData{petId=identity.PetId,experience=PveBalanceRules.ExperienceAward(enemy.ExperienceReward,stats.Level,enemyLevel,share),effort=finisher?enemy.EffortYield:default});
+            }
             pending.Add(record);LastStagedId=id;
             // Roll once, persist the journal, then show loot. A failed journal stays in memory for retry.
             if(!CaptureEventBatch.IsActive&&SavePending()){journaled.Add(id);TryExperience(record);}

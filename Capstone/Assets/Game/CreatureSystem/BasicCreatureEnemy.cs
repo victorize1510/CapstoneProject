@@ -22,6 +22,8 @@ namespace Capstone.Game.CreatureSystem {
         public string State { get; private set; } = "Idle";
         public int LandedHits { get; private set; }
         public CreatureCombatant Target => target;
+        public bool HasCommittedAttack => pendingHit || Time.time < recoverAt;
+        internal void FinishHitReaction() { lastAction = CreatureAction.None; }
         DummyEnemy health;
         CreatureCombatant combat, target;
         CreatureAnimationDriver animationDriver;
@@ -37,8 +39,10 @@ namespace Capstone.Game.CreatureSystem {
         void OnDisable() { pendingHit = false; target = null; Stop(); }
         void Update() {
             if (!initialized) return;
-            if (!health.IsAlive) { pendingHit = false; target = null; Stop(); SetState(health.IsDowned?"Downed":"Dead", health.IsDowned?CreatureAction.Downed:CreatureAction.Death); return; }
+            if (!health.IsAlive) { pendingHit = false; target = null; Stop(); SetState(health.IsDowned?"Downed":"Dead", health.IsDowned?CreatureAction.Stun:CreatureAction.Death); return; }
             if (health.CaptureLocked) { pendingHit = false; Stop(); return; }
+            var reaction = GetComponent<CombatVisualReaction>();
+            if (reaction != null && reaction.IsHitPlaying) { Stop(); return; }
             if (Time.time >= pollAt) {
                 pollAt = Time.time + .3f;
                 if (input == null) input = FindFirstObjectByType<PetCommandInput>();
@@ -123,6 +127,6 @@ namespace Capstone.Game.CreatureSystem {
         }
         void Stop() { if (agent != null && agent.enabled && agent.isOnNavMesh) { agent.isStopped = true; if (agent.hasPath) agent.ResetPath(); } }
         void Face(Vector3 point) { Vector3 delta = point - transform.position; delta.y = 0; if (delta.sqrMagnitude > .01f) transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(delta), 540 * Time.deltaTime); }
-        void SetState(string state, CreatureAction action) { if (State == state&&lastAction==action) return; State = state;lastAction=action;if(!animationDriver.TryPlay(action)&&action==CreatureAction.Downed)animationDriver.TryPlay(CreatureAction.Death); }
+        void SetState(string state, CreatureAction action) { if (State == state&&lastAction==action) return; State = state;lastAction=action;if(!animationDriver.TryPlay(action)&&action==CreatureAction.Stun)animationDriver.TryPlay(CreatureAction.Idle); }
     }
 }

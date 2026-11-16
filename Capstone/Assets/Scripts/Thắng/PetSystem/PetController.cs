@@ -256,7 +256,26 @@ public class PetController : MonoBehaviour
         get { return target != null && target.IsAlive; }
     }
     public DummyEnemy CombatTarget => target != null && target.IsAlive ? target : null;
-    internal void HandleCombatDefeat() { EnterDormant(); }
+    private bool defeatPresentation;
+    private float defeatDeadline;
+    private float hitReactionUntil;
+    internal void HoldHitReaction(float seconds) { hitReactionUntil = Time.time + seconds; }
+    internal void FinishHitReaction() { hitReactionUntil = 0; currentAnimatorState = null; }
+    internal void HandleCombatDefeat() {
+        if (defeatPresentation) return;
+        bool visible = IsSummoned;
+        combatActions?.Cancel();
+        EnterDormant();
+        if (!visible || animator == null) return;
+        CacheWorldPresence();
+        foreach (KeyValuePair<Renderer, bool> entry in rendererEnabledStates)
+            if (entry.Key != null) entry.Key.enabled = entry.Value;
+        animator.enabled = animatorInitiallyEnabled;
+        var driver = GetComponent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>();
+        if (driver == null || !driver.TryPlay(Capstone.Game.CreatureSystem.CreatureAction.Death)) { SetWorldPresence(false); return; }
+        defeatPresentation = true;
+        defeatDeadline = Time.time + 3f;
+    }
     internal void AwardCombatDefeat(DummyEnemy enemy) { AwardDefeatExperience(enemy); }
 
     private void Reset()
@@ -318,6 +337,13 @@ public class PetController : MonoBehaviour
     private void Update()
     {
         if (wildEncounter) return;
+        if (defeatPresentation) {
+            if (animator == null || !animator.enabled || Time.time >= defeatDeadline) { EnterDormant(); return; }
+            var deathState = animator.GetCurrentAnimatorStateInfo(0);
+            if (deathState.IsName("Base Layer.Die") && deathState.normalizedTime >= .98f && !animator.IsInTransition(0)) EnterDormant();
+            return;
+        }
+        if (Time.time < hitReactionUntil) { StopMovement(false); return; }
         if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
             && useSelfInput
             && summonKey != KeyCode.None
@@ -787,6 +813,7 @@ public class PetController : MonoBehaviour
 
     private void EnterDormant()
     {
+        defeatPresentation = false;
         RestoreSummonAnimatorSpeed();
         summonRevealPending = false;
         summonCastActive = false;
@@ -1053,6 +1080,7 @@ public class PetController : MonoBehaviour
     private void OnDisable()
     {
         RestoreSummonAnimatorSpeed();
+        if (defeatPresentation) EnterDormant();
     }
 
     private void UpdateFollow()

@@ -17,6 +17,8 @@ namespace Capstone.Game.SaveSystem {
         public PlayerProfileSaveData profile = new PlayerProfileSaveData();
         public AchievementSaveData achievements = new AchievementSaveData();
         public PveRewardsSaveData pveRewards;
+        // Optional in v14. A durable receipt, not a per-scene/session replenishment flag.
+        public List<string> appliedStarterGrants = new List<string>();
     }
 
     [Serializable] public sealed class PveRewardsSaveData {

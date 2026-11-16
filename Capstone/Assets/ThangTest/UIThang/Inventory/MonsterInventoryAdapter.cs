@@ -47,6 +47,7 @@ namespace Capstone.Game.Inventory {
         }
 
         void OnEnable() {
+            InventoryDefinitionCatalog.Load();
             InventoryRecoveryCatalog.Load();
             Capstone.Game.CaptureSystem.CaptureAssets.LoadBall();
             EnsureInventory();
@@ -109,6 +110,8 @@ namespace Capstone.Game.Inventory {
                 }
             }
 
+            var canonical = InventoryDefinitionCatalog.Find(expected);
+            if (canonical != null) return canonical;
             foreach (ItemBase itemBase in Resources.FindObjectsOfTypeAll<ItemBase>()) {
                 if (itemBase == null) continue;
                 if ((itemBase is MonsterItemDefinition gameDefinition && gameDefinition.MatchesId(expected))
@@ -315,6 +318,7 @@ namespace Capstone.Game.Inventory {
                 if (definition == null || string.IsNullOrWhiteSpace(definition.name)) continue;
                 if (!knownDefinitions.ContainsKey(definition.StableId)) knownDefinitions.Add(definition.StableId, definition);
             }
+            foreach (var definition in InventoryDefinitionCatalog.Definitions) knownDefinitions[definition.StableId] = definition;
 
             var restoredBag = new ListBag {
                 Name = "Monster Inventory",

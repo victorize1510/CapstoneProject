@@ -30,6 +30,10 @@ namespace Capstone.Game.CreatureSystem {
             }
             driver?.TryPlay(CreatureAction.Idle);
         }
-        void Defeated(GameObject source) { driver?.TryPlay(CreatureAction.Death); }
+        void Defeated(GameObject source) {
+            // An enabled enemy brain owns its terminal transition; do not restart it next frame.
+            var brain=GetComponent<BasicCreatureEnemy>();
+            if(brain==null||!brain.enabled)driver?.TryPlay(CreatureAction.Death);
+        }
     }
 }

@@ -11,34 +11,30 @@ using UnityEngine;
 using UnityEngine.AI;
 
 namespace Capstone.Game.CreatureSystem.Editor {
-    [InitializeOnLoad]
+    // Legacy authoring commands are explicit menu actions, never reload/update hooks.
+    // Optional QA storage must not poison type initialization or reapply old assets.
     public static class PveGameplaySetup {
         public const string Qa=QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
         public const string Version="pve-input-mana-volley-2026-11-12-v2";
         public const string NavigationVersion="pve-demo-navigation-2026-11-12-v2";
-        public const string FinalizeVersion="pve-save-demo-preserved-2026-11-12-v1";
-        static double pollAt;
-        static PveGameplaySetup(){EditorApplication.update+=Poll;Directory.CreateDirectory(Qa);File.WriteAllText(Qa+"authoring-loaded.txt",Version);}
-        static void Poll(){
-            if(EditorApplication.timeSinceStartup<pollAt||EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode)return;
-            pollAt=EditorApplication.timeSinceStartup+1;
-            if(!File.Exists(Qa+"authoring.request"))return;string request=File.ReadAllText(Qa+"authoring.request").Trim();if(request!=Version&&request!=NavigationVersion&&request!=FinalizeVersion)return;
-            File.Delete(Qa+"authoring.request");try{if(request==NavigationVersion)BuildDemoNavigation();else if(request==FinalizeVersion)SavePreservedScene();else Apply();}catch(Exception e){File.WriteAllText(Qa+"authoring-status.txt","FAILED\n"+e);Debug.LogException(e);}
+        internal static bool TryPrepareQaOutput(string directory, out string error) {
+            try { Directory.CreateDirectory(directory); error=string.Empty; return true; }
+            catch(Exception exception) when(exception is IOException || exception is UnauthorizedAccessException) {
+                error=exception.Message;
+                return false;
+            }
         }
-        static void SavePreservedScene(){
-            var scene=EditorSceneManager.GetActiveScene();
-            if(EditorApplication.isPlayingOrWillChangePlaymode||scene.path!="Assets/Scenes/DemoScene.unity")throw new InvalidOperationException("Chỉ lưu DemoScene ngoài Play Mode.");
-            string backup=Qa+"scene-backups/pre-final-save.unity";Directory.CreateDirectory(Path.GetDirectoryName(backup));
-            if(!EditorSceneManager.SaveScene(scene,backup,true)||new FileInfo(backup).Length<1000)throw new IOException("Chưa bảo toàn scene đang mở, không ghi scene gốc.");
-            File.AppendAllText(Qa+"created-paths.txt",backup+"\n");
-            if(!EditorSceneManager.SaveScene(scene))throw new IOException("Không lưu được DemoScene.");
-            File.WriteAllText(Qa+"scene-save-status.txt","SAVED all currently loaded scene changes; full pre-save copy: "+backup);
+        static bool PrepareQaOutput() {
+            if(TryPrepareQaOutput(Qa,out string error))return true;
+            Debug.LogError("Không thể tạo thư mục QA: "+Qa+"\nHãy kiểm tra ổ E và quyền truy cập. Lệnh authoring chưa được thực hiện.\n"+error);
+            return false;
         }
         [MenuItem("Tools/Capstone/Advanced/PvE/3. Build bounded DemoScene navigation")]
         public static void BuildDemoNavigation(){
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Dừng Play Mode trước.");
             var scene=EditorSceneManager.GetActiveScene();if(scene.name!="DemoScene")throw new InvalidOperationException("Chỉ bake phần scene DemoScene đang mở.");
             var player=UnityEngine.Object.FindFirstObjectByType<PetCommandInput>();if(player==null)throw new InvalidOperationException("Thiếu player trong scene.");
+            if(!PrepareQaOutput())return;
             Directory.CreateDirectory(Qa+"scene-backups");EditorSceneManager.SaveScene(scene,Qa+"scene-backups/before-navigation.unity",true);
             var root=GameObject.Find("Demo PvE Navigation");if(root==null){root=new GameObject("Demo PvE Navigation");Undo.RegisterCreatedObjectUndo(root,"Demo PvE Navigation");}
             var surface=root.GetComponent<NavMeshSurface>();if(surface==null)surface=Undo.AddComponent<NavMeshSurface>(root);
@@ -66,6 +62,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
         [MenuItem("Tools/Capstone/Advanced/PvE/1. Apply approved input mana and volley assets")]
         public static void Apply(){
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Dừng Play Mode trước.");
+            if(!PrepareQaOutput())return;
             string[] names={"bite","blast","projectile","wing_strike"};float[] cost={8,15,12,18};
             for(int i=0;i<names.Length;i++){
                 var skill=AssetDatabase.LoadAssetAtPath<PetSkillDefinition>("Assets/Game/Skills/Data/Definitions/Skill_"+names[i]+".asset");

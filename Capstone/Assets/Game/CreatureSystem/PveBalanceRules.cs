@@ -3,6 +3,17 @@ using System;
 namespace Capstone.Game.CreatureSystem {
     /// <summary>Pure rules. Presentation RNG never changes these decisions.</summary>
     public static class PveBalanceRules {
+        public const float DownedCaptureSeconds = 15f;
+        public static int EncounterLevel(double unit) {
+            if (double.IsNaN(unit) || double.IsInfinity(unit) || unit < 0 || unit >= 1) throw new ArgumentOutOfRangeException(nameof(unit));
+            return unit < .1 ? 3 : unit < .3 ? 4 : unit < .7 ? 5 : unit < .9 ? 6 : 7;
+        }
+        public static double PartyExperienceShare(bool alive, bool finisher, bool contributed) => !alive ? 0 : finisher ? 1 : contributed ? .75 : .5;
+        public static float CapturedHealth(float health, float maximum) {
+            if (float.IsNaN(health) || float.IsInfinity(health) || float.IsNaN(maximum) || float.IsInfinity(maximum) || maximum <= 0 || health < 0 || health > maximum)
+                throw new ArgumentOutOfRangeException(nameof(health));
+            return Math.Max(health, maximum * .25f);
+        }
         public static int WindVolleyCount(double unit) {
             if (double.IsNaN(unit) || double.IsInfinity(unit) || unit < 0 || unit >= 1) throw new ArgumentOutOfRangeException(nameof(unit));
             return unit < .1 ? 2 : unit < .5 ? 3 : unit < .9 ? 4 : 5;

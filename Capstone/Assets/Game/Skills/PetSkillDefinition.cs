@@ -31,7 +31,7 @@ namespace Capstone.Game.Skills {
         public string Id => (skillId ?? string.Empty).Trim();
         public SkillHudData CreateHudData(int requiredLevel = 1, bool unlocked = true) => new SkillHudData {
             skillId = Id, legacySkillIds = legacyIds, displayName = displayName, description = description,
-            element = element, icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds), manaCost = Mathf.Max(0, manaCost), uiMetadata = uiMetadata,
+            element = element, icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds), manaCost = 0, uiMetadata = uiMetadata,
             criticalRateBonus = criticalRateBonus, criticalDamageBonus = criticalDamageBonus,
             animatorStates = animatorStates, animationDuration = animationDuration, animationFade = animationFade,
             windupSeconds = windupSeconds, recoverySeconds = recoverySeconds,

@@ -52,6 +52,7 @@ namespace Capstone.Game.SaveSystem {
         string loadedSlotPath;
         string saveBlockedReason = string.Empty;
         PlayerSaveData retainedData;
+        readonly HashSet<string> appliedStarterGrants = new HashSet<string>(StringComparer.Ordinal);
         readonly List<PetCollectionMetadata> watchedMetadata = new List<PetCollectionMetadata>();
         readonly List<PetHudRuntimeStats> watchedStats = new List<PetHudRuntimeStats>();
         PetController pendingSummonedRestore;
@@ -65,6 +66,7 @@ namespace Capstone.Game.SaveSystem {
             saveStore = store ?? throw new ArgumentNullException(nameof(store));
             loadedSlotPath = null;
             retainedData = null;
+            appliedStarterGrants.Clear();
             saveBlockedReason = string.Empty;
             saveQueued = false;
         }
@@ -93,8 +95,12 @@ namespace Capstone.Game.SaveSystem {
             ResolveReferences();
             SubscribeDataSources();
             if (!ApplyPendingReset()) yield break;
-            if (loadOnStart) LoadNow();
-            if (seedDragonPreviewPartyOnFreshSave && !HasSave && !IsSaveBlocked
+            var starter = GetComponent<Capstone.Game.CreatureSystem.DemoSceneOneStarterGrant>();
+            // A persistent one-time starter must restore the roster/receipt before staging gifts.
+            // Demo scenes historically disabled loadOnStart; never bypass existing-save protection.
+            if (loadOnStart || (starter != null && starter.isActiveAndEnabled)) LoadNow();
+            if (starter != null && starter.isActiveAndEnabled) starter.TryApply(this, out _);
+            else if (seedDragonPreviewPartyOnFreshSave && !HasSave && !IsSaveBlocked
                 && TrySeedDragonPreviewParty()) SaveNow();
             startupCompleted = true;
         }
@@ -258,6 +264,10 @@ namespace Capstone.Game.SaveSystem {
                     retainedData = saveData;
                     loadedSlotPath = SavePath;
                     saveBlockedReason = string.Empty;
+                    appliedStarterGrants.Clear();
+                    if (saveData.appliedStarterGrants != null)
+                        foreach (string key in saveData.appliedStarterGrants)
+                            if (!string.IsNullOrWhiteSpace(key)) appliedStarterGrants.Add(key);
                     LoadCompleted?.Invoke(saveData);
                     return true;
                 } catch (Exception exception) { return BlockSave(exception.Message, true); }
@@ -269,6 +279,7 @@ namespace Capstone.Game.SaveSystem {
             bool migrated = migrateLegacyQuestSave && TryMigrateLegacyQuestSave();
             if (!migrated && !IsSaveBlocked) {
                 retainedData = null;
+                appliedStarterGrants.Clear();
                 loadedSlotPath = SavePath;
             }
             return migrated;
@@ -296,6 +307,7 @@ namespace Capstone.Game.SaveSystem {
                 saveBlockedReason = string.Empty;
                 loadedSlotPath = null;
                 retainedData = null;
+                appliedStarterGrants.Clear();
                 return true;
             }
 
@@ -314,8 +326,46 @@ namespace Capstone.Game.SaveSystem {
                 pets = petCommandInput != null ? CapturePetRoster() : retainedData?.pets,
                 profile = profileProvider != null ? profileProvider.CreateSaveData() : retainedData?.profile,
                 achievements = achievementManager != null ? achievementManager.CreateSaveData() : retainedData?.achievements,
-                pveRewards = GetComponent<Capstone.Game.CreatureSystem.PveRewardService>()?.CreateSaveData() ?? retainedData?.pveRewards
+                pveRewards = GetComponent<Capstone.Game.CreatureSystem.PveRewardService>()?.CreateSaveData() ?? retainedData?.pveRewards,
+                appliedStarterGrants = new List<string>(appliedStarterGrants)
             };
+        }
+
+        internal bool HasStarterGrant(string key) => appliedStarterGrants.Contains(key);
+
+        // Stage roster/items/stats and their receipt in the same atomic player file.
+        // Suppress event-driven autosaves until commit or rollback has completed.
+        internal bool TryCommitStarterGrant(string key, Func<bool> stage, Action rollback, out string error) {
+            error = string.Empty;
+            if (HasStarterGrant(key)) return true;
+            if (isApplyingSave || IsSaveBlocked || (HasSave && !IsCurrentSlotLoaded)) {
+                error = "Chưa thể cấp gói khởi đầu: dữ liệu chưa được nạp an toàn.";
+                return false;
+            }
+            bool committed = false;
+            isApplyingSave = true;
+            saveQueued = false;
+            try {
+                if (!stage()) { error = "Không đủ chỗ hoặc thiếu cấu hình gói khởi đầu."; return false; }
+                appliedStarterGrants.Add(key);
+                PlayerSaveData data = CaptureSaveData();
+                if (!GetSaveStore().TrySave(SlotId, data, out error)) return false;
+                retainedData = data;
+                loadedSlotPath = SavePath;
+                committed = true;
+            } catch (Exception exception) { error = exception.Message; }
+            finally {
+                if (!committed) {
+                    appliedStarterGrants.Remove(key);
+                    rollback();
+                }
+                isApplyingSave = false;
+                saveQueued = false;
+            }
+            if (!committed) return false;
+            SubscribeDataSources();
+            SaveCompleted?.Invoke(retainedData);
+            return true;
         }
 
         PetRosterSaveData CapturePetRoster() {
