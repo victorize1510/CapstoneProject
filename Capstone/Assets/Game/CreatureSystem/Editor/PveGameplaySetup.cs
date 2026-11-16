@@ -13,16 +13,43 @@ using UnityEngine.AI;
 namespace Capstone.Game.CreatureSystem.Editor {
     [InitializeOnLoad]
     public static class PveGameplaySetup {
-        public const string Qa=QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
+        // Thư mục QA, thử lần lượt:
+        //   1. QaArtifactPaths.Root (ổ E: của máy gốc) nếu ổ đó tồn tại
+        //   2. C:/UnityWork/CapstoneProjectData/Artifacts/
+        //   3. <project>/Library/QaArtifacts/ (Git bỏ qua, Unity không xóa khi đóng editor)
+        public static readonly string Qa=ResolveQa("pve-combat-hub-2026-11-11/");
+        static string ResolveQa(string task){
+            string[] roots={
+                QaArtifactPaths.Root,
+                "C:/UnityWork/CapstoneProjectData/Artifacts/",
+                Path.GetFullPath(Path.Combine(Application.dataPath,"..","Library","QaArtifacts"))
+            };
+            foreach(string r in roots){
+                if(string.IsNullOrEmpty(r))continue;
+                string dir=r.Replace('\\','/');if(!dir.EndsWith("/"))dir+="/";dir+=task;
+                try{
+                    string drive=Path.GetPathRoot(Path.GetFullPath(dir));
+                    if(string.IsNullOrEmpty(drive)||!Directory.Exists(drive))continue;
+                    Directory.CreateDirectory(dir);
+                    return dir;
+                }catch(Exception){}
+            }
+            Debug.LogWarning("[PveGameplaySetup] Không tạo được thư mục QA nào.");
+            return roots[2].Replace('\\','/')+"/"+task;
+        }
         public const string Version="pve-input-mana-volley-2026-11-12-v2";
         public const string NavigationVersion="pve-demo-navigation-2026-11-12-v2";
         public const string FinalizeVersion="pve-save-demo-preserved-2026-11-12-v1";
         static double pollAt;
-        static PveGameplaySetup(){EditorApplication.update+=Poll;Directory.CreateDirectory(Qa);File.WriteAllText(Qa+"authoring-loaded.txt",Version);}
+        static PveGameplaySetup(){
+            EditorApplication.update+=Poll;
+            try{Directory.CreateDirectory(Qa);File.WriteAllText(Qa+"authoring-loaded.txt",Version);}
+            catch(Exception e){Debug.LogWarning("[PveGameplaySetup] Bỏ qua ghi file QA: "+e.Message);}
+        }
         static void Poll(){
             if(EditorApplication.timeSinceStartup<pollAt||EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode)return;
             pollAt=EditorApplication.timeSinceStartup+1;
-            if(!File.Exists(Qa+"authoring.request"))return;string request=File.ReadAllText(Qa+"authoring.request").Trim();if(request!=Version&&request!=NavigationVersion&&request!=FinalizeVersion)return;
+            try{if(!File.Exists(Qa+"authoring.request"))return;}catch(Exception){return;}string request=File.ReadAllText(Qa+"authoring.request").Trim();if(request!=Version&&request!=NavigationVersion&&request!=FinalizeVersion)return;
             File.Delete(Qa+"authoring.request");try{if(request==NavigationVersion)BuildDemoNavigation();else if(request==FinalizeVersion)SavePreservedScene();else Apply();}catch(Exception e){File.WriteAllText(Qa+"authoring-status.txt","FAILED\n"+e);Debug.LogException(e);}
         }
         static void SavePreservedScene(){

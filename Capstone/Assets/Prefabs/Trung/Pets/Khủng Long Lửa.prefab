@@ -1210,6 +1210,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PetController
   owner: {fileID: 0}
+  wildEncounter: 0
   animator: {fileID: 1063598429507243789}
   agent: {fileID: -4166028419246424799}
   followOffset: {x: -1.4, y: 0, z: -1.6}
@@ -1314,40 +1315,21 @@ MonoBehaviour:
   speciesSkillSet: {fileID: 0}
   autoResolveSpeciesSkillSet: 1
   equippedSkillSlotCount: 4
-  usePrototypeSkillsWhenEmpty: 1
+  usePrototypeSkillsWhenEmpty: 0
   skills:
-  - skillId: bite
-    legacySkillIds:
-    - bite
+  - skillId: 001
+    legacySkillIds: []
     unlocked: 1
     usable: 1
-    displayName: Bite
+    displayName: "\u0110\u1ED1t N\xF3ng"
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
-    description: Basic close-range bite attack.
-    icon: {fileID: 0}
-    animatorStates:
-    - Bite Attack
-    - Bite Attack Low
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.8
-    animationFade: 0.08
-    windupSeconds: 0.12
-    recoverySeconds: 0.3
-    cooldownPercent: 0
-    cooldownSeconds: 1.2
-  - skillId: blast
-    legacySkillIds:
-    - blast
-    unlocked: 1
-    usable: 1
-    displayName: Blast
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 8
-    description: A short roar-like magic blast.
+    element: 2
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: "Ph\xF3ng ra ng\u1ECDn l\u1EEDa nh\u1ECF"
     icon: {fileID: 0}
     animatorStates:
     - Blast Attack
@@ -1356,19 +1338,24 @@ MonoBehaviour:
     criticalDamageBonus: 0
     animationDuration: 1
     animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
+    windupSeconds: 0.12
+    recoverySeconds: 0.3
     cooldownPercent: 0
     cooldownSeconds: 3.8
+    manaCost: 0
   - skillId: projectile
     legacySkillIds:
     - projectile
-    unlocked: 1
+    unlocked: 0
     usable: 1
     displayName: Projectile
     skillLevel: 1
     requiredPetLevel: 1
     element: 2
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Fires a ranged projectile.
     icon: {fileID: 0}
     animatorStates:
@@ -1382,6 +1369,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3
+    manaCost: 0
   - skillId: wing strike
     legacySkillIds:
     - wing strike
@@ -1391,6 +1379,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 4
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: A wing attack that knocks the air forward.
     icon: {fileID: 0}
     animatorStates:
@@ -1403,16 +1395,47 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 4.2
+    manaCost: 0
+  - skillId: wing strike
+    legacySkillIds:
+    - wing strike
+    unlocked: 1
+    usable: 1
+    displayName: Wing Strike
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 4
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: A wing attack that knocks the air forward.
+    icon: {fileID: 0}
+    animatorStates:
+    - Wing Attack
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    cooldownPercent: 0
+    cooldownSeconds: 4.2
+    manaCost: 0
   learnedSkills:
-  - skillId: bite
+  - skillId: \
     legacySkillIds:
-    - bite
+    - \
     unlocked: 1
-    usable: 1
+    usable: 0
     displayName: Bite
     skillLevel: 1
-    requiredPetLevel: 1
+    requiredPetLevel: 5
     element: 1
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Basic close-range bite attack.
     icon: {fileID: 0}
     animatorStates:
@@ -1426,6 +1449,7 @@ MonoBehaviour:
     recoverySeconds: 0.3
     cooldownPercent: 0
     cooldownSeconds: 1.2
+    manaCost: 0
   - skillId: blast
     legacySkillIds:
     - blast
@@ -1435,6 +1459,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: A short roar-like magic blast.
     icon: {fileID: 0}
     animatorStates:
@@ -1448,6 +1476,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3.8
+    manaCost: 0
   - skillId: projectile
     legacySkillIds:
     - projectile
@@ -1457,6 +1486,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 2
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: Fires a ranged projectile.
     icon: {fileID: 0}
     animatorStates:
@@ -1470,6 +1503,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3
+    manaCost: 0
   - skillId: wing strike
     legacySkillIds:
     - wing strike
@@ -1479,6 +1513,10 @@ MonoBehaviour:
     skillLevel: 1
     requiredPetLevel: 1
     element: 4
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
     description: A wing attack that knocks the air forward.
     icon: {fileID: 0}
     animatorStates:
@@ -1491,6 +1529,88 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 4.2
+    manaCost: 0
+  - skillId: 0
+    legacySkillIds:
+    - blast
+    unlocked: 1
+    usable: 1
+    displayName: Blast
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: A short roar-like magic blast.
+    icon: {fileID: 0}
+    animatorStates:
+    - Blast Attack
+    - Cast Spell
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0.12
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 3.8
+    manaCost: 0
+  - skillId: 00
+    legacySkillIds:
+    - blast
+    unlocked: 1
+    usable: 1
+    displayName: Blast
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: A short roar-like magic blast.
+    icon: {fileID: 0}
+    animatorStates:
+    - Blast Attack
+    - Cast Spell
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0.12
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 3.8
+    manaCost: 0
+  - skillId: 001
+    legacySkillIds:
+    - blast
+    unlocked: 1
+    usable: 1
+    displayName: Blast
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 8
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: A short roar-like magic blast.
+    icon: {fileID: 0}
+    animatorStates:
+    - Blast Attack
+    - Cast Spell
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0.12
+    recoverySeconds: 0.3
+    cooldownPercent: 0
+    cooldownSeconds: 3.8
+    manaCost: 0
   petController: {fileID: 0}
   animator: {fileID: 1063598429507243789}
   autoFindAnimationReferences: 1
@@ -1509,7 +1629,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5486cfda78ec2cc4293deba51edcff3f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetCollectionMetadata
-  petId: 
+  petId: auto-Okto4bunbmcgTG9uZyBM4butYTow
   definitionId: 
   species: 
   gender: 
@@ -1524,6 +1644,7 @@ MonoBehaviour:
   obtainedOrder: 0
   captureDate: 
   captureLocation: 
+  captureBallId: 
   trainerName: 
   personality: 
   geneticsInitialized: 0
@@ -1612,6 +1733,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetEvolutionVisualController
   visualRoot: {fileID: 0}
   baseVisual: {fileID: 0}
+  baseVisualPrefab: {fileID: 0}
 --- !u!1 &6481518705320547831
 GameObject:
   m_ObjectHideFlags: 0

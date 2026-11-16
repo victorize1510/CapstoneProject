@@ -13975,8 +13975,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 438729951}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.21619998, y: -0.1210547, z: 0.027024975, w: 0.96843845}
-  m_LocalPosition: {x: 41.126896, y: -88.35603, z: 27.681595}
+  m_LocalRotation: {x: 0.18175332, y: -0.121936195, z: 0.02271915, w: 0.9754902}
+  m_LocalPosition: {x: 41.187527, y: -88.74712, z: 27.442863}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -14042,7 +14042,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0.611527, y: 1.681699, z: -2.407887}
+  FollowOffset: {x: 1.487527, y: 3.532876, z: -5.857136}
 --- !u!114 &438729956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40388,6 +40388,9 @@ MonoBehaviour:
   cameraCollisionRadius: 0.28
   cameraCollisionBuffer: 0.16
   cameraCollisionMinDistance: 0.45
+  cameraCollisionReturnTime: 0.24
+  cameraCollisionEnterTime: 0.16
+  cameraCollisionLookAhead: 0.28
   showCursorInPlay: 1
   rotateOnlyWhileRightMouseHeld: 1
   lockCursorWhileRotating: 1
