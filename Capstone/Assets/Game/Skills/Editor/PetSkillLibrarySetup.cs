@@ -18,7 +18,7 @@ namespace Capstone.Game.Skills.Editor {
         };
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
 
-        [MenuItem("Tools/Capstone/Pet Skills/1. Create or Connect Existing Dragon Library")]
+        [MenuItem("Tools/Capstone/Advanced/Pet Skills/1. Create or Connect Existing Dragon Library")]
         public static void Setup() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Stop Play Mode before editing the skill library.");
             var catalog = LoadOrCreate<PetSkillCatalog>(CatalogPath);
@@ -94,7 +94,7 @@ namespace Capstone.Game.Skills.Editor {
             asset = ScriptableObject.CreateInstance<T>(); AssetDatabase.CreateAsset(asset, path); return asset;
         }
 
-        [MenuItem("Tools/Capstone/Pet Skills/2. Validate Library")]
+        [MenuItem("Tools/Capstone/Advanced/Pet Skills/2. Validate Library")]
         public static void Validate() {
             var errors = new List<string>();
             foreach (var guid in AssetDatabase.FindAssets("t:PetSkillCatalog")) {
@@ -117,7 +117,7 @@ namespace Capstone.Game.Skills.Editor {
             if (errors.Count > 0) throw new InvalidOperationException(string.Join("\n", errors));
             Debug.Log("Pet skill catalogs and species learnsets valid.");
         }
-        [MenuItem("Tools/Capstone/Pet Skills/3. Open Guide")]
+        [MenuItem("Tools/Capstone/Advanced/Pet Skills/3. Open Guide")]
         public static void OpenGuide() => Application.OpenURL(new Uri(Path.GetFullPath("Assets/Game/Skills/README_VI.md")).AbsoluteUri);
 
         public static void SetupBatch() {

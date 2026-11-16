@@ -6,7 +6,7 @@ using Capstone.Game.QuestSystem;
 namespace Capstone.Game.SaveSystem {
     [Serializable]
     public sealed class PlayerSaveData {
-        public const int CurrentVersion = 13;
+        public const int CurrentVersion = 14;
 
         public int version = CurrentVersion;
         public string savedAtUtc = string.Empty;
@@ -16,6 +16,27 @@ namespace Capstone.Game.SaveSystem {
         public PetRosterSaveData pets = new PetRosterSaveData();
         public PlayerProfileSaveData profile = new PlayerProfileSaveData();
         public AchievementSaveData achievements = new AchievementSaveData();
+        public PveRewardsSaveData pveRewards;
+    }
+
+    [Serializable] public sealed class PveRewardsSaveData {
+        public bool captured;
+        public List<PendingPveRewardSaveData> pending = new List<PendingPveRewardSaveData>();
+    }
+    [Serializable] public sealed class PendingPveRewardSaveData {
+        public string transactionId, scene;
+        public float x,y,z;
+        public long createdUtcTicks;
+        public int gold;
+        public bool experienceCommitted;
+        public List<PveItemRewardSaveData> items=new List<PveItemRewardSaveData>();
+        public List<PvePetRewardSaveData> pets=new List<PvePetRewardSaveData>();
+    }
+    [Serializable] public sealed class PveItemRewardSaveData {public string itemId;public int quantity;}
+    [Serializable] public sealed class PvePetRewardSaveData {
+        public string petId;
+        public int experience;
+        public Capstone.Game.HudSystem.PetStatValues effort;
     }
 
     [Serializable]

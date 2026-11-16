@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 namespace Capstone.Game.CaptureSystem {
-    // Synchronous, capture-only unit of work. Observers never see staged save mutations.
+    // Synchronous gameplay transaction notifications. Observers never see staged save mutations.
     internal sealed class CaptureEventBatch : IDisposable {
         static CaptureEventBatch current;
         public static bool IsActive => current != null;

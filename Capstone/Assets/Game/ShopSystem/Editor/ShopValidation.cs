@@ -25,7 +25,7 @@ namespace Capstone.Game.ShopSystem.Editor {
         GameObject owner;
         ShopCatalog catalog;
         readonly List<MonsterItemDefinition> items = new List<MonsterItemDefinition>();
-        [MenuItem("Game Tools/GameToolThang/HUD/Preview Shop (Editor fixture)")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Preview Shop (Editor fixture)")]
         public static ShopPreviewWindow OpenPreview() {
             var window = GetWindow<ShopPreviewWindow>("Shop — dữ liệu xem thử");
             window.position = new Rect(40, 70, 1366, 768); window.Show(); return window;
@@ -57,7 +57,7 @@ namespace Capstone.Game.ShopSystem.Editor {
         static void Submit(Button button) { using (var evt = NavigationSubmitEvent.GetPooled()) { evt.target = button; button.SendEvent(evt); } }
         static T Field<T>(object value, string field) => (T)value.GetType().GetField(field, Private).GetValue(value);
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Shop")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Shop")]
         public static async void Run() {
             if (running || EditorApplication.isPlaying) return;
             running = true; results.Clear(); ShopPreviewWindow window = null;
@@ -192,7 +192,7 @@ namespace Capstone.Game.ShopSystem.Editor {
             return catalog;
         }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Shop in Play Mode")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Shop in Play Mode")]
         public static async void RunPlay() {
             if (running || !Application.isPlaying) return;
             running = true; results.Clear();

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public static class PlayerGenderSwitcherSetup
 {
-    private const string PlayerMenuRoot = "Tools/ToolCuaThang/Capstone/Player/";
+    private const string PlayerMenuRoot = "Tools/Capstone/Advanced/Player/";
     private const string MenuRoot = PlayerMenuRoot + "Advanced/";
     private const string VexaPrefabPath = "Assets/Prefabs/Th\u1EAFng/Vexa/Vefects_Vexa.prefab";
     private const string BoyModelPath = "Assets/Prefabs/Th\u1EAFng/BoyFantasyBeast/Meshy_AI_Kael_Ashborne_biped/Meshy_AI_Kael_Ashborne_biped_Character_output.fbx";

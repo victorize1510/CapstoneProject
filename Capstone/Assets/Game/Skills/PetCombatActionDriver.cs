@@ -20,6 +20,7 @@ namespace Capstone.Game.Skills {
         SkillHudData skill;
         PetSkillPresentationProfile profile;
         int hash, token, revision, queued = -1;
+        int emissionCount=1,nextEmission=1;float burstEndNormalized;
         string queuedId;
         float queuedUntil, startedAt, animationStartedAt, normalized, clipDuration, chainRemaining;
         bool animationStarted, released, focused = true;
@@ -74,6 +75,10 @@ namespace Capstone.Game.Skills {
             execution = GetComponent<PetSkillCombatExecutor>(); presentation = GetComponent<PetSkillPresentationPlayer>();
             token = presentation != null ? presentation.ActiveCastId : 0;
             if (token == 0) { Cancel(); return false; }
+            emissionCount=presentation.EmissionCount(token);nextEmission=1;
+            burstEndNormalized=profile.releaseNormalized;
+            if(stats.SpeciesSkillSet!=null&&stats.SpeciesSkillSet.TryGet(candidate.skillId,out var entry)&&entry.skill.combat!=null)
+                burstEndNormalized=Mathf.Max(profile.releaseNormalized,entry.skill.combat.burstEndNormalized);
             StartedCount++;
             if (execution == null || !execution.IsRetreating) StartAnimation();
             return true;
@@ -114,6 +119,9 @@ namespace Capstone.Game.Skills {
                 released = true; Phase = PetCombatPhase.Released; LastReleaseNormalized = normalized;
                 presentation.NotifyRelease(token);
             }
+            while(released&&nextEmission<emissionCount&&normalized>=Mathf.Lerp(profile.releaseNormalized,burstEndNormalized,nextEmission/(float)(emissionCount-1))){
+                presentation.NotifySubRelease(token,nextEmission);nextEmission++;
+            }
             if (released) Phase = PetCombatPhase.Recovery;
             if (released && normalized >= profile.chainNormalized) Finish(true);
         }
@@ -130,6 +138,10 @@ namespace Capstone.Game.Skills {
             if (!IsSkillBusy) return;
             presentation?.CancelPresentation(); execution?.Cancel();
             CancelledCount++; Finish(false);
+        }
+        public void ReturnToOwner() {
+            ClearBuffer(); presentation?.CancelUnreleased(); execution?.CancelWindup();
+            if (IsSkillBusy) { CancelledCount++; Finish(false); }
         }
     }
 }

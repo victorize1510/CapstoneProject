@@ -51,7 +51,7 @@ namespace Capstone.Game.UISystem.Editor {
             results.Add((valid ? "PASS " : "FAIL ") + label);
             if (!valid) throw new InvalidOperationException(label);
         }
-        [MenuItem("Game Tools/GameToolThang/GUI/Validate Shared GUI Kit")]
+        [MenuItem("Tools/Capstone/Advanced/GUI/Validate Shared GUI Kit")]
         public static void Run() {
             if (running) return;
             running = true;

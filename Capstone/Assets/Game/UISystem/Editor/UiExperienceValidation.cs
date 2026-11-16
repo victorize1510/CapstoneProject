@@ -35,7 +35,7 @@ namespace Capstone.Game.UISystem.Editor {
         }
         static async Task Capture(string name) { Directory.CreateDirectory(Output+"screenshots"); ScreenCapture.CaptureScreenshot(Output+"screenshots/"+name+".png"); await Task.Delay(220); }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate UI Experience in Play Mode")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate UI Experience in Play Mode")]
         public static async void RunPlay() {
             if(running || !Application.isPlaying) return;
             running=true; results.Clear();

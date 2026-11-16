@@ -20,7 +20,7 @@ namespace Capstone.Game.UISystem.Editor {
         [Serializable] public sealed class Capture { public List<Entry> entries = new List<Entry>(); }
         [Serializable] public sealed class Entry { public string key; public string value; }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Capture UI Style Baseline")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Capture UI Style Baseline")]
         static void Baseline() {
             // A baseline is immutable once recorded. Archived source snapshots are
             // used to recover the original after Unity clears Temp on restart.
@@ -30,7 +30,7 @@ namespace Capstone.Game.UISystem.Editor {
             }
             Run(true);
         }
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate UI Style Review")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate UI Style Review")]
         static void Validate() => Run(false);
 
         static async void Run(bool baseline) {

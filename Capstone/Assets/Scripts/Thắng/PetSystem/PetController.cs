@@ -455,7 +455,7 @@ public class PetController : MonoBehaviour
             return;
         }
 
-        target = null;
+        target = null; hasPendingHit = false; SetAnimatorBool(attackingParameter, false);
         hasRoamDestination = false;
         directStuckSince = 0f;
         state = PetState.FollowOwner;

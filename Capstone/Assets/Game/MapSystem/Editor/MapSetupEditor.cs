@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using AAMAP;
 using Capstone.Game.Inventory;
@@ -29,7 +29,7 @@ namespace Capstone.Game.MapSystem.Editor {
             Star
         }
 
-        [MenuItem("Tools/ToolCuaThang/Game Map/Setup Complete Map System")]
+        [MenuItem("Tools/Capstone/Advanced/Game Map/Setup Complete Map System")]
         public static void SetupCompleteMapSystem() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) {
                 Debug.LogWarning("Map setup: stop Play Mode before running setup. Changes made while playing are temporary and will be lost.");
@@ -195,7 +195,7 @@ namespace Capstone.Game.MapSystem.Editor {
                 : "Map setup finished with warnings and scene saved. Use Tools > ToolCuaThang > Game Map > Validate Setup.");
         }
 
-        [MenuItem("Tools/ToolCuaThang/Game Map/Validate Setup")]
+        [MenuItem("Tools/Capstone/Advanced/Game Map/Validate Setup")]
         public static void ValidateSetup() {
             MapSetupValidator validator = FindFirst<MapSetupValidator>();
             if (validator == null) {

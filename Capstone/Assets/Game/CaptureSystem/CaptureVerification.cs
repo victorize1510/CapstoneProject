@@ -27,9 +27,9 @@ namespace Capstone.Game.CaptureSystem {
         static void Set(object instance,string name,object value)=>instance.GetType().GetField(name,Any).SetValue(instance,value);
         sealed class FixedRandom:ICaptureRandom {readonly double value;public int Calls;public FixedRandom(double value){this.value=value;}public double NextFloat01(){Calls++;return value;}}
         sealed class ScriptRandom:ICaptureRandom {readonly double[] values;int i;public ScriptRandom(params double[] values){this.values=values;}public double NextFloat01()=>values[Math.Min(i++,values.Length-1)];}
-        [MenuItem("Tools/Capstone/Capture/Verify capture math")]
+        [MenuItem("Tools/Capstone/Advanced/Capture/Verify capture math")]
         public static void VerifyMath(){checks.Clear();try{MathChecks();Write("math-status.txt","COMPLETE "+checks.Count);}catch(Exception e){Write("math-status.txt","FAILED "+e);Debug.LogException(e);}}
-        [MenuItem("Tools/Capstone/Capture/Verify isolated capture runtime")]
+        [MenuItem("Tools/Capstone/Advanced/Capture/Verify isolated capture runtime")]
         public static void VerifyRuntime(){
             if(EditorApplication.isPlayingOrWillChangePlaymode||EditorApplication.isCompiling)return;
             SessionState.SetString(Session+"save",Root+"test-saves/"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff"));Write("save-root.txt",SessionState.GetString(Session+"save",""));SessionState.SetBool(Session,true);SessionState.SetBool(Session+"enabled",EditorSettings.enterPlayModeOptionsEnabled);SessionState.SetInt(Session+"options",(int)EditorSettings.enterPlayModeOptions);EditorSettings.enterPlayModeOptionsEnabled=true;EditorSettings.enterPlayModeOptions=EnterPlayModeOptions.DisableDomainReload;EditorApplication.EnterPlaymode();
@@ -59,7 +59,7 @@ namespace Capstone.Game.CaptureSystem {
             foreach(var tuple in new[]{(CaptureBallCondition.Quick,1,5d),(CaptureBallCondition.Quick,2,1d),(CaptureBallCondition.Timer,1,1d),(CaptureBallCondition.Timer,11,4d)}){CaptureCalculator.TryOdds(new CaptureContext(100,100,1,new CaptureBallRules(1,false,tuple.Item1),battleTurnIndex:tuple.Item2),out var o,out _);Check(Math.Abs(o.ModifiedRate*3-tuple.Item3)<.000001,"conditional ball math "+tuple);}
             CaptureCalculator.TryOdds(new CaptureContext(20,100,45,new CaptureBallRules(1),enableCritical:true,caughtUniqueSpeciesCount:30),out var low,out _);Check(low.CriticalChance==0,"low unique dex has no critical");
             CaptureCalculator.TryRoll(new CaptureContext(20,100,45,new CaptureBallRules(1),enableCritical:true,caughtUniqueSpeciesCount:601),new FixedRandom(0),out var critical,out _);Check(critical.Success&&critical.IsCritical&&critical.ShakeCount==1,"optional critical one check");
-            var save=new PlayerSaveData();string v12=PlayerSaveMigration.Write(save).Replace("\"version\": 13","\"version\": 12");var migrated=PlayerSaveMigration.Read(v12,out int version);Check(version==12&&migrated.version==13,"v12 read migration remains compatible");
+            var save=new PlayerSaveData();string v12=PlayerSaveMigration.Write(save).Replace("\"version\": "+PlayerSaveData.CurrentVersion,"\"version\": 12");var migrated=PlayerSaveMigration.Read(v12,out int version);Check(version==12&&migrated.version==PlayerSaveData.CurrentVersion,"v12 read migration remains compatible");
             var ball=CaptureAssets.LoadBall();Check(ball!=null&&ball.IsCaptureBall&&ball.CaptureRules.Multiplier==1&&!ball.CaptureRules.Guaranteed,"authored one basic ball x1");
             foreach(var name in new[]{"DragonDusk","DragonDuskWinged","DragonDuskElder"}){var p=Resources.Load<PetStatProfile>("PetStats/"+name);int expected=name=="DragonDusk"?255:name=="DragonDuskWinged"?120:45;Check(p!=null&&p.IsCatchable&&p.BaseCatchRate==expected,"independent authored catch data "+name);}
             Write("math-checks.txt",string.Join("\n",checks));

@@ -51,7 +51,7 @@ namespace Capstone.Game.CaptureSystem {
             RestoreTarget();InventoryInputController.SetExternalGameplayInputBlocked(this,false);
             yield return new WaitForSecondsRealtime(1.4f);Cleanup();
         }
-        void RestoreTarget(){for(int i=0;i<hidden.Length;i++)if(hidden[i]!=null)hidden[i].enabled=visibility[i];hidden=Array.Empty<Renderer>();visibility=Array.Empty<bool>();if(target!=null)target.Lock(false);target=null;}
+        void RestoreTarget(){for(int i=0;i<hidden.Length;i++)if(hidden[i]!=null)hidden[i].enabled=visibility[i];hidden=Array.Empty<Renderer>();visibility=Array.Empty<bool>();if(target!=null){target.EndPresentationHold();target.Lock(false);}target=null;}
         void Cleanup(){RestoreTarget();InventoryInputController.SetExternalGameplayInputBlocked(this,false);if(ball!=null)Destroy(ball);ball=null;notice?.RemoveFromHierarchy();notice=null;IsPlaying=false;}
         public void Cancel(){StopAllCoroutines();Cleanup();}
         void OnDisable()=>Cancel();

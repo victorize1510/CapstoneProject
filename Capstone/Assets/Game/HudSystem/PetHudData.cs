@@ -60,6 +60,7 @@ namespace Capstone.Game.HudSystem {
         [Min(0f)] public float recoverySeconds;
         [Range(0f, 1f)] public float cooldownPercent;
         [Min(0f)] public float cooldownSeconds;
+        [Min(0f)] public float manaCost;
         [NonSerialized] public float cooldownRemainingSeconds;
 
         public float CooldownPercent {

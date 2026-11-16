@@ -11,7 +11,7 @@ public static class PlayerFreeLookValidation
 {
     const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
 
-    [MenuItem("Tools/ToolCuaThang/Camera/Validate TestChar FreeLook")]
+    [MenuItem("Tools/Capstone/Advanced/Camera/Validate TestChar FreeLook")]
     public static void Validate()
     {
         if (Application.isPlaying) throw new InvalidOperationException("Run this check outside Play Mode.");

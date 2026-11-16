@@ -31,7 +31,7 @@ namespace Capstone.Game.HudSystem {
         }
         public void Cancel(){pending=held=false;waitRelease=true;}
     }
-    [DisallowMultipleComponent]
+    [DefaultExecutionOrder(-150), DisallowMultipleComponent]
     public sealed class HubCaptureHud : MonoBehaviour {
         [SerializeField] KeyCode captureKey=KeyCode.G;
         [SerializeField,Min(.1f)] float holdThreshold=.28f;
@@ -40,6 +40,11 @@ namespace Capstone.Game.HudSystem {
         MonsterInventoryAdapter inventory;PetCaptureCoordinator coordinator;MonsterInventoryController bag;
         readonly List<InventoryItemSnapshot> balls=new List<InventoryItemSnapshot>();
         readonly HubPressGesture gesture=new HubPressGesture();
+        CaptureBallPresentationCatalog presentationCatalog;
+        readonly Button[] choiceButtons=new Button[3];
+        readonly CanvasGroup[] choiceGroups=new CanvasGroup[3];
+        readonly Image[] choiceIcons=new Image[3];
+        readonly Text[] choiceCounts=new Text[3];
         RectTransform host,picker;CanvasGroup pulse;Image icon;Text quantity,notice,keyLabel;GameObject opportunity;
         string selectedBallId;float lookupAt,refreshAt,noticeUntil;bool pickerBlocked;int lastIntentFrame=-1,releaseFrame=-1;
         public bool IsPickerOpen=>picker!=null&&picker.gameObject.activeSelf;
@@ -51,7 +56,7 @@ namespace Capstone.Game.HudSystem {
             ||Input.GetKeyUp(KeyCode.LeftShift)||Input.GetKeyUp(KeyCode.RightShift);
         public int ThrowIntents {get;private set;}
         public KeyCode CaptureKey=>captureKey;
-        void Resolve(){inventory??=FindFirstObjectByType<MonsterInventoryAdapter>(FindObjectsInactive.Include);coordinator??=FindFirstObjectByType<PetCaptureCoordinator>(FindObjectsInactive.Include);bag??=FindFirstObjectByType<MonsterInventoryController>(FindObjectsInactive.Include);}
+        void Resolve(){if(inventory==null)inventory=FindFirstObjectByType<MonsterInventoryAdapter>(FindObjectsInactive.Include);if(coordinator==null)coordinator=FindFirstObjectByType<PetCaptureCoordinator>(FindObjectsInactive.Include);if(bag==null)bag=FindFirstObjectByType<MonsterInventoryController>(FindObjectsInactive.Include);}
         public void Build(RectTransform root) {
             if(opportunitySource==null){var source=GetComponent<LockedCaptureOpportunitySource>();if(source==null)source=gameObject.AddComponent<LockedCaptureOpportunitySource>();opportunitySource=source;}
             host=root;Resolve();var group=V.Rect(root,"CaptureG");V.Place(group,new Vector2(1,0),new Vector2(1,0),new Vector2(-76,164),new Vector2(80,80));
@@ -69,6 +74,7 @@ namespace Capstone.Game.HudSystem {
             if(keyLabel!=null)keyLabel.text=captureKey==KeyCode.None?"—":captureKey.ToString().ToUpperInvariant();
             var selected=Selected();if(selected==null&&balls.Count>0){selectedBallId=balls[0].ItemId;selected=balls[0];}
             if(icon!=null){icon.sprite=selected?.Icon??HubR11Art.Load("capture-glyph");icon.color=Color.white;quantity.text=selected!=null?selected.Quantity.ToString():"0";}
+            if(IsPickerOpen)RefreshChoices();
         }
         InventoryItemSnapshot Selected(){foreach(var item in balls)if(item.ItemId==selectedBallId)return item;return null;}
         void Update(){
@@ -76,9 +82,10 @@ namespace Capstone.Game.HudSystem {
             if(Time.unscaledTime>=lookupAt){lookupAt=Time.unscaledTime+1;Resolve();}
             if(Time.unscaledTime>=refreshAt){refreshAt=Time.unscaledTime+.15f;Refresh();}
             bool allowed=host.gameObject.activeInHierarchy&&!InventoryInputController.IsBlockedByOtherThan(this);
-            if(!allowed||ModelSwitchModifier){gesture.Cancel();if(IsPickerOpen)ClosePicker();}
+            if(!allowed){gesture.Cancel();if(IsPickerOpen)ClosePicker();}
             else {
                 ProcessCaptureKey(Input.GetKeyDown(captureKey),Input.GetKey(captureKey),Input.GetKeyUp(captureKey),Time.unscaledTime);
+                if(IsPickerOpen)for(int i=0;i<3;i++)if(Input.GetKeyDown(KeyCode.Alpha1+i)||Input.GetKeyDown(KeyCode.Keypad1+i))SelectChoice(i);
             }
             bool flag=allowed&&!IsPickerOpen&&opportunitySource is ICaptureOpportunitySource source&&source.HasCaptureOpportunity;
             if(opportunity!=null)opportunity.SetActive(flag);
@@ -102,26 +109,34 @@ namespace Capstone.Game.HudSystem {
         public void OpenPicker(){
             if(IsPickerOpen||InventoryInputController.GameplayInputBlocked||coordinator!=null&&coordinator.IsCapturing)return;
             Refresh();GameplayHudController.Live?.Radial?.SetOpen(false);
-            if(picker==null){picker=V.Rect(host,"CaptureBallPicker");V.Place(picker,new Vector2(1,0),new Vector2(1,0),new Vector2(-28,270),new Vector2(416,350));}
-            V.Clear(picker);picker.gameObject.SetActive(true);
-            var bg=V.Frame(picker,"Panel",HudFrameGraphic.Shape.Chamfered,new Color(.12f,.16f,.25f,.97f),HubR11Art.Gold,1,14);V.Stretch(bg.rectTransform);bg.raycastTarget=true;
-            var title=HubR11Art.Label(picker,"Title","CHỌN BÓNG THU PHỤC",20);V.Top(title.rectTransform,16,12,340,36);
-            var close=V.Button(picker,"Close",HudFrameGraphic.Shape.Chamfered,4);V.Top((RectTransform)close.transform,368,12,32,32);var x=V.Text(close.transform,"Label","×",22,TextAnchor.MiddleCenter);V.Stretch(x.rectTransform);close.onClick.AddListener(ClosePicker);
-            var hint=HubR11Art.Label(picker,"Hint","Thả G để đóng · Chọn bóng không ném.\nNhấn G ngắn để ném · Esc: đóng",16);V.Top(hint.rectTransform,16,280,384,56);
-            var viewport=V.Rect(picker,"Viewport");V.Top(viewport,16,58,384,212);viewport.gameObject.AddComponent<RectMask2D>();
-            var content=V.Rect(viewport,"Content");content.anchorMin=new Vector2(0,1);content.anchorMax=Vector2.one;content.pivot=new Vector2(.5f,1);content.sizeDelta=new Vector2(0,Mathf.Max(212,balls.Count*58));content.anchoredPosition=Vector2.zero;
-            var scroll=viewport.gameObject.AddComponent<ScrollRect>();scroll.viewport=viewport;scroll.content=content;scroll.horizontal=false;scroll.movementType=ScrollRect.MovementType.Clamped;RuntimeScrollbars.Apply(scroll);
-            for(int i=0;i<balls.Count;i++){
-                string id=balls[i].ItemId;var row=V.Button(content,"BallChoice"+i,HudFrameGraphic.Shape.Chamfered,8);V.Top((RectTransform)row.transform,0,i*58,384,52);
-                var image=V.Image(row.transform,"Icon");image.sprite=balls[i].Icon;V.Top(image.rectTransform,8,5,42,42);
-                var name=V.Text(row.transform,"Name",balls[i].Name,17);name.fontStyle=FontStyle.Bold;V.Top(name.rectTransform,60,4,260,44);
-                var qty=V.Text(row.transform,"Quantity",balls[i].Quantity.ToString(),17,TextAnchor.MiddleRight);V.Top(qty.rectTransform,326,4,44,44);
-                row.onClick.AddListener(()=>{SelectBall(id);});if(i==0)row.Select();
+            bool build=picker==null;
+            if(build){picker=V.Rect(host,"CaptureBallPicker");V.Place(picker,new Vector2(1,0),new Vector2(1,0),new Vector2(-108,278),new Vector2(320,192));}
+            picker.gameObject.SetActive(true);
+            presentationCatalog=Resources.Load<CaptureBallPresentationCatalog>("Capture/BallPresentations");
+            if(build){
+            for(int i=0;i<3;i++){
+                int index=i;var row=V.Button(picker,"BallChoice"+i,HudFrameGraphic.Shape.Chamfered,10);
+                V.Top((RectTransform)row.transform,i*108,i==1?0:34,96,112);choiceButtons[i]=row;
+                choiceGroups[i]=row.gameObject.AddComponent<CanvasGroup>();
+                var image=V.Image(row.transform,"Icon");image.preserveAspect=true;image.raycastTarget=false;V.Top(image.rectTransform,16,6,64,64);choiceIcons[i]=image;
+                var name=V.Text(row.transform,"Name",Choice(i)?.displayName??new[]{"Thường","Rare","Ultra"}[i],17,TextAnchor.MiddleCenter);name.fontStyle=FontStyle.Bold;name.raycastTarget=false;V.Top(name.rectTransform,4,72,88,24);
+                var qty=V.Text(row.transform,"Quantity","0",16,TextAnchor.MiddleRight);qty.raycastTarget=false;V.Top(qty.rectTransform,62,48,28,22);choiceCounts[i]=qty;
+                var key=V.Text(row.transform,"Key",(i+1).ToString(),14,TextAnchor.UpperLeft);key.raycastTarget=false;V.Top(key.rectTransform,7,5,18,18);
+                row.onClick.AddListener(()=>SelectChoice(index));
+                var trigger=row.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+                var enter=new UnityEngine.EventSystems.EventTrigger.Entry{eventID=UnityEngine.EventSystems.EventTriggerType.PointerEnter};
+                enter.callback.AddListener(_=>{var item=ChoiceItem(index);if(item==null)Feedback("Bóng "+(Choice(index)?.displayName??"này")+" chưa được cấu hình thu phục.");else if(inventory.GetQuantity(item)<1)Feedback("Bạn không còn bóng này.");});trigger.triggers.Add(enter);
             }
-            if(balls.Count==0){var empty=HubR11Art.Label(content,"Empty","Chưa có bóng thu phục trong Túi đồ.",18);V.Top(empty.rectTransform,8,48,368,80);}
+            var hint=HubR11Art.Label(picker,"Hint","1–3 chọn bóng · Thả G để đóng",16);V.Top(hint.rectTransform,0,158,320,28);
+            }
+            RefreshChoices();
             releaseFrame=-1;pickerBlocked=true;InventoryInputController.SetExternalGameplayInputBlocked(this,true);
         }
-        public bool SelectBall(string id){Refresh();foreach(var ball in balls)if(ball.ItemId==id){selectedBallId=id;ClosePicker();Refresh();return true;}return false;}
+        CaptureBallPresentation Choice(int i)=>presentationCatalog!=null&&i<presentationCatalog.choices.Length?presentationCatalog.choices[i]:null;
+        MonsterItemDefinition ChoiceItem(int i)=>Choice(i)?.item??(i==0?CaptureAssets.LoadBall():null);
+        void RefreshChoices(){for(int i=0;i<3;i++){if(choiceButtons[i]==null)continue;var item=ChoiceItem(i);int count=item!=null&&inventory!=null?inventory.GetQuantity(item):0;choiceIcons[i].sprite=Choice(i)?.icon??item?.Icon??HubR11Art.Load("capture-glyph");choiceCounts[i].text=count.ToString();choiceGroups[i].alpha=item!=null&&count>0?1:.4f;choiceButtons[i].interactable=item!=null&&count>0;}}
+        bool SelectChoice(int i){var item=ChoiceItem(i);if(item==null){Feedback("Bóng này chưa được cấu hình thu phục.");return false;}if(inventory==null||inventory.GetQuantity(item)<1){Feedback("Bạn không còn bóng này.");return false;}return SelectBall(item.StableId);}
+        public bool SelectBall(string id){Refresh();foreach(var ball in balls)if(ball.ItemId==id){selectedBallId=id;Refresh();RefreshChoices();return true;}return false;}
         public void ClosePicker(){if(picker!=null)picker.gameObject.SetActive(false);if(pickerBlocked&&releaseFrame<0)releaseFrame=Time.frameCount+1;gesture.Cancel();}
         void LateUpdate(){if(releaseFrame>=0&&Time.frameCount>=releaseFrame&&!IsPickerOpen)ReleaseInput();}
         void ReleaseInput(){releaseFrame=-1;pickerBlocked=false;InventoryInputController.SetExternalGameplayInputBlocked(this,false);}

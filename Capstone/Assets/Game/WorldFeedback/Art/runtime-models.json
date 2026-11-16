@@ -1,0 +1,142 @@
+[
+  {
+    "id": "BallCommon",
+    "source": "E:\\Download\\ModelItem\\BallThuong\\Meshy_AI_Crimson_Crest_Orb_20261104_texture_fbx\\Meshy_AI_Crimson_Crest_Orb_20261104_texture.fbx",
+    "sourceSha256": "0a9807778d0305e17b3df734cfdb549abf947eadb0e6c7d41bdfad6798e7af6c",
+    "sourceTriangles": 166886,
+    "lods": [
+      {
+        "triangles": 8000,
+        "size": [
+          0.9548395872116089,
+          0.965433657169342,
+          1.0006754398345947
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallCommon\\BallCommon_LOD0.fbx"
+      },
+      {
+        "triangles": 2000,
+        "size": [
+          0.9525836706161499,
+          0.9671993255615234,
+          1.0013710260391235
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallCommon\\BallCommon_LOD1.fbx"
+      },
+      {
+        "triangles": 512,
+        "size": [
+          0.9487432241439819,
+          0.9646340608596802,
+          1.008655309677124
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallCommon\\BallCommon_LOD2.fbx"
+      }
+    ]
+  },
+  {
+    "id": "BallRare",
+    "source": "E:\\Download\\ModelItem\\BallRare\\Meshy_AI_Arcane_Sovereign_Orb_20261104_texture_fbx\\Meshy_AI_Arcane_Sovereign_Orb_20261104_texture.fbx",
+    "sourceSha256": "937316b8e567f80c32afc6ffbebe8cf3f90cb2fb9878e108b92de25945cda964",
+    "sourceTriangles": 158416,
+    "lods": [
+      {
+        "triangles": 8000,
+        "size": [
+          0.9701281785964966,
+          0.9810025691986084,
+          1.0007193088531494
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallRare\\BallRare_LOD0.fbx"
+      },
+      {
+        "triangles": 2000,
+        "size": [
+          0.9698749780654907,
+          0.981263279914856,
+          1.0007357597351074
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallRare\\BallRare_LOD1.fbx"
+      },
+      {
+        "triangles": 510,
+        "size": [
+          0.9533066749572754,
+          0.9807069301605225,
+          1.0011322498321533
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallRare\\BallRare_LOD2.fbx"
+      }
+    ]
+  },
+  {
+    "id": "BallUltra",
+    "source": "E:\\Download\\ModelItem\\BallUltra\\Meshy_AI_Amethyst_Sovereign_Orb_20261104_texture_fbx\\Meshy_AI_Amethyst_Sovereign_Orb_20261104_texture.fbx",
+    "sourceSha256": "d2454489bd35e45416d55807c9f82ed22213f5f8b73b9e8c6b3e33cdbd2eef56",
+    "sourceTriangles": 236136,
+    "lods": [
+      {
+        "triangles": 8000,
+        "size": [
+          0.9791969656944275,
+          1.0001392364501953,
+          0.9980684518814087
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallUltra\\BallUltra_LOD0.fbx"
+      },
+      {
+        "triangles": 2000,
+        "size": [
+          0.9792762994766235,
+          1.0001897811889648,
+          1.0002479553222656
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallUltra\\BallUltra_LOD1.fbx"
+      },
+      {
+        "triangles": 512,
+        "size": [
+          0.9811869859695435,
+          0.9896301031112671,
+          0.9916832447052002
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\BallUltra\\BallUltra_LOD2.fbx"
+      }
+    ]
+  },
+  {
+    "id": "RecoveryTable",
+    "source": "E:\\Download\\ModelItem\\tABLE\\Meshy_AI_Arcane_Reliquary_Table_20261104_texture_fbx\\Meshy_AI_Arcane_Reliquary_Table_20261104_texture.fbx",
+    "sourceSha256": "0c4420eb769ae3e629877061c1a6e052d58ec7177da0ca12ed76e95386337128",
+    "sourceTriangles": 457800,
+    "lods": [
+      {
+        "triangles": 40000,
+        "size": [
+          1.8311021327972412,
+          1.811737060546875,
+          1.0999300479888916
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\RecoveryTable\\RecoveryTable_LOD0.fbx"
+      },
+      {
+        "triangles": 15000,
+        "size": [
+          1.8304669857025146,
+          1.811354398727417,
+          1.1006478071212769
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\RecoveryTable\\RecoveryTable_LOD1.fbx"
+      },
+      {
+        "triangles": 4000,
+        "size": [
+          1.8422335386276245,
+          1.8109045028686523,
+          1.099108099937439
+        ],
+        "asset": "D:\\Download\\ProjectVTC\\CapstoneProject\\Capstone\\Assets\\Game\\WorldFeedback\\Art\\RecoveryTable\\RecoveryTable_LOD2.fbx"
+      }
+    ]
+  }
+]

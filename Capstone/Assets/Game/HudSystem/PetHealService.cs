@@ -114,6 +114,8 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
 
+            // Presentation follows the committed transaction; failed saves above never emit a heal number.
+            if (preview.ActualHealAmount > 0) FloatingCombatText.ShowHealing(pet.transform.position + Vector3.up, preview.ActualHealAmount);
             PetHealed?.Invoke(pet);
             string baseName = stats.DisplayName;
             string displayName = preview.Metadata != null

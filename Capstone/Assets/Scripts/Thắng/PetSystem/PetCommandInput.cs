@@ -11,6 +11,9 @@ using TextField = UnityEngine.UIElements.TextField;
 [DisallowMultipleComponent]
 public class PetCommandInput : MonoBehaviour
 {
+    float lastReturnPress = float.NegativeInfinity;
+    DummyEnemy selectedEnemy;
+    public DummyEnemy SelectedEnemy => selectedEnemy != null && selectedEnemy.IsSelectable ? selectedEnemy : null;
     private static readonly KeyCode[] NumberKeys =
     {
         KeyCode.Alpha1,
@@ -124,21 +127,16 @@ public class PetCommandInput : MonoBehaviour
         }
 
         ResolveCameraLock(cameraToUse);
-        if (cameraLock != null && cameraLock.TryGetLockedEnemy(out DummyEnemy pinnedEnemy))
-        {
-            TryCommandAttack(pinnedEnemy);
-            return;
-        }
-
         Ray ray = cameraToUse.ScreenPointToRay(GetCommandScreenPoint());
         int hitCount = Physics.RaycastNonAlloc(ray, hits, rayDistance, commandMask, QueryTriggerInteraction.Collide);
-        if (hitCount <= 0)
+        if (hitCount <= 0 || hitCount == hits.Length)
         {
             return;
         }
 
         if (TryFindClickedEnemy(hitCount, out DummyEnemy clickedEnemy))
         {
+            if(clickedEnemy.IsDowned){selectedEnemy=clickedEnemy;return;}
             TryCommandAttack(clickedEnemy);
         }
     }
@@ -154,6 +152,7 @@ public class PetCommandInput : MonoBehaviour
             || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsAlive) return false;
         if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "attack")) return false;
         activePet.CommandAttack(enemy);
+        selectedEnemy = enemy;
         return true;
     }
 
@@ -222,6 +221,7 @@ public class PetCommandInput : MonoBehaviour
         {
             if (Input.GetKeyDown(NumberKeys[i]) || Input.GetKeyDown(KeypadKeys[i]))
             {
+                GameplayHudController.Live?.ShowSlotRequest(i);
                 SummonSlot(i);
                 return;
             }
@@ -229,9 +229,22 @@ public class PetCommandInput : MonoBehaviour
 
         if (withdrawKey != KeyCode.None && Input.GetKeyDown(withdrawKey))
         {
-            WithdrawActivePet();
+            ProcessReturnPress(Time.unscaledTime);
         }
     }
+
+    public void ProcessReturnPress(float now)
+    {
+        if (InventoryInputController.GameplayInputBlocked || activePet == null) return;
+        bool doublePress = now - lastReturnPress <= .3f;
+        lastReturnPress = doublePress ? float.NegativeInfinity : now;
+        selectedEnemy = null;
+        activePet.GetComponent<Capstone.Game.Skills.PetCombatActionDriver>()?.ReturnToOwner();
+        if (doublePress) WithdrawActivePet();
+        else activePet.ReturnToOwner();
+    }
+
+    void OnApplicationFocus(bool focus) { if (!focus) lastReturnPress = float.NegativeInfinity; }
 
     public void RequestSummonSlot(int slotIndex)
     {
@@ -372,14 +385,14 @@ public class PetCommandInput : MonoBehaviour
 
             DummyEnemy enemy = candidate.GetComponentInParent<DummyEnemy>();
             if (candidate.transform.IsChildOf(transform)
-                || candidate.GetComponentInParent<PetController>() != null
+                || (candidate.GetComponentInParent<PetController>() is var petBody && petBody != null && !petBody.IsWildEncounter)
                 || (candidate.isTrigger && enemy == null))
             {
                 continue;
             }
 
             bestDistance = hits[i].distance;
-            clickedEnemy = enemy != null && enemy.IsAlive ? enemy : null;
+            clickedEnemy = enemy != null && enemy.IsSelectable ? enemy : null;
         }
 
         return clickedEnemy != null;

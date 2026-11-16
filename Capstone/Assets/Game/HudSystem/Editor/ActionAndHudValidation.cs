@@ -17,7 +17,7 @@ namespace Capstone.Game.HudSystem.Editor {
         static readonly List<string> results = new List<string>();
         const string Output = "Temp/AntiSpamHud";
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Input And HUD Layout")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Input And HUD Layout")]
         public static void Validate() {
             if (Application.isPlaying) throw new InvalidOperationException("Stop Play Mode before validating.");
             results.Clear(); Directory.CreateDirectory(Output);

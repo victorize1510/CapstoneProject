@@ -30,7 +30,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
             new[] { "egg-shadow", "Dòng quái trứng", "Trứng Ma Quái", "Quái Trứng Quỷ", "Quái Trứng Lực SĨ", "5b9f4cae6a1d80d4c81db1f496e56a36", "933104ba23a2a7447b2ea9edfa4daa82", "abdcfcaf8ea6bcc408fcd559fb1bc239" }
         };
 
-        [MenuItem("Tools/Capstone/Creatures/1. Create missing family assets")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/1. Create missing family assets")]
         public static void CreateMissing() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Dừng Play Mode trước khi tạo danh mục.");
             var library = LoadOrCreate<CreatureLibrary>(LibraryPath);
@@ -64,7 +64,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
             AssetDatabase.SaveAssetIfDirty(library); BakeAvatars();
         }
 
-        [MenuItem("Tools/Capstone/Creatures/2. Bake lightweight avatar catalog")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/2. Bake lightweight avatar catalog")]
         public static void BakeAvatars() {
             var library = AssetDatabase.LoadAssetAtPath<CreatureLibrary>(LibraryPath);
             if (library == null) throw new InvalidOperationException("Chưa tạo CreatureLibrary.");
@@ -96,7 +96,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
             public List<FormAudit> assets = new List<FormAudit>();
         }
 
-        [MenuItem("Tools/Capstone/Creatures/3. Validate library and write report on E")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/3. Validate library and write report on E")]
         public static void ValidateAndReport() {
             var report = Inspect();
             Directory.CreateDirectory(ReportRoot);

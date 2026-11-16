@@ -10,7 +10,7 @@ namespace Capstone.Game.CaptureSystem.Editor {
     public static class CaptureAuthoringSetup {
         const string Root=QaArtifactPaths.Root+"capture-stats-visibility-2026-11-04/";
         const string Resource="Assets/Resources/Capture/",Prefabs="Assets/Game/CaptureSystem/Prefabs/";
-        [MenuItem("Tools/Capstone/Capture/Prepare capture assets")]
+        [MenuItem("Tools/Capstone/Advanced/Capture/Prepare capture assets")]
         public static void Build(){
             Directory.CreateDirectory(Root);
             Directory.CreateDirectory(Resource);Directory.CreateDirectory(Prefabs);AssetDatabase.Refresh();
@@ -56,6 +56,8 @@ namespace Capstone.Game.CaptureSystem.Editor {
             File.WriteAllText(Root+"authoring-assets.txt",Resource+"BasicCaptureBall.asset\n"+Resource+"CaptureSettings.asset\n"+Prefabs+"WildDragon01.prefab\n"+Prefabs+"WildDragon02.prefab\n"+Prefabs+"WildDragon03.prefab\n");
         }
         static void RenderBallIcon(MonsterItemDefinition ball,GameObject prefab){
+            var prepared=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Game/WorldFeedback/Art/BallCommon/BallCommon_Icon.png");
+            if(prepared!=null){var assigned=new SerializedObject(ball);assigned.FindProperty("Icon").objectReferenceValue=prepared;assigned.ApplyModifiedPropertiesWithoutUndo();AssetDatabase.SaveAssetIfDirty(ball);return;}
             var preview=new PreviewRenderUtility();Texture2D image=null;
             try{
                 var model=Object.Instantiate(prefab);foreach(var script in model.GetComponentsInChildren<MonoBehaviour>())script.enabled=false;

@@ -53,6 +53,7 @@ namespace Capstone.Game.HudSystem {
         readonly PetSlotHudData[] confirmedSlots=new PetSlotHudData[6];
         bool waitPartyKeyUp;int partyKeyFrame=-1;PartyPickerMode previousPartyMode;
         bool partyPressPending,partyWasOpenAtPress;float partyPressedAt;
+        bool partyManuallyOpened; float numberFeedbackUntil;
         public static GameplayHudController Live {get;private set;}
         public static bool WantsHudCursor => Live!=null&&(Live.radial!=null&&Live.radial.IsOpen||Live.captureHud!=null&&Live.captureHud.IsPickerOpen);
         public PetRadialHudView Radial => radial;
@@ -98,8 +99,9 @@ namespace Capstone.Game.HudSystem {
         void Update() {
             SyncVisibility();
             if(previousPartyMode!=partyPickerMode){CancelTransientHud();previousPartyMode=partyPickerMode;}
-            if(InventoryInputController.GameplayInputBlocked){partyPressPending=false;waitPartyKeyUp=Input.GetKey(partyKey);radial?.ResetState();}
+            if(InventoryInputController.GameplayInputBlocked){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;waitPartyKeyUp=Input.GetKey(partyKey);radial?.ResetState();}
             else ProcessPartyRelease(Input.GetKey(partyKey),Input.GetKeyUp(partyKey),Time.unscaledTime);
+            if(numberFeedbackUntil>0&&Time.unscaledTime>=numberFeedbackUntil&&!partyManuallyOpened){numberFeedbackUntil=0;radial?.SetOpen(false);}
             if (root == null || !root.gameObject.activeSelf) return;
             if(trainerMenu==null&&Input.GetKeyDown(partyKey))HandlePartyKey(partyKey);
             if (enableSkillHotkeys && PetSkillsAvailable && !InventoryInputController.GameplayInputBlocked) {
@@ -166,13 +168,15 @@ namespace Capstone.Game.HudSystem {
                 var obj = GameObject.Find("MinimapPanel"); if (obj != null) minimapPanel = obj.GetComponent<RectTransform>();
             }
         }
-        void CenterRequestedPet(int slotIndex) { requestAccepted=true;partyPressPending=false;radial?.SetOpen(false);waitPartyKeyUp=Input.GetKey(partyKey); }
-        void SummonFinished(int index,bool success){if(!success)radial?.Feedback(subscribedDirector?.LastFailureReason??"Chưa thể đổi thú lúc này.");RefreshHud();}
+        public void ShowSlotRequest(int index){if(radial==null||InventoryInputController.GameplayInputBlocked)return;radial.SetOpen(true);radial.ShowRequestedSlot(index);if(!partyManuallyOpened)numberFeedbackUntil=Time.unscaledTime+1.2f;}
+        void CenterRequestedPet(int slotIndex) { requestAccepted=true;ShowSlotRequest(slotIndex); }
+        void SummonFinished(int index,bool success){radial?.FinishRequest(success);if(!success)radial?.Feedback(subscribedDirector?.LastFailureReason??"Chưa thể đổi thú lúc này.");RefreshHud();}
         public bool HandlePartyKey(KeyCode key) {
             if(key!=partyKey||radial==null||InventoryInputController.GameplayInputBlocked)return false;
             if(partyKeyFrame==Time.frameCount)return true;partyKeyFrame=Time.frameCount;
             if(waitPartyKeyUp)return true;
             if(partyPressPending)return true;
+            partyManuallyOpened=true;numberFeedbackUntil=0;
             partyPressPending=true;partyWasOpenAtPress=radial.IsOpen;partyPressedAt=Time.unscaledTime;
             radial.SetOpen(true);RefreshHud();return true;
         }
@@ -182,12 +186,13 @@ namespace Capstone.Game.HudSystem {
             if(!partyPressPending)return;
             bool close=partyPickerMode==PartyPickerMode.Hold||time-partyPressedAt>=partyHoldThreshold||partyWasOpenAtPress;
             partyPressPending=false;radial?.SetOpen(!close);RefreshHud();
+            partyManuallyOpened=!close;
         }
         public bool TryCloseTransientHud() {
             if(captureHud!=null&&captureHud.IsPickerOpen){captureHud.ClosePicker();return true;}
-            if(IsPartyOpen){partyPressPending=false;radial.SetOpen(false);waitPartyKeyUp=Input.GetKey(partyKey);return true;}return false;
+            if(IsPartyOpen){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;radial.SetOpen(false);waitPartyKeyUp=Input.GetKey(partyKey);return true;}return false;
         }
-        void CancelTransientHud(){partyPressPending=false;radial?.ResetState();captureHud?.CancelPending();waitPartyKeyUp=Input.GetKey(partyKey);}
+        void CancelTransientHud(){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;radial?.ResetState();captureHud?.CancelPending();waitPartyKeyUp=Input.GetKey(partyKey);}
         void OnApplicationFocus(bool focused){if(!focused)CancelTransientHud();}
         void SubscribeProvider() {
             if (subscribedProvider == Provider) return;

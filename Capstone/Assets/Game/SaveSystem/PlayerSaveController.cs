@@ -275,12 +275,19 @@ namespace Capstone.Game.SaveSystem {
         }
 
         bool BlockSave(string reason, bool loading) {
+            writeFailureRetryAllowed = !loading;
             saveBlockedReason = string.IsNullOrWhiteSpace(reason) ? "Save/load did not complete." : reason;
             saveQueued = false;
             Debug.LogWarning("Player save protected: " + saveBlockedReason, this);
             if (loading) LoadFailed?.Invoke(saveBlockedReason);
             else SaveFailed?.Invoke(saveBlockedReason);
             return false;
+        }
+        bool writeFailureRetryAllowed;
+        internal bool RetryPendingRewardSave(){
+            // Retry a failed write only. Load protection, future versions and slot checks stay in SaveNow/store.
+            if(IsSaveBlocked){if(!writeFailureRetryAllowed)return false;saveBlockedReason=string.Empty;}
+            return SaveNow();
         }
 
         public bool DeleteSave() {
@@ -306,7 +313,8 @@ namespace Capstone.Game.SaveSystem {
                 currency = currencyWallet != null ? currencyWallet.CreateSaveData() : retainedData?.currency,
                 pets = petCommandInput != null ? CapturePetRoster() : retainedData?.pets,
                 profile = profileProvider != null ? profileProvider.CreateSaveData() : retainedData?.profile,
-                achievements = achievementManager != null ? achievementManager.CreateSaveData() : retainedData?.achievements
+                achievements = achievementManager != null ? achievementManager.CreateSaveData() : retainedData?.achievements,
+                pveRewards = GetComponent<Capstone.Game.CreatureSystem.PveRewardService>()?.CreateSaveData() ?? retainedData?.pveRewards
             };
         }
 
@@ -388,6 +396,7 @@ namespace Capstone.Game.SaveSystem {
                 if (saveData.achievements?.captured == true) achievementManager?.RestoreFromSaveData(saveData.achievements);
                 if (saveData.profile?.captured == true) profileProvider?.RestoreFromSaveData(saveData.profile);
                 if (questManager != null && saveData.quest != null) questManager.RestoreFromSaveData(saveData.quest);
+                var rewards=GetComponent<Capstone.Game.CreatureSystem.PveRewardService>();if(rewards==null)rewards=gameObject.AddComponent<Capstone.Game.CreatureSystem.PveRewardService>();rewards.RestoreFromSaveData(saveData.pveRewards);
                 RefreshPetSubscriptions();
             } finally {
                 isApplyingSave = false;

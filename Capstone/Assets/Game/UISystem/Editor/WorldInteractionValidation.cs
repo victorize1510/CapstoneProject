@@ -12,7 +12,7 @@ namespace Capstone.Game.UISystem.Editor {
     public static class WorldInteractionValidation {
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Profile Runtime And Interaction")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Profile Runtime And Interaction")]
         public static void Run() {
             var results = new List<string>();
             try {

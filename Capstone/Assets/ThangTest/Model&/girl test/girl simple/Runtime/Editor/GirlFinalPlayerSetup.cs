@@ -141,7 +141,7 @@ public static class GirlFinalPlayerSetup
         var serialized = new SerializedObject(switcher);
         serialized.FindProperty("movement").objectReferenceValue = movement;
         serialized.FindProperty("allowRuntimeSwitch").boolValue = true;
-        serialized.FindProperty("switchKey").intValue = (int)KeyCode.G;
+        serialized.FindProperty("switchKey").intValue = (int)KeyCode.F8;
         serialized.FindProperty("defaultVisualIndex").intValue = 0;
         var visuals = serialized.FindProperty("visuals");
         visuals.arraySize = 2;

@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Profiling;
 
 public class BasicCameraFollow : MonoBehaviour
 {
+    static readonly ProfilerMarker CollisionMarker = new ProfilerMarker("Capstone.Camera.Collision");
     public const float MinimumMouseSensitivity = .05f;
     float preferenceSensitivityBasis = -1;
     bool preferenceInvertY;
@@ -48,7 +50,13 @@ public class BasicCameraFollow : MonoBehaviour
     public LayerMask cameraCollisionMask = ~0;
     public float cameraCollisionRadius = 0.28f;
     public float cameraCollisionBuffer = 0.16f;
-    public float cameraCollisionMinDistance = 0.45f;
+    [HideInInspector] public float cameraCollisionMinDistance = 0.45f; // Legacy serialized API; never overrides physical clearance.
+    [Tooltip("Seconds to restore distance after an obstruction. Anticipation smooths entry; the physical boundary never changes shoulder or yaw.")]
+    [Range(.05f, .6f)] public float cameraCollisionReturnTime = .24f;
+    [Tooltip("Smooth inward movement toward an anticipated obstacle. Actual penetration is still prevented immediately.")]
+    [Range(0, .4f)] public float cameraCollisionEnterTime = .16f;
+    [Tooltip("Seconds of orbit/player motion to probe ahead. Zero disables anticipation.")]
+    [Range(0, .4f)] public float cameraCollisionLookAhead = .28f;
 
     [Header("Mouse Control")]
     public bool showCursorInPlay = false;
@@ -130,7 +138,9 @@ public class BasicCameraFollow : MonoBehaviour
     private readonly List<DummyEnemy> lockCycle = new List<DummyEnemy>();
     private float lockCycleReferenceYaw;
     private readonly RaycastHit[] lockHits = new RaycastHit[16];
-    private readonly RaycastHit[] cameraCollisionHits = new RaycastHit[16];
+    private CameraBoomCollision cameraBoom;
+    private CameraBoomRecovery legacyBoom;
+    private Camera collisionLens;
     private bool focusInitialized;
     private bool targetYInitialized;
     private bool previousTargetPositionInitialized;
@@ -160,7 +170,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     public bool HasLockedEnemy
     {
-        get { return lockedEnemy != null && lockedEnemy.isActiveAndEnabled && lockedEnemy.IsAlive; }
+        get { return lockedEnemy != null && lockedEnemy.isActiveAndEnabled && lockedEnemy.IsSelectable; }
     }
 
     // Selection notification only. Combat commands are committed separately by click/skill input.
@@ -207,6 +217,9 @@ public class BasicCameraFollow : MonoBehaviour
         cameraCollisionRadius = Mathf.Max(0.03f, cameraCollisionRadius);
         cameraCollisionBuffer = Mathf.Max(0f, cameraCollisionBuffer);
         cameraCollisionMinDistance = Mathf.Max(0.1f, cameraCollisionMinDistance);
+        cameraCollisionReturnTime = Mathf.Clamp(cameraCollisionReturnTime, .05f, .6f);
+        cameraCollisionEnterTime = Mathf.Clamp(cameraCollisionEnterTime, 0, .4f);
+        cameraCollisionLookAhead = Mathf.Clamp(cameraCollisionLookAhead, 0, .4f);
         EnsurePitchRange();
         lockRayDistance = Mathf.Max(1f, lockRayDistance);
         lockSphereRadius = Mathf.Max(0.05f, lockSphereRadius);
@@ -387,6 +400,7 @@ public class BasicCameraFollow : MonoBehaviour
         focusInitialized = true;
         positionVelocity = Vector3.zero;
         focusVelocity = Vector3.zero;
+        legacyBoom = default;
     }
 
     private void InitializeTargetHeight()
@@ -536,7 +550,7 @@ public class BasicCameraFollow : MonoBehaviour
             }
         }
 
-        if (lockedEnemy != null && !lockedEnemy.IsAlive)
+        if (lockedEnemy != null && !lockedEnemy.IsSelectable)
         {
             if (freeLookRig != null)
             {
@@ -596,7 +610,7 @@ public class BasicCameraFollow : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             DummyEnemy enemy = lockHits[i].collider != null ? lockHits[i].collider.GetComponentInParent<DummyEnemy>() : null;
-            if (enemy == null || !enemy.IsAlive)
+            if (enemy == null || !enemy.IsSelectable)
             {
                 continue;
             }
@@ -619,7 +633,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
-            if (enemy == null || !enemy.IsAlive)
+            if (enemy == null || !enemy.IsSelectable)
             {
                 continue;
             }
@@ -661,7 +675,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
-            if (enemy == null || !enemy.IsAlive)
+            if (enemy == null || !enemy.IsSelectable)
             {
                 continue;
             }
@@ -701,7 +715,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
-            if (enemy == null || enemy == ignoredEnemy || !enemy.IsAlive)
+            if (enemy == null || enemy == ignoredEnemy || !enemy.IsSelectable)
             {
                 continue;
             }
@@ -799,7 +813,7 @@ public class BasicCameraFollow : MonoBehaviour
     }
 
     private bool IsLockCycleCandidate(DummyEnemy enemy) => enemy != null
-        && enemy.isActiveAndEnabled && enemy.IsAlive
+        && enemy.isActiveAndEnabled && enemy.IsSelectable
         && FlatDistance(target != null ? target.position : transform.position, enemy.TargetPosition) <= lockBreakDistance;
 
     private DummyEnemy FindPreferredLockCandidate()
@@ -899,66 +913,72 @@ public class BasicCameraFollow : MonoBehaviour
         // camera drift forward while aiming and breaks the over-shoulder view.
         Vector3 desiredPosition = smoothedTargetPosition + blendedOffset;
         Vector3 collisionOrigin = smoothedTargetPosition + Vector3.up * lookHeight;
-        desiredPosition = ResolveCameraCollision(collisionOrigin, desiredPosition);
         float blendedFollowSpeed = Mathf.Lerp(followSpeed, followSpeed * 1.35f, aimBlend);
         float speedRatio = followSpeed > 0.001f ? blendedFollowSpeed / followSpeed : 1f;
         float normalSmoothTime = Mathf.Max(0.01f, positionSmoothTime / Mathf.Max(0.1f, speedRatio));
         float smoothTime = Mathf.Lerp(normalSmoothTime, aimPositionSmoothTime, aimBlend);
 
-        transform.position = preferenceSmoothing ? Vector3.SmoothDamp(transform.position, desiredPosition, ref positionVelocity, smoothTime, Mathf.Infinity, deltaTime) : desiredPosition;
-        transform.rotation = Quaternion.LookRotation(focusPoint - transform.position, Vector3.up);
+        var smoothedPosition = preferenceSmoothing ? Vector3.SmoothDamp(transform.position, desiredPosition, ref positionVelocity, smoothTime, Mathf.Infinity, deltaTime) : desiredPosition;
+        // Legacy backend also constrains the final smoothed point, not only its destination.
+        transform.position = ConstrainRenderedCamera(collisionOrigin, smoothedPosition, ref legacyBoom, deltaTime);
+        Vector3 viewDirection = focusPoint - transform.position;
+        if (viewDirection.sqrMagnitude > .000001f) transform.rotation = Quaternion.LookRotation(viewDirection, Vector3.up);
     }
 
     // Both camera backends use one filter and one non-allocating collision solver.
     public Vector3 ConstrainCameraPosition(Vector3 origin, Vector3 desiredPosition)
         => ResolveCameraCollision(origin, desiredPosition);
 
-    private Vector3 ResolveCameraCollision(Vector3 origin, Vector3 desiredPosition)
+    public Vector3 ConstrainRenderedCamera(Vector3 origin, Vector3 desiredPosition, ref CameraBoomRecovery recovery, float deltaTime)
     {
-        if (!enableCameraCollision)
+        if (!enableCameraCollision) { recovery = default; return desiredPosition; }
+        Vector3 offset = desiredPosition - origin;
+        float length = offset.magnitude;
+        if (length < .0001f) { recovery = default; return origin; }
+        float safe = Vector3.Distance(origin, ResolveCameraCollision(origin, desiredPosition));
+        float anticipated = safe;
+        recovery.PredictMotion(origin, offset, deltaTime, cameraCollisionLookAhead, out Vector3 translation, out Vector3 rotation);
+        if (preferenceSmoothing && cameraCollisionEnterTime > 0 && cameraCollisionLookAhead > 0)
         {
-            return desiredPosition;
+            // A small soft margin starts retraction before the physical lens
+            // touches a corner. Future samples also see walls entering the orbit.
+            anticipated = Mathf.Min(anticipated, Vector3.Distance(origin,
+                ResolveCameraCollision(origin, desiredPosition, .3f)));
+            float angle = rotation.magnitude;
+            if (translation.sqrMagnitude > .0001f || angle > .05f)
+                for (int i = 1; i <= 3; i++)
+                {
+                    float fraction = i / 3f;
+                    Vector3 futureOrigin = origin + translation * fraction;
+                    Vector3 futureOffset = angle > .001f
+                        ? Quaternion.AngleAxis(angle * fraction, rotation / angle) * offset : offset;
+                    float clearance = Vector3.Distance(futureOrigin,
+                        ResolveCameraCollision(futureOrigin, futureOrigin + futureOffset, .3f));
+                    // A predicted player pivot may cross a wall that the actual
+                    // character controller will stop at. Do not zoom for that
+                    // impossible pivot; current physical clearance still wins.
+                    if (cameraBoom.HasClearPosition) anticipated = Mathf.Min(anticipated, clearance);
+                }
         }
+        float distance = recovery.Approach(safe, anticipated, length, origin, deltaTime,
+            preferenceSmoothing ? cameraCollisionEnterTime : 0, preferenceSmoothing ? cameraCollisionReturnTime : 0);
+        return origin + offset / length * distance;
+    }
 
-        Vector3 originToCamera = desiredPosition - origin;
-        float desiredDistance = originToCamera.magnitude;
-        if (desiredDistance <= 0.001f)
-        {
-            return desiredPosition;
+    private Vector3 ResolveCameraCollision(Vector3 origin, Vector3 desiredPosition, float softMargin = 0)
+    {
+        using (CollisionMarker.Auto()) {
+        if (!enableCameraCollision) return desiredPosition;
+        if (collisionLens == null) collisionLens = GetComponent<Camera>() ?? Camera.main;
+        float radius = cameraCollisionRadius;
+        if (collisionLens != null) {
+            float halfHeight = collisionLens.nearClipPlane * Mathf.Tan(collisionLens.fieldOfView * .5f * Mathf.Deg2Rad);
+            radius = Mathf.Max(radius, Mathf.Sqrt(halfHeight * halfHeight * (1 + collisionLens.aspect * collisionLens.aspect)
+                + collisionLens.nearClipPlane * collisionLens.nearClipPlane) + .03f);
         }
-
-        Vector3 direction = originToCamera / desiredDistance;
-        float nearestDistance = desiredDistance;
-        int hitCount = Physics.SphereCastNonAlloc(
-            origin,
-            cameraCollisionRadius,
-            direction,
-            cameraCollisionHits,
-            desiredDistance,
-            cameraCollisionMask,
-            QueryTriggerInteraction.Ignore);
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            RaycastHit hit = cameraCollisionHits[i];
-            if (hit.collider == null || IsIgnoredCameraCollision(hit.collider))
-            {
-                continue;
-            }
-
-            if (hit.distance < nearestDistance)
-            {
-                nearestDistance = hit.distance;
-            }
+        if (cameraBoom == null) cameraBoom = new CameraBoomCollision(IsIgnoredCameraCollision);
+        return cameraBoom.Resolve(origin, desiredPosition, radius + softMargin, cameraCollisionBuffer, cameraCollisionMask);
         }
-
-        if (nearestDistance >= desiredDistance)
-        {
-            return desiredPosition;
-        }
-
-        float safeDistance = Mathf.Clamp(nearestDistance - cameraCollisionBuffer, cameraCollisionMinDistance, desiredDistance);
-        return origin + direction * safeDistance;
     }
 
     private bool IsIgnoredCameraCollision(Collider hitCollider)
@@ -973,7 +993,11 @@ public class BasicCameraFollow : MonoBehaviour
             return true;
         }
 
-        return hitCollider.GetComponentInParent<PetController>() != null;
+        // Moving creatures are not scenery. A flying pet/enemy passing the lens
+        // must not shove the view; their combat/targeting colliders remain intact.
+        if (hitCollider.GetComponentInParent<PetController>() != null
+            || hitCollider.GetComponentInParent<DummyEnemy>() != null) return true;
+        return false;
     }
 
     private void UpdateLockedEnemyTracking(Vector3 smoothedTargetPosition, float deltaTime)
@@ -999,7 +1023,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     private bool HasValidLockTarget(Vector3 fromPosition)
     {
-        if (lockedEnemy == null || !lockedEnemy.isActiveAndEnabled || !lockedEnemy.IsAlive)
+        if (lockedEnemy == null || !lockedEnemy.isActiveAndEnabled || !lockedEnemy.IsSelectable)
         {
             return false;
         }
@@ -1027,7 +1051,7 @@ public class BasicCameraFollow : MonoBehaviour
     private bool TryGetLockPlanarDirection(Vector3 fromPosition, out Vector3 direction)
     {
         direction = Vector3.zero;
-        if (lockedEnemy == null || !lockedEnemy.IsAlive)
+        if (lockedEnemy == null || !lockedEnemy.IsSelectable)
         {
             return false;
         }
@@ -1199,7 +1223,7 @@ public class BasicCameraFollow : MonoBehaviour
             DrawCenterReticle();
         }
 
-        if (showLockMarker && !IsGameplayInputBlocked() && lockedEnemy != null && lockedEnemy.IsAlive)
+        if (showLockMarker && !IsGameplayInputBlocked() && lockedEnemy != null && lockedEnemy.IsSelectable)
         {
             DrawLockMarker();
         }

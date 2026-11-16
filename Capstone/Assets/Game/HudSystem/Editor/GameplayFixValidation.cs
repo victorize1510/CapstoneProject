@@ -167,7 +167,7 @@ namespace Capstone.Game.HudSystem.Editor {
             bag.Close(); menu.CloseMenu();
         }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Quick Slots And Target Cycling")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Quick Slots And Target Cycling")]
         public static void RunFixtures() {
             results.Clear(); Directory.CreateDirectory(Output);
             try { TargetingFixture(); QuickAssignmentFixture(); }

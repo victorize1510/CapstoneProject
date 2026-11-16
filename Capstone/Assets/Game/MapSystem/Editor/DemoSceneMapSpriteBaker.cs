@@ -48,7 +48,7 @@ namespace Game.MapSystem.Editor
             public float basemapDistance;
         }
 
-        [MenuItem("Game Tools/Map/Bake DemoScene Map Sprites")]
+        [MenuItem("Tools/Capstone/Advanced/Map/Bake DemoScene Map Sprites")]
         public static void BakeFromMenu()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;

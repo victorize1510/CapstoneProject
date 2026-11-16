@@ -55,6 +55,7 @@ namespace Capstone.Game.CreatureSystem {
         }
         void SceneChanged(Scene previous, Scene current) { Clear(); BindCamera(); }
         void OnDestroy() { SceneManager.activeSceneChanged -= SceneChanged; Clear(); if (live == this) live = null; }
+        void OnApplicationFocus(bool value) { if (!value) Clear(); }
         void Clear() { foreach (var pulse in pulses) CombatEffectPool.Return(pulse.visual); pulses.Clear(); foreach (var source in voices) if (source != null) source.Stop(); }
         void Update() {
             if (InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying) { Clear(); return; }

@@ -14,12 +14,12 @@ namespace Capstone.Game.PetSummon.Editor
         const string BallPrefabPath = PrefabFolder + "/BallGreenClose.prefab";
         const string BallMaterialPath = MaterialFolder + "/BallGreenClose.mat";
         const string PlayerPrefabPath = "Assets/Prefabs/Thắng/Player.prefab";
-        const string BallArtFolder = RootFolder + "/Art/BallGreenClose";
-        const string BallModelPath = BallArtFolder + "/Meshy_AI_Emerald_Orb_with_Gold_0721122943_texture.fbx";
-        const string BaseColorPath = BallArtFolder + "/Meshy_AI_Emerald_Orb_with_Gold_0721122943_texture.png";
-        const string NormalPath = BallArtFolder + "/Meshy_AI_Emerald_Orb_with_Gold_0721122943_texture_normal.png";
-        const string MetallicPath = BallArtFolder + "/Meshy_AI_Emerald_Orb_with_Gold_0721122943_texture_metallic.png";
-        const string RoughnessPath = BallArtFolder + "/Meshy_AI_Emerald_Orb_with_Gold_0721122943_texture_roughness.png";
+        const string BallArtFolder = "Assets/Game/WorldFeedback/Art/BallCommon";
+        const string BallModelPath = BallArtFolder + "/BallCommon_LOD0.fbx";
+        const string BaseColorPath = BallArtFolder + "/BallCommon.png";
+        const string NormalPath = BallArtFolder + "/BallCommon_normal.png";
+        const string MetallicPath = BallArtFolder + "/BallCommon_metallic.png";
+        const string RoughnessPath = BallArtFolder + "/BallCommon_roughness.png";
         const string PackedMetallicSmoothnessPath = MaterialFolder + "/BallGreenClose_MetallicSmoothness.png";
 
         static bool attemptedThisDomain;
@@ -30,7 +30,7 @@ namespace Capstone.Game.PetSummon.Editor
             EditorApplication.playModeStateChanged += HandlePlayModeStateChanged;
         }
 
-        [MenuItem("Tools/Capstone/Pet Summon/Run Phase 1 Setup")]
+        [MenuItem("Tools/Capstone/Advanced/Pet Summon/Run Phase 1 Setup")]
         public static void RunFromMenu()
         {
             RunSetup(true);
@@ -146,9 +146,8 @@ namespace Capstone.Game.PetSummon.Editor
             SetFloatIfSupported(material, "_Smoothness", 0.68f);
             if (material.HasProperty("_EmissionColor"))
             {
-                material.SetColor("_EmissionColor", new Color(0.08f, 1.15f, 0.42f));
-                material.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
-                material.EnableKeyword("_EMISSION");
+                material.SetColor("_EmissionColor", Color.black);
+                material.DisableKeyword("_EMISSION");
             }
             if (normal != null)
             {

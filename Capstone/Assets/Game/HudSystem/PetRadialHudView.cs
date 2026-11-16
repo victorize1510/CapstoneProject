@@ -13,6 +13,7 @@ namespace Capstone.Game.HudSystem {
         sealed class Slot {public RectTransform Root;public Button Button;public CanvasGroup Group;public Image Portrait,Empty,Active;}
         readonly Slot[] slots=new Slot[6];
         Image portrait;Text nameLabel,levelLabel,hint,bindingLabel;HubCurvedText hpLabel,mpLabel;HubArcGraphic hp,mp;
+        RectTransform expFill, avatarFrame; Text expLabel; int requestedSlot=-1; float requestAt,identityPulseUntil; bool changing;
         string lastName;
         Action<int> confirm;float changedAt,feedbackUntil;bool open;
         string feedback;
@@ -20,17 +21,20 @@ namespace Capstone.Game.HudSystem {
         public Transform IdentityRoot {get;private set;}
         public void Build(Action<int> callback) {
             confirm=callback;var center=V.Rect(transform,"PetIdentity");V.Bottom(center,128,160,0,0);IdentityRoot=center;
-            var avatar=V.Rect(center,"AvatarFrame");V.Place(avatar,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(160,160));
+            var avatar=V.Rect(center,"AvatarFrame");avatarFrame=avatar;V.Place(avatar,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(160,160));
             HubR11Art.Layer(avatar,"PetRadial/avatar-circle__fill");
             var mask=HubR11Art.Mask(avatar,"PetRadial/avatar-circle",135.384615f); // Separate portrait mask; frame/decor stay outside it.
             portrait=V.Image(mask,"Portrait");V.Stretch(portrait.rectTransform);portrait.preserveAspect=false;
             HubR11Art.Layer(avatar,"PetRadial/avatar-circle__border");HubR11Art.Layer(avatar,"PetRadial/avatar-circle__decoration");
-            hp=Arc(center,"HPArc",126,6,new Color32(212,123,119,255));mp=Arc(center,"MPArc",104,5,new Color32(117,177,210,255));
+            hp=Arc(center,"HPArc",126,6,new Color32(110,204,210,255));mp=Arc(center,"MPArc",104,5,new Color32(117,177,210,255));
             hpLabel=Curved(center,"HP",142);mpLabel=Curved(center,"MP",84);mpLabel.color=new Color32(172,192,224,255);
             nameLabel=HubR11Art.Label(center,"PetName","Chưa chọn thú",22);V.Top(nameLabel.rectTransform,-105,76,210,32);
             nameLabel.font=Capstone.Game.UISystem.TrainerMenuArt.Serif??V.Font;
             nameLabel.horizontalOverflow=HorizontalWrapMode.Wrap;
             levelLabel=HubR11Art.Label(center,"Level","Cấp —",18);V.Top(levelLabel.rectTransform,-70,103,140,28);levelLabel.fontStyle=FontStyle.Normal;
+            var track=V.Image(center,"EXPTrack");track.color=new Color(.08f,.12f,.20f,.75f);track.raycastTarget=false;V.Top(track.rectTransform,-88,132,176,4);
+            var fill=V.Image(track.transform,"EXPFill");fill.color=new Color(.78f,.72f,.88f);fill.raycastTarget=false;V.Stretch(fill.rectTransform);expFill=fill.rectTransform;
+            expLabel=HubR11Art.Label(center,"EXPText","EXP —",13);V.Top(expLabel.rectTransform,-100,139,200,16);
             var hintRoot=V.Rect(center,"PartyHint");V.Top(hintRoot,116,96,240,32);
             var key=HubR11Art.Layer(hintRoot,"Components/keycap__fill");V.Top(key.rectTransform,0,2,32,24);
             var p=V.Text(hintRoot,"Binding","P",20,TextAnchor.MiddleCenter);bindingLabel=p;p.fontStyle=FontStyle.Bold;V.Top(p.rectTransform,0,2,32,24);
@@ -62,15 +66,18 @@ namespace Capstone.Game.HudSystem {
             levelLabel.text=status.hasPet&&status.level>0?"Cấp "+status.level:"Cấp —";
             portrait.sprite=status.icon;portrait.enabled=status.icon!=null;hp.SetAmount(status.HealthPercent);mp.SetAmount(status.EnergyPercent);
             hpLabel.text="HP "+Amount(status.health,status.maxHealth);mpLabel.text="MP "+Amount(status.energy,status.maxEnergy);
+            expFill.anchorMax=new Vector2(status.ExperiencePercent,1);expLabel.text=status.hasPet?"EXP "+status.experience+" / "+(status.experienceToNextLevel>0?status.experienceToNextLevel.ToString():"—"):"EXP —";
             int count=0;for(int i=0;i<6;i++){var d=data!=null&&i<data.Count?data[i]:default;var s=slots[i];s.Button.interactable=d.occupied;s.Portrait.sprite=d.icon;s.Portrait.enabled=d.occupied&&d.icon!=null;s.Empty.enabled=!s.Portrait.enabled;s.Active.enabled=d.occupied&&d.selected;if(d.occupied)count++;}
             hint.text=Time.unscaledTime<feedbackUntil?feedback:mode==PartyPickerMode.Hold?(open?"Thả phím để đóng":"Giữ để chọn"):open?"Đóng đội thú":"Đội thú "+count+" / 6";
         }
         public void Feedback(string message){feedback=message;feedbackUntil=Time.unscaledTime+3;}
+        public void ShowRequestedSlot(int index){requestedSlot=index;requestAt=Time.unscaledTime;changing=true;}
+        public void FinishRequest(bool success){changing=false;requestedSlot=-1;if(success)identityPulseUntil=Time.unscaledTime+.35f;}
         string FitName(string value)=>Capstone.Game.UISystem.MenuTypography.FitSingleLine(nameLabel,value);
         static string Amount(float value,float max)=>max>0&&float.IsFinite(max)&&float.IsFinite(value)?Mathf.RoundToInt(value)+" / "+Mathf.RoundToInt(max):"— / —";
         public void SetOpen(bool value) {if(open==value)return;open=value;changedAt=Time.unscaledTime;foreach(var s in slots){s.Root.gameObject.SetActive(true);s.Group.blocksRaycasts=value;}}
-        public void ResetState(){open=false;foreach(var s in slots)if(s!=null){s.Group.alpha=0;s.Group.blocksRaycasts=false;s.Root.gameObject.SetActive(false);}}
-        void Update(){float elapsed=Time.unscaledTime-changedAt;for(int i=0;i<6;i++){var s=slots[i];if(s==null||!s.Root.gameObject.activeSelf)continue;float t=open?Mathf.Clamp01((elapsed-i*.018f)/.19f):1-Mathf.Clamp01(elapsed/.08f);s.Group.alpha=open?Mathf.Clamp01((elapsed-i*.018f)/.10f):t;s.Root.localScale=Vector3.one*Mathf.Lerp(.94f,1,Mathf.SmoothStep(0,1,t));if(!open&&t<=0)s.Root.gameObject.SetActive(false);}}
+        public void ResetState(){open=false;changing=false;requestedSlot=-1;identityPulseUntil=0;if(avatarFrame!=null)avatarFrame.localScale=Vector3.one;foreach(var s in slots)if(s!=null){s.Group.alpha=0;s.Group.blocksRaycasts=false;s.Root.gameObject.SetActive(false);}}
+        void Update(){float elapsed=Time.unscaledTime-changedAt;for(int i=0;i<6;i++){var s=slots[i];if(s==null||!s.Root.gameObject.activeSelf)continue;float t=open?Mathf.Clamp01((elapsed-i*.018f)/.19f):1-Mathf.Clamp01(elapsed/.08f);s.Group.alpha=open?Mathf.Clamp01((elapsed-i*.018f)/.10f):t;s.Root.localScale=Vector3.one*Mathf.Lerp(.94f,1,Mathf.SmoothStep(0,1,t));if(changing&&i==requestedSlot){s.Active.enabled=true;s.Active.color=new Color(1,.9f,.64f,.65f+.25f*Mathf.Sin((Time.unscaledTime-requestAt)*10));}else s.Active.color=Color.white;if(!open&&t<=0)s.Root.gameObject.SetActive(false);}if(avatarFrame!=null){float left=identityPulseUntil-Time.unscaledTime;avatarFrame.localScale=Vector3.one*(left>0?1+.04f*Mathf.Sin(left/.35f*Mathf.PI):1);}}
         void OnDisable()=>ResetState();
     }
 }

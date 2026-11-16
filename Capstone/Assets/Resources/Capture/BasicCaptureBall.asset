@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BasicCaptureBall
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
   Name: "B\xF3ng thu ph\u1EE5c c\u01A1 b\u1EA3n"
-  Icon: {fileID: 21300000, guid: c4cf4760d7c76544ba60ee2baa8d037d, type: 3}
+  Icon: {fileID: 21300000, guid: 7bda1c568ee3f3a4e8118f0d32c1e86d, type: 3}
   Stackable: 1
   MaxStackSize: 99
   Tags: []

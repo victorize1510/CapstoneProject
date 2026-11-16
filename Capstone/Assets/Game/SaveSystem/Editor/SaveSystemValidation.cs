@@ -740,7 +740,7 @@ namespace Capstone.Game.SaveSystem.Editor {
             Equal(167, PetStatCalculator.CalculateCoreStat(100, 31, 252, 50,
                 PetCoreStat.Attack, "Adamant"), "Pokemon Attack reference formula");
         }
-        [MenuItem("Game Tools/Pets/Validate Pet HP")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Validate Pet HP")]
         public static void RunPetHealthValidation() {
             if (EditorApplication.isPlayingOrWillChangePlaymode)
                 throw new InvalidOperationException("Stop Play Mode before validating pet HP.");

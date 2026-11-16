@@ -25,7 +25,7 @@ namespace Capstone.Game.UISystem.Editor {
         static bool running;
         static readonly List<string> results = new List<string>();
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Panel Lifecycle in Play Mode")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Panel Lifecycle in Play Mode")]
         public static async void Run() {
             if (!Application.isPlaying || running) { Debug.LogWarning("Enter Play Mode; run one panel check at a time."); return; }
             running = true; results.Clear();

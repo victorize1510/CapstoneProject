@@ -21,7 +21,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
         static readonly int[][] Bases = { new[] {45,55,35,35,40,90}, new[] {60,80,50,50,55,115}, new[] {75,105,65,65,70,140} };
         static readonly int[] Catch = {210,100,45};
         static readonly string[] States = {"Idle", "Fly Forward In Place", "Bite Attack", "Cast Spell", "Projectile Attack", "Take Damage", "Die"};
-        [MenuItem("Tools/Capstone/Creatures/9. Build Bat family and basic combat")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/9. Build Bat family and basic combat")]
         public static void Build() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Dừng Play Mode trước khi dựng asset.");
             var family = AssetDatabase.LoadAssetAtPath<CreatureFamilyDefinition>(FamilyPath);

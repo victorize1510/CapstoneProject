@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.Profiling;
 
 namespace Capstone.Game.Skills {
     /// <summary>Small scene-owned pool for persistent buff and projectile visuals.</summary>
@@ -8,13 +9,25 @@ namespace Capstone.Game.Skills {
         sealed class Item { public GameObject prefab, value; public ParticleSystem[] particles; public TrailRenderer[] trails; }
         static readonly List<Item> idle = new List<Item>(24);
         static readonly Dictionary<GameObject, Item> active = new Dictionary<GameObject, Item>();
+        static readonly List<GameObject> dead = new List<GameObject>(64);
         static Transform root;
         public static int IdleCount => idle.Count;
         public static int ActiveCount => active.Count;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void Reset() { idle.Clear(); active.Clear(); root = null; }
+        static void Reset() {
+            idle.Clear(); active.Clear(); dead.Clear(); root = null;
+            SceneManager.sceneUnloaded -= Prune; SceneManager.sceneUnloaded += Prune;
+        }
+        static void Prune(Scene scene) {
+            dead.Clear(); foreach(var pair in active)if(pair.Value.value==null)dead.Add(pair.Key);
+            foreach(var key in dead)active.Remove(key);
+            for(int i=idle.Count-1;i>=0;i--)if(idle[i].value==null)idle.RemoveAt(i);
+            dead.Clear();
+        }
         public static GameObject Rent(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) {
             if (prefab == null) return null;
+            // Visual-only backpressure. A dropped effect never cancels a projectile or changes damage.
+            if (active.Count >= 64) return null;
             if (root == null) {
                 idle.Clear(); active.Clear();
                 root = new GameObject("Combat effect pool").transform;
@@ -52,6 +65,8 @@ namespace Capstone.Game.Skills {
     public static class CombatAudioVoices {
         static readonly List<AudioSource> voices = new List<AudioSource>(8);
         static uint random = 0x6a09e667;
+        static readonly ProfilerMarker VoiceMarker = new ProfilerMarker("Capstone.Combat.Audio.Play");
+        public static int LiveCount { get { int n=0;foreach(var source in voices)if(source!=null&&source.isPlaying)n++;return n; } }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset() { voices.Clear(); random = 0x6a09e667; }
         public static float PitchVariation() {
@@ -59,9 +74,12 @@ namespace Capstone.Game.Skills {
             return .95f + (random & 65535) / 65535f * .1f;
         }
         public static void Play(AudioSource voice) {
+            using (VoiceMarker.Auto()) {
+            if (voice == null || voice.clip == null || !voice.isActiveAndEnabled) return;
             for (int i = voices.Count - 1; i >= 0; i--) if (voices[i] == null || !voices[i].isPlaying || voices[i] == voice) voices.RemoveAt(i);
             if (voices.Count >= 8) { voices[0].Stop(); voices.RemoveAt(0); }
             voices.Add(voice); voice.Play();
+            }
         }
     }
 }

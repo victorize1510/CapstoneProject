@@ -5,7 +5,7 @@ namespace Capstone.Game.UISystem.Editor {
     public static class MenuTypographySetup {
         public const string AssetPath = "Assets/Game/UISystem/Resources/UI/MenuTypography.asset";
         [InitializeOnLoadMethod] static void Initialize() => EditorApplication.delayCall += EnsureAsset;
-        [MenuItem("Game Tools/GameToolThang/HUD/Ensure Shared UI Font")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Ensure Shared UI Font")]
         public static void EnsureAsset() {
             if (AssetDatabase.LoadAssetAtPath<MenuTypography>(AssetPath) != null) return;
             var font = AssetDatabase.LoadAssetAtPath<Font>("Assets/TextMesh Pro/Fonts/LiberationSans.ttf");

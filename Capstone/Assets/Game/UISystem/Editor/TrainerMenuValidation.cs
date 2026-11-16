@@ -54,7 +54,7 @@ namespace Capstone.Game.UISystem.Editor {
             running = false;
             Debug.Log("Trainer Menu " + name + ": " + results.Count(x => x.StartsWith("PASS")) + " checks; failures=" + results.Count(x => !x.StartsWith("PASS")));
         }
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Trainer Menu V4 Layout")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Trainer Menu V4 Layout")]
         public static void Run() {
             if (running) return;
             running = true; results.Clear(); Directory.CreateDirectory(Output);
@@ -176,7 +176,7 @@ namespace Capstone.Game.UISystem.Editor {
                 File.WriteAllBytes(Output + name + ".png", texture.EncodeToPNG());
             } finally { RenderTexture.active = previous; camera.targetTexture = null; Object.DestroyImmediate(texture); rt.Release(); Object.DestroyImmediate(rt); }
         }
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Trainer Menu V4 in Play Mode")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Trainer Menu V4 in Play Mode")]
         public static async void RunPlay() {
             if (running || !Application.isPlaying) return;
             running = true; results.Clear(); Directory.CreateDirectory(Output);

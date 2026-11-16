@@ -23,7 +23,7 @@ namespace Capstone.Game.HudSystem.Editor {
             EditorApplication.delayCall += InstallIfNeeded;
         }
 
-        [MenuItem("Game Tools/GameToolThang/Pets/Install Dragon Dusk evolution assets")]
+        [MenuItem("Tools/Capstone/Advanced/Pets/Install Dragon Dusk evolution assets")]
         public static void InstallIfNeeded() {
             if (EditorApplication.isPlayingOrWillChangePlaymode || EditorApplication.isCompiling
                 || EditorApplication.isUpdating) {

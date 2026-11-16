@@ -27,7 +27,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
         }
         static GameObject Visual(int stage)=>AssetDatabase.LoadAssetAtPath<GameObject>(Root+"Visual/Visual_Dragon"+stage.ToString("00")+".prefab");
         static void WireRules(PetCollectionMetadata metadata){var so=new SerializedObject(metadata);var rules=so.FindProperty("evolutionRules");for(int i=0;i<rules.arraySize;i++){var rule=rules.GetArrayElementAtIndex(i);int target=rule.FindPropertyRelative("sourceStage").intValue+2;if(target>=1&&target<=3)rule.FindPropertyRelative("targetVisualPrefab").objectReferenceValue=Visual(target);}so.ApplyModifiedPropertiesWithoutUndo();}
-        [MenuItem("Tools/Capstone/Creatures/7. Integrate dragon runtime into DemoScene")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/7. Integrate dragon runtime into DemoScene")]
         public static void Apply(){
             if(EditorApplication.isPlayingOrWillChangePlaymode)throw new InvalidOperationException("Stop Play Mode before integration.");
             var loaded=SceneManager.GetSceneByPath(Demo);if(loaded.isLoaded&&loaded.isDirty)throw new InvalidOperationException("DemoScene has unsaved user changes. Integration did not save or overwrite them.");

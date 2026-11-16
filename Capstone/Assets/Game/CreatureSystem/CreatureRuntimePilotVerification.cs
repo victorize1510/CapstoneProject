@@ -24,7 +24,7 @@ namespace Capstone.Game.CreatureSystem {
         readonly List<GameObject> spawned = new List<GameObject>();
         static void Write(string file, string text) { Directory.CreateDirectory(Root); File.AppendAllText(Root + "owned-paths.txt", Root + file + "\n"); File.WriteAllText(Root + file, text); }
         void Check(bool ok, string label) { checks.Add((ok ? "PASS " : "FAIL ") + label); Write("runtime-checks.txt", string.Join("\n", checks)); if (!ok) throw new Exception(label); }
-        [MenuItem("Tools/Capstone/Creatures/5. Verify isolated dragon runtime pilot")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/5. Verify isolated dragon runtime pilot")]
         public static void Run() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) { Write("status.txt", "NOT RUN: stop existing Play Mode first."); return; }
             Install();

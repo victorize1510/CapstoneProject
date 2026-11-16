@@ -1,0 +1,21 @@
+{
+  "package": "com.unity.render-pipelines.universal@97f77d4dda9a",
+  "sha256": {
+    "LitInput.hlsl": "4790ecd2f2c8093113b702fdc106486a63308754802c58995f2f0a8121b5b516",
+    "SimpleLitInput.hlsl": "ef96887af6b709ce1fc55e9bc08a34658ce89dde8cd783d23514dba8d4b9d010",
+    "UnlitInput.hlsl": "69520851f4d1ad8b99fcbe667f63f3bf75a515c5513c69dbacc0412c0d67966b",
+    "LitForwardPass.hlsl": "3582bdeea7bc30ac0ffb45159800f1d00df496527cf1f1717f3143d04f9f9633",
+    "LitGBufferPass.hlsl": "59b256f175350135ac7eda818f1e8afd69fbe436ceddef944392ab1e04109803",
+    "SimpleLitForwardPass.hlsl": "43689d8a1121bedd397734ddd6b039de450cfe56a649ac8192fddc0330d5688c",
+    "SimpleLitGBufferPass.hlsl": "f08c09d6dc6edaf0ca8ed8e1bf531066613fc8c8943c0bdf69a56eeb76d594d2",
+    "UnlitForwardPass.hlsl": "7878748a3648d19f0e615ae57f2fda5900c58631d99eeaef715028d08078d905",
+    "UnlitGBufferPass.hlsl": "9e0bf3bea6251f7244d0977f5c8fd3524811aa6bfe667f170b1c5c39ea2dbba3",
+    "DepthOnlyPass.hlsl": "e85742944bcb2d9fdc03a742e70232021dde254338dca18020ea0c71b1a04826",
+    "LitDepthNormalsPass.hlsl": "2f223b0ece8300d2d971c1fd12c6ae37139c440671bbaec55dc33cb74f31866d",
+    "SimpleLitDepthNormalsPass.hlsl": "20850f22a8704659fe2314f260e61e48a2fdd04963cb722fa8728b82843b0adb",
+    "UnlitDepthNormalsPass.hlsl": "18328749d222ebf7b0dddcbb295e8cbe0221b9da100b17bb88d2d6bb2256985a",
+    "Lit.shader": "e081d792dffe8c5d94ddb681a61b7ab6474880e605ba97116f202ad6f5b3befd",
+    "SimpleLit.shader": "1f7d347c20431d1cca4533441dc322d462db000ecd84a0724162d18374150e5f",
+    "Unlit.shader": "312b79fa9d471ac4440ff0b13ab66e7a32a24072276c9125cc0b6dd39cdd5cf6"
+  }
+}

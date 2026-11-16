@@ -11,7 +11,7 @@ namespace Capstone.Game.HudSystem.Editor {
     public static class GameplayHudValidation {
         static Action stopCombatWatch;
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Watch Next M3 Attack")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Watch Next M3 Attack")]
         public static void WatchNextPinnedAttack() {
             Require(Application.isPlaying, "Run the M3 combat check in Play Mode.");
             var input = UnityEngine.Object.FindFirstObjectByType<PetCommandInput>();
@@ -56,7 +56,7 @@ namespace Capstone.Game.HudSystem.Editor {
             Debug.Log("M3 combat check armed: unpin first if needed, then pin a nearby enemy with M3.");
         }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Validate Gameplay HUD")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate Gameplay HUD")]
         public static void Validate() {
             var hud = UnityEngine.Object.FindFirstObjectByType<GameplayHudController>();
             Require(hud != null, "Missing GameplayHudController.");

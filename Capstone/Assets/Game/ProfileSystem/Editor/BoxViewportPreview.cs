@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 namespace Capstone.Game.ProfileSystem.Editor {
     // Loads the real composed document and styles without inventory controllers or saves.
     public sealed class BoxViewportPreview : EditorWindow {
-        [MenuItem("Game Tools/GameToolThang/HUD/Preview BOX Viewport")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Preview BOX Viewport")]
         public static void Open() {
             var window=GetWindow<BoxViewportPreview>(true,"BOX viewport preview",true);
             window.position=new Rect(60,80,1366,700);window.Show();

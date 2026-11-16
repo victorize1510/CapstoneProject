@@ -31,3 +31,5 @@ MonoBehaviour:
   retreatDistance: 0
   retreatSpeed: 12
   preferredDistance: 5
+  weightedWindVolley: 0
+  burstEndNormalized: 0.78

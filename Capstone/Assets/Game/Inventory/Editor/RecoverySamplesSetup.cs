@@ -19,7 +19,7 @@ namespace Capstone.Game.Inventory.Editor {
             EditorApplication.update -= Poll;
             EditorApplication.update += Poll;
         }
-        [MenuItem("Game Tools/GameToolThang/Inventory/Create Recovery Sample Definitions")]
+        [MenuItem("Tools/Capstone/Advanced/Inventory/Create Recovery Sample Definitions")]
         public static void EnsureDefinitions() {
             if(installing || EditorApplication.isPlayingOrWillChangePlaymode) return;
             installing=true;
@@ -69,7 +69,7 @@ namespace Capstone.Game.Inventory.Editor {
             so.FindProperty("consumable").boolValue=true;
             so.ApplyModifiedPropertiesWithoutUndo(); EditorUtility.SetDirty(item);
         }
-        [MenuItem("Game Tools/GameToolThang/Inventory/Add Recovery Samples To Current Bag")]
+        [MenuItem("Tools/Capstone/Advanced/Inventory/Add Recovery Samples To Current Bag")]
         static void AddSamplesFromMenu() => DeliverSamples();
 
         public static bool DeliverSamples() {

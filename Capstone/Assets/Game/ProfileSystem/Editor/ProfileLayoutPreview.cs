@@ -14,7 +14,7 @@ namespace Capstone.Game.ProfileSystem.Editor {
         const string Output="Temp/ProfileRefresh";
         const BindingFlags Private=BindingFlags.NonPublic|BindingFlags.Instance;
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Preview Profile Layout")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Preview Profile Layout")]
         public static void Preview() {
             if (Application.isPlaying) throw new InvalidOperationException("Stop Play Mode before rendering the preview.");
             Directory.CreateDirectory(Output);
@@ -78,7 +78,7 @@ namespace Capstone.Game.ProfileSystem.Editor {
             finally {EditorSceneManager.ClosePreviewScene(scene);}
         }
 
-        [MenuItem("Game Tools/GameToolThang/HUD/Rebuild Profile In Scene")]
+        [MenuItem("Tools/Capstone/Advanced/HUD/Rebuild Profile In Scene")]
         public static void Rebuild() {
             if(Application.isPlaying) return;
             var profile=UnityEngine.Object.FindFirstObjectByType<ProfilePanelController>(FindObjectsInactive.Include);

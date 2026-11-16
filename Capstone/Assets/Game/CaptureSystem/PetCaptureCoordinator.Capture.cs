@@ -15,7 +15,7 @@ namespace Capstone.Game.HudSystem {
         public bool CanCaptureFromBag(MonsterItemDefinition ball, MonsterInventoryAdapter inventory, out string reason) {
             var target=LockedTarget();bool valid=ValidateAttempt(ball,inventory,target,out _,out var failure);reason=CaptureMessages.For(failure);return valid;
         }
-        WildPetCaptureTarget LockedTarget(){var camera=FindFirstObjectByType<BasicCameraFollow>();return camera!=null&&camera.TryGetLockedEnemy(out var enemy)?enemy.GetComponent<WildPetCaptureTarget>():null;}
+        WildPetCaptureTarget LockedTarget()=>WildCaptureTargeting.Find(FindFirstObjectByType<PetCommandInput>(),FindFirstObjectByType<BasicCameraFollow>());
         bool ValidateAttempt(MonsterItemDefinition ball,MonsterInventoryAdapter inventory,WildPetCaptureTarget target,out CaptureContext context,out CaptureFailure failure){
             context=default;ResolveReferences();failure=CaptureFailure.None;
             if(IsCapturing||CaptureEventBatch.IsActive){failure=CaptureFailure.Busy;return false;}
@@ -25,7 +25,7 @@ namespace Capstone.Game.HudSystem {
             if(!target.IsWild){failure=roster.Contains(target.Pet)?CaptureFailure.AlreadyOwned:CaptureFailure.NotWild;return false;}
             if(!target.Allowed){failure=CaptureFailure.ProtectedTarget;return false;}
             if(target.Enemy.CaptureLocked){failure=CaptureFailure.Busy;return false;}
-            if(!target.Enemy.IsAlive||target.Enemy.CurrentHealth<=0){failure=CaptureFailure.Defeated;return false;}
+            if(!target.Enemy.IsAlive&&!target.Enemy.IsDownedAvailable){failure=CaptureFailure.Defeated;return false;}
             if(roster.Contains(target.Pet)){failure=CaptureFailure.AlreadyOwned;return false;}
             if(ball==null||!ball.IsCaptureBall){CaptureDiagnostics.Missing(ball);failure=CaptureFailure.MissingConfiguration;return false;}
             if(inventory.GetQuantity(ball)<1){failure=CaptureFailure.NoBall;return false;}
@@ -35,7 +35,7 @@ namespace Capstone.Game.HudSystem {
             if(!profile.IsCatchable){failure=CaptureFailure.ProtectedTarget;return false;}
             // No live major-status or turn service exists. Do not infer either from unrelated buffs/time.
             if(CaptureAssets.Settings?.enableCriticalCapture==true){failure=CaptureFailure.DexUnavailable;return false;}
-            context=new CaptureContext(target.Enemy.CurrentHealth,target.Enemy.maxHealth,profile.BaseCatchRate,ball.CaptureRules);
+            context=new CaptureContext(target.Enemy.CurrentHealth,target.Enemy.maxHealth,profile.BaseCatchRate,ball.CaptureRules,CaptureMajorStatus.None,true,0,false,-1,false,target.Enemy.IsDownedAvailable);
             bool valid=CaptureCalculator.TryOdds(context,out _,out failure);if(!valid&&failure==CaptureFailure.InvalidData)CaptureDiagnostics.Missing(ball);return valid;
         }
         public bool TryCaptureFromBag(MonsterItemDefinition ball,MonsterInventoryAdapter inventory,out CapturePresentationResult result,out string error)
@@ -53,6 +53,7 @@ namespace Capstone.Game.HudSystem {
                 if(!CaptureCalculator.TryRoll(context,RandomSource,out var roll,out failure)){error=CaptureMessages.For(failure);return false;}
                 result=new CapturePresentationResult(roll,target);
                 if(!CommitAttempt(target.Pet,target.Metadata.PersistentId,target.Metadata.DefinitionId,roll.Success,ball,inventory,target,out error)){result=default;return false;}
+                if(!roll.Success)target.HoldDownedPresentation();
                 error=result.Message;return true;
             }finally{processing=false;if(target!=null)target.Lock(false);}
         }

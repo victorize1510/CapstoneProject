@@ -27,12 +27,16 @@ namespace Capstone.Game.CaptureSystem {
         public readonly CaptureMajorStatus Status;
         public readonly CaptureBallRules Ball;
         public readonly bool Allowed, EnableCritical, HasCatchingCharm;
+        public readonly bool DownedWindow;
         public CaptureContext(double health, double maxHealth, int baseCatchRate, CaptureBallRules ball,
             CaptureMajorStatus status = CaptureMajorStatus.None, bool allowed = true, int battleTurnIndex = 0,
-            bool enableCritical = false, int caughtUniqueSpeciesCount = -1, bool hasCatchingCharm = false) {
+            bool enableCritical = false, int caughtUniqueSpeciesCount = -1, bool hasCatchingCharm = false)
+            :this(health,maxHealth,baseCatchRate,ball,status,allowed,battleTurnIndex,enableCritical,caughtUniqueSpeciesCount,hasCatchingCharm,false){}
+        public CaptureContext(double health,double maxHealth,int baseCatchRate,CaptureBallRules ball,CaptureMajorStatus status,bool allowed,int battleTurnIndex,bool enableCritical,int caughtUniqueSpeciesCount,bool hasCatchingCharm,bool downedWindow){
             Health = health; MaxHealth = maxHealth; BaseCatchRate = baseCatchRate; Ball = ball; Status = status;
             Allowed = allowed; BattleTurnIndex = battleTurnIndex; EnableCritical = enableCritical;
             CaughtUniqueSpeciesCount = caughtUniqueSpeciesCount; HasCatchingCharm = hasCatchingCharm;
+            DownedWindow=downedWindow;
         }
     }
     // Presentation receives only this decision, never the numeric odds or random rolls.
@@ -57,7 +61,7 @@ namespace Capstone.Game.CaptureSystem {
                 || !Enum.IsDefined(typeof(CaptureMajorStatus), c.Status) || !Enum.IsDefined(typeof(CaptureBallCondition), c.Ball.Condition)) {
                 failure = CaptureFailure.InvalidData; return false;
             }
-            if (c.Health <= 0) { failure = CaptureFailure.Defeated; return false; }
+            if (c.Health < 0 || c.Health == 0&&!c.DownedWindow) { failure = CaptureFailure.Defeated; return false; }
             double ball = c.Ball.Multiplier;
             if (c.Ball.Condition != CaptureBallCondition.None) {
                 if (c.BattleTurnIndex < 1) { failure = CaptureFailure.TurnUnavailable; return false; }
@@ -94,11 +98,11 @@ namespace Capstone.Game.CaptureSystem {
     public static class CaptureMessages {
         public static string For(CaptureFailure reason) => reason switch {
             CaptureFailure.None => "Sẵn sàng bắt thú.",
-            CaptureFailure.NoTarget => "Khóa một thú hoang để bắt.",
+            CaptureFailure.NoTarget => "Chọn một thú hoang trong tầm nhìn để bắt.",
             CaptureFailure.NoBall => "Bạn không còn bóng thu phục này.",
             CaptureFailure.NoRoom => "Đội thú và Kho thú đều đã đầy.",
             CaptureFailure.Busy => "Đang thực hiện một lần bắt thú.",
-            CaptureFailure.Defeated => "Không thể bắt thú đã bị hạ gục.",
+            CaptureFailure.Defeated => "Cửa sổ thu phục đã kết thúc hoặc thú đã chết hẳn.",
             CaptureFailure.NotWild => "Mục tiêu này không phải thú hoang có thể thu phục.",
             CaptureFailure.ProtectedTarget => "Không thể thu phục mục tiêu này.",
             CaptureFailure.AlreadyOwned => "Thú này đã thuộc đội hoặc Kho thú.",

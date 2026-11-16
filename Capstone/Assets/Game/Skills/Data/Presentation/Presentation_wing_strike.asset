@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Presentation_wing_strike
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillPresentationProfile
   releaseMode: 2
-  releaseNormalized: 0.45
-  chainNormalized: 0.9
+  releaseNormalized: 0.3
+  chainNormalized: 0.94
   playbackSpeed: 1
   releaseDelaySeconds: 0.3
   impactWindowSeconds: 4

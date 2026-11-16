@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +14,7 @@ public static class PetTestSceneSetup
 {
     private const string FallbackPetPath = "Assets/Monsters Ultimate Pack 02 Cute Series/Wolf Pup Cute Series/Prefabs/Wolf Pup.prefab";
 
-    [MenuItem("Tools/ToolCuaThang/Thang/Setup Pet Combat Test")]
+    [MenuItem("Tools/Capstone/Advanced/Thang/Setup Pet Combat Test")]
     public static void SetupActiveScene()
     {
         Scene scene = SceneManager.GetActiveScene();

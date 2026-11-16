@@ -11,7 +11,7 @@ namespace Capstone.Game.Skills.Editor {
     public static class DragonSkillTacticsSetup {
         public const string Root = "Assets/Game/Skills/Data/Tactics/";
         const string Definitions = "Assets/Game/Skills/Data/Definitions/Skill_";
-        [MenuItem("Tools/Capstone/Creatures/12. Apply dragon wind, roar buff and retreat")]
+        [MenuItem("Tools/Capstone/Advanced/Creatures/12. Apply dragon wind, roar buff and retreat")]
         public static void Build() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Dừng Play Mode trước khi cấu hình.");
             Folder(Root.TrimEnd('/'));

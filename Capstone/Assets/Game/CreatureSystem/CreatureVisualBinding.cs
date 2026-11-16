@@ -8,6 +8,8 @@ namespace Capstone.Game.CreatureSystem {
     public sealed class CreatureVisualBinding : MonoBehaviour {
         public CreatureAnimationProfile animationProfile;
         public PetSpeciesSkillSet skillSet;
+        [Tooltip("Visual cue scale only; never changes hit radius, range, damage or MP.")]
+        [Range(.25f, 3)] public float presentationScale = 1;
         public List<PetSkillSocket> sockets = new List<PetSkillSocket>();
     }
 }

@@ -71,7 +71,10 @@ public sealed class PlayerFreeLookRig : MonoBehaviour
         }
 
         // ManualUpdate runs once after the player and gameplay camera state, including
-        // UI/focus gates. No other component writes the render camera's Transform.
+        // UI/focus gates. The same solver also guards the final blend/impulse pose:
+        // two individually safe virtual-camera endpoints do not imply a safe blend.
         brain.ManualUpdate();
+        Transform output = brain.transform;
+        output.position = source.ConstrainCameraPosition(CollisionOrigin, output.position);
     }
 }

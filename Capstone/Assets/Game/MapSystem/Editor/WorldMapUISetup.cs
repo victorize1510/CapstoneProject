@@ -10,7 +10,7 @@ namespace Capstone.Game.MapSystem.Editor {
     public static class WorldMapUISetup {
         const string Folder = "Assets/Game/MapSystem/Generated/UI";
         const string IconFolder = "Assets/Game/MapSystem/Sprites/MapMinimap/";
-        [MenuItem("Tools/ToolCuaThang/Game Map/Remake World Map UI")]
+        [MenuItem("Tools/Capstone/Advanced/Game Map/Remake World Map UI")]
         public static void RemakeScene() {
             if (Application.isPlaying) { Debug.LogWarning("Stop Play Mode before saving the new map UI."); return; }
             var map = Object.FindFirstObjectByType<WorldMapController>(FindObjectsInactive.Include);

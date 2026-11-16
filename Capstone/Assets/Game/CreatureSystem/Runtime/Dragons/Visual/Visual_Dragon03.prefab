@@ -1218,6 +1218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
   animationProfile: {fileID: 11400000, guid: df607102c9f4d634e98d77d31ff5b104, type: 2}
   skillSet: {fileID: 11400000, guid: b0ca97568a017a3439ba3d62c035ce85, type: 2}
+  presentationScale: 1.35
   sockets:
   - key: Mouth
     anchor: {fileID: 3838494629399968092}

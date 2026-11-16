@@ -161,6 +161,12 @@ namespace Capstone.Game.QuestSystem {
                     return false;
                 }
 
+                int receiptIndex = 0;
+                foreach (var granted in grantedItems) {
+                    Capstone.Game.WorldFeedback.ItemAcquisitionFeedback.Publish(new Capstone.Game.WorldFeedback.ItemAcquisitionReceipt(
+                        "quest:" + state.QuestId + ":" + receiptIndex++, granted.ItemBase, granted.Quantity,
+                        Capstone.Game.WorldFeedback.AcquisitionSource.QuestReward));
+                }
                 return true;
             } catch (Exception exception) {
                 error = exception.Message;

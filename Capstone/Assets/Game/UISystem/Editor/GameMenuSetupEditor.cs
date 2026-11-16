@@ -13,7 +13,7 @@ using UnityEngine.UI;
 
 namespace Capstone.Game.UISystem.Editor {
     public static class GameMenuSetupEditor {
-        const string MenuPath = "Game Tools/GameToolThang/HUD/Create Main Menu";
+        const string MenuPath = "Tools/Capstone/Advanced/HUD/Create Main Menu";
         const string MenuObjectName = "GameMenu";
         const string CanvasObjectName = "GameplayHUDCanvas";
 
