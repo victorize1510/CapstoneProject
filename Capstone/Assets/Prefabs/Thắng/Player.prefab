@@ -266,10 +266,15 @@ MonoBehaviour:
   pickUpKey: 101
   enableAimMode: 0
   aimMouseButton: 1
+  allowManualThrowInput: 0
   rightMouseButtonThrows: 0
   faceLockedEnemy: 0
-  requirePickupTarget: 0
-  hasPickupTarget: 0
+  pickupTarget: {fileID: 0}
+  pickupDistance: 2
+  pickupViewAngle: 100
+  pickupObstructionLayers:
+    serializedVersion: 2
+    m_Bits: 2683314163
   jumpDuration: 0.95
   pickUpDuration: 1.15
   throwDuration: 0.95
