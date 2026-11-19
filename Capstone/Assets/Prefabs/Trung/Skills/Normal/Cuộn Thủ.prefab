@@ -42,7 +42,7 @@ ParticleSystem:
   m_GameObject: {fileID: 1190420508257855600}
   serializedVersion: 8
   lengthInSec: 1
-  simulationSpeed: 1
+  simulationSpeed: 2.02
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
@@ -9684,7 +9684,7 @@ GameObject:
   - component: {fileID: 1432503776327017652}
   - component: {fileID: 5092009248233610118}
   m_Layer: 0
-  m_Name: "Cu\u1ED9n Tr\xF2n Ph\xF2ng Th\u1EE7"
+  m_Name: "Cu\u1ED9n Th\u1EE7"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

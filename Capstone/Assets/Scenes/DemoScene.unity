@@ -20106,7 +20106,8 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   idleStateName: Idle
-  disableDuringEvolution: []
+  disableDuringEvolution:
+  - {fileID: 2025894836}
   showStartText: 1
   startMessageFormat: "{0} \u0111ang b\u1EAFt \u0111\u1EA7u ti\u1EBFn h\xF3a!"
   startMessageDisplayTime: 1.5
@@ -26760,6 +26761,11 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 4776272554816088, guid: 94a3318e328358d4095f16b054b14180, type: 3}
   m_PrefabInstance: {fileID: 798428243}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &798834248 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6932692690579572187, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
+  m_PrefabInstance: {fileID: 2025894835}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &799863255
 PrefabInstance:
@@ -66014,14 +66020,17 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6932692690579572187, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2025894850}
   m_SourcePrefab: {fileID: 100100000, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
 --- !u!114 &2025894836 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1286864715442068702, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
   m_PrefabInstance: {fileID: 2025894835}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 798834248}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c9aa72542e2a0304fab22d2a812a7db7, type: 3}
@@ -66042,6 +66051,19 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2442797328765743098, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
   m_PrefabInstance: {fileID: 2025894835}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2025894850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798834248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25146efe203b45e43bda0a0e2336543e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetEvolutionTestButton
+  testKey: 34
 --- !u!1001 &2028860371
 PrefabInstance:
   m_ObjectHideFlags: 0
