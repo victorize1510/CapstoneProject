@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c715ea394b159f4e875a6bbb0109a8b, type: 3}
+  m_Name: Combat_gust.flying
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
+  damageKind: 0
+  delivery: 1
+  power: 1.3
+  range: 10
+  projectileSpeed: 16
+  projectileRadius: 0.18
+  lifetime: 3
+  projectileVisual: {fileID: 2060900179291159282, guid: daaa577cb3a84618aac8358f7af9e137, type: 3}
+  releaseSocket: Head
+  autoAcquireTarget: 1
+  meleeHalfAngle: 55
+  visualScale: 0.35
+  offenseBuffPercent: 20
+  buffDuration: 6
+  buffVisual: {fileID: 0}
+  bleedPower: 0
+  retreatDistance: 2.4
+  retreatSpeed: 12
+  preferredDistance: 5
+  weightedWindVolley: 0
+  burstEndNormalized: 0.78

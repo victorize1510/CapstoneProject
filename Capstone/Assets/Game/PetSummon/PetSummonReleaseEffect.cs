@@ -173,7 +173,7 @@ namespace Capstone.Game.PetSummon
             finally { if (version == sequenceVersion) RestoreAndReturn(); }
         }
 
-        public IEnumerator PlayRecall(PetController pet, Transform ball, Action hidePet)
+        public IEnumerator PlayRecall(PetController pet, Transform ball, Action hidePet, float durationOverride = 0)
         {
             Cancel();
             if (pet == null || ball == null) yield break;
@@ -187,7 +187,7 @@ namespace Capstone.Game.PetSummon
                 activeInstance.Begin(true,vfxProfile,quality,bodyCenter,bodyHalfExtents,presentationSpeed);
                 float elapsed = 0;
                 effectTime = 0;
-                float duration = Mathf.Max(.1f,vfxProfile != null ? vfxProfile.recallDuration : .65f) / Mathf.Max(.1f,presentationSpeed);
+                float duration = durationOverride > 0 ? durationOverride : Mathf.Max(.1f,vfxProfile != null ? vfxProfile.recallDuration : .65f) / Mathf.Max(.1f,presentationSpeed);
                 UpdateRecall();
                 while (elapsed < duration && version == sequenceVersion) {
                     effectTime = .65f * Mathf.Clamp01(elapsed / duration);

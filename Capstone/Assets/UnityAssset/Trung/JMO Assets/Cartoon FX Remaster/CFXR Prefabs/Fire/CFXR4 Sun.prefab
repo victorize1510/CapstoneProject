@@ -9997,6 +9997,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Laser AOE
       objectReference: {fileID: 0}
+    - target: {fileID: 7478731271839673279, guid: 4d3c8045dd8857a4b8d34c2361c61045, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -10055,6 +10059,10 @@ PrefabInstance:
     - target: {fileID: 4994997792314849709, guid: 3dd50886582244645be87adb42aa8528, type: 3}
       propertyPath: m_Name
       value: Ground AOE explosion
+      objectReference: {fileID: 0}
+    - target: {fileID: 4994997792314849709, guid: 3dd50886582244645be87adb42aa8528, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6759794185557706511, guid: 3dd50886582244645be87adb42aa8528, type: 3}
       propertyPath: m_LocalPosition.x
@@ -10118,6 +10126,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crystals front attack
       objectReference: {fileID: 0}
+    - target: {fileID: 3156866507962234106, guid: 645ebd7cef59b7b40b27c29bf3e99cf2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5135655739932955482, guid: 645ebd7cef59b7b40b27c29bf3e99cf2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 4.2036247
@@ -10179,6 +10191,10 @@ PrefabInstance:
     - target: {fileID: 7647375919561907788, guid: 035ce8c9cfc34104991ce416daf8aebe, type: 3}
       propertyPath: m_Name
       value: AoE slash blue
+      objectReference: {fileID: 0}
+    - target: {fileID: 7647375919561907788, guid: 035ce8c9cfc34104991ce416daf8aebe, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8350459634444266893, guid: 035ce8c9cfc34104991ce416daf8aebe, type: 3}
       propertyPath: m_LocalPosition.x

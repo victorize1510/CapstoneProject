@@ -54,7 +54,8 @@ namespace Capstone.Game.HudSystem {
 
             GameObject nextVisual;
             try {
-                nextVisual = Instantiate(modelOnlyPrefab, visualRoot);
+                // Keep the destination form's authored local scale under the actor's visual root.
+                nextVisual = Instantiate(modelOnlyPrefab, visualRoot, false);
             }
             catch (System.Exception exception) {
                 error = $"Không tạo được model tiến hóa: {exception.Message}";
@@ -66,7 +67,6 @@ namespace Capstone.Game.HudSystem {
             }
             nextVisual.name = modelOnlyPrefab.name + " (Evolution Visual)";
             nextVisual.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-            nextVisual.transform.localScale = Vector3.one;
             Animator nextAnimator = nextVisual.GetComponentInChildren<Animator>(true);
             if (nextAnimator == null) {
                 Destroy(nextVisual);

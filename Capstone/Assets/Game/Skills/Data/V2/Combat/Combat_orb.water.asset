@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c715ea394b159f4e875a6bbb0109a8b, type: 3}
+  m_Name: Combat_orb.water
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
+  damageKind: 1
+  delivery: 1
+  power: 1.3
+  range: 9
+  projectileSpeed: 9
+  projectileRadius: 0.18
+  lifetime: 3
+  projectileVisual: {fileID: 2485276936549234680, guid: 3f7e151cd033e6866a9c68e40e0e3b4d, type: 3}
+  releaseSocket: Head
+  autoAcquireTarget: 1
+  meleeHalfAngle: 55
+  visualScale: 0.5
+  retreatDistance: 0
+  retreatSpeed: 12
+  preferredDistance: 5

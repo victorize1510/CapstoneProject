@@ -78,7 +78,13 @@ namespace Capstone.Game.CreatureSystem.Editor {
                     foreach (string id in new[] { family.definitionId }.Concat(family.legacyDefinitionIds ?? Array.Empty<string>())) {
                         if (string.IsNullOrWhiteSpace(id) || !keys.Add(id.Trim() + "\n" + form.formId.Trim())) throw new InvalidOperationException("ID/alias bị trùng: " + id + "/" + form.formId);
                     }
-                    next.Add(new CreatureAvatarCatalog.Entry { definitionId = family.definitionId, aliases = family.legacyDefinitionIds, formId = form.formId, avatar = form.avatar });
+                    bool hasTyping = form.TryGetTyping(out var primary, out var secondary);
+                    next.Add(new CreatureAvatarCatalog.Entry {
+                        definitionId = family.definitionId, aliases = family.legacyDefinitionIds,
+                        formId = form.formId, avatar = form.avatar, displayName = form.displayName,
+                        primaryElement = hasTyping ? primary : PetElement.Unknown,
+                        secondaryElement = hasTyping ? secondary : PetElement.Unknown
+                    });
                 }
             }
             avatarCatalog.entries = next; avatarCatalog.Invalidate(); EditorUtility.SetDirty(avatarCatalog); AssetDatabase.SaveAssetIfDirty(avatarCatalog);

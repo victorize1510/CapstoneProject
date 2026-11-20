@@ -22,7 +22,11 @@ MonoBehaviour:
   evolutionRulesReviewed: 1
   forms:
   - formId: 01
-    displayName: "R\u1ED3ng Ch\u1EA1ng V\u1EA1ng"
+    displayName: Rồng Chạng Vạng
+    typingStatus: 1
+    primaryElement: 9
+    secondaryElement: 10
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 7172953654767793680, guid: 5099dccfff2bbf940bd1cdec5e3073f9, type: 3}
     avatar: {fileID: 21300000, guid: 7f5438365e3289243ac5dbf19f2d7b66, type: 3}
     heroPortrait: {fileID: 0}
@@ -34,7 +38,11 @@ MonoBehaviour:
     enemyPrefab: {fileID: 2974067211035169508, guid: c690ec4e113c6a24695950ef3be6b04c, type: 3}
     animationProfile: {fileID: 11400000, guid: 086e7a5d625b11a4b95a6f018c3d5800, type: 2}
   - formId: 02
-    displayName: "R\u1ED3ng \u0110\xEAm T\u1ED1i"
+    displayName: Rồng Đêm Tối
+    typingStatus: 1
+    primaryElement: 9
+    secondaryElement: 10
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 5200905135537977952, guid: c4af6a689c59c96438e018ccb4980e50, type: 3}
     avatar: {fileID: 21300000, guid: 76b9541a488b2cd44b579d65568cb7a3, type: 3}
     heroPortrait: {fileID: 0}
@@ -46,7 +54,11 @@ MonoBehaviour:
     enemyPrefab: {fileID: 282814459843967714, guid: 5f1418f5ace66dd49be1de449113b421, type: 3}
     animationProfile: {fileID: 11400000, guid: cc38d837ecc70e049b81368a527f78ef, type: 2}
   - formId: 03
-    displayName: "Dragon B\xF3ng T\u1ED1i"
+    displayName: Rồng Bóng Tối
+    typingStatus: 1
+    primaryElement: 9
+    secondaryElement: 10
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 189714618256958346, guid: c6a775135ae59a04ea396ecdf847e510, type: 3}
     avatar: {fileID: 21300000, guid: 52c2bf9b2e45e0744b0d3c3eb1bd932c, type: 3}
     heroPortrait: {fileID: 0}

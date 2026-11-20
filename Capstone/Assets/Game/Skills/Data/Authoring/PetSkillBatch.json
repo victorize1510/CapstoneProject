@@ -1,0 +1,1222 @@
+{
+  "version": 1,
+  "catalog": "Assets/Game/Skills/Resources/PetSkills/PetSkillCatalog.asset",
+  "skills": [
+    {
+      "approved": true,
+      "id": "bite",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_bite.asset",
+      "displayName": "Cắn",
+      "notes": "Existing runtime definition: preserve every authored field and GUID."
+    },
+    {
+      "approved": true,
+      "id": "blast",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_blast.asset",
+      "displayName": "Gầm cường hóa",
+      "notes": "Existing runtime definition: preserve every authored field and GUID."
+    },
+    {
+      "approved": true,
+      "id": "projectile",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_projectile.asset",
+      "displayName": "Projectile",
+      "notes": "Existing runtime definition: preserve every authored field and GUID."
+    },
+    {
+      "approved": true,
+      "id": "wing strike",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_wing_strike.asset",
+      "displayName": "Chém gió",
+      "notes": "Existing runtime definition: preserve every authored field and GUID."
+    },
+    {
+      "approved": true,
+      "id": "bite.normal",
+      "asset": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Skill_bite.normal.asset",
+      "displayName": "Cắn",
+      "notes": "Existing runtime definition: preserve every authored field and GUID."
+    },
+    {
+      "approved": true,
+      "id": "orb.dark",
+      "asset": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Skill_orb.dark.asset",
+      "displayName": "Cầu bóng tối",
+      "notes": "Existing runtime definition: preserve every authored field and GUID. Candidate art only: Quả Cầu Bóng Tối; use Presentation Override, keep current presentation unchanged.",
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Dark/Quả Cầu Bóng Tối.prefab"
+    },
+    {
+      "approved": true,
+      "id": "pulse.dark",
+      "asset": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Skill_pulse.dark.asset",
+      "displayName": "Xung bóng tối",
+      "notes": "Existing runtime definition: preserve every authored field and GUID."
+    },
+    {
+      "approved": false,
+      "id": "protect",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_protect.asset",
+      "displayName": "Bảo vệ",
+      "description": "",
+      "element": "Normal",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Bảo Vệ.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Normal/Bảo Vê.prefab",
+      "notes": "Shield executor missing"
+    },
+    {
+      "approved": false,
+      "id": "defense_curl",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_defense_curl.asset",
+      "displayName": "Cuộn tròn phòng thủ",
+      "description": "",
+      "element": "Normal",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Cuộn Tròn Phòng Thủ.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Normal/Cuộn Tròn Phòng Thủ.prefab",
+      "notes": "DEF buff executor missing"
+    },
+    {
+      "approved": false,
+      "id": "peck",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_peck.asset",
+      "displayName": "Mổ",
+      "description": "",
+      "element": "Normal",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Mổ.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Flying/Mổ.prefab",
+      "notes": "Melee physical proposal"
+    },
+    {
+      "approved": false,
+      "id": "wind_cut",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_wind_cut.asset",
+      "displayName": "Chém gió",
+      "description": "",
+      "element": "Flying",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Gió cắt.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Flying/Chém Gió.prefab",
+      "notes": "Single projectile; distinct from existing wing strike volley"
+    },
+    {
+      "approved": false,
+      "id": "tornado",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_tornado.asset",
+      "displayName": "Lốc xoáy",
+      "description": "",
+      "element": "Flying",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Lốc Xoáy.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Flying/Lốc Xoáy.prefab",
+      "notes": "AoE and multi-hit not implemented"
+    },
+    {
+      "approved": false,
+      "id": "electric_orb",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_electric_orb.asset",
+      "displayName": "Quả cầu điện",
+      "description": "",
+      "element": "Electric",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Quả Cầu Điện.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Electric/Điện Cầu.prefab",
+      "notes": "Single magical projectile; no paralysis"
+    },
+    {
+      "approved": false,
+      "id": "electric_spark",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_electric_spark.asset",
+      "displayName": "Tia lửa điện",
+      "description": "",
+      "element": "Electric",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Tia Lửa Điện.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Electric/Tia Lửa.prefab",
+      "notes": "Single target; no paralysis"
+    },
+    {
+      "approved": false,
+      "id": "lightning",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_lightning.asset",
+      "displayName": "Tia sét",
+      "description": "",
+      "element": "Electric",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Tia Sét.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Electric/Tia Sét.prefab",
+      "notes": "Single targeted hit; review range and LOS"
+    },
+    {
+      "approved": false,
+      "id": "thunder",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_thunder.asset",
+      "displayName": "Sấm sét",
+      "description": "",
+      "element": "Electric",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Sấm Sét.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Electric/Sấm Sét.prefab",
+      "notes": "Review single target vs AoE"
+    },
+    {
+      "approved": false,
+      "id": "laser",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_laser.asset",
+      "displayName": "Tia laser",
+      "description": "",
+      "element": "Electric",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Chùm Tia Laser.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Electric/Chùm Tia Laser.prefab",
+      "notes": "Review single hit vs continuous; alternate icon Tia Laser"
+    },
+    {
+      "approved": false,
+      "id": "fireball",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_fireball.asset",
+      "displayName": "Quả cầu lửa",
+      "description": "",
+      "element": "Fire",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Quả Cầu Lửa.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Fire/Quả Cầu Lửa.prefab",
+      "notes": "Single magical projectile; no burn"
+    },
+    {
+      "approved": false,
+      "id": "flamethrower",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_flamethrower.asset",
+      "displayName": "Phun lửa",
+      "description": "",
+      "element": "Fire",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Phun Lửa.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Fire/Phun Lửa.prefab",
+      "notes": "Continuous beam executor missing"
+    },
+    {
+      "approved": false,
+      "id": "fire_shield",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_fire_shield.asset",
+      "displayName": "Khiên lửa",
+      "description": "",
+      "element": "Fire",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Khiên Lửa.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Fire/Khiên Lửa.prefab",
+      "notes": "Shield and reflect executor missing"
+    },
+    {
+      "approved": false,
+      "id": "heat_up",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_heat_up.asset",
+      "displayName": "Đốt nóng",
+      "description": "",
+      "element": "Fire",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Đốt Nóng.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Fire/Đốt Nóng.prefab",
+      "notes": "Review buff vs burn; do not silently reuse blast"
+    },
+    {
+      "approved": false,
+      "id": "dark_bats",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_dark_bats.asset",
+      "displayName": "Đàn dơi",
+      "description": "",
+      "element": "Dark",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Đàn Dơi.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Dark/Đàn Dơi.prefab",
+      "notes": "AutoDestruct script; review volley mechanics"
+    },
+    {
+      "approved": false,
+      "id": "dark_spirit",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_dark_spirit.asset",
+      "displayName": "Linh hồn ma quái",
+      "description": "",
+      "element": "Dark",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Linh Hồn Ma Quái.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Dark/Linh Hồn Ma Quái.prefab",
+      "notes": "Review targeted vs projectile; vendor scripts"
+    },
+    {
+      "approved": false,
+      "id": "black_hole",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_black_hole.asset",
+      "displayName": "Hố đen",
+      "description": "",
+      "element": "Dark",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Hố Đen.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Dark/Hố Đen.prefab",
+      "notes": "Pull and AoE executor missing"
+    },
+    {
+      "approved": false,
+      "id": "leaf_storm",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_leaf_storm.asset",
+      "displayName": "Bão lá",
+      "description": "",
+      "element": "Nature",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Bão Lá.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Grass/Cơn Lốc Lá.prefab",
+      "notes": "Multi-hit and AoE need design"
+    },
+    {
+      "approved": false,
+      "id": "energy_ball",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_energy_ball.asset",
+      "displayName": "Bóng năng lượng",
+      "description": "",
+      "element": "Nature",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Bóng Năng Lượng.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Grass/Bóng Năng Lượng.prefab",
+      "notes": "Single magical projectile; not existing Fire projectile"
+    },
+    {
+      "approved": false,
+      "id": "absorb",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_absorb.asset",
+      "displayName": "Hấp thụ",
+      "description": "",
+      "element": "Nature",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Hấp Thụ.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Grass/Hấp Thụ.prefab",
+      "notes": "Lifesteal and heal executor missing"
+    },
+    {
+      "approved": false,
+      "id": "seed_barrage",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_seed_barrage.asset",
+      "displayName": "Đạn hạt liên thanh",
+      "description": "",
+      "element": "Nature",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Đạn Hạt Liên Thanh.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Grass/Đạn Hạt Liên Thanh.prefab",
+      "notes": "Review total burst damage; do not reuse weightedWindVolley automatically"
+    },
+    {
+      "approved": false,
+      "id": "poison_burst",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_poison_burst.asset",
+      "displayName": "Nổ độc",
+      "description": "",
+      "element": "Nature",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Nổ Độc.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Grass/Độc Nổ.prefab",
+      "notes": "Poison executor missing; not bleed"
+    },
+    {
+      "approved": false,
+      "id": "water_bubble",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_water_bubble.asset",
+      "displayName": "Tia bong bóng",
+      "description": "",
+      "element": "Water",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Tia Bong Bóng.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Water/Tia Bong Bóng.prefab",
+      "notes": "Single magical projectile"
+    },
+    {
+      "approved": false,
+      "id": "bubble_burst",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_bubble_burst.asset",
+      "displayName": "Bong bóng nổ",
+      "description": "",
+      "element": "Water",
+      "cooldown": 0,
+      "icon": "",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Water/Bong Bóng Nổ.prefab",
+      "notes": "Missing exact icon; review AoE"
+    },
+    {
+      "approved": false,
+      "id": "water_vortex",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_water_vortex.asset",
+      "displayName": "Tia xoáy nước",
+      "description": "",
+      "element": "Water",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Tia Xoáy Nước.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Water/Tia Xoáy Nước.prefab",
+      "notes": "Review projectile vs continuous beam"
+    },
+    {
+      "approved": false,
+      "id": "water_cannon",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_water_cannon.asset",
+      "displayName": "Siêu súng nước",
+      "description": "",
+      "element": "Water",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Siêu Súng Nước.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Water/Siêu Súng Nước.prefab",
+      "notes": "Strong single projectile; review animation"
+    },
+    {
+      "approved": false,
+      "id": "rain",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_rain.asset",
+      "displayName": "Tạo mưa",
+      "description": "",
+      "element": "Water",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Tạo Mưa.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Water/Tạo Mưa.prefab",
+      "notes": "Weather executor missing"
+    },
+    {
+      "approved": false,
+      "id": "dragon_breath",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_dragon_breath.asset",
+      "displayName": "Hơi thở rồng",
+      "description": "",
+      "element": "Dragon",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Hơi Thở Của Rồng.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Dragon/Hơi Thở Rồng.prefab",
+      "notes": "Review single hit vs continuous beam"
+    },
+    {
+      "approved": false,
+      "id": "dragon_stars",
+      "asset": "Assets/Game/Skills/Data/Definitions/Skill_dragon_stars.asset",
+      "displayName": "Chùm sao rồng",
+      "description": "",
+      "element": "Dragon",
+      "cooldown": 0,
+      "icon": "Assets/Prefabs/Trung/Icons/Chùm Sao Rồng.png",
+      "combat": "",
+      "presentation": "",
+      "legacyIds": [],
+      "animatorStates": [],
+      "candidateVfx": "Assets/Prefabs/Trung/Skills/Dragon/Chùm Sao Rồng.prefab",
+      "notes": "Review volley mechanics; URP additional light component, not a demo Destroy script"
+    }
+  ],
+  "sets": [
+    {
+      "approved": true,
+      "preserveExisting": true,
+      "asset": "Assets/Game/Skills/Data/Species/Dragon01.asset",
+      "speciesId": "Dragon Dusk",
+      "notes": "Keep existing form-specific set; do not merge or retune.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite",
+          "level": 1
+        },
+        {
+          "id": "blast",
+          "level": 1
+        },
+        {
+          "id": "projectile",
+          "level": 1
+        },
+        {
+          "id": "wing strike",
+          "level": 1
+        }
+      ],
+      "defaultLoadout": [
+        "bite",
+        "blast",
+        "projectile",
+        "wing strike"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_Dragon_Dusk.asset",
+          "formId": "01",
+          "displayName": "Rồng Chạng Vạng",
+          "proposedCodexNumber": 1
+        }
+      ]
+    },
+    {
+      "approved": true,
+      "preserveExisting": true,
+      "asset": "Assets/Game/Skills/Data/Species/Dragon02.asset",
+      "speciesId": "Dragon Nightfall",
+      "notes": "Keep existing form-specific set; do not merge or retune.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite",
+          "level": 1
+        },
+        {
+          "id": "blast",
+          "level": 1
+        },
+        {
+          "id": "projectile",
+          "level": 1
+        },
+        {
+          "id": "wing strike",
+          "level": 1
+        }
+      ],
+      "defaultLoadout": [
+        "bite",
+        "blast",
+        "projectile",
+        "wing strike"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_Dragon_Dusk.asset",
+          "formId": "02",
+          "displayName": "Rồng Đêm Tối",
+          "proposedCodexNumber": 2
+        }
+      ]
+    },
+    {
+      "approved": true,
+      "preserveExisting": true,
+      "asset": "Assets/Game/Skills/Data/Species/Dragon03.asset",
+      "speciesId": "Dragon Darkness",
+      "notes": "Keep existing form-specific set; do not merge or retune.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite",
+          "level": 1
+        },
+        {
+          "id": "blast",
+          "level": 1
+        },
+        {
+          "id": "projectile",
+          "level": 1
+        },
+        {
+          "id": "wing strike",
+          "level": 1
+        }
+      ],
+      "defaultLoadout": [
+        "bite",
+        "blast",
+        "projectile",
+        "wing strike"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_Dragon_Dusk.asset",
+          "formId": "03",
+          "displayName": "Dragon Bóng Tối",
+          "proposedCodexNumber": 3
+        }
+      ]
+    },
+    {
+      "approved": true,
+      "preserveExisting": true,
+      "asset": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Bat01.asset",
+      "speciesId": "Dơi Nhỏ",
+      "notes": "Keep existing form-specific set; do not merge or retune.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "orb.dark",
+          "level": 1
+        },
+        {
+          "id": "pulse.dark",
+          "level": 12
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "orb.dark"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_bat.asset",
+          "formId": "01",
+          "displayName": "Dơi Nhỏ",
+          "proposedCodexNumber": 4
+        }
+      ]
+    },
+    {
+      "approved": true,
+      "preserveExisting": true,
+      "asset": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Bat02.asset",
+      "speciesId": "Dơi Ma Cà Rồng",
+      "notes": "Keep existing form-specific set; do not merge or retune.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "orb.dark",
+          "level": 1
+        },
+        {
+          "id": "pulse.dark",
+          "level": 12
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "orb.dark"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_bat.asset",
+          "formId": "02",
+          "displayName": "Dơi Ma Cà Rồng",
+          "proposedCodexNumber": 5
+        }
+      ]
+    },
+    {
+      "approved": true,
+      "preserveExisting": true,
+      "asset": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Bat03.asset",
+      "speciesId": "Dơi Chúa Tể",
+      "notes": "Keep existing form-specific set; do not merge or retune.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "orb.dark",
+          "level": 1
+        },
+        {
+          "id": "pulse.dark",
+          "level": 12
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "orb.dark"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_bat.asset",
+          "formId": "03",
+          "displayName": "Dơi Chúa Tể",
+          "proposedCodexNumber": 6
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_cat-electric.asset",
+      "speciesId": "cat-electric",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "electric_orb",
+          "level": 1
+        },
+        {
+          "id": "electric_spark",
+          "level": 8
+        },
+        {
+          "id": "lightning",
+          "level": 18
+        },
+        {
+          "id": "thunder",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "electric_orb"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_cat-electric.asset",
+          "formId": "01",
+          "displayName": "Mèo Điện",
+          "proposedCodexNumber": 7
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_cat-electric.asset",
+          "formId": "02",
+          "displayName": "Mèo Tia Chớp",
+          "proposedCodexNumber": 8
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_cat-electric.asset",
+          "formId": "03",
+          "displayName": "Mèo Sấm Sét",
+          "proposedCodexNumber": 9
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_chick.asset",
+      "speciesId": "chick",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "peck",
+          "level": 1
+        },
+        {
+          "id": "wind_cut",
+          "level": 1
+        },
+        {
+          "id": "tornado",
+          "level": 18
+        }
+      ],
+      "defaultLoadout": [
+        "peck",
+        "wind_cut"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_chick.asset",
+          "formId": "01",
+          "displayName": "Chim Con",
+          "proposedCodexNumber": 10
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_chick.asset",
+          "formId": "02",
+          "displayName": "Gà Lôi",
+          "proposedCodexNumber": 11
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_chick.asset",
+          "formId": "03",
+          "displayName": "Gà Gió Lốc",
+          "proposedCodexNumber": 12
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_dragon-fire.asset",
+      "speciesId": "dragon-fire",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "fireball",
+          "level": 1
+        },
+        {
+          "id": "heat_up",
+          "level": 12
+        },
+        {
+          "id": "flamethrower",
+          "level": 18
+        },
+        {
+          "id": "dragon_breath",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "fireball"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_dragon-fire.asset",
+          "formId": "01",
+          "displayName": "Khủng Long Lửa",
+          "proposedCodexNumber": 13
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_dragon-fire.asset",
+          "formId": "02",
+          "displayName": "Rồng Lửa Bay",
+          "proposedCodexNumber": 14
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_dragon-fire.asset",
+          "formId": "03",
+          "displayName": "Rồng Lửa Địa Ngục",
+          "proposedCodexNumber": 15
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_egg-shadow.asset",
+      "speciesId": "egg-shadow",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "orb.dark",
+          "level": 1
+        },
+        {
+          "id": "protect",
+          "level": 12
+        },
+        {
+          "id": "dark_spirit",
+          "level": 18
+        },
+        {
+          "id": "black_hole",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "orb.dark"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_egg-shadow.asset",
+          "formId": "01",
+          "displayName": "Trứng Ma Quái",
+          "proposedCodexNumber": 16
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_egg-shadow.asset",
+          "formId": "02",
+          "displayName": "Quái Trứng Quỷ",
+          "proposedCodexNumber": 17
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_egg-shadow.asset",
+          "formId": "03",
+          "displayName": "Quái Trứng Lực SĨ",
+          "proposedCodexNumber": 18
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_ghost.asset",
+      "speciesId": "ghost",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "orb.dark",
+          "level": 1
+        },
+        {
+          "id": "dark_spirit",
+          "level": 1
+        },
+        {
+          "id": "dark_bats",
+          "level": 12
+        },
+        {
+          "id": "pulse.dark",
+          "level": 18
+        },
+        {
+          "id": "black_hole",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "orb.dark",
+        "dark_spirit"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_ghost.asset",
+          "formId": "01",
+          "displayName": "Ma Nhỏ",
+          "proposedCodexNumber": 19
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_ghost.asset",
+          "formId": "02",
+          "displayName": "Ma Mặt Nạ",
+          "proposedCodexNumber": 20
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_ghost.asset",
+          "formId": "03",
+          "displayName": "Ma Nguyền Rủa",
+          "proposedCodexNumber": 21
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_shell.asset",
+      "speciesId": "shell",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "water_bubble",
+          "level": 1
+        },
+        {
+          "id": "defense_curl",
+          "level": 12
+        },
+        {
+          "id": "water_vortex",
+          "level": 18
+        },
+        {
+          "id": "water_cannon",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "water_bubble"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_shell.asset",
+          "formId": "01",
+          "displayName": "Ốc Nhà",
+          "proposedCodexNumber": 22
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_shell.asset",
+          "formId": "02",
+          "displayName": "Ốc Gai",
+          "proposedCodexNumber": 23
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_shell.asset",
+          "formId": "03",
+          "displayName": "Ốc Mượn Hồn Vua",
+          "proposedCodexNumber": 24
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_snake-fire.asset",
+      "speciesId": "snake-fire",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "fireball",
+          "level": 1
+        },
+        {
+          "id": "heat_up",
+          "level": 12
+        },
+        {
+          "id": "fire_shield",
+          "level": 18
+        },
+        {
+          "id": "flamethrower",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "fireball"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_snake-fire.asset",
+          "formId": "01",
+          "displayName": "Rắn Lửa",
+          "proposedCodexNumber": 25
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_snake-fire.asset",
+          "formId": "02",
+          "displayName": "Rắn Bùng Cháy",
+          "proposedCodexNumber": 26
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_snake-fire.asset",
+          "formId": "03",
+          "displayName": "Rắn 3 Đầu",
+          "proposedCodexNumber": 27
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_sun-blossom.asset",
+      "speciesId": "sun-blossom",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "energy_ball",
+          "level": 1
+        },
+        {
+          "id": "seed_barrage",
+          "level": 1
+        },
+        {
+          "id": "absorb",
+          "level": 12
+        },
+        {
+          "id": "poison_burst",
+          "level": 18
+        },
+        {
+          "id": "leaf_storm",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "energy_ball",
+        "seed_barrage"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_sun-blossom.asset",
+          "formId": "01",
+          "displayName": "Hướng Dương Nảy Mầm",
+          "proposedCodexNumber": 28
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_sun-blossom.asset",
+          "formId": "02",
+          "displayName": "Hướng Dương Tiên",
+          "proposedCodexNumber": 29
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_sun-blossom.asset",
+          "formId": "03",
+          "displayName": "Hướng Dương Nữ Hoàng",
+          "proposedCodexNumber": 30
+        }
+      ]
+    },
+    {
+      "approved": false,
+      "preserveExisting": false,
+      "asset": "Assets/Game/Skills/Data/Species/Species_wolf.asset",
+      "speciesId": "wolf",
+      "notes": "PROPOSAL: level gates only, not form gates. 18/36 are learn levels, not configured evolution thresholds. Missing runtime prefab/animation/socket.",
+      "newPetLevel": 1,
+      "learnset": [
+        {
+          "id": "bite.normal",
+          "level": 1
+        },
+        {
+          "id": "orb.dark",
+          "level": 1
+        },
+        {
+          "id": "blast",
+          "level": 12
+        },
+        {
+          "id": "dark_spirit",
+          "level": 18
+        },
+        {
+          "id": "pulse.dark",
+          "level": 36
+        }
+      ],
+      "defaultLoadout": [
+        "bite.normal",
+        "orb.dark"
+      ],
+      "forms": [
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_wolf.asset",
+          "formId": "01",
+          "displayName": "Sói Tí Nị",
+          "proposedCodexNumber": 31
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_wolf.asset",
+          "formId": "02",
+          "displayName": "Sói Bóng Tối",
+          "proposedCodexNumber": 32
+        },
+        {
+          "family": "Assets/Game/CreatureSystem/Data/Families/Family_wolf.asset",
+          "formId": "03",
+          "displayName": "Người Sói Quỷ",
+          "proposedCodexNumber": 33
+        }
+      ]
+    }
+  ]
+}

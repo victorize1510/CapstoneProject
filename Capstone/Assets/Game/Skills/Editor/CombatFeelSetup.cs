@@ -36,6 +36,7 @@ namespace Capstone.Game.Skills.Editor {
             for (int i = 0; i < names.Length; i++) {
                 var definition = AssetDatabase.LoadAssetAtPath<PetSkillDefinition>("Assets/Game/Skills/Data/Definitions/Skill_" + names[i] + ".asset");
                 if (definition == null || definition.combat == null || definition.presentation == null) throw new InvalidOperationException("Thiếu skill " + names[i]);
+                definition.element = Capstone.Game.Elements.SkillElementAssignments.Resolve(definition.Id, definition.element);
                 definition.cooldownSeconds = cooldown[i]; definition.animationFade = .09f; definition.windupSeconds = definition.recoverySeconds = 0;
                 definition.manaCost=mana[i];definition.combat.weightedWindVolley=i==3;definition.combat.burstEndNormalized=.78f;
                 definition.combat.power = power[i]; definition.combat.bleedPower = i == 0 ? .1f : 0;

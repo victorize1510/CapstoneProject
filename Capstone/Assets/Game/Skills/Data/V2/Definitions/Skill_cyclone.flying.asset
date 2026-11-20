@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_cyclone.flying
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: cyclone.flying
+  legacyIds: []
+  displayName: "L\u1ED1c Xo\u00E1y"
+  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  element: 12
+  icon: {fileID: 21300000, guid: fdddebb1cd70919479143894a989a82a, type: 3}
+  cooldownSeconds: 4.9
+  animationDuration: 1
+  animationFade: 0.08
+  animatorStates: []
+  presentation: {fileID: 11400000, guid: 172c0014c954cbc63461b7ac1237980b, type: 2}
+  combat: {fileID: 11400000, guid: 05a0134e24d9cc488370d04658ececc1, type: 2}

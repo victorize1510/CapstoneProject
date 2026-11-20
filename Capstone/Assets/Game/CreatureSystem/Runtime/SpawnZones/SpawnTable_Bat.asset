@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4846f64c3a484bc4bc43b6e5f579ccc5, type: 3}
+  m_Name: SpawnTable_Bat
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureSpawnTable
+  ownedPetCatalog: {fileID: 11400000, guid: 0c4a7b5965529b040b47d1f2f21c207a, type: 2}
+  species:
+  - enabled: 1
+    definitionId: bat
+    weight: 1
+    forms:
+    - enabled: 1
+      formId: 01
+      prefab: {fileID: 1832585659416201221, guid: 8b275ab43ccd8ca44b9b8e42d5ac8c3c, type: 3}
+      weight: 70
+      minimumZoneLevel: 0
+    - enabled: 1
+      formId: 02
+      prefab: {fileID: 1106331304754840548, guid: 64bee044dfb63354180f22828addf844, type: 3}
+      weight: 25
+      minimumZoneLevel: 0
+    - enabled: 1
+      formId: 03
+      prefab: {fileID: 1536715140522227698, guid: ac564a5e29678a544a5dbdec1056790e, type: 3}
+      weight: 5
+      minimumZoneLevel: 0

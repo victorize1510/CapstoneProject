@@ -9,19 +9,19 @@ namespace Capstone.Game.HudSystem {
     public sealed class PetHudRuntimeStats : MonoBehaviour, IPetHudDataSource, IPetSkillRequestReceiver, IPetSkillLoadoutDataSource {
         const float PrototypeBaseHealth = 100f;
 
-        [Header("Identity")]
+        [Header("Dinh danh")]
         [SerializeField] string displayName = string.Empty;
         [SerializeField] Sprite icon = null;
         [SerializeField, Min(1)] int level = 1;
 
-        [Header("Status")]
+        [Header("Trang thai")]
         [SerializeField, Min(0f)] float health = PrototypeBaseHealth;
         [SerializeField, Min(0f)] float maxHealth = PrototypeBaseHealth;
         [SerializeField, Min(0f)] float energy;
         [SerializeField, Min(0f)] float maxEnergy;
 
-        [Header("Skills")]
-        [Tooltip("Shared species learnset. Existing ID-based save/progress stays on this pet.")]
+        [Header("Ky nang")]
+        [Tooltip("Learnset chung cua loai. Save va tien trinh theo ID van thuoc rieng pet.")]
         [SerializeField] PetSpeciesSkillSet speciesSkillSet = null;
         [SerializeField] bool autoResolveSpeciesSkillSet = true;
         [SerializeField, Range(2, 4)] int equippedSkillSlotCount = 4;
@@ -29,7 +29,7 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] List<SkillHudData> skills = new List<SkillHudData>();
         [SerializeField] List<SkillHudData> learnedSkills = new List<SkillHudData>();
 
-        [Header("Skill Animation")]
+        [Header("Animation ky nang")]
         [SerializeField] PetController petController = null;
         [SerializeField] Animator animator = null;
         [SerializeField] bool autoFindAnimationReferences = true;
@@ -59,7 +59,20 @@ namespace Capstone.Game.HudSystem {
         public Animator VisualAnimator => animator;
         public event Action PersistentDataChanged;
 
-        public string DisplayName => string.IsNullOrWhiteSpace(displayName) ? gameObject.name : displayName;
+        public string DisplayName {
+            get {
+                string value = string.IsNullOrWhiteSpace(displayName) ? gameObject.name : displayName;
+                var metadata = PresentationMetadata();
+                return metadata != null ? Capstone.Game.CreatureSystem.CreatureDisplayNames.Name(metadata.DefinitionId, metadata.CurrentFormId, value) : value;
+            }
+        }
+        PetCollectionMetadata PresentationMetadata() {
+            if (!avatarMetadataResolved) {
+                avatarMetadata = GetComponentInParent<PetCollectionMetadata>(true);
+                avatarMetadataResolved = true;
+            }
+            return avatarMetadata;
+        }
         public int Level => Mathf.Clamp(level, 1, PetStatCalculator.MaxLevel);
         public float Health => maxHealth > 0f ? Mathf.Clamp(health, 0f, maxHealth) : 0f;
         public float MaxHealth => Mathf.Max(0f, maxHealth);
@@ -67,15 +80,12 @@ namespace Capstone.Game.HudSystem {
         public float MaxEnergy => Mathf.Max(0f, maxEnergy);
         public string LastSkillRejection { get; private set; }
         void RetireLegacyMana() {
-            // Serialized legacy fields remain readable; realtime combat uses cooldowns.
+            // Giu truong serialize cu de doc; combat realtime dung cooldown thay MP.
             energy = maxEnergy = 0;
         }
         public Sprite Icon {
             get {
-                if (!avatarMetadataResolved) {
-                    avatarMetadata = GetComponentInParent<PetCollectionMetadata>(true);
-                    avatarMetadataResolved = true;
-                }
+                PresentationMetadata();
                 return avatarMetadata != null
                     ? Capstone.Game.CreatureSystem.CreatureAvatarCatalog.Resolve(avatarMetadata.DefinitionId, avatarMetadata.CurrentFormId, icon)
                     : icon;
@@ -268,6 +278,17 @@ namespace Capstone.Game.HudSystem {
             PersistentDataChanged?.Invoke();
         }
 
+        // EncounterLevel chi goi mot lan sau khi chot level cua Wild moi.
+        // Khong suy "pet moi" tu loadout rong va khong chay khi restore/save/capture.
+        internal bool InitializeFreshWildLoadout() {
+            var actor = GetComponentInParent<PetController>(true);
+            if (actor == null || !actor.IsWildEncounter || speciesSkillSet == null
+                || !speciesSkillSet.initializeFreshWildLoadout) return false;
+            UnlockSkillsUpToLevel(Level, out _);
+            SetSkills(speciesSkillSet.CreateFreshDefaultLoadout(Level, EquippedSkillSlotCount));
+            return true;
+        }
+
         public void SetStatus(float nextHealth, float nextMaxHealth, float nextEnergy, float nextMaxEnergy) {
             maxHealth = Mathf.Max(0f, nextMaxHealth);
             maxEnergy = 0f;
@@ -400,9 +421,11 @@ namespace Capstone.Game.HudSystem {
                 EnsureSkillList(false);
                 if (skillIndex >= 0 && skillIndex < skills.Count) {
                     var presentation = GetSkillPresentation(ResolveSkillId(skills[skillIndex]));
+                    bool coordinated=presentation!=null&&(presentation.releaseMode==PetSkillReleaseMode.NormalizedAnimation
+                        || speciesSkillSet!=null&&speciesSkillSet.TryGet(ResolveSkillId(skills[skillIndex]),out var mapped)&&mapped.skill!=null&&mapped.skill.combat!=null);
                     var currentAction = GetComponent<PetCombatActionDriver>();
-                    if (currentAction != null && currentAction.IsSkillBusy && (presentation == null || presentation.releaseMode != PetSkillReleaseMode.NormalizedAnimation)) return;
-                    if (presentation != null && presentation.releaseMode == PetSkillReleaseMode.NormalizedAnimation) {
+                    if (currentAction != null && currentAction.IsSkillBusy && !coordinated) return;
+                    if (coordinated) {
                         var action = GetComponent<PetCombatActionDriver>();
                         if (action == null) action = gameObject.AddComponent<PetCombatActionDriver>();
                         action.Submit(skillIndex); return;
@@ -422,12 +445,12 @@ namespace Capstone.Game.HudSystem {
             LastSkillRejection = "";
             var execution = GetComponent<PetSkillCombatExecutor>();
             var combatProfile = speciesSkillSet != null && speciesSkillSet.TryGet(ResolveSkillId(skill), out var combatEntry) ? combatEntry.skill.combat : null;
-            // Legacy scene actors keep their prefab GUIDs. Add the same execution
-            // adapter when a configured shared skill is first used there.
+            // Actor legacy giu GUID prefab. Gan cung adapter thuc thi
+            // khi ky nang chung da cau hinh duoc dung lan dau.
             if (combatProfile != null && execution == null && Application.isPlaying) execution = gameObject.AddComponent<PetSkillCombatExecutor>();
             if (combatProfile != null && (execution == null || !execution.Prepare(ResolveSkillId(skill), combatProfile))) return;
             if (!skill.unlocked || !skill.usable || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
-            // Keep animation/release clocks aligned with the same accepted retreat plan.
+            // Dong bo moc animation/release voi cung ke hoach lui da duoc chap nhan.
             if (execution != null) skill.windupSeconds += execution.PreparedRetreatSeconds;
             if (animationDriver != null && animationDriver.Profile != null) {
                 if (!animationDriver.TryGetSkillStates(ResolveSkillId(skill), out skill.animatorStates)) {
@@ -461,9 +484,7 @@ namespace Capstone.Game.HudSystem {
 
         internal bool PrepareCoordinatedSkill(int index, out SkillHudData skill) {
             skill = default; ResolveAnimationReferences(); EnsureSkillList(false); EnsureCooldownStorage();
-            if (Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked || petController == null || !petController.CanReceiveCommands) return false;
-            var input = petController.owner != null ? petController.owner.GetComponent<PetCommandInput>() : null;
-            if (input != null && (input.activePet != petController || !input.CanUsePetSkills)) return false;
+            if(!Capstone.Game.CreatureSystem.CreatureCombatContext.Get(gameObject).CanAct)return false;
             if (index < 0 || index >= skills.Count || cooldownRemaining[index] > .001f) return false;
             skill = skills[index];
             LastSkillRejection = "";
@@ -557,6 +578,14 @@ namespace Capstone.Game.HudSystem {
             string rightState = right.animatorStates != null && right.animatorStates.Length > 0 ? right.animatorStates[0] : string.Empty;
             return !string.IsNullOrWhiteSpace(leftState)
                 && string.Equals(leftState, rightState, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public PetElement GetSkillElement(string skillId) {
+            if (speciesSkillSet != null && speciesSkillSet.TryGet(skillId, out var entry))
+                return Capstone.Game.Elements.SkillElementAssignments.Resolve(entry.skill.Id, entry.skill.element);
+            return TryFindSkill(skillId, out var skill)
+                ? Capstone.Game.Elements.SkillElementAssignments.Resolve(ResolveSkillId(skill), skill.element)
+                : PetElement.Unknown;
         }
 
         bool TryFindSkill(string skillId, out SkillHudData skill) {
@@ -720,6 +749,7 @@ namespace Capstone.Game.HudSystem {
                 && string.Equals(skill.displayName?.Trim(), fallback.displayName, StringComparison.OrdinalIgnoreCase)) {
                 skill.element = fallback.element;
             }
+            skill.element = Capstone.Game.Elements.SkillElementAssignments.Resolve(ResolveSkillId(skill), skill.element);
             if (skill.animatorStates == null || skill.animatorStates.Length == 0) {
                 skill.animatorStates = fallback.animatorStates;
             }
@@ -763,13 +793,13 @@ namespace Capstone.Game.HudSystem {
         static SkillHudData DefaultSkill(int index) {
             switch (index) {
                 case 0:
-                    return CreateSkill("Bite", PetElement.Nature, "Basic close-range bite attack.", 1.2f, 0.8f, 0.12f, 0.3f, "Bite Attack", "Bite Attack Low");
+                    return CreateSkill("Bite", PetElement.Normal, "Basic close-range bite attack.", 1.2f, 0.8f, 0.12f, 0.3f, "Bite Attack", "Bite Attack Low");
                 case 1:
-                    return CreateSkill("Blast", PetElement.Light, "A short roar-like magic blast.", 3.8f, 1.0f, 0f, 0f, "Blast Attack", "Cast Spell");
+                    return CreateSkill("Blast", PetElement.Normal, "A short roar-like magic blast.", 3.8f, 1.0f, 0f, 0f, "Blast Attack", "Cast Spell");
                 case 2:
                     return CreateSkill("Projectile", PetElement.Fire, "Fires a ranged projectile.", 3.0f, 0.95f, 0f, 0f, "Projectile Attack", "Projectile Attack Low");
                 case 3:
-                    return CreateSkill("Wing Strike", PetElement.Wind, "A wing attack that knocks the air forward.", 4.2f, 1.0f, 0f, 0f, "Wing Attack");
+                    return CreateSkill("Wing Strike", PetElement.Flying, "A wing attack that knocks the air forward.", 4.2f, 1.0f, 0f, 0f, "Wing Attack");
                 default:
                     return default;
             }
@@ -809,7 +839,7 @@ namespace Capstone.Game.HudSystem {
             return skill.unlocked || skill.usable;
         }
 
-        /// <summary>Explicit binding for authoring/new pets. The default preserves individual progress and slot order.</summary>
+        /// <summary>Bind ro rang cho authoring/pet moi; mac dinh giu tien trinh ca the va thu tu o.</summary>
         public void ConfigureSkillSet(PetSpeciesSkillSet set, bool preserveProgress = true) {
             var retainedCooldowns = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
             if (preserveProgress) for (int i = 0; i < skills.Count && i < cooldownRemaining.Count; i++) {
@@ -842,7 +872,7 @@ namespace Capstone.Game.HudSystem {
         void EnsureSpeciesSkills() {
             if (speciesSkillSet == null || initializedSkillSet == speciesSkillSet) return;
             initializedSkillSet = speciesSkillSet;
-            // Upgrade copied legacy authoring data without dropping IDs used by an existing save.
+            // Nang cap ban authoring legacy ma khong bo ID da duoc save su dung.
             var progress = new Dictionary<string, SkillHudData>(StringComparer.OrdinalIgnoreCase);
             foreach (var data in skills) { string id = ResolveSkillId(data); if (!string.IsNullOrWhiteSpace(id)) progress[id] = data; }
             foreach (var data in learnedSkills) { string id = ResolveSkillId(data); if (!string.IsNullOrWhiteSpace(id)) progress[id] = data; }
@@ -856,7 +886,7 @@ namespace Capstone.Game.HudSystem {
                 if (HasUsefulSkillData(old)) { data.skillLevel = Mathf.Max(1, old.skillLevel); data.unlocked = old.unlocked; data.usable = old.usable; }
                 if (FindLearnedSkill(data) < 0) learnedSkills.Add(data);
             }
-            // Legacy progress is kept for compatibility; the setup validator reports unmapped IDs.
+            // Giu tien trinh legacy de tuong thich; validator bao ID chua duoc gan definition.
             foreach (var data in oldLearned) if (HasUsefulSkillData(data) && FindLearnedSkill(data) < 0) learnedSkills.Add(data);
             if (skills.Count == 0 && !restoredLoadout && speciesSkillSet.defaultLoadout != null) {
                 foreach (var definition in speciesSkillSet.defaultLoadout) {

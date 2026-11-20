@@ -245,7 +245,7 @@ namespace Capstone.Game.HudSystem {
             string baseName = preview.RuntimeStats != null ? preview.RuntimeStats.DisplayName : "Chọn một thú";
             string displayName = preview.Metadata != null ? preview.Metadata.ResolveDisplayName(baseName) : baseName;
             if (petName != null) petName.text = displayName;
-            if (species != null) species.text = preview.Metadata != null ? DisplayOrDash(preview.Metadata.Species) : "-";
+            if (species != null) species.text = preview.Metadata != null ? DisplayOrDash(preview.Metadata.SpeciesDisplayName) : "-";
             if (element != null) element.text = preview.Metadata != null ? FormatElement(preview.Metadata.Element) : "-";
             if (rarity != null) rarity.text = preview.Metadata != null ? FormatRarity(preview.Metadata.Rarity) : "-";
             if (status != null) status.text = preview.IsValid ? "Bình thường" : "-";

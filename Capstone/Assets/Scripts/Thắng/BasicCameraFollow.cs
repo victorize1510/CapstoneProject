@@ -170,7 +170,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     public bool HasLockedEnemy
     {
-        get { return lockedEnemy != null && lockedEnemy.isActiveAndEnabled && lockedEnemy.IsSelectable; }
+        get { return lockedEnemy != null && lockedEnemy.isActiveAndEnabled && lockedEnemy.IsAlive; }
     }
 
     // Selection notification only. Combat commands are committed separately by click/skill input.
@@ -550,16 +550,10 @@ public class BasicCameraFollow : MonoBehaviour
             }
         }
 
-        if (lockedEnemy != null && !lockedEnemy.IsSelectable)
+        if (lockedEnemy != null && !lockedEnemy.IsAlive)
         {
-            if (freeLookRig != null)
-            {
-                TryReacquireLockedEnemy();
-                return;
-            }
-            Vector3 searchPoint = lockedEnemy.TargetPosition;
-            lockedEnemy = FindNearestAliveEnemy(searchPoint, lockedEnemy);
-            focusInitialized = false;
+            // Ha muc tieu thi thoat khoa; khong tu nhay sang ca the khac.
+            ClearLockedEnemy();
         }
     }
 
@@ -610,7 +604,7 @@ public class BasicCameraFollow : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             DummyEnemy enemy = lockHits[i].collider != null ? lockHits[i].collider.GetComponentInParent<DummyEnemy>() : null;
-            if (enemy == null || !enemy.IsSelectable)
+            if (!IsLockCycleCandidate(enemy))
             {
                 continue;
             }
@@ -633,7 +627,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
-            if (enemy == null || !enemy.IsSelectable)
+            if (!IsLockCycleCandidate(enemy))
             {
                 continue;
             }
@@ -675,7 +669,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
         {
-            if (enemy == null || !enemy.IsSelectable)
+            if (!IsLockCycleCandidate(enemy))
             {
                 continue;
             }
@@ -701,34 +695,6 @@ public class BasicCameraFollow : MonoBehaviour
             if (score < bestScore)
             {
                 bestScore = score;
-                bestEnemy = enemy;
-            }
-        }
-
-        return bestEnemy;
-    }
-
-    private DummyEnemy FindNearestAliveEnemy(Vector3 searchPoint, DummyEnemy ignoredEnemy)
-    {
-        DummyEnemy bestEnemy = null;
-        float bestDistance = float.PositiveInfinity;
-
-        foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
-        {
-            if (enemy == null || enemy == ignoredEnemy || !enemy.IsSelectable)
-            {
-                continue;
-            }
-
-            float distance = FlatDistance(searchPoint, enemy.TargetPosition);
-            if (distance > lockSearchRadius)
-            {
-                continue;
-            }
-
-            if (distance < bestDistance)
-            {
-                bestDistance = distance;
                 bestEnemy = enemy;
             }
         }
@@ -813,8 +779,16 @@ public class BasicCameraFollow : MonoBehaviour
     }
 
     private bool IsLockCycleCandidate(DummyEnemy enemy) => enemy != null
-        && enemy.isActiveAndEnabled && enemy.IsSelectable
+        && enemy.isActiveAndEnabled && enemy.IsAlive
+        && IsEnemyVisibleInCamera(enemy)
         && FlatDistance(target != null ? target.position : transform.position, enemy.TargetPosition) <= lockBreakDistance;
+
+    public bool IsEnemyVisibleInCamera(DummyEnemy enemy)
+    {
+        var camera = GetComponent<Camera>();
+        if (camera == null) camera = Camera.main;
+        return Capstone.Game.CreatureSystem.CameraEnemyVisibility.CanSee(camera, target, enemy, lockVisibleViewportPadding);
+    }
 
     private DummyEnemy FindPreferredLockCandidate()
     {
@@ -834,22 +808,6 @@ public class BasicCameraFollow : MonoBehaviour
             }
         }
         return best;
-    }
-
-    private bool TryReacquireLockedEnemy()
-    {
-        // A destroyed Unity object compares equal to null. Keep the player's lock intent separately.
-        if (!enemyLockActive && ReferenceEquals(lockedEnemy, null)) return false;
-        DummyEnemy next = FindPreferredLockCandidate();
-        if (next == null)
-        {
-            ClearLockedEnemy();
-            return false;
-        }
-        lockedEnemy = next;
-        enemyLockActive = true;
-        EnemyPinned?.Invoke(next); // Selection only; a fresh click still commits the attack.
-        return true;
     }
 
     private int CompareLockCycleCandidates(DummyEnemy a, DummyEnemy b)
@@ -996,7 +954,8 @@ public class BasicCameraFollow : MonoBehaviour
         // Moving creatures are not scenery. A flying pet/enemy passing the lens
         // must not shove the view; their combat/targeting colliders remain intact.
         if (hitCollider.GetComponentInParent<PetController>() != null
-            || hitCollider.GetComponentInParent<DummyEnemy>() != null) return true;
+            || hitCollider.GetComponentInParent<DummyEnemy>() != null
+            || hitCollider.GetComponentInParent<Capstone.Game.WorldFeedback.CameraActorOccluder>() != null) return true;
         return false;
     }
 
@@ -1004,11 +963,8 @@ public class BasicCameraFollow : MonoBehaviour
     {
         if (!HasValidLockTarget(smoothedTargetPosition))
         {
-            if (freeLookRig == null || !TryReacquireLockedEnemy())
-            {
-                ClearLockedEnemy();
-                return;
-            }
+            ClearLockedEnemy();
+            return;
         }
 
         Vector3 direction;
@@ -1023,13 +979,13 @@ public class BasicCameraFollow : MonoBehaviour
 
     private bool HasValidLockTarget(Vector3 fromPosition)
     {
-        if (lockedEnemy == null || !lockedEnemy.isActiveAndEnabled || !lockedEnemy.IsSelectable)
+        if (lockedEnemy == null || !lockedEnemy.isActiveAndEnabled || !lockedEnemy.IsAlive)
         {
             return false;
         }
 
         Vector3 origin = freeLookRig != null && target != null ? target.position : fromPosition;
-        return FlatDistance(origin, lockedEnemy.TargetPosition) <= lockBreakDistance;
+        return FlatDistance(origin, lockedEnemy.TargetPosition) <= lockBreakDistance && IsEnemyVisibleInCamera(lockedEnemy);
     }
 
     private Vector3 GetLockFocusPoint()
@@ -1051,7 +1007,7 @@ public class BasicCameraFollow : MonoBehaviour
     private bool TryGetLockPlanarDirection(Vector3 fromPosition, out Vector3 direction)
     {
         direction = Vector3.zero;
-        if (lockedEnemy == null || !lockedEnemy.IsSelectable)
+        if (lockedEnemy == null || !lockedEnemy.IsAlive)
         {
             return false;
         }
@@ -1223,7 +1179,7 @@ public class BasicCameraFollow : MonoBehaviour
             DrawCenterReticle();
         }
 
-        if (showLockMarker && !IsGameplayInputBlocked() && lockedEnemy != null && lockedEnemy.IsSelectable)
+        if (showLockMarker && !IsGameplayInputBlocked() && HasLockedEnemy)
         {
             DrawLockMarker();
         }

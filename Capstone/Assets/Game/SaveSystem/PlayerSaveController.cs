@@ -61,6 +61,8 @@ namespace Capstone.Game.SaveSystem {
         public bool IsApplyingSave => isApplyingSave;
         public string SaveBlockedReason => saveBlockedReason;
         public bool IsSaveBlocked => !string.IsNullOrEmpty(saveBlockedReason);
+        internal bool HasCompletedStartup => startupCompleted;
+        internal bool UsesInventory(MonsterInventoryAdapter adapter) => inventoryAdapter == adapter;
 
         public void SetSaveStore(PlayerJsonFileSaveStore store) {
             saveStore = store ?? throw new ArgumentNullException(nameof(store));
@@ -103,6 +105,7 @@ namespace Capstone.Game.SaveSystem {
             else if (seedDragonPreviewPartyOnFreshSave && !HasSave && !IsSaveBlocked
                 && TrySeedDragonPreviewParty()) SaveNow();
             startupCompleted = true;
+            petCommandInput?.OrganizeOwnedPetRoster();
         }
 
         bool TrySeedDragonPreviewParty() {
@@ -587,6 +590,7 @@ namespace Capstone.Game.SaveSystem {
                     saveData.releaseCountDateUtc,
                     saveData.releasedToday);
             }
+            petCommandInput.OrganizeOwnedPetRoster();
         }
 
         IEnumerator RestoreSummonedWhenReady(PetController pet) {

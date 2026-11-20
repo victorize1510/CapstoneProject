@@ -6,7 +6,8 @@ namespace Capstone.Game.CaptureSystem {
         static readonly RaycastHit[] hits=new RaycastHit[32];
         public static WildPetCaptureTarget Find(PetCommandInput player,BasicCameraFollow camera){
             if(player==null)return null;
-            var selected=Valid(player.SelectedEnemy,player);if(selected!=null)return selected;
+            // Chon ro rang se giu nguyen ca the, ke ca khi tam thoi ngoai tam/bi che.
+            if(player.SelectedEnemy!=null)return Valid(player.SelectedEnemy,player);
             if(camera!=null&&camera.TryGetLockedEnemy(out var locked)){var target=Valid(locked,player);if(target!=null)return target;}
             float nearest=float.PositiveInfinity;WildPetCaptureTarget best=null;
             foreach(var enemy in DummyEnemy.ActiveEnemies){var target=Valid(enemy,player);if(target==null)continue;float d=(enemy.transform.position-player.transform.position).sqrMagnitude;if(d<nearest){nearest=d;best=target;}}
@@ -15,6 +16,8 @@ namespace Capstone.Game.CaptureSystem {
         static WildPetCaptureTarget Valid(DummyEnemy enemy,PetCommandInput player){
             if(enemy==null||!enemy.isActiveAndEnabled||!enemy.IsSelectable)return null;
             var target=enemy.GetComponent<WildPetCaptureTarget>();if(target==null||!target.IsWild||!target.Allowed)return null;
+            var view=player.commandCamera!=null?player.commandCamera:Camera.main;
+            if(!CreatureSystem.CameraEnemyVisibility.CanSee(view,player.transform,enemy))return null;
             float range=CaptureAssets.Settings!=null?Mathf.Max(1,CaptureAssets.Settings.targetRange):15;
             Vector3 origin=player.transform.position+Vector3.up,delta=enemy.TargetPosition-origin;
             if(delta.sqrMagnitude>range*range)return null;

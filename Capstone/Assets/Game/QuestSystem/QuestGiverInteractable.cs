@@ -28,6 +28,8 @@ namespace Capstone.Game.QuestSystem {
         QuestDefinition registeredDefinition;
         bool accepted;
 
+        void OnEnable() { Capstone.Game.WorldFeedback.CameraActorOccluder.Ensure(gameObject); }
+
         void Awake() {
             EnsureLabels();
             ResolveReferences();

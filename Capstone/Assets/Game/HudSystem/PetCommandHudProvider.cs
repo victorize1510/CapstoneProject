@@ -524,13 +524,13 @@ namespace Capstone.Game.HudSystem {
         static SkillHudData GetFallbackSkill(int index) {
             switch (index) {
                 case 0:
-                    return CreateFallbackSkill("Bite", PetElement.Nature, "Test close-range bite attack.", 1.2f, 0.8f, 0.12f, 0.3f, "Bite Attack", "Bite Attack Low");
+                    return CreateFallbackSkill("Bite", PetElement.Normal, "Test close-range bite attack.", 1.2f, 0.8f, 0.12f, 0.3f, "Bite Attack", "Bite Attack Low");
                 case 1:
-                    return CreateFallbackSkill("Blast", PetElement.Light, "Test roar-like magic blast.", 3.8f, 1.0f, 0f, 0f, "Blast Attack", "Cast Spell");
+                    return CreateFallbackSkill("Blast", PetElement.Normal, "Test roar-like magic blast.", 3.8f, 1.0f, 0f, 0f, "Blast Attack", "Cast Spell");
                 case 2:
                     return CreateFallbackSkill("Projectile", PetElement.Fire, "Test ranged projectile attack.", 3.0f, 0.95f, 0f, 0f, "Projectile Attack", "Projectile Attack Low");
                 case 3:
-                    return CreateFallbackSkill("Wing Strike", PetElement.Wind, "Test wing attack.", 4.2f, 1.0f, 0f, 0f, "Wing Attack");
+                    return CreateFallbackSkill("Wing Strike", PetElement.Flying, "Test wing attack.", 4.2f, 1.0f, 0f, 0f, "Wing Attack");
                 default:
                     return default;
             }

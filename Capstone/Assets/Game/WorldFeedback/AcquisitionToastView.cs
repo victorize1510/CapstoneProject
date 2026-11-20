@@ -22,6 +22,17 @@ namespace Capstone.Game.WorldFeedback {
         public int VisibleCount => rows.Count;
         public int DisplayedReceipts { get; private set; }
         public string LastItemName { get; private set; }
+        public static void ShowPending(string reason) {
+            if(string.IsNullOrWhiteSpace(reason))return;
+            var view=Ensure();
+            foreach(var row in view.rows)if(row.ItemId=="pve:pending")return;
+            if(view.rows.Count==3){view.unused.Enqueue(view.rows[0]);view.rows.RemoveAt(0);}
+            var notice=view.unused.Dequeue();notice.Rect.gameObject.SetActive(true);
+            notice.ItemId="pve:pending";notice.Icon.enabled=false;notice.Quantity.text="";
+            notice.Name.text=reason;notice.Name.horizontalOverflow=HorizontalWrapMode.Wrap;
+            V.Top(notice.Name.rectTransform,12,5,276,46);
+            notice.Born=Time.unscaledTime;notice.MergeUntil=0;notice.Group.alpha=0;view.rows.Add(notice);
+        }
         public static AcquisitionToastView Ensure() {
             if (live != null) return live;
             var go = new GameObject("Item Acquisition Feedback", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
@@ -55,8 +66,8 @@ namespace Capstone.Game.WorldFeedback {
             }
         }
         void Push(ItemAcquisitionReceipt receipt) {
-            if (receipt.Item == null&&receipt.Source!=AcquisitionSource.Gold) return;
-            string id = receipt.Source==AcquisitionSource.Gold?"currency:gold":receipt.Item is Inventory.MonsterItemDefinition def ? def.StableId : receipt.Item.name;
+            if (receipt.Item == null&&receipt.Source!=AcquisitionSource.Gold&&receipt.Source!=AcquisitionSource.Capture) return;
+            string id = receipt.Source==AcquisitionSource.Capture?receipt.TransactionId:receipt.Source==AcquisitionSource.Gold?"currency:gold":receipt.Item is Inventory.MonsterItemDefinition def ? def.StableId : receipt.Item.name;
             foreach (var row in rows) if (row.ItemId == id && Time.unscaledTime <= row.MergeUntil) {
                 row.Count = (int)Math.Min(int.MaxValue, (long)row.Count + receipt.Quantity);
                 row.Quantity.text = "×" + row.Count; row.Born = Time.unscaledTime;
@@ -66,13 +77,15 @@ namespace Capstone.Game.WorldFeedback {
             var reused = unused.Dequeue(); reused.Rect.gameObject.SetActive(true);
             reused.Rect.name = "Acquired " + id; reused.Icon.sprite = receipt.Icon; reused.Icon.enabled = receipt.Icon != null;
             reused.Name.text = receipt.DisplayName;
+            float maxNameWidth=receipt.Source==AcquisitionSource.Capture?230:180;
+            V.Top(reused.Name.rectTransform,58,5,maxNameWidth,46);
             reused.Name.horizontalOverflow = HorizontalWrapMode.Overflow;
-            if (reused.Name.preferredWidth > 180) {
+            if (reused.Name.preferredWidth > maxNameWidth) {
                 string original = receipt.DisplayName; int low = 0, high = original.Length;
-                while (low < high) { int mid = (low + high + 1) / 2; reused.Name.text = original.Substring(0, mid) + "…"; if (reused.Name.preferredWidth <= 180) low = mid; else high = mid - 1; }
+                while (low < high) { int mid = (low + high + 1) / 2; reused.Name.text = original.Substring(0, mid) + "…"; if (reused.Name.preferredWidth <= maxNameWidth) low = mid; else high = mid - 1; }
                 reused.Name.text = original.Substring(0, low).TrimEnd() + "…";
             }
-            reused.Quantity.text = "×" + receipt.Quantity; reused.ItemId = id; reused.Count = receipt.Quantity;
+            reused.Quantity.text = receipt.Source==AcquisitionSource.Capture?"":"×" + receipt.Quantity; reused.ItemId = id; reused.Count = receipt.Quantity;
             reused.Born = Time.unscaledTime; reused.MergeUntil = Time.unscaledTime + .4f;
             reused.Group.alpha = 0; rows.Add(reused);
             LastItemName = receipt.DisplayName; DisplayedReceipts++;

@@ -27,6 +27,6 @@ MonoBehaviour:
   offenseBuffPercent: 20
   buffDuration: 6
   buffVisual: {fileID: 0}
-  retreatDistance: 0
+  retreatDistance: 2.4
   retreatSpeed: 12
   preferredDistance: 5

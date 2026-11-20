@@ -19,6 +19,10 @@ MonoBehaviour:
   forms:
   - formId: 01
     displayName: "D\u01A1i Nh\u1ECF"
+    typingStatus: 1
+    primaryElement: 9
+    secondaryElement: 12
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 1162074717683033587, guid: 6997b2f444cea1c4ebba2af9b7dea132, type: 3}
     avatar: {fileID: 21300000, guid: 5a6ab5b08820ca241a3446c80a97a57b, type: 3}
     heroPortrait: {fileID: 0}
@@ -31,6 +35,10 @@ MonoBehaviour:
     animationProfile: {fileID: 11400000, guid: 5c8de83006e06474191110c2674b3640, type: 2}
   - formId: 02
     displayName: "D\u01A1i Ma C\xE0 R\u1ED3ng"
+    typingStatus: 1
+    primaryElement: 9
+    secondaryElement: 12
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 6328325485107444708, guid: 297592cbe5a45be4bbe3d75b44ee2d7b, type: 3}
     avatar: {fileID: 21300000, guid: 7305f2b68cd957c4a85fdf3ba7ab50ba, type: 3}
     heroPortrait: {fileID: 0}
@@ -43,6 +51,10 @@ MonoBehaviour:
     animationProfile: {fileID: 11400000, guid: bbcb53b90e76b89478dbef92cca7e9d4, type: 2}
   - formId: 03
     displayName: "D\u01A1i Ch\xFAa T\u1EC3"
+    typingStatus: 1
+    primaryElement: 9
+    secondaryElement: 12
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 2156180079196364993, guid: 52d1567d15f3e37428b2481553c58447, type: 3}
     avatar: {fileID: 21300000, guid: 656f11ffedf653740b96ad4aac0bbef9, type: 3}
     heroPortrait: {fileID: 0}

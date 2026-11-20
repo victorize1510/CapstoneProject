@@ -19,7 +19,7 @@ MonoBehaviour:
   description: "C\u1EAFn g\xE2y 120% ATK s\xE1t th\u01B0\u01A1ng v\u1EADt l\xFD.
     G\xE2y ch\u1EA3y m\xE1u 10% ATK m\u1ED7i gi\xE2y trong 3 gi\xE2y; c\xF9ng ngu\u1ED3n
     l\xE0m m\u1EDBi, kh\xF4ng c\u1ED9ng d\u1ED3n."
-  element: 1
+  element: 13
   icon: {fileID: 21300000, guid: 15a7d912e4d8ac543bc697d3baf264ec, type: 3}
   cooldownSeconds: 2
   manaCost: 8

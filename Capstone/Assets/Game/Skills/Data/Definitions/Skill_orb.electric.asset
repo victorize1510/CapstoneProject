@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_orb.electric
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: orb.electric
+  legacyIds: []
+  displayName: "Cầu điện"
+  description: "Phóng một đạn theo hướng thi triển; gây sát thương khi va chạm."
+  element: 6
+  icon: {fileID: 21300000, guid: 1af81a3699ff967469dca70d810c8b2e, type: 3}
+  cooldownSeconds: 4
+  manaCost: 0
+  criticalRateBonus: 0
+  criticalDamageBonus: 0
+  animatorStates: 
+  - Projectile Attack
+  animationDuration: 1
+  animationFade: 0.08
+  windupSeconds: 0
+  recoverySeconds: 0
+  presentation: {fileID: 11400000, guid: bd3636c3d32e65947f1f9bc0a49b76d6, type: 2}
+  combat: {fileID: 11400000, guid: 6c70b410671ae0ddf34107dac145e01b, type: 2}

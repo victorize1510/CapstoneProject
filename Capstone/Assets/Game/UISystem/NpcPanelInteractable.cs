@@ -35,6 +35,8 @@ namespace Capstone.Game.UISystem {
             SetPromptVisible(false);
         }
 
+        void OnEnable() { Capstone.Game.WorldFeedback.CameraActorOccluder.Ensure(gameObject); }
+
         void OnDisable() {
             SetPromptVisible(false);
         }

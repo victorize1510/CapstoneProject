@@ -115,12 +115,22 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 data.FindProperty("geneticsInitialized").boolValue = false; data.FindProperty("captureGeneticsRolled").boolValue = false;
                 data.FindProperty("definitionId").stringValue = family.definitionId; data.FindProperty("species").stringValue = names[stage];
                 data.FindProperty("currentFormId").stringValue = form.formId; data.FindProperty("evolutionStage").intValue = stage;
+                if (!form.TryGetTyping(out var primary, out var secondary))
+                    throw new InvalidOperationException("Family chưa có cấu hình hệ hợp lệ: " + form.formId);
+                data.FindProperty("element").intValue = (int)primary;
+                data.FindProperty("secondaryElement").intValue = (int)secondary;
                 var rules = data.FindProperty("evolutionRules");
                 if (rules.arraySize != 2) throw new InvalidOperationException("Legacy dragon template must retain both original rules.");
                 for (int i = 0; i < 2; i++) {
                     var rule = rules.GetArrayElementAtIndex(i);
-                    rule.FindPropertyRelative("targetVisualPrefab").objectReferenceValue = family.forms[i + 1].visualPrefab;
-                    rule.FindPropertyRelative("targetIcon").objectReferenceValue = family.forms[i + 1].avatar;
+                    var target = family.forms[i + 1];
+                    if (!target.TryGetTyping(out var targetPrimary, out var targetSecondary))
+                        throw new InvalidOperationException("Form tiến hóa chưa có cấu hình hệ hợp lệ: " + target.formId);
+                    rule.FindPropertyRelative("targetVisualPrefab").objectReferenceValue = target.visualPrefab;
+                    rule.FindPropertyRelative("targetIcon").objectReferenceValue = target.avatar;
+                    rule.FindPropertyRelative("targetElement").intValue = (int)targetPrimary;
+                    rule.FindPropertyRelative("targetSecondaryElement").intValue = (int)targetSecondary;
+                    rule.FindPropertyRelative("replaceSecondaryElement").boolValue = true;
                 }
                 data.ApplyModifiedPropertiesWithoutUndo();
                 var stats = go.GetComponent<PetHudRuntimeStats>(); data = new SerializedObject(stats);

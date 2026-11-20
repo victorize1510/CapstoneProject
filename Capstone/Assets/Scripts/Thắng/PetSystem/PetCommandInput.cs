@@ -9,61 +9,52 @@ using VisualElement = UnityEngine.UIElements.VisualElement;
 using TextField = UnityEngine.UIElements.TextField;
 
 [DisallowMultipleComponent]
-public class PetCommandInput : MonoBehaviour
+public partial class PetCommandInput : MonoBehaviour
 {
     float lastReturnPress = float.NegativeInfinity;
     DummyEnemy selectedEnemy;
     public DummyEnemy SelectedEnemy => selectedEnemy != null && selectedEnemy.IsSelectable ? selectedEnemy : null;
-    private static readonly KeyCode[] NumberKeys =
-    {
-        KeyCode.Alpha1,
-        KeyCode.Alpha2,
-        KeyCode.Alpha3,
-        KeyCode.Alpha4,
-        KeyCode.Alpha5,
-        KeyCode.Alpha6
-    };
-
-    private static readonly KeyCode[] KeypadKeys =
-    {
-        KeyCode.Keypad1,
-        KeyCode.Keypad2,
-        KeyCode.Keypad3,
-        KeyCode.Keypad4,
-        KeyCode.Keypad5,
-        KeyCode.Keypad6
-    };
-
-    [Header("References")]
+    private static readonly KeyCode[] NumberKeys = {KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6};
+    private static readonly KeyCode[] KeypadKeys = {KeyCode.Keypad1, KeyCode.Keypad2, KeyCode.Keypad3, KeyCode.Keypad4, KeyCode.Keypad5, KeyCode.Keypad6};
+    [Header("Tham chieu")]
     public PetController activePet;
     public PetController[] petSlots = new PetController[6];
     public Camera commandCamera;
     public BasicCameraFollow cameraLock;
-    [SerializeField] private PetSummonDirector summonDirector;
-
-    [Header("Input")]
+    [SerializeField]
+    private PetSummonDirector summonDirector;
+    [Header("Doc input")]
     public int commandMouseButton = 0;
     public KeyCode withdrawKey = KeyCode.Backspace;
     public bool ignoreWhileRightMouseHeld = false;
     public bool allowCommandsWhileRightMouseHeld = true;
     public int aimMouseButton = 1;
     public bool ignoreWhenPointerOverUI = true;
-
-    [Header("Raycast")]
+    [Header("Truy van vat ly")]
     public float rayDistance = 250f;
     public LayerMask commandMask = ~0;
     public bool useScreenCenterWhenCursorLocked = true;
     public bool useScreenCenterWhileAiming = false;
-
     private readonly RaycastHit[] hits = new RaycastHit[16];
-
-    public bool CanUsePetSkills => activePet != null && activePet.isActiveAndEnabled
-        && activePet.CanReceiveCommands && (summonDirector == null || !summonDirector.IsSequenceRunning);
-
+    public bool CanUsePetSkills => activePet != null && activePet.isActiveAndEnabled && activePet.CanReceiveCommands && (summonDirector == null || !summonDirector.IsSequenceRunning);
     public event System.Action<int> PetSlotSummonRequested;
-
-    private void OnEnable() => ResolveCameraLock(commandCamera != null ? commandCamera : Camera.main);
-
+    BasicCameraFollow subscribedCamera;
+    private void OnEnable()
+    {
+        ResolveCameraLock(commandCamera != null ? commandCamera : Camera.main);
+        ResumeOwnedPetStorage();
+    }
+    private void OnDisable()
+    {
+        if (subscribedCamera != null) subscribedCamera.EnemyPinned -= SelectPinnedEnemy;
+        subscribedCamera = null;
+        PauseOwnedPetStorage();
+    }
+    void SelectPinnedEnemy(DummyEnemy enemy)
+    {
+        // Chon de ngam/bat; chi click hoac skill moi phat lenh tan cong.
+        if (enemy != null && enemy.IsSelectable) selectedEnemy = enemy;
+    }
     private void Awake()
     {
         if (commandCamera == null)
@@ -72,14 +63,12 @@ public class PetCommandInput : MonoBehaviour
         }
 
         ResolveCameraLock(commandCamera);
-
         if (summonDirector == null)
         {
             summonDirector = GetComponent<PetSummonDirector>();
         }
 
         EnsureSlots();
-
         if (activePet == null)
         {
             PetController[] candidates = FindObjectsByType<PetController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -107,7 +96,6 @@ public class PetCommandInput : MonoBehaviour
         }
 
         HandlePetSlotInput();
-
         if (summonDirector != null && summonDirector.IsSequenceRunning)
         {
             return;
@@ -118,7 +106,10 @@ public class PetCommandInput : MonoBehaviour
             return;
         }
 
-        if (!CanSendPointerCommand()) return;
+        if (!CanSendPointerCommand())
+        {
+            return;
+        }
 
         Camera cameraToUse = commandCamera != null ? commandCamera : Camera.main;
         if (cameraToUse == null)
@@ -127,6 +118,11 @@ public class PetCommandInput : MonoBehaviour
         }
 
         ResolveCameraLock(cameraToUse);
+        if (cameraLock != null && cameraLock.TryGetLockedEnemy(out var pinned))
+        {
+            TryCommandAttack(pinned);
+            return;
+        }
         Ray ray = cameraToUse.ScreenPointToRay(GetCommandScreenPoint());
         int hitCount = Physics.RaycastNonAlloc(ray, hits, rayDistance, commandMask, QueryTriggerInteraction.Collide);
         if (hitCount <= 0 || hitCount == hits.Length)
@@ -136,21 +132,30 @@ public class PetCommandInput : MonoBehaviour
 
         if (TryFindClickedEnemy(hitCount, out DummyEnemy clickedEnemy))
         {
-            if(clickedEnemy.IsDowned){selectedEnemy=clickedEnemy;return;}
+            if (clickedEnemy.IsDowned)
+            {
+                selectedEnemy = clickedEnemy;
+                return;
+            }
+
             TryCommandAttack(clickedEnemy);
         }
     }
 
-    private bool CanSendPointerCommand() =>
-        (allowCommandsWhileRightMouseHeld || !ignoreWhileRightMouseHeld || !Input.GetMouseButton(aimMouseButton))
-        && (!ignoreWhenPointerOverUI || Cursor.lockState == CursorLockMode.Locked
-            || EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject());
-
+    private bool CanSendPointerCommand() => (allowCommandsWhileRightMouseHeld || !ignoreWhileRightMouseHeld || !Input.GetMouseButton(aimMouseButton)) && (!ignoreWhenPointerOverUI || Cursor.lockState == CursorLockMode.Locked || EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject());
     public bool TryCommandAttack(DummyEnemy enemy)
     {
-        if (InventoryInputController.GameplayInputBlocked || !CanUsePetSkills
-            || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsAlive) return false;
-        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "attack")) return false;
+        if (InventoryInputController.GameplayInputBlocked || !CanUsePetSkills || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsAlive)
+        {
+            return false;
+        }
+
+        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "attack"))
+        {
+            return false;
+        }
+
+        Capstone.Game.CreatureSystem.CombatEngagement.Select(this, enemy);
         activePet.CommandAttack(enemy);
         selectedEnemy = enemy;
         return true;
@@ -203,7 +208,6 @@ public class PetCommandInput : MonoBehaviour
         Debug.Log($"Debug pet level: {metadata.ResolveDisplayName(stats.DisplayName)} Lv. {nextLevel}", pet);
     }
 #endif
-
     public void SetActivePet(PetController pet)
     {
         activePet = pet;
@@ -216,7 +220,6 @@ public class PetCommandInput : MonoBehaviour
     private void HandlePetSlotInput()
     {
         EnsureSlots();
-
         for (int i = 0; i < petSlots.Length && i < NumberKeys.Length; i++)
         {
             if (Input.GetKeyDown(NumberKeys[i]) || Input.GetKeyDown(KeypadKeys[i]))
@@ -235,20 +238,39 @@ public class PetCommandInput : MonoBehaviour
 
     public void ProcessReturnPress(float now)
     {
-        if (InventoryInputController.GameplayInputBlocked || activePet == null) return;
+        if (InventoryInputController.GameplayInputBlocked || activePet == null)
+        {
+            return;
+        }
+
         bool doublePress = now - lastReturnPress <= .3f;
         lastReturnPress = doublePress ? float.NegativeInfinity : now;
         selectedEnemy = null;
         activePet.GetComponent<Capstone.Game.Skills.PetCombatActionDriver>()?.ReturnToOwner();
-        if (doublePress) WithdrawActivePet();
-        else activePet.ReturnToOwner();
+        if (doublePress)
+        {
+            WithdrawActivePet();
+        }
+        else
+        {
+            activePet.ReturnToOwner();
+        }
     }
 
-    void OnApplicationFocus(bool focus) { if (!focus) lastReturnPress = float.NegativeInfinity; }
+    void OnApplicationFocus(bool focus)
+    {
+        if (!focus)
+        {
+            lastReturnPress = float.NegativeInfinity;
+        }
+    }
 
     public void RequestSummonSlot(int slotIndex)
     {
-        if (!InventoryInputController.GameplayInputBlocked) SummonSlot(slotIndex);
+        if (!InventoryInputController.GameplayInputBlocked)
+        {
+            SummonSlot(slotIndex);
+        }
     }
 
     private void SummonSlot(int slotIndex)
@@ -260,11 +282,19 @@ public class PetCommandInput : MonoBehaviour
 
         if (summonDirector != null)
         {
-            if (summonDirector.RequestSummonSlot(slotIndex)) PetSlotSummonRequested?.Invoke(slotIndex);
+            if (summonDirector.RequestSummonSlot(slotIndex))
+            {
+                PetSlotSummonRequested?.Invoke(slotIndex);
+            }
+
             return;
         }
 
-        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "summon:" + slotIndex)) return;
+        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "summon:" + slotIndex))
+        {
+            return;
+        }
+
         if (!TryGetPetInSlot(slotIndex, out PetController selectedPet))
         {
             return;
@@ -307,7 +337,11 @@ public class PetCommandInput : MonoBehaviour
             return;
         }
 
-        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "recall")) return;
+        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "recall"))
+        {
+            return;
+        }
+
         activePet.Withdraw();
     }
 
@@ -366,7 +400,16 @@ public class PetCommandInput : MonoBehaviour
         if (cameraLock == null || !cameraLock.isActiveAndEnabled)
         {
             cameraLock = cameraToUse != null ? cameraToUse.GetComponent<BasicCameraFollow>() : null;
-            if (cameraLock == null) cameraLock = FindFirstObjectByType<BasicCameraFollow>();
+            if (cameraLock == null)
+            {
+                cameraLock = FindFirstObjectByType<BasicCameraFollow>();
+            }
+        }
+        if (subscribedCamera != cameraLock)
+        {
+            if (subscribedCamera != null) subscribedCamera.EnemyPinned -= SelectPinnedEnemy;
+            subscribedCamera = cameraLock;
+            if (subscribedCamera != null) subscribedCamera.EnemyPinned += SelectPinnedEnemy;
         }
     }
 
@@ -374,7 +417,6 @@ public class PetCommandInput : MonoBehaviour
     {
         clickedEnemy = null;
         float bestDistance = float.PositiveInfinity;
-
         for (int i = 0; i < hitCount; i++)
         {
             Collider candidate = hits[i].collider;
@@ -384,9 +426,7 @@ public class PetCommandInput : MonoBehaviour
             }
 
             DummyEnemy enemy = candidate.GetComponentInParent<DummyEnemy>();
-            if (candidate.transform.IsChildOf(transform)
-                || (candidate.GetComponentInParent<PetController>() is var petBody && petBody != null && !petBody.IsWildEncounter)
-                || (candidate.isTrigger && enemy == null))
+            if (candidate.transform.IsChildOf(transform) || (candidate.GetComponentInParent<PetController>()is var petBody && petBody != null && !petBody.IsWildEncounter) || (candidate.isTrigger && enemy == null))
             {
                 continue;
             }
@@ -397,5 +437,4 @@ public class PetCommandInput : MonoBehaviour
 
         return clickedEnemy != null;
     }
-
 }

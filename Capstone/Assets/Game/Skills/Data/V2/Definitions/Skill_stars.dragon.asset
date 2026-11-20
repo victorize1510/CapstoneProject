@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_stars.dragon
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: stars.dragon
+  legacyIds: []
+  displayName: "Ch\u00F9m Sao R\u1ED3ng"
+  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  element: 10
+  icon: {fileID: 21300000, guid: e31cf94d994592a419ddc51b0f39f76e, type: 3}
+  cooldownSeconds: 5.5
+  animationDuration: 1
+  animationFade: 0.08
+  animatorStates: []
+  presentation: {fileID: 11400000, guid: 099af939fc148be4d2cde3691d54b0d1, type: 2}
+  combat: {fileID: 11400000, guid: 2d384ed28c8ebaf6f279f4df0f6a13a1, type: 2}

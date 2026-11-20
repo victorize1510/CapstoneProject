@@ -98,7 +98,7 @@ namespace Capstone.Game.HudSystem {
             string displayName = string.IsNullOrWhiteSpace(preview.DisplayName) ? "Chọn một thú" : preview.DisplayName;
             SetPortrait(portrait, portraitFallback, preview.Icon, displayName);
             if (petName != null) petName.text = displayName;
-            if (species != null) species.text = DisplayOrDash(preview.Species);
+            if (species != null) species.text = DisplayOrDash(preview.Metadata != null ? preview.Metadata.SpeciesDisplayName : Capstone.Game.CreatureSystem.CreatureDisplayNames.LocalizeSystemName(preview.Species));
             if (element != null) element.text = FormatElement(preview.Element);
             if (rarity != null) rarity.text = FormatRarity(preview.Rarity);
             if (level != null) level.text = preview.IsValid ? $"Cấp {preview.Level}" : "-";

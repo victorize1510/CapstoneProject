@@ -19,22 +19,46 @@ MonoBehaviour:
   forms:
   - formId: 01
     displayName: "Kh\u1EE7ng Long L\u1EEDa"
+    typingStatus: 1
+    primaryElement: 2
+    secondaryElement: 10
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 6441672652124175571, guid: 441cc1e283df1a044acfd221971ed0d8, type: 3}
     avatar: {fileID: 21300000, guid: dc2be1dc358c14e48a083f2eca623df7, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: cf9d1b5af5ed14641365a91d85e41f71, type: 2}
+    skillSet: {fileID: 11400000, guid: 154e5cd9238e3be45985017cedf84dae, type: 2}
+    visualPrefab: {fileID: 6441672652124175571, guid: 3389031cd78d4de5ae331e0165e66f7b, type: 3}
+    animationProfile: {fileID: 11400000, guid: 0509857c42404814846966b9d8a3cbb8, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: b9ee0fc57e6c9a99b424b23cf407c24c, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 1af90e075f46460d6ba3a5af48d24168, type: 3}
   - formId: 02
     displayName: "R\u1ED3ng L\u1EEDa Bay"
+    typingStatus: 1
+    primaryElement: 2
+    secondaryElement: 10
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 1186819576259076603, guid: f839e11588133ba4ea13edb3db72c822, type: 3}
     avatar: {fileID: 21300000, guid: 848f48cbb61ce6d4caae2e202b0fa64c, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 05cf8692dbb43224c7f7208d61962cde, type: 2}
+    skillSet: {fileID: 11400000, guid: acfb908feb54e098a0a430c73f80a44e, type: 2}
+    visualPrefab: {fileID: 1186819576259076603, guid: cf268aed79c2431d84679fbd936fbff2, type: 3}
+    animationProfile: {fileID: 11400000, guid: b9e111a58d8146c7b782c166f17780c5, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: e814f0d9b4179189965cae3853af16d7, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 6bc8517c4622ba85165b738860b69eaa, type: 3}
   - formId: 03
     displayName: "R\u1ED3ng L\u1EEDa \u0110\u1ECBa Ng\u1EE5c"
+    typingStatus: 1
+    primaryElement: 2
+    secondaryElement: 10
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 8935804055337787527, guid: e76e3e9836000144495ea816ed4e8b58, type: 3}
     avatar: {fileID: 21300000, guid: ad6b6080d1afd99429089b40b18db182, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 5c87de57943fa17aa8eedbf7b2a2874b, type: 2}
+    skillSet: {fileID: 11400000, guid: 4ee2b2e6c0b5e224c3257f3e621e2bb1, type: 2}
+    visualPrefab: {fileID: 8935804055337787527, guid: 657d24a0f0b449f8baf76592b7424d50, type: 3}
+    animationProfile: {fileID: 11400000, guid: 0acbf7b44bc042b9ae283d8e0ce0c0c1, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: 9d449913acde8f60b1f6bef85a4804cb, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 68eb7f664360a371ab253b443740bd04, type: 3}

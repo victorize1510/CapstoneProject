@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17c454ea0bc778f488b17b8270673990, type: 3}
+  m_Name: Species_cat-electric
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSpeciesSkillSet
+  speciesId: cat-electric
+  startingMana: 0
+  catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
+  initializeFreshWildLoadout: 1
+  learnset: 
+  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - Bite Attack
+    animationDuration: 0.8333333333333334
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: ebcc8c50a97646a74dfdd7de732381c5, type: 2}
+  - skill: {fileID: 11400000, guid: 8a74da36cc1789b00ab037cf39bed032, type: 2}
+    learnAtLevel: 5
+    overrideAnimation: 1
+    animatorStates:
+    - Cast Spell
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 11025ea221a53c14f7e0ede6e62a73bc, type: 2}
+  - skill: {fileID: 11400000, guid: 3b15b43d2ce910b6b53cbb6e4d127bac, type: 2}
+    learnAtLevel: 12
+    overrideAnimation: 1
+    animatorStates:
+    - Projectile Attack
+    animationDuration: 0.8333333333333334
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 0443001ef3a5596b5ec5b81d3cf6739b, type: 2}
+  - skill: {fileID: 11400000, guid: cf102f878a9b667127ed4e3e654030d4, type: 2}
+    learnAtLevel: 30
+    overrideAnimation: 1
+    animatorStates:
+    - Cast Spell
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: fe83b5cdc9beb8ea0e6fc79ff2551988, type: 2}
+  - skill: {fileID: 11400000, guid: 64460269199456f188a5c596924e28a3, type: 2}
+    learnAtLevel: 36
+    overrideAnimation: 1
+    animatorStates:
+    - Cast Spell
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  defaultLoadout: 
+  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - {fileID: 11400000, guid: 8a74da36cc1789b00ab037cf39bed032, type: 2}
+  - {fileID: 11400000, guid: 3b15b43d2ce910b6b53cbb6e4d127bac, type: 2}
+  - {fileID: 11400000, guid: cf102f878a9b667127ed4e3e654030d4, type: 2}

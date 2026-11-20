@@ -5,10 +5,21 @@ using Capstone.Game.Skills;
 using UnityEngine;
 
 namespace Capstone.Game.CreatureSystem {
+    public enum CreatureTypingStatus { Unconfigured, Configured, Conflict }
     [Serializable]
     public sealed class CreatureFormDefinition {
         public string formId;
         public string displayName;
+        [Header("Typing thiet ke - khong ghi de ca the/save")]
+        public CreatureTypingStatus typingStatus;
+        [Capstone.Game.Elements.SupportedElement] public PetElement primaryElement;
+        [Capstone.Game.Elements.SupportedElement(true)] public PetElement secondaryElement;
+        [TextArea] public string typingNote;
+        public bool TryGetTyping(out PetElement primary, out PetElement secondary) {
+            primary = primaryElement; secondary = secondaryElement;
+            return typingStatus == CreatureTypingStatus.Configured && primary != secondary
+                && Capstone.Game.Elements.ElementCatalog.IsValidCreatureTypes(primary, secondary);
+        }
         [Tooltip("Existing authored prefab. May contain gameplay scripts: this is NOT a model-only spawn contract.")]
         public GameObject sourcePrefab;
         public Sprite avatar;

@@ -117,7 +117,11 @@ namespace Capstone.Game.HudSystem {
                 return;
             }
             var metadata=pet!=null?pet.GetComponentInChildren<PetCollectionMetadata>(true):null;
-            var art=companionArt?.Find(metadata)?.largeIllustration;
+            var entry=companionArt?.Find(metadata);
+            // Dung chung avatar voi doi hinh; chi dung tranh rieng neu avatar khong co.
+            var art=entry?.avatarCrop;
+            if(art==null&&pet!=null)art=pet.GetComponentInChildren<PetHudRuntimeStats>(true)?.Icon;
+            if(art==null)art=entry?.largeIllustration;
             Capstone.Game.UISystem.AngularSurface.SetArt(selectedPortrait,art);
             if(selectedPortraitFallback!=null){selectedPortraitFallback.text=pet!=null?"Chưa có ảnh minh họa 2D":"Chọn một thú để xem";selectedPortraitFallback.style.display=art!=null?DisplayStyle.None:DisplayStyle.Flex;}
         }

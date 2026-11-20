@@ -17,11 +17,11 @@ namespace Capstone.Game.CreatureSystem {
         readonly List<PendingPveRewardSaveData> pending=new List<PendingPveRewardSaveData>();
         readonly HashSet<string> journaled=new HashSet<string>(StringComparer.Ordinal),completed=new HashSet<string>(StringComparer.Ordinal);
         readonly Queue<string> completedOrder=new Queue<string>();
-        readonly Dictionary<string,float> flights=new Dictionary<string,float>();
-        readonly Dictionary<string,InventoryItemRarity> rarityCache=new Dictionary<string,InventoryItemRarity>();
         PlayerSaveController save;MonsterInventoryAdapter inventory;PlayerCurrencyWallet wallet;PetCommandInput player;
-        PetLevelUpService levels;PveLootView view;
+        PetLevelUpService levels;
+        string announcedFailure;
         [SerializeField] PveLootCatalog catalog;
+        readonly Dictionary<string,DummyEnemy> awaitingDeath=new Dictionary<string,DummyEnemy>();
         bool busy;float nextLookup,nextPoll,retryAt;int writeFailures;
         public string LastFailure{get;private set;}
         public int PendingCount=>pending.Count;
@@ -30,8 +30,8 @@ namespace Capstone.Game.CreatureSystem {
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]static void Install(){foreach(var controller in Object.FindObjectsByType<PlayerSaveController>(FindObjectsInactive.Include,FindObjectsSortMode.None))if(controller.GetComponent<PveRewardService>()==null)controller.gameObject.AddComponent<PveRewardService>();}
         void Awake(){save=GetComponent<PlayerSaveController>();Resolve();}
         void OnEnable(){SceneManager.activeSceneChanged+=SceneChanged;}
-        void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;if(view!=null)view.Clear();flights.Clear();}
-        void SceneChanged(Scene old,Scene current){if(view!=null)view.Clear();flights.Clear();player=null;nextLookup=0;}
+        void OnDisable(){SceneManager.activeSceneChanged-=SceneChanged;}
+        void SceneChanged(Scene old,Scene current){player=null;nextLookup=0;}
         void Resolve(){
             if(save==null)save=GetComponent<PlayerSaveController>();
             if(inventory==null)inventory=Object.FindFirstObjectByType<MonsterInventoryAdapter>();
@@ -43,12 +43,12 @@ namespace Capstone.Game.CreatureSystem {
         public void ConfigureLoot(PveLootCatalog value) { catalog=value; }
         public PveRewardsSaveData CreateSaveData()=>new PveRewardsSaveData{captured=true,pending=new List<PendingPveRewardSaveData>(pending)};
         public void RestoreFromSaveData(PveRewardsSaveData data){
-            if(view!=null)view.Clear();pending.Clear();journaled.Clear();completed.Clear();completedOrder.Clear();flights.Clear();rarityCache.Clear();
+            pending.Clear();journaled.Clear();completed.Clear();completedOrder.Clear();awaitingDeath.Clear();announcedFailure=null;
             if(data?.captured!=true||data.pending==null)return;
             foreach(var record in data.pending){pending.Add(record);journaled.Add(record.transactionId);}
         }
         public static bool HandleDefeat(DummyEnemy enemy,GameObject source){
-            if(enemy==null||enemy.IsTrainingDummy||enemy.IsBoss||enemy.GetComponent<CreatureCombatant>()==null)return false;
+            if(enemy==null||enemy.IsTrainingDummy||enemy.GetComponent<CreatureCombatant>()==null)return false;
             var memory=enemy.GetComponent<PveCombatState>();if(memory==null||memory.Contributions.Count==0)return false;
             var controller=Object.FindFirstObjectByType<PlayerSaveController>();if(controller==null)return false;
             var service=controller.GetComponent<PveRewardService>();if(service==null)service=controller.gameObject.AddComponent<PveRewardService>();
@@ -79,7 +79,7 @@ namespace Capstone.Game.CreatureSystem {
                 if(share<=0)continue;
                 record.pets.Add(new PvePetRewardSaveData{petId=identity.PetId,experience=PveBalanceRules.ExperienceAward(enemy.ExperienceReward,stats.Level,enemyLevel,share),effort=finisher?enemy.EffortYield:default});
             }
-            pending.Add(record);LastStagedId=id;
+            pending.Add(record);awaitingDeath[id]=enemy;LastStagedId=id;
             // Roll once, persist the journal, then show loot. A failed journal stays in memory for retry.
             if(!CaptureEventBatch.IsActive&&SavePending()){journaled.Add(id);TryExperience(record);}
             return true;
@@ -88,6 +88,7 @@ namespace Capstone.Game.CreatureSystem {
             bool saved=save!=null&&save.RetryPendingRewardSave();
             if(saved){foreach(var record in pending)journaled.Add(record.transactionId);writeFailures=0;retryAt=0;LastFailure="";return true;}
             LastFailure=save!=null?save.SaveBlockedReason:"Chưa kết nối hệ thống lưu.";
+            ReportPending("Chưa lưu được thưởng. Hệ thống sẽ tự thử lại.");
             retryAt=Time.unscaledTime+Mathf.Min(30,Mathf.Pow(2,++writeFailures));return false;
         }
         sealed class PetSnapshot {public PetCollectionMetadata metadata;public PetHudRuntimeStats stats;public PetCustomizationSaveData customization;public PetRuntimeStatsSaveData runtime;}
@@ -116,16 +117,18 @@ namespace Capstone.Game.CreatureSystem {
         }
         public bool TryCollect(string transactionId){
             if(busy||CaptureEventBatch.IsActive||completed.Contains(transactionId))return false;
+            if(awaitingDeath.TryGetValue(transactionId,out var dying)&&dying!=null&&dying.gameObject.activeInHierarchy&&!dying.DeathVisualComplete)return false;
             var record=pending.FirstOrDefault(r=>r.transactionId==transactionId);if(record==null||!journaled.Contains(transactionId)||!record.experienceCommitted)return false;
             Resolve();if(inventory==null||wallet==null||save==null||wallet.Gold>int.MaxValue-record.gold)return false;
             var originalSlots=inventory.CaptureSlots();var originalGold=wallet.CreateSaveData();int index=pending.IndexOf(record);bool committed=false;busy=true;
             using(var batch=new CaptureEventBatch()){
                 try{
-                    foreach(var reward in record.items){var definition=inventory.FindItemBase(reward.itemId);if(definition==null||!inventory.TryAddItemAtomic(definition,reward.quantity,false)){LastFailure="Túi chưa thể nhận phần thưởng. Vật phẩm vẫn đang chờ.";retryAt=Time.unscaledTime+2;return false;}}
+                    foreach(var reward in record.items){var definition=inventory.FindItemBase(reward.itemId);if(definition==null||!inventory.TryAddItemAtomic(definition,reward.quantity,false)){LastFailure="Túi chưa thể nhận phần thưởng. Vật phẩm vẫn đang chờ.";ReportPending("Túi chưa nhận được thưởng. Vật phẩm vẫn đang chờ.");retryAt=Time.unscaledTime+2;return false;}}
                     wallet.AddGold(record.gold);pending.RemoveAt(index);
                     if(!SavePending())return false;
                     committed=true;completed.Add(transactionId);completedOrder.Enqueue(transactionId);while(completedOrder.Count>1024)completed.Remove(completedOrder.Dequeue());
-                    journaled.Remove(transactionId);flights.Remove(transactionId);rarityCache.Remove(transactionId);view?.Remove(transactionId);CompletedCount++;
+                    journaled.Remove(transactionId);awaitingDeath.Remove(transactionId);CompletedCount++;
+                    if(pending.Count==0)announcedFailure=null;
                     inventory.NotifyAtomicAddition();batch.Commit();
                 }finally{
                     if(!committed){inventory.RestoreCaptureSlots(originalSlots);wallet.RestoreFromSaveData(originalGold);if(!pending.Contains(record))pending.Insert(Mathf.Min(index,pending.Count),record);}
@@ -138,33 +141,21 @@ namespace Capstone.Game.CreatureSystem {
             return true;
         }
         void Update(){
+            if(UISystem.GameplayPause.IsPaused)return;
             if(Time.unscaledTime>=nextLookup){nextLookup=Time.unscaledTime+1;Resolve();}
             if(player==null||save==null||save.IsApplyingSave||PetEvolutionPresentationController.AnyPlaying)return;
-            if(view==null&&pending.Count>0&&catalog!=null&&catalog.glowMaterial!=null){view=gameObject.AddComponent<PveLootView>();view.Build(catalog.glowMaterial);}
-            Vector3 receiver=player.transform.position+Vector3.up;
-            long nowTicks=DateTime.UtcNow.Ticks;
-            bool poll=Time.unscaledTime>=nextPoll&&Time.unscaledTime>=retryAt;if(poll)nextPoll=Time.unscaledTime+.25f;
-            // Snapshot IDs allows successful collections to remove records without invalidating iteration.
+            bool poll=Time.unscaledTime>=nextPoll&&Time.unscaledTime>=retryAt;
+            if(!poll)return;
+            nextPoll=Time.unscaledTime+.25f;
             for(int i=pending.Count-1;i>=0;i--){
                 if(i>=pending.Count)continue;var record=pending[i];
-                if(!journaled.Contains(record.transactionId)){if(poll&&SavePending())journaled.Add(record.transactionId);else continue;}
-                if(!record.experienceCommitted){if(poll)TryExperience(record);if(!record.experienceCommitted)continue;}
-                Vector3 position=new Vector3(record.x,record.y,record.z)+Vector3.up*.25f;
-                bool sameScene=record.scene==SceneManager.GetActiveScene().name;
-                bool close=(position-player.transform.position).sqrMagnitude<=2.5f*2.5f;
-                double age=Math.Max(0,(nowTicks-record.createdUtcTicks)/(double)TimeSpan.TicksPerSecond);
-                if(flights.TryGetValue(record.transactionId,out float start)){
-                    float t=Mathf.Clamp01((Time.unscaledTime-start)/.35f);Vector3 control=(position+receiver)*.5f+Vector3.up*.8f;
-                    view?.Place(record.transactionId,(1-t)*(1-t)*position+2*(1-t)*t*control+t*t*receiver,Rarity(record));
-                    if(t>=1&&poll){if(!TryCollect(record.transactionId))flights.Remove(record.transactionId);}continue;
-                }
-                if(poll&&(close||age>=20||!sameScene)){
-                    if(!sameScene||(position-player.transform.position).sqrMagnitude>25*25){var rarity=Rarity(record);if(TryCollect(record.transactionId))view?.Receive(receiver,rarity);continue;}
-                    flights[record.transactionId]=Time.unscaledTime;
-                }
-                if(sameScene)view?.Place(record.transactionId,position,Rarity(record));
+                if(!journaled.Contains(record.transactionId)&&!SavePending())continue;
+                if(!record.experienceCommitted&&!TryExperience(record))continue;
+                if(awaitingDeath.TryGetValue(record.transactionId,out var actor) && actor!=null && actor.gameObject.activeInHierarchy && !actor.DeathVisualComplete)continue;
+                awaitingDeath.Remove(record.transactionId);
+                TryCollect(record.transactionId);
             }
         }
-        InventoryItemRarity Rarity(PendingPveRewardSaveData record){if(rarityCache.TryGetValue(record.transactionId,out var cached))return cached;InventoryItemRarity rarity=InventoryItemRarity.Common;foreach(var reward in record.items)if(inventory.FindItemBase(reward.itemId) is MonsterItemDefinition item&&item.Rarity>rarity)rarity=item.Rarity;rarityCache[record.transactionId]=rarity;return rarity;}
+        void ReportPending(string message){if(announcedFailure==message)return;announcedFailure=message;AcquisitionToastView.ShowPending(message);}
     }
 }

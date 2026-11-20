@@ -7,6 +7,7 @@ namespace Capstone.Game.CreatureSystem {
         [Range(.05f, .2f)] public float cameraDuration = .1f;
         [Range(0, .05f)] public float criticalVisualPause = .035f;
         public GameObject basicImpact, bleedImpact;
+        public GameObject deathSmoke;
         public AudioClip basicSound, bleedSound;
     }
 }

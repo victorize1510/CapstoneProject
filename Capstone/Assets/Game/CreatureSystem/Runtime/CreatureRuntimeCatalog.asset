@@ -31,3 +31,84 @@ MonoBehaviour:
   - definitionId: bat
     formId: 03
     prefab: {fileID: 4454446570812760368, guid: 5ca9083e43d13074085e581a376f1959, type: 3}
+  - definitionId: chick
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: 63039a30c3aff23d242fa0ded598a41f, type: 3}
+  - definitionId: chick
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: 3030d5e55830ba0d7e71581e629c79e4, type: 3}
+  - definitionId: chick
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: ddcdfcc255852d6b8d8db1af64db4d4c, type: 3}
+  - definitionId: cat-electric
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: b20f01118c47a884966ff1d28e83ce4e, type: 3}
+  - definitionId: cat-electric
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: 12fbc27050ec4337704fa8060a5a2fbf, type: 3}
+  - definitionId: cat-electric
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: 27efe81ad24ad49f3d7b6a916b2fe061, type: 3}
+  - definitionId: dragon-fire
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: b9ee0fc57e6c9a99b424b23cf407c24c, type: 3}
+  - definitionId: dragon-fire
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: e814f0d9b4179189965cae3853af16d7, type: 3}
+  - definitionId: dragon-fire
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: 9d449913acde8f60b1f6bef85a4804cb, type: 3}
+  - definitionId: ghost
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: 065213881f011175537f525329b194bd, type: 3}
+  - definitionId: ghost
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: e747f0a6a7a82ea0d7da5a5be13e4534, type: 3}
+  - definitionId: ghost
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: 89f7775d1a63ab13b5fd0e093ded033d, type: 3}
+  - definitionId: egg-shadow
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: 1b69fce019899ac137f462a469ce5abf, type: 3}
+  - definitionId: egg-shadow
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: e31d86517dc2bedd04094a330f4e54a4, type: 3}
+  - definitionId: egg-shadow
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: 3fd4af81bd926c80a4645127e04cbcc0, type: 3}
+  - definitionId: snake-fire
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: 5085c7449e22e22e47ce5488fda9fe2f, type: 3}
+  - definitionId: snake-fire
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: c867129213ea5f43534e1ef67112d6c6, type: 3}
+  - definitionId: snake-fire
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: 86c1245595dbff26dce8dc4b0e3f58f6, type: 3}
+  - definitionId: shell
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: f310c7c3ccef4e38a0e6cc19df087b9b, type: 3}
+  - definitionId: shell
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: 7b9ef25ac707e265981f14d678fca612, type: 3}
+  - definitionId: shell
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: b938fbaa4d672174b8c9ba6af2d28f65, type: 3}
+  - definitionId: sun-blossom
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: 10690386185bd95bfdce2d81d5863919, type: 3}
+  - definitionId: sun-blossom
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: 78c4b74796d1fcb03f21bd9187c8221b, type: 3}
+  - definitionId: sun-blossom
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: b210bfbd002014c479703079cc2b5d11, type: 3}
+  - definitionId: wolf
+    formId: "01"
+    prefab: {fileID: 3905486807277576643, guid: 03bd67b9568366010f595ab41dc5e37c, type: 3}
+  - definitionId: wolf
+    formId: "02"
+    prefab: {fileID: 3905486807277576643, guid: ee069abb0cb7da39439fde21dd5b2033, type: 3}
+  - definitionId: wolf
+    formId: "03"
+    prefab: {fileID: 3905486807277576643, guid: 34f81bf2895952e1522c72f1913bb21c, type: 3}

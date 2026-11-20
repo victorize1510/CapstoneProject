@@ -16,7 +16,7 @@ namespace Capstone.Game.WorldFeedback {
         sealed class Bar {
             public RectTransform Root, Fill; public CanvasGroup Group; public Text Title,Cue;
             public DummyEnemy Enemy; public EnemyHealthAnchor Anchor; public BasicCreatureEnemy Brain;
-            public string Identity;public float NextTitle;
+            public string Identity;public float NextTitle;public DownedRing Ring;
             public float ActiveUntil, Health = -1, Maximum = -1, NextSight; public bool InSight;
         }
         static EnemyHealthBars live;
@@ -58,9 +58,10 @@ namespace Capstone.Game.WorldFeedback {
             var fill = V.Image(track.transform, "Health"); fill.preserveAspect = false; fill.raycastTarget = false;
             fill.color = new Color(.84f, .43f, .52f); V.Stretch(fill.rectTransform);
             var group = root.gameObject.AddComponent<CanvasGroup>(); group.blocksRaycasts = false; group.interactable = false;
-            var cue=V.Text(root,"Downed cue","✦",18,TextAnchor.MiddleCenter);cue.color=new Color(1,.88f,.57f);cue.raycastTarget=false;V.Top(cue.rectTransform,78,34,24,24);cue.gameObject.SetActive(false);
+            var cue=V.Text(root,"Downed cue","",20,TextAnchor.MiddleCenter);cue.fontStyle=FontStyle.Bold;cue.color=new Color(1,.88f,.57f);cue.raycastTarget=false;V.Top(cue.rectTransform,70,0,40,40);cue.gameObject.SetActive(false);
+            var ringRoot=V.Rect(cue.transform,"Countdown ring");V.Stretch(ringRoot);var ring=ringRoot.gameObject.AddComponent<DownedRing>();ring.color=cue.color;ring.raycastTarget=false;
             root.gameObject.SetActive(false);
-            return new Bar { Root = root, Fill = fill.rectTransform, Group = group, Title = title,Cue=cue };
+            return new Bar { Root = root, Fill = fill.rectTransform, Group = group, Title = title,Cue=cue,Ring=ring };
         }
         static bool Eligible(DummyEnemy enemy) {
             if (enemy == null || !enemy.isActiveAndEnabled || !enemy.IsSelectable) return false;
@@ -131,12 +132,14 @@ namespace Capstone.Game.WorldFeedback {
                     bar.Fill.anchorMax = new Vector2(bar.Maximum > 0 ? Mathf.Clamp01(bar.Health / bar.Maximum) : 0, 1);
                 }
                 bool active = bar.Enemy.IsDowned || bar.Enemy == locked || bar.Brain != null && bar.Brain.Target != null;
-                bar.Cue.gameObject.SetActive(bar.Enemy.IsDowned);if(bar.Enemy.IsDowned)bar.Cue.rectTransform.localScale=Vector3.one*(1+.08f*Mathf.Sin(Time.unscaledTime*5));
-                if(Time.unscaledTime>=bar.NextTitle){bar.NextTitle=Time.unscaledTime+.1f;bar.Title.text=bar.Enemy.IsDowned?"Gục • "+bar.Enemy.DownedSecondsRemaining.ToString("0.0")+"s":bar.Identity;}
+                bar.Cue.gameObject.SetActive(bar.Enemy.IsDowned);
+                bar.Fill.parent.gameObject.SetActive(!bar.Enemy.IsDowned);
+                if(bar.Enemy.IsDowned){bar.Cue.text=Mathf.CeilToInt(bar.Enemy.DownedSecondsRemaining).ToString();bar.Ring.SetRemaining(bar.Enemy.DownedSecondsRemaining/Mathf.Max(.01f,bar.Enemy.DownedDuration));}
+                if(Time.unscaledTime>=bar.NextTitle){bar.NextTitle=Time.unscaledTime+.1f;bar.Title.text=bar.Identity;}
                 if (active) bar.ActiveUntil = Time.unscaledTime + 6;
                 active |= Time.unscaledTime < bar.ActiveUntil;
                 bar.Group.alpha = Mathf.MoveTowards(bar.Group.alpha, active ? 1 : .45f, Time.unscaledDeltaTime * 5);
-                bar.Title.enabled = active;
+                bar.Title.enabled = active && !bar.Enemy.IsDowned;
                 Vector3 pixel = cameraSource.ViewportToScreenPoint(screen);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(surface, pixel, null, out var point);
                 bar.Root.anchoredPosition = point;

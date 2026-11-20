@@ -272,7 +272,7 @@ Animator:
   m_GameObject: {fileID: 3453334139623318807}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: 41aabd28057676a4d86e63afad06f6a1, type: 3}
-  m_Controller: {fileID: 9100000, guid: 266b57c68cb47ee43951393fd5a002d4, type: 2}
+  m_Controller: {fileID: 9100000, guid: 92eb2ac7321543c79c8bdd90b8e47dfc, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -622,7 +622,7 @@ MonoBehaviour:
   definitionId: 
   species: 
   gender: 
-  element: 0
+  element: 9
   secondaryElement: 0
   rarity: 0
   nickname: 
@@ -706,7 +706,7 @@ MonoBehaviour:
   nextEvolutionDiscovered: 0
   evolutionLevelRequirement: 0
   evolutionFriendshipRequirement: 0
-  extraEvolutionRequirement: 
+  extraEvolutionRequirement:
 --- !u!114 &4848553646333620000
 MonoBehaviour:
   m_ObjectHideFlags: 0

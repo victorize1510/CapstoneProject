@@ -15,11 +15,11 @@ MonoBehaviour:
   skillId: projectile
   legacyIds:
   - projectile
-  displayName: Projectile
+  displayName: "Qu\u1EA3 C\u1EA7u L\u1EEDa"
   description: "Ph\xF3ng m\u1ED9t \u0111\u1EA1n g\xE2y 160% SP.ATK. T\u1ED1n 12 MP;
     \u0111\u1EA1n d\u1EEBng khi tr\xFAng m\u1EE5c ti\xEAu ho\u1EB7c v\u1EADt c\u1EA3n."
   element: 2
-  icon: {fileID: 21300000, guid: 7c57ed918646a7d4ca072fbaf99c345e, type: 3}
+  icon: {fileID: 21300000, guid: c499d79bb7a7e80438eccdc74e791190, type: 3}
   cooldownSeconds: 3
   manaCost: 12
   criticalRateBonus: 0

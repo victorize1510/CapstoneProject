@@ -18,7 +18,7 @@ MonoBehaviour:
   displayName: "G\u1EA7m c\u01B0\u1EDDng h\xF3a"
   description: "G\u1EA7m l\xEAn, t\u0103ng 20% ATK v\xE0 SP.ATK trong 6 gi\xE2y.
     Kh\xF4ng c\u1ED9ng d\u1ED3n. H\u1ED3i chi\xEAu 10 gi\xE2y."
-  element: 8
+  element: 13
   icon: {fileID: 21300000, guid: 06d2beed4a8d01547ab931c3e52b260e, type: 3}
   cooldownSeconds: 10
   manaCost: 15

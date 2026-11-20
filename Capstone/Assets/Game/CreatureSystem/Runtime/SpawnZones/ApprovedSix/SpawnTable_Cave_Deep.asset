@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4846f64c3a484bc4bc43b6e5f579ccc5, type: 3}
+  m_Name: SpawnTable_Cave_Deep
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureSpawnTable
+  ownedPetCatalog: {fileID: 11400000, guid: 0c4a7b5965529b040b47d1f2f21c207a, type: 2}
+  excludedDefinitionIds:
+  - sun-blossom
+  - dragon-fire
+  - shell
+  species:
+  - enabled: 1
+    definitionId: ghost
+    weight: 1
+    minimumLevel: 18
+    maximumLevel: 22
+    forms:
+    - enabled: 1
+      formId: "01"
+      prefab: {fileID: 3303902416035471862, guid: 45d447729b2b66d7fb2af6460dd1d1f4, type: 3}
+      weight: 75
+      minimumZoneLevel: 1
+      configurationBlocker: ""
+    - enabled: 1
+      formId: "02"
+      prefab: {fileID: 3303902416035471862, guid: 09084a9f10005872c2559cd7ef2328f9, type: 3}
+      weight: 25
+      minimumZoneLevel: 18
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "03"
+      prefab: {fileID: 3303902416035471862, guid: f46cf462b246c485ff97ac086fb27591, type: 3}
+      weight: 0
+      minimumZoneLevel: 36
+      configurationBlocker: ""
+  - enabled: 1
+    definitionId: egg-shadow
+    weight: 1
+    minimumLevel: 18
+    maximumLevel: 24
+    forms:
+    - enabled: 1
+      formId: "01"
+      prefab: {fileID: 3303902416035471862, guid: 602f7830753ac86451deece29db6bd96, type: 3}
+      weight: 75
+      minimumZoneLevel: 1
+      configurationBlocker: ""
+    - enabled: 1
+      formId: "02"
+      prefab: {fileID: 3303902416035471862, guid: 52c20982861400d046cbdc34a7452eaf, type: 3}
+      weight: 25
+      minimumZoneLevel: 18
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "03"
+      prefab: {fileID: 3303902416035471862, guid: 943472289adfa92ec97cab8e58265b39, type: 3}
+      weight: 0
+      minimumZoneLevel: 36
+      configurationBlocker: ""
+  - enabled: 1
+    definitionId: Dragon Dusk
+    weight: 1
+    minimumLevel: 18
+    maximumLevel: 24
+    forms:
+    - enabled: 1
+      formId: "01"
+      prefab: {fileID: 8813761678292755814, guid: 84a59a7325cf8c84d8ce816971f47b9e, type: 3}
+      weight: 75
+      minimumZoneLevel: 1
+      configurationBlocker: ""
+    - enabled: 1
+      formId: "02"
+      prefab: {fileID: 3250620669686794744, guid: a2f65d3db87aa454da65810469869963, type: 3}
+      weight: 25
+      minimumZoneLevel: 18
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "03"
+      prefab: {fileID: 3530890171033796778, guid: 5dcdc518c0d72af41a16e2f4a8c3eb68, type: 3}
+      weight: 0
+      minimumZoneLevel: 36
+      configurationBlocker: ""

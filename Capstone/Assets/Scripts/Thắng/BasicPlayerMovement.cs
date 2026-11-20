@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
-public class BasicPlayerMovement : MonoBehaviour
+public partial class BasicPlayerMovement : MonoBehaviour
 {
     public enum ScriptedAction
     {
@@ -13,7 +13,6 @@ public class BasicPlayerMovement : MonoBehaviour
     }
 
     private const float InputDeadZone = 0.05f;
-
     private enum PlayerState
     {
         IdleNeutral,
@@ -45,11 +44,10 @@ public class BasicPlayerMovement : MonoBehaviour
         Throw
     }
 
-    [Header("References")]
+    [Header("Tham chieu")]
     public Animator animator;
     public Transform cameraTransform;
-
-    [Header("Movement")]
+    [Header("Di chuyen")]
     public float slowRunSpeed = 3.5f;
     public float sprintSpeed = 6f;
     public float backwardSpeed = 2.8f;
@@ -59,12 +57,10 @@ public class BasicPlayerMovement : MonoBehaviour
     public float turnSpeed = 720f;
     public float aimTurnSpeed = 900f;
     public bool cameraRelativeMovement = true;
-
-    [Header("Feature Toggles")]
+    [Header("Bat tat tinh nang")]
     public bool enableJump = true;
     public bool enableCrouch = true;
-
-    [Header("Animation Motion")]
+    [Header("Chuyen dong animation")]
     public bool useRootMotion = false;
     public bool rootMotionDrivesLocomotion = false;
     public bool rootMotionDrivesRoll = false;
@@ -77,8 +73,7 @@ public class BasicPlayerMovement : MonoBehaviour
     public bool applyAnimatorRootYaw = false;
     public bool applyAnimatorRootRotationToVisual = false;
     public bool keepAnimatorTransformPinned = false;
-
-    [Header("Jump")]
+    [Header("Nhay")]
     public KeyCode jumpKey = KeyCode.Space;
     public float jumpInputCooldown = 0.18f;
     public float jumpGroundLockTime = 0.12f;
@@ -98,21 +93,16 @@ public class BasicPlayerMovement : MonoBehaviour
     public Vector3 jumpControllerCenter = new Vector3(0f, 1.125f, 0f);
     public bool liftControllerCenterDuringJump = true;
     public float jumpControllerCenterLift = 0.25f;
-    public AnimationCurve jumpControllerCenterLiftCurve = new AnimationCurve(
-        new Keyframe(0f, 0f),
-        new Keyframe(0.45f, 1f),
-        new Keyframe(1f, 0f));
+    public AnimationCurve jumpControllerCenterLiftCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(0.45f, 1f), new Keyframe(1f, 0f));
     public float floatFallDelay = 0.18f;
     public float floatFallVerticalSpeed = -3f;
-
-    [Header("Grounding")]
+    [Header("Bam mat dat")]
     public bool snapFeetToGround = true;
     public LayerMask groundLayers = ~0;
     public float groundSnapDistance = 0.45f;
     public float groundSnapProbeHeight = 0.35f;
     public float groundContactOffset = 0f;
-
-    [Header("Roll")]
+    [Header("Lan")]
     public bool enableRoll = false;
     public KeyCode rollKey = KeyCode.None;
     public float idleRollDuration = 0.78f;
@@ -124,25 +114,25 @@ public class BasicPlayerMovement : MonoBehaviour
     public float rollControllerRadius = 0.3f;
     public Vector3 rollControllerCenter = new Vector3(0f, 0.45f, 0f);
     public AnimationCurve rollMotionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
-
-    [Header("Crouch")]
+    [Header("Cui nguoi")]
     public KeyCode crouchKey = KeyCode.LeftControl;
     public KeyCode alternateCrouchKey = KeyCode.RightControl;
     public float standingToCrouchDuration = 0.5f;
     public float crouchToStandingDuration = 0.5f;
-
-    [Header("Actions")]
+    [Header("Hanh dong")]
     public KeyCode pickUpKey = KeyCode.E;
     public bool enableAimMode = false;
     public int aimMouseButton = 1;
-    [Tooltip("Legacy manual Throw input. Summon sequences invoke Throw through the scripted-action API.")]
+    [Tooltip("Phim nem cu; chuoi trieu hoi goi Throw qua API hanh dong script.")]
     public bool allowManualThrowInput = false;
     public bool rightMouseButtonThrows = false;
     public bool faceLockedEnemy = false;
-    [Tooltip("World item being picked up. E cannot play Pickup without a visible, reachable target.")]
+    [Tooltip("Item dang nhat; E can muc tieu hien thi va o trong tam.")]
     public Transform pickupTarget;
-    [Min(.1f)] public float pickupDistance = 2f;
-    [Range(1f, 180f)] public float pickupViewAngle = Capstone.Game.UISystem.WorldInteractionView.DefaultViewAngle;
+    [Min(.1f)]
+    public float pickupDistance = 2f;
+    [Range(1f, 180f)]
+    public float pickupViewAngle = Capstone.Game.UISystem.WorldInteractionView.DefaultViewAngle;
     public LayerMask pickupObstructionLayers = Physics.DefaultRaycastLayers;
     private TextMesh pickupPrompt;
     public float jumpDuration = 0.95f;
@@ -152,24 +142,21 @@ public class BasicPlayerMovement : MonoBehaviour
     public bool useAnimatorStateLengthForJump = false;
     public float actionExitNormalizedTime = 0.98f;
     public float minimumActionDuration = 0.08f;
-
-    [Header("Idle / Battle")]
+    [Header("Dung yen va giao tranh")]
     public bool isInSafeArea = true;
     public bool isEnemyNearby = false;
     public bool isEnemyDetectedPlayer = false;
     public float idleSadDelay = 5f;
     public float idleAlternateInterval = 3f;
     public float battleRelaxDelay = 5f;
-
-    [Header("Optional Enemy Probe")]
+    [Header("Do tim dich tuy chon")]
     public bool autoDetectEnemies = false;
     public float enemyDetectionRadius = 6f;
     public LayerMask enemyLayers = ~0;
     public float enemyProbeInterval = 0.25f;
-    public string[] enemyTags = { "Enemy", "Monster" };
-    public string[] friendlyTags = { "NPC", "Friendly" };
-
-    [Header("Animator States")]
+    public string[] enemyTags = {"Enemy", "Monster"};
+    public string[] friendlyTags = {"NPC", "Friendly"};
+    [Header("Trang thai Animator")]
     public string idleNeutralState = "IdleNeutral";
     public string idleSadState = "IdleSad";
     public string idleHappyState = "IdleHappy";
@@ -190,8 +177,7 @@ public class BasicPlayerMovement : MonoBehaviour
     public string throwState = "Throw";
     public float locomotionFadeTime = 0.12f;
     public float actionFadeTime = 0.06f;
-
-    [Header("Animator Parameters")]
+    [Header("Tham so Animator")]
     public string speedParameter = "Speed";
     public string moveXParameter = "MoveX";
     public string moveYParameter = "MoveY";
@@ -206,28 +192,37 @@ public class BasicPlayerMovement : MonoBehaviour
     public string isPickingUpParameter = "IsPickingUp";
     public string isThrowingParameter = "IsThrowing";
     public string idleTimerParameter = "IdleTimer";
-
     public bool IsRolling
     {
-        get { return currentState == PlayerState.IdleToRoll || currentState == PlayerState.SprintingToRoll; }
+        get
+        {
+            return currentState == PlayerState.IdleToRoll || currentState == PlayerState.SprintingToRoll;
+        }
     }
-
 
     public bool IsAiming
     {
-        get { return aimHeld; }
+        get
+        {
+            return aimHeld;
+        }
     }
 
     public bool IsCrouching
     {
-        get { return isCrouching; }
+        get
+        {
+            return isCrouching;
+        }
     }
 
     public ScriptedAction ActiveScriptedAction => ToScriptedAction(currentState);
-
     public bool IsScriptedActionPlaying
     {
-        get { return activeOneShot && ActiveScriptedAction != ScriptedAction.None; }
+        get
+        {
+            return activeOneShot && ActiveScriptedAction != ScriptedAction.None;
+        }
     }
 
     public float ScriptedActionNormalizedTime
@@ -245,19 +240,16 @@ public class BasicPlayerMovement : MonoBehaviour
 
     public event Action<ScriptedAction> ScriptedActionStarted;
     public event Action<ScriptedAction> ScriptedActionCompleted;
-
     private readonly Collider[] enemyProbeHits = new Collider[16];
     private readonly RaycastHit[] groundHits = new RaycastHit[8];
     private readonly HashSet<int> animatorParameters = new HashSet<int>();
     private readonly Dictionary<string, string[]> stateFallbacks = new Dictionary<string, string[]>();
-
     private CharacterController characterController;
     private BasicCameraFollow cameraFollow;
     private Transform animatorTransform;
     private Vector3 animatorLocalPosition;
     private Quaternion animatorLocalRotation;
     private Vector3 standingControllerCenter;
-
     private PlayerState currentState = PlayerState.IdleNeutral;
     private PendingAfterStand pendingAfterStand = PendingAfterStand.None;
     private Vector2 moveInput;
@@ -305,24 +297,31 @@ public class BasicPlayerMovement : MonoBehaviour
     private Animator configuredAnimator;
     private bool configuredRootMotion;
     private bool animatorConfigurationInitialized;
-
     private bool EnemyThreatActive
     {
-        get { return isEnemyNearby || isEnemyDetectedPlayer || autoEnemyNearby; }
+        get
+        {
+            return isEnemyNearby || isEnemyDetectedPlayer || autoEnemyNearby;
+        }
     }
 
     private bool ShouldUseBattleIdle
     {
-        get { return EnemyThreatActive || battleRelaxTimer < battleRelaxDelay; }
+        get
+        {
+            return EnemyThreatActive || battleRelaxTimer < battleRelaxDelay;
+        }
     }
 
     private bool CanPickUp
     {
-        get { return Capstone.Game.UISystem.WorldInteractionView.CanInteract(transform, pickupTarget,
-            pickupDistance, pickupViewAngle, pickupObstructionLayers); }
+        get
+        {
+            return Capstone.Game.UISystem.WorldInteractionView.CanInteract(transform, pickupTarget, pickupDistance, pickupViewAngle, pickupObstructionLayers);
+        }
     }
 
-    // World item systems bind/clear their candidate here; scripted pet recall bypasses this gate.
+    // He thong item gan hoac bo ung vien tai day; thu pet bang script dung quyen rieng.
     public void SetPickupTarget(Transform target)
     {
         pickupTarget = target;
@@ -333,7 +332,6 @@ public class BasicPlayerMovement : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         SanitizeRigidbody();
         animator = FindBestAnimator();
-
         if (Camera.main != null)
         {
             cameraTransform = Camera.main.transform;
@@ -345,7 +343,6 @@ public class BasicPlayerMovement : MonoBehaviour
         characterController = GetComponent<CharacterController>();
         CaptureStandingControllerShape();
         SanitizeRigidbody();
-
         if (animator == null)
         {
             animator = FindBestAnimator();
@@ -412,7 +409,6 @@ public class BasicPlayerMovement : MonoBehaviour
         enemyProbeInterval = Mathf.Max(0.05f, enemyProbeInterval);
         actionExitNormalizedTime = Mathf.Clamp(actionExitNormalizedTime, 0.5f, 1.1f);
         minimumActionDuration = Mathf.Max(0f, minimumActionDuration);
-
         if (rollMotionCurve == null || rollMotionCurve.length == 0)
         {
             rollMotionCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
@@ -429,7 +425,8 @@ public class BasicPlayerMovement : MonoBehaviour
     private void OnDisable()
     {
         RestoreStandingControllerShape();
-        if (pickupPrompt != null) pickupPrompt.gameObject.SetActive(false);
+        if (pickupPrompt != null)
+            pickupPrompt.gameObject.SetActive(false);
     }
 
     private void Update()
@@ -439,7 +436,6 @@ public class BasicPlayerMovement : MonoBehaviour
         ReadInput();
         UpdateEnemyProbe(Time.deltaTime);
         UpdateGroundedBeforeMove();
-
         if (activeOneShot)
         {
             UpdateActiveOneShot(Time.deltaTime);
@@ -455,7 +451,6 @@ public class BasicPlayerMovement : MonoBehaviour
         UpdateLandingCarry(Time.deltaTime);
         UpdateAirborneState(Time.deltaTime);
         UpdateIdleAndBattleTimers(Time.deltaTime);
-
         if (!activeOneShot)
         {
             EvaluateLocomotionState();
@@ -471,13 +466,13 @@ public class BasicPlayerMovement : MonoBehaviour
         {
             PinAnimatorTransform();
         }
+
         UpdatePickupPrompt();
     }
 
     private void UpdatePickupPrompt()
     {
-        bool visible = Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible
-            && !IsGameplayInputBlocked() && !activeOneShot && CanPickUp;
+        bool visible = Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible && !IsGameplayInputBlocked() && !activeOneShot && CanPickUp;
         if (visible && pickupPrompt == null)
         {
             var prompt = new GameObject("Pickup Prompt");
@@ -489,13 +484,16 @@ public class BasicPlayerMovement : MonoBehaviour
             pickupPrompt.characterSize = .075f;
             pickupPrompt.fontSize = 64;
         }
-        if (pickupPrompt == null) return;
+
+        if (pickupPrompt == null)
+            return;
         pickupPrompt.gameObject.SetActive(visible);
-        if (!visible) return;
+        if (!visible)
+            return;
         pickupPrompt.transform.position = pickupTarget.position + Vector3.up * .5f;
         Camera camera = Camera.main;
-        if (camera != null) pickupPrompt.transform.rotation = Quaternion.LookRotation(
-            pickupPrompt.transform.position - camera.transform.position, camera.transform.up);
+        if (camera != null)
+            pickupPrompt.transform.rotation = Quaternion.LookRotation(pickupPrompt.transform.position - camera.transform.position, camera.transform.up);
     }
 
     public void SetGameplayInputLocked(bool locked)
@@ -536,7 +534,6 @@ public class BasicPlayerMovement : MonoBehaviour
 
     public bool CanStartPetThrow => CanStartScriptedAction() && !IsJumpState(currentState);
     public bool IsGroundedForPetThrow => grounded && !IsJumpState(currentState);
-
     public bool TryPlayScriptedPickup()
     {
         if (!CanStartScriptedAction())
@@ -571,7 +568,6 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         ApplyAnimatorRootRotationToVisual(animatorDeltaRotation);
-
         bool useAnimatorMotion = ShouldUseAnimatorRootMotion();
         if (!useAnimatorMotion || characterController == null)
         {
@@ -592,7 +588,6 @@ public class BasicPlayerMovement : MonoBehaviour
 
         characterController.Move(delta);
         lastRootMotionTime = Time.time;
-
         Vector3 horizontalDelta = new Vector3(delta.x, 0f, delta.z);
         if (horizontalDelta.sqrMagnitude > thresholdSqr)
         {
@@ -631,8 +626,8 @@ public class BasicPlayerMovement : MonoBehaviour
             return false;
         }
 
-        // Action clips from Mixamo often use their root transform for the roll/jump/pickup pose.
-        // Pinning the Armature during those clips strips that motion and can make the body deform.
+        // Clip Mixamo dung root transform de tao pose lan, nhay va nhat do.
+        // Khoa Armature trong cac clip nay se mat chuyen dong va co the bien dang model.
         return !activeOneShot && !ShouldUseAnimatorRootMotion();
     }
 
@@ -654,7 +649,6 @@ public class BasicPlayerMovement : MonoBehaviour
         hasMoveInput = moveInput.sqrMagnitude > InputDeadZone * InputDeadZone && moveDirection.sqrMagnitude > 0.001f;
         sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
         aimHeld = enableAimMode && Input.GetMouseButton(aimMouseButton);
-
         if (hasMoveInput)
         {
             landingCarryTimer = 0f;
@@ -664,7 +658,6 @@ public class BasicPlayerMovement : MonoBehaviour
     private void EvaluateRequests()
     {
         bool inputBlocked = IsGameplayInputBlocked();
-
         if (EnemyThreatActive && isCrouching)
         {
             crouchWanted = false;
@@ -718,8 +711,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && Input.GetKeyDown(pickUpKey) && CanPickUp
-            && Capstone.Game.UISystem.WorldInteractionView.TryConsumePress())
+        if (!inputBlocked && Input.GetKeyDown(pickUpKey) && CanPickUp && Capstone.Game.UISystem.WorldInteractionView.TryConsumePress())
         {
             if (isCrouching)
             {
@@ -747,7 +739,6 @@ public class BasicPlayerMovement : MonoBehaviour
             StartOneShot(PlayerState.CrouchToStanding, crouchToStandingDuration);
             return;
         }
-
     }
 
     private void ToggleCrouch()
@@ -783,7 +774,6 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         bool fromMovement = hasMoveInput;
         bool fromSprint = sprintHeld && hasMoveInput;
-
         rollDirection = fromMovement ? moveDirection.normalized : GetFlatForward(transform);
         if (aimHeld && !fromMovement)
         {
@@ -809,7 +799,6 @@ public class BasicPlayerMovement : MonoBehaviour
         jumpHorizontalSpeed = CalculateJumpHorizontalSpeed(fromMovement);
         jumpExpectedAirTime = CalculateJumpAirTime();
         jumpLandingCarryDistance = CalculateLandingCarryDistance(jumpHorizontalSpeed, jumpExpectedAirTime);
-
         if (fromMovement)
         {
             SnapFacing(jumpCarryDirection);
@@ -860,8 +849,8 @@ public class BasicPlayerMovement : MonoBehaviour
         {
             ClearActionMomentum();
         }
-        PlayState(state, true);
 
+        PlayState(state, true);
         ScriptedAction scriptedAction = ToScriptedAction(state);
         if (scriptedAction != ScriptedAction.None)
         {
@@ -879,7 +868,6 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         stateTimer += deltaTime;
         activeStateDuration = ResolveCurrentActionDuration(currentState, activeStateDuration);
-
         if (!HasCurrentActionFinished())
         {
             return;
@@ -1015,7 +1003,6 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         PendingAfterStand pending = pendingAfterStand;
         pendingAfterStand = PendingAfterStand.None;
-
         if (pending == PendingAfterStand.Roll)
         {
             StartRoll();
@@ -1045,21 +1032,12 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private float CalculateJumpVelocity()
     {
-        return Mathf.Sqrt(Mathf.Max(0f, jumpHeight * -2f * gravity));
+        return Capstone.Game.CreatureSystem.PlayerLocomotionMath.JumpVelocity(jumpHeight, gravity);
     }
 
     private float CalculateJumpAirTime()
     {
-        float gravityMagnitude = Mathf.Abs(gravity);
-        if (gravityMagnitude <= 0.001f)
-        {
-            return 0f;
-        }
-
-        float jumpVelocity = CalculateJumpVelocity();
-        float riseTime = jumpVelocity / gravityMagnitude;
-        float fallTime = Mathf.Sqrt((2f * jumpHeight) / (gravityMagnitude * Mathf.Max(1f, fallGravityMultiplier)));
-        return riseTime + fallTime;
+        return Capstone.Game.CreatureSystem.PlayerLocomotionMath.JumpAirTime(jumpHeight, gravity, fallGravityMultiplier);
     }
 
     private float CalculateJumpHorizontalSpeed(bool fromMovement)
@@ -1076,9 +1054,8 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private float CalculateLandingCarryDistance(float launchSpeed, float airTime)
     {
-        float calculatedDistance = launchSpeed * airTime * landingCarryDistanceRatio;
-        float distance = Mathf.Max(calculatedDistance, landingNudgeDistance);
-        return Mathf.Clamp(distance, 0f, landingCarryDistance);
+        return Capstone.Game.CreatureSystem.PlayerLocomotionMath.LandingCarryDistance(launchSpeed, airTime,
+            landingCarryDistanceRatio, landingNudgeDistance, landingCarryDistance);
     }
 
     private void BeginLandingCarryIfNeeded()
@@ -1089,7 +1066,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        // Keeps the last running step in the jump clip from visually snapping in place.
+        // Giu buoc chay cuoi cua clip nhay khong bi giat dung tai cho.
         landingCarryDirection = jumpCarryDirection.sqrMagnitude > 0.001f ? jumpCarryDirection.normalized : GetFlatForward(transform);
         landingCarrySpeed = Mathf.Max(slowRunSpeed * 0.5f, jumpHorizontalSpeed * landingCarrySpeedMultiplier);
         landingCarryTimer = Mathf.Min(landingCarryDuration, jumpLandingCarryDistance / Mathf.Max(landingCarrySpeed, 0.1f));
@@ -1122,10 +1099,7 @@ public class BasicPlayerMovement : MonoBehaviour
         if (grounded)
         {
             airborneTimer = 0f;
-            if (jumpConsumedUntilGrounded
-                && !activeOneShot
-                && jumpInputReleasedSinceJump
-                && Time.time - lastJumpStartTime >= jumpInputCooldown)
+            if (jumpConsumedUntilGrounded && !activeOneShot && jumpInputReleasedSinceJump && Time.time - lastJumpStartTime >= jumpInputCooldown)
             {
                 jumpConsumedUntilGrounded = false;
                 jumpLeftGround = false;
@@ -1144,7 +1118,10 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool HasLandingCarry
     {
-        get { return landingCarryTimer > 0f && !hasMoveInput && grounded; }
+        get
+        {
+            return landingCarryTimer > 0f && !hasMoveInput && grounded;
+        }
     }
 
     private void EvaluateLocomotionState()
@@ -1208,7 +1185,6 @@ public class BasicPlayerMovement : MonoBehaviour
 
         bool hasSadIdle = HasAnimatorState(idleSadState);
         bool hasHappyIdle = HasAnimatorState(idleHappyState);
-
         if (!hasHappyIdle)
         {
             return PlayerState.IdleSad;
@@ -1250,15 +1226,12 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         Vector3 horizontalDelta = BuildHorizontalDelta(deltaTime);
-
         verticalVelocity += GetCurrentGravity() * deltaTime;
         Vector3 motion = horizontalDelta;
         motion.y = verticalVelocity * deltaTime;
-
         CollisionFlags flags = characterController.Move(motion);
         grounded = characterController.isGrounded || (flags & CollisionFlags.Below) != 0;
         SnapCharacterToGround(ShouldSnapToGroundForCurrentState());
-
         if (grounded && verticalVelocity < 0f)
         {
             verticalVelocity = groundedStickForce;
@@ -1269,7 +1242,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private float GetCurrentGravity()
     {
-        // Stronger falling gravity keeps the collider matched to snappy jump clips.
+        // Trong luc roi cao hon giu collider khop voi clip nhay nhanh.
         return verticalVelocity < 0f ? gravity * fallGravityMultiplier : gravity;
     }
 
@@ -1294,7 +1267,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
         float targetSpeed = GetTargetSpeedForState();
         Vector3 targetVelocity = targetSpeed > 0f ? GetTargetMoveDirection() * targetSpeed : Vector3.zero;
-        // Sprint only changes speed; direction changes stay responsive.
+        // Chay nhanh chi doi toc do, van cho phep doi huong linh hoat.
         float rate = targetSpeed > 0f ? acceleration : deceleration;
         horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, rate * deltaTime);
         return horizontalVelocity * deltaTime;
@@ -1332,10 +1305,7 @@ public class BasicPlayerMovement : MonoBehaviour
             return false;
         }
 
-        return currentState == PlayerState.SlowRun
-            || currentState == PlayerState.Sprint
-            || currentState == PlayerState.RunningBackward
-            || currentState == PlayerState.CrouchWalking;
+        return currentState == PlayerState.SlowRun || currentState == PlayerState.Sprint || currentState == PlayerState.RunningBackward || currentState == PlayerState.CrouchWalking;
     }
 
     private bool ShouldUseAnimatorRootRotation()
@@ -1350,11 +1320,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private static bool ShouldRestoreAnimatorAnchorAfterAction(PlayerState state)
     {
-        return state == PlayerState.IdleToRoll
-            || state == PlayerState.SprintingToRoll
-            || IsJumpState(state)
-            || state == PlayerState.PickingUp
-            || state == PlayerState.Throw;
+        return state == PlayerState.IdleToRoll || state == PlayerState.SprintingToRoll || IsJumpState(state) || state == PlayerState.PickingUp || state == PlayerState.Throw;
     }
 
     private static bool IsReversePlaybackState(PlayerState state)
@@ -1392,138 +1358,9 @@ public class BasicPlayerMovement : MonoBehaviour
         return !IsJumpState(state) && !IsRollState(state);
     }
 
-    private void CaptureStandingControllerShape()
-    {
-        if (characterController == null || standingControllerShapeCaptured || controllerSizedForRoll || controllerSizedForJump)
-        {
-            return;
-        }
-
-        standingControllerHeight = characterController.height;
-        standingControllerRadius = characterController.radius;
-        standingControllerCenter = characterController.center;
-        standingControllerShapeCaptured = true;
-    }
-
-    private void SetRollControllerShape(bool rolling)
-    {
-        if (!resizeControllerDuringRoll || characterController == null)
-        {
-            return;
-        }
-
-        CaptureStandingControllerShape();
-        if (!standingControllerShapeCaptured)
-        {
-            return;
-        }
-
-        if (rolling)
-        {
-            if (controllerSizedForRoll)
-            {
-                return;
-            }
-
-            ApplyControllerShape(rollControllerHeight, rollControllerRadius, rollControllerCenter);
-            controllerSizedForRoll = true;
-            SnapCharacterToGround(true);
-            return;
-        }
-
-        RestoreStandingControllerShape();
-    }
-
-    private void SetJumpControllerShape(bool jumping)
-    {
-        if (!resizeControllerDuringJump || characterController == null)
-        {
-            return;
-        }
-
-        CaptureStandingControllerShape();
-        if (!standingControllerShapeCaptured)
-        {
-            return;
-        }
-
-        if (jumping)
-        {
-            if (controllerSizedForJump)
-            {
-                return;
-            }
-
-            ApplyControllerShape(jumpControllerHeight, jumpControllerRadius, jumpControllerCenter);
-            controllerSizedForJump = true;
-            return;
-        }
-
-        RestoreStandingControllerShape();
-    }
-
-    private void UpdateJumpControllerCenterLift()
-    {
-        if (!liftControllerCenterDuringJump || characterController == null || !IsJumpState(currentState))
-        {
-            return;
-        }
-
-        CaptureStandingControllerShape();
-        if (!standingControllerShapeCaptured)
-        {
-            return;
-        }
-
-        float duration = Mathf.Max(activeStateDuration, minimumActionDuration, 0.0001f);
-        float normalizedTime = Mathf.Clamp01(stateTimer / duration);
-        float liftWeight = jumpControllerCenterLiftCurve != null && jumpControllerCenterLiftCurve.length > 0
-            ? Mathf.Max(0f, jumpControllerCenterLiftCurve.Evaluate(normalizedTime))
-            : 0f;
-
-        float height = resizeControllerDuringJump ? jumpControllerHeight : standingControllerHeight;
-        float radius = resizeControllerDuringJump ? jumpControllerRadius : standingControllerRadius;
-        Vector3 center = resizeControllerDuringJump ? jumpControllerCenter : standingControllerCenter;
-        center.y += jumpControllerCenterLift * liftWeight;
-
-        ApplyControllerShape(height, radius, center);
-        controllerSizedForJump = true;
-    }
-
-    private void RestoreStandingControllerShape()
-    {
-        if ((!controllerSizedForRoll && !controllerSizedForJump) || characterController == null || !standingControllerShapeCaptured)
-        {
-            return;
-        }
-
-        ApplyControllerShape(standingControllerHeight, standingControllerRadius, standingControllerCenter);
-        controllerSizedForRoll = false;
-        controllerSizedForJump = false;
-        SnapCharacterToGround(true);
-    }
-
-    private void ApplyControllerShape(float height, float radius, Vector3 center)
-    {
-        if (characterController == null)
-        {
-            return;
-        }
-
-        float safeHeight = Mathf.Max(0.1f, height);
-        float safeRadius = Mathf.Clamp(radius, 0.01f, safeHeight * 0.5f);
-        characterController.height = safeHeight;
-        characterController.radius = safeRadius;
-        characterController.center = center;
-    }
-
     private bool IsLoopingLocomotionState(PlayerState state)
     {
-        return state == PlayerState.SlowRun
-            || state == PlayerState.Sprint
-            || state == PlayerState.RunningBackward
-            || state == PlayerState.Floating
-            || state == PlayerState.CrouchWalking;
+        return state == PlayerState.SlowRun || state == PlayerState.Sprint || state == PlayerState.RunningBackward || state == PlayerState.Floating || state == PlayerState.CrouchWalking;
     }
 
     private bool ShouldSnapToGroundForCurrentState()
@@ -1544,10 +1381,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool UsesHorizontalRootMotionForCurrentState()
     {
-        return (currentState == PlayerState.IdleToRoll && rootMotionDrivesRoll)
-            || (currentState == PlayerState.SprintingToRoll && rootMotionDrivesRoll)
-            || (IsJumpState(currentState) && rootMotionDrivesJump)
-            || (rootMotionDrivesLocomotion && !codeDrivesInPlaceLocomotion && !activeOneShot);
+        return (currentState == PlayerState.IdleToRoll && rootMotionDrivesRoll) || (currentState == PlayerState.SprintingToRoll && rootMotionDrivesRoll) || (IsJumpState(currentState) && rootMotionDrivesJump) || (rootMotionDrivesLocomotion && !codeDrivesInPlaceLocomotion && !activeOneShot);
     }
 
     private void TrackRollFallbackProgress()
@@ -1558,18 +1392,14 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         float normalizedTime = Mathf.Clamp01(stateTimer / Mathf.Max(activeStateDuration, 0.0001f));
-        float curveValue = rollMotionCurve != null && rollMotionCurve.length > 0
-            ? Mathf.Clamp01(rollMotionCurve.Evaluate(normalizedTime))
-            : normalizedTime;
+        float curveValue = rollMotionCurve != null && rollMotionCurve.length > 0 ? Mathf.Clamp01(rollMotionCurve.Evaluate(normalizedTime)) : normalizedTime;
         previousRollCurveValue = Mathf.Max(previousRollCurveValue, curveValue);
     }
 
     private Vector3 BuildRollDelta()
     {
         float normalizedTime = Mathf.Clamp01(stateTimer / Mathf.Max(activeStateDuration, 0.0001f));
-        float curveValue = rollMotionCurve != null && rollMotionCurve.length > 0
-            ? Mathf.Clamp01(rollMotionCurve.Evaluate(normalizedTime))
-            : normalizedTime;
+        float curveValue = rollMotionCurve != null && rollMotionCurve.length > 0 ? Mathf.Clamp01(rollMotionCurve.Evaluate(normalizedTime)) : normalizedTime;
         float rollDistance = currentState == PlayerState.SprintingToRoll ? sprintRollDistance : idleRollDistance;
         float deltaDistance = Mathf.Max(0f, curveValue - previousRollCurveValue) * rollDistance;
         previousRollCurveValue = curveValue;
@@ -1666,7 +1496,6 @@ public class BasicPlayerMovement : MonoBehaviour
         }
 
         Vector3 facingDirection;
-
         if (currentState == PlayerState.IdleToRoll || currentState == PlayerState.SprintingToRoll)
         {
             facingDirection = rollDirection;
@@ -1690,7 +1519,6 @@ public class BasicPlayerMovement : MonoBehaviour
     private bool TryGetLockedTargetDirection(out Vector3 direction)
     {
         direction = Vector3.zero;
-
         if (!faceLockedEnemy)
         {
             return false;
@@ -1715,22 +1543,12 @@ public class BasicPlayerMovement : MonoBehaviour
     {
         Vector3 velocityDirection = horizontalVelocity;
         velocityDirection.y = 0f;
-
         if (velocityDirection.sqrMagnitude > 0.04f)
         {
             return velocityDirection.normalized;
         }
 
         return moveDirection;
-    }
-
-    private void UpdateGroundedBeforeMove()
-    {
-        grounded = characterController != null && characterController.isGrounded;
-        if (grounded && verticalVelocity < 0f)
-        {
-            verticalVelocity = groundedStickForce;
-        }
     }
 
     private void UpdateIdleAndBattleTimers(float deltaTime)
@@ -1802,18 +1620,17 @@ public class BasicPlayerMovement : MonoBehaviour
     private Vector3 GetMoveDirection(Vector2 input)
     {
         Vector3 direction;
-
         if (cameraRelativeMovement && cameraTransform != null)
         {
             Vector3 forward = GetCameraForward();
-            direction = forward * input.y + GetRightFromForward(forward) * input.x;
+            direction = Capstone.Game.CreatureSystem.PlayerLocomotionMath.MoveDirection(input, forward, GetRightFromForward(forward));
         }
         else
         {
-            direction = GetFlatForward(transform) * input.y + GetFlatRight(transform) * input.x;
+            direction = Capstone.Game.CreatureSystem.PlayerLocomotionMath.MoveDirection(input, GetFlatForward(transform), GetFlatRight(transform));
         }
 
-        return Vector3.ClampMagnitude(direction, 1f);
+        return direction;
     }
 
     private void RotateToward(Vector3 direction)
@@ -1887,7 +1704,7 @@ public class BasicPlayerMovement : MonoBehaviour
 
     private bool OwnsCollider(Collider collider)
     {
-        // Scene organization can put Player and other actors beneath one common root.
+        // Player va actor khac co the duoc xep duoi cung mot root trong scene.
         return collider.transform == transform || collider.transform.IsChildOf(transform);
     }
 
@@ -1907,7 +1724,6 @@ public class BasicPlayerMovement : MonoBehaviour
 
         enemyProbeTimer = enemyProbeInterval;
         autoEnemyNearby = false;
-
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, enemyDetectionRadius, enemyProbeHits, enemyLayers, QueryTriggerInteraction.Ignore);
         for (int i = 0; i < hitCount; i++)
         {
@@ -1949,234 +1765,6 @@ public class BasicPlayerMovement : MonoBehaviour
         return false;
     }
 
-    private float ResolveCurrentActionDuration(PlayerState state, float fallbackDuration)
-    {
-        float minimumDuration = GetMinimumActionDuration(state);
-        float duration = Mathf.Max(minimumDuration, fallbackDuration);
-
-        if (IsJumpState(state) && !useAnimatorStateLengthForJump)
-        {
-            return duration;
-        }
-
-        AnimatorStateInfo stateInfo;
-        bool isCurrentState;
-        if (useAnimatorStateLengthForActions && TryGetAnimatorStateInfo(state, out stateInfo, out isCurrentState) && stateInfo.length > minimumDuration)
-        {
-            duration = Mathf.Max(duration, stateInfo.length);
-        }
-
-        return duration;
-    }
-
-    private bool TryGetAnimatorStateInfo(PlayerState state, out AnimatorStateInfo stateInfo, out bool isCurrentState)
-    {
-        stateInfo = default;
-        isCurrentState = false;
-
-        if (animator == null)
-        {
-            return false;
-        }
-
-        string stateName = GetPlayableStateName(state);
-        if (string.IsNullOrWhiteSpace(stateName))
-        {
-            return false;
-        }
-
-        int shortHash = Animator.StringToHash(stateName);
-        int fullPathHash = Animator.StringToHash("Base Layer." + stateName);
-
-        if (animator.IsInTransition(0))
-        {
-            AnimatorStateInfo nextStateInfo = animator.GetNextAnimatorStateInfo(0);
-            if (StateInfoMatches(nextStateInfo, shortHash, fullPathHash))
-            {
-                stateInfo = nextStateInfo;
-                return true;
-            }
-        }
-
-        AnimatorStateInfo currentStateInfo = animator.GetCurrentAnimatorStateInfo(0);
-        if (StateInfoMatches(currentStateInfo, shortHash, fullPathHash))
-        {
-            stateInfo = currentStateInfo;
-            isCurrentState = true;
-            return true;
-        }
-
-        return false;
-    }
-
-    private void PlayState(PlayerState state, bool forceRestart)
-    {
-        if (animator == null)
-        {
-            return;
-        }
-
-        string playableStateName = GetPlayableStateName(state);
-        if (string.IsNullOrWhiteSpace(playableStateName))
-        {
-            return;
-        }
-
-        int stateHash = Animator.StringToHash(playableStateName);
-        if (!forceRestart && currentStateHash == stateHash)
-        {
-            return;
-        }
-
-        float fadeTime = activeOneShot ? GetActionFadeTime(state) : locomotionFadeTime;
-        if (IsReversePlaybackState(state))
-        {
-            animator.CrossFade(playableStateName, fadeTime, 0, 0.999f);
-        }
-        else
-        {
-            animator.CrossFadeInFixedTime(playableStateName, fadeTime, 0, 0f);
-        }
-
-        currentStateHash = stateHash;
-    }
-
-    private float GetActionFadeTime(PlayerState state)
-    {
-        return IsCrouchTransitionState(state) ? Mathf.Max(actionFadeTime, 0.08f) : actionFadeTime;
-    }
-    private string GetPlayableStateName(PlayerState state)
-    {
-        string stateName = GetStateName(state);
-        if (animator == null || HasAnimatorState(stateName))
-        {
-            return stateName;
-        }
-
-        string[] fallbacks;
-        if (!stateFallbacks.TryGetValue(stateName, out fallbacks))
-        {
-            return stateName;
-        }
-
-        for (int i = 0; i < fallbacks.Length; i++)
-        {
-            if (HasAnimatorState(fallbacks[i]))
-            {
-                return fallbacks[i];
-            }
-        }
-
-        return stateName;
-    }
-
-    private bool StateInfoMatches(AnimatorStateInfo stateInfo, int shortHash, int fullPathHash)
-    {
-        return stateInfo.shortNameHash == shortHash || stateInfo.fullPathHash == fullPathHash;
-    }
-
-    private bool HasAnimatorState(string stateName)
-    {
-        return animator.HasState(0, Animator.StringToHash(stateName))
-            || animator.HasState(0, Animator.StringToHash("Base Layer." + stateName));
-    }
-
-    private string GetStateName(PlayerState state)
-    {
-        switch (state)
-        {
-            case PlayerState.IdleSad:
-                return idleSadState;
-            case PlayerState.IdleHappy:
-                return idleHappyState;
-            case PlayerState.IdleBattle:
-                return idleBattleState;
-            case PlayerState.SlowRun:
-                return slowRunState;
-            case PlayerState.Sprint:
-                return sprintState;
-            case PlayerState.StandingToCrouch:
-                return standingToCrouchState;
-            case PlayerState.CrouchIdle:
-                return crouchIdleState;
-            case PlayerState.CrouchWalking:
-                return crouchWalkingState;
-            case PlayerState.CrouchToStanding:
-                return crouchToStandingState;
-            case PlayerState.IdleToRoll:
-                return idleToRollState;
-            case PlayerState.SprintingToRoll:
-                return sprintingToRollState;
-            case PlayerState.RunningBackward:
-                return runningBackwardState;
-            case PlayerState.Floating:
-                return floatingState;
-            case PlayerState.IdleJump:
-                return idleJumpState;
-            case PlayerState.Jump:
-                return jumpState;
-            case PlayerState.PickingUp:
-                return pickingUpState;
-            case PlayerState.Throw:
-                return throwState;
-            default:
-                return idleNeutralState;
-        }
-    }
-
-    private void BuildStateFallbacks()
-    {
-        stateFallbacks.Clear();
-        stateFallbacks[idleNeutralState] = new[] { "Idle", "Neutral Idle" };
-        stateFallbacks[idleSadState] = new[] { "IdleChill", "Sad Idle" };
-        stateFallbacks[idleHappyState] = new[] { idleSadState, "Happy Idle", "IdleChill", idleNeutralState, "Idle" };
-        stateFallbacks[idleBattleState] = new[] { "Idle", "IdleBattle" };
-        stateFallbacks[sprintState] = new[] { "FastRun", "Fast Run" };
-        stateFallbacks[sprintingToRollState] = new[] { "RunToRolling", "Run To Rolling" };
-        // Falling should never fall back to Jump, or it can look like a second jump.
-        stateFallbacks[floatingState] = new[] { idleNeutralState };
-        stateFallbacks[idleJumpState] = new[] { jumpState, "Jump" };
-        stateFallbacks[crouchIdleState] = new[] { idleNeutralState, "Idle" };
-        stateFallbacks[pickingUpState] = new[] { idleNeutralState, "Idle" };
-    }
-
-    private void UpdateAnimatorParameters()
-    {
-        if (animator == null)
-        {
-            return;
-        }
-
-        float planarSpeed = new Vector2(horizontalVelocity.x, horizontalVelocity.z).magnitude;
-        float normalizedSpeed = Mathf.InverseLerp(0f, sprintSpeed, planarSpeed);
-        bool rolling = currentState == PlayerState.IdleToRoll || currentState == PlayerState.SprintingToRoll;
-        bool jumping = IsJumpState(currentState) || !grounded;
-        bool pickingUp = currentState == PlayerState.PickingUp;
-        bool throwing = currentState == PlayerState.Throw;
-        bool sprinting = currentState == PlayerState.Sprint;
-
-        SetAnimatorFloat(speedParameter, normalizedSpeed);
-        SetAnimatorFloat(moveXParameter, moveInput.x);
-        SetAnimatorFloat(moveYParameter, moveInput.y);
-        SetAnimatorBool(groundedParameter, grounded);
-        SetAnimatorFloat(verticalSpeedParameter, verticalVelocity);
-        SetAnimatorBool(isMovingParameter, hasMoveInput);
-        SetAnimatorBool(isSprintingParameter, sprinting);
-        SetAnimatorBool(isCrouchingParameter, isCrouching || currentState == PlayerState.CrouchIdle || currentState == PlayerState.CrouchWalking);
-        SetAnimatorBool(isEnemyNearbyParameter, EnemyThreatActive);
-        SetAnimatorBool(isRollingParameter, rolling);
-        SetAnimatorBool(isJumpingParameter, jumping);
-        SetAnimatorBool(isPickingUpParameter, pickingUp);
-        SetAnimatorBool(isThrowingParameter, throwing);
-        SetAnimatorFloat(idleTimerParameter, idleTimer);
-
-        SetAnimatorBool("FastRun", sprinting);
-        SetAnimatorBool("Backward", currentState == PlayerState.RunningBackward);
-        SetAnimatorBool("Rolling", rolling);
-        SetAnimatorBool("Jumping", jumping);
-        SetAnimatorBool("Throwing", throwing);
-    }
-
     private void RefreshCameraFollow()
     {
         if (cameraTransform == null && Camera.main != null)
@@ -2195,65 +1783,18 @@ public class BasicPlayerMovement : MonoBehaviour
         }
     }
 
-    public void SetPlayerAnimator(Animator newAnimator, bool restartCurrentState = true)
-    {
-        if (animator == newAnimator)
-        {
-            if (animator != null)
-            {
-                animator.applyRootMotion = useRootMotion;
-                CacheAnimatorParameters();
-                if (restartCurrentState)
-                {
-                    currentStateHash = 0;
-                    PlayState(currentState, true);
-                }
-            }
-            return;
-        }
-
-        if (animator != null)
-        {
-            AnimatorRootMotionRelay oldRelay = animator.GetComponent<AnimatorRootMotionRelay>();
-            if (oldRelay != null && oldRelay.movement == this)
-            {
-                oldRelay.movement = null;
-            }
-        }
-
-        animator = newAnimator;
-        animatorTransform = null;
-        animatorLocalPosition = Vector3.zero;
-        animatorLocalRotation = Quaternion.identity;
-        currentStateHash = 0;
-
-        ConfigureAnimator();
-        CacheAnimatorParameters();
-        CaptureAnimatorAnchor();
-
-        if (restartCurrentState)
-        {
-            PlayState(currentState, true);
-            UpdateAnimatorParameters();
-        }
-    }
-
     public void SetAvailableActions(bool jump, bool crouch, bool roll)
     {
         enableJump = jump;
         enableCrouch = crouch;
         enableRoll = roll;
-
         if (!enableCrouch && isCrouching)
         {
             isCrouching = false;
             crouchWanted = false;
             pendingAfterStand = PendingAfterStand.None;
             returnToCrouchAfterAction = false;
-
-            if (currentState == PlayerState.CrouchIdle
-                || currentState == PlayerState.CrouchWalking
-                || IsCrouchTransitionState(currentState))
+            if (currentState == PlayerState.CrouchIdle || currentState == PlayerState.CrouchWalking || IsCrouchTransitionState(currentState))
             {
                 activeOneShot = false;
                 RestoreStandingControllerShape();
@@ -2263,58 +1804,6 @@ public class BasicPlayerMovement : MonoBehaviour
                 PlayState(currentState, true);
             }
         }
-    }
-
-    private void ConfigureAnimator()
-    {
-        if (animator == null)
-        {
-            configuredAnimator = null;
-            animatorConfigurationInitialized = false;
-            return;
-        }
-
-        if (animatorConfigurationInitialized
-            && configuredAnimator == animator
-            && configuredRootMotion == useRootMotion)
-        {
-            return;
-        }
-
-        if (configuredAnimator != null && configuredAnimator != animator)
-        {
-            AnimatorRootMotionRelay previousRelay = configuredAnimator.GetComponent<AnimatorRootMotionRelay>();
-            if (previousRelay != null && previousRelay.movement == this)
-            {
-                previousRelay.movement = null;
-            }
-        }
-
-        animator.applyRootMotion = useRootMotion;
-        AnimatorRootMotionRelay relay = animator.GetComponent<AnimatorRootMotionRelay>();
-
-        if (!useRootMotion)
-        {
-            if (relay != null)
-            {
-                relay.movement = null;
-            }
-
-            configuredAnimator = animator;
-            configuredRootMotion = false;
-            animatorConfigurationInitialized = true;
-            return;
-        }
-
-        if (relay == null)
-        {
-            relay = animator.gameObject.AddComponent<AnimatorRootMotionRelay>();
-        }
-
-        relay.movement = this;
-        configuredAnimator = animator;
-        configuredRootMotion = true;
-        animatorConfigurationInitialized = true;
     }
 
     private void SanitizeRigidbody()
@@ -2328,108 +1817,6 @@ public class BasicPlayerMovement : MonoBehaviour
         body.useGravity = false;
         body.isKinematic = true;
         body.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-    }
-
-    private void SnapCharacterToGround(bool allowSnapWhileAirborne)
-    {
-        if (!snapFeetToGround || characterController == null)
-        {
-            return;
-        }
-
-        if (!allowSnapWhileAirborne && !grounded)
-        {
-            return;
-        }
-
-        float bottomOffset = characterController.center.y - characterController.height * 0.5f;
-        Vector3 bottom = transform.position + Vector3.up * bottomOffset;
-        Vector3 origin = bottom + Vector3.up * groundSnapProbeHeight;
-        float contactOffset = Mathf.Max(0f, groundContactOffset);
-        float castPadding = Mathf.Max(characterController.skinWidth, contactOffset);
-        float maxDistance = groundSnapProbeHeight + groundSnapDistance + castPadding;
-        int hitCount = Physics.RaycastNonAlloc(origin, Vector3.down, groundHits, maxDistance, groundLayers, QueryTriggerInteraction.Ignore);
-
-        float bestDistance = float.PositiveInfinity;
-        RaycastHit bestHit = default;
-        bool foundGround = false;
-        for (int i = 0; i < hitCount; i++)
-        {
-            RaycastHit hit = groundHits[i];
-            if (hit.collider == null || OwnsCollider(hit.collider))
-            {
-                continue;
-            }
-
-            if (hit.distance < bestDistance)
-            {
-                bestDistance = hit.distance;
-                bestHit = hit;
-                foundGround = true;
-            }
-        }
-
-        if (!foundGround)
-        {
-            return;
-        }
-
-        float desiredY = bestHit.point.y - bottomOffset + contactOffset;
-        float deltaY = desiredY - transform.position.y;
-        if (deltaY >= -0.001f || Mathf.Abs(deltaY) > groundSnapDistance + castPadding)
-        {
-            return;
-        }
-
-        CollisionFlags flags = characterController.Move(Vector3.up * deltaY);
-        grounded = characterController.isGrounded || (flags & CollisionFlags.Below) != 0 || Mathf.Abs(deltaY) > 0.001f;
-        if (grounded && verticalVelocity < 0f)
-        {
-            verticalVelocity = groundedStickForce;
-        }
-    }
-
-    private void CacheAnimatorParameters()
-    {
-        animatorParameters.Clear();
-
-        if (animator == null)
-        {
-            return;
-        }
-
-        foreach (AnimatorControllerParameter parameter in animator.parameters)
-        {
-            animatorParameters.Add(parameter.nameHash);
-        }
-    }
-
-    private void CaptureAnimatorAnchor()
-    {
-        if (animator == null || animator.transform == transform)
-        {
-            return;
-        }
-
-        animatorTransform = animator.transform;
-        animatorLocalPosition = animatorTransform.localPosition;
-        animatorLocalRotation = animatorTransform.localRotation;
-    }
-
-    private void PinAnimatorTransform()
-    {
-        if (animator == null || animator.transform == transform)
-        {
-            return;
-        }
-
-        if (animatorTransform != animator.transform)
-        {
-            CaptureAnimatorAnchor();
-        }
-
-        animatorTransform.localPosition = animatorLocalPosition;
-        animatorTransform.localRotation = animatorLocalRotation;
     }
 
     private Animator FindBestAnimator()
@@ -2471,37 +1858,4 @@ public class BasicPlayerMovement : MonoBehaviour
 
         return null;
     }
-
-    private bool HasAnimatorParameter(string parameterName)
-    {
-        if (animator == null || string.IsNullOrWhiteSpace(parameterName))
-        {
-            return false;
-        }
-
-        int hash = Animator.StringToHash(parameterName);
-        if (animatorParameters.Count == 0)
-        {
-            CacheAnimatorParameters();
-        }
-
-        return animatorParameters.Contains(hash);
-    }
-
-    private void SetAnimatorFloat(string parameterName, float value)
-    {
-        if (HasAnimatorParameter(parameterName))
-        {
-            animator.SetFloat(parameterName, value, 0.1f, Time.deltaTime);
-        }
-    }
-
-    private void SetAnimatorBool(string parameterName, bool value)
-    {
-        if (HasAnimatorParameter(parameterName))
-        {
-            animator.SetBool(parameterName, value);
-        }
-    }
 }
-

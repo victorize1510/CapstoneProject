@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace Capstone.Game.CodexSystem {
     public enum CodexDiscovery { Unknown, Seen, Recorded, Captured }
-    // Codex includes Mythic without changing gameplay's PetElement enum.
-    public enum CodexType { Unknown, Fire, Water, Nature, Electric, Ice, Earth, Wind, Dark, Light, Mythic, Dragon, Fighting = 12, Flying = 13, Normal = 14 }
+    // Giu nguyen so da serialize; thu tu hien thi do catalog quyet dinh.
+    public enum CodexType { Unknown = 0, Fire = 1, Water = 2, Nature = 3, Electric = 4, Ice = 5, Earth = 6, Wind = 7, Dark = 8, Light = 9, Mythic = 10, Dragon = 11, Fighting = 12, Flying = 13, Normal = 14 }
     public enum CodexSort { Number, Type, Region, Rarity, Name }
 
     [Serializable]

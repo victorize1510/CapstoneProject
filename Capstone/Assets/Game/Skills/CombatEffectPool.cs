@@ -51,8 +51,14 @@ namespace Capstone.Game.Skills {
             foreach (var particle in item.particles) { particle.Clear(false); particle.Play(false); }
             return value;
         }
+        public static void PlayOneShot(GameObject prefab,Vector3 position,float seconds=2) {
+            var value=Rent(prefab,position,Quaternion.identity);if(value==null)return;
+            var lifetime=value.GetComponent<CombatEffectLifetime>()??value.AddComponent<CombatEffectLifetime>();
+            lifetime.Arm(Mathf.Clamp(seconds,.1f,5));
+        }
         public static void Return(GameObject value) {
             if (value == null) return;
+            var lifetime=value.GetComponent<CombatEffectLifetime>();if(lifetime!=null)lifetime.enabled=false;
             if (!active.TryGetValue(value, out var item)) { Object.Destroy(value); return; }
             active.Remove(value);
             foreach (var particle in item.particles) particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -60,6 +66,13 @@ namespace Capstone.Game.Skills {
             if (root == null || idle.Count >= 24) { Object.Destroy(value); return; }
             value.transform.SetParent(root, false); idle.Add(item);
         }
+    }
+
+    // Ton tai tren effect pool, khong phu thuoc actor vua bi an/huy.
+    internal sealed class CombatEffectLifetime:MonoBehaviour {
+        float expires;
+        internal void Arm(float seconds){expires=Time.time+seconds;enabled=true;}
+        void Update(){if(!Capstone.Game.UISystem.GameplayPause.IsPaused&&Time.time>=expires)CombatEffectPool.Return(gameObject);}
     }
 
     public static class CombatAudioVoices {

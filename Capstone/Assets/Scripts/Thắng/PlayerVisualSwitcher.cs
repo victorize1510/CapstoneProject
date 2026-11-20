@@ -34,6 +34,10 @@ public class PlayerVisualSwitcher : MonoBehaviour
     [SerializeField] private int defaultVisualIndex;
 
     private int activeVisualIndex = -1;
+    private readonly System.Collections.Generic.Dictionary<
+    Animator, RuntimeAnimatorController> preparedControllers =
+    new System.Collections.Generic.Dictionary<
+        Animator, RuntimeAnimatorController>();
     private bool runtimeSwitchLocked;
 
     public int ActiveVisualIndex => activeVisualIndex;
@@ -108,15 +112,53 @@ public class PlayerVisualSwitcher : MonoBehaviour
         Animator activeAnimator = ResolveAnimator(activeVisual);
         if (activeAnimator != null)
         {
-            if (activeVisual.controller != null)
+            if (activeVisual.controller != null
+                && activeAnimator.runtimeAnimatorController
+                    != activeVisual.controller)
             {
                 activeAnimator.runtimeAnimatorController = activeVisual.controller;
             }
 
             activeAnimator.enabled = true;
-            activeAnimator.speed = Mathf.Max(0.05f, activeVisual.animatorSpeed);
+            activeAnimator.speed = Mathf.Max(.05f, activeVisual.animatorSpeed);
             activeAnimator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             activeAnimator.applyRootMotion = movement != null && movement.useRootMotion;
+
+            bool needsPreparation =
+                !preparedControllers.TryGetValue(activeAnimator, out var previous)
+                || previous != activeAnimator.runtimeAnimatorController
+                || !activeAnimator.isInitialized;
+
+            if (needsPreparation
+                && activeAnimator.runtimeAnimatorController != null)
+            {
+                bool rootMotion = activeAnimator.applyRootMotion;
+
+                try
+                {
+                    activeAnimator.applyRootMotion = false;
+                    activeAnimator.Rebind();
+
+                    string idle = movement != null
+                        ? movement.idleNeutralState
+                        : "IdleNeutral";
+
+                    int idleHash = Animator.StringToHash("Base Layer." + idle);
+
+                    if (activeAnimator.HasState(0, idleHash))
+                        activeAnimator.Play(idleHash, 0, 0f);
+
+                    activeAnimator.Update(0f);
+                }
+                finally
+                {
+                    activeAnimator.applyRootMotion = rootMotion;
+                }
+
+                ApplyVisualAlignment(activeVisual);
+                preparedControllers[activeAnimator] =
+                    activeAnimator.runtimeAnimatorController;
+            }
         }
 
         if (movement != null)
@@ -267,7 +309,3 @@ public class PlayerVisualSwitcher : MonoBehaviour
         return Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
     }
 }
-
-
-
-

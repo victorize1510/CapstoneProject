@@ -17,98 +17,170 @@ MonoBehaviour:
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: edd4e1b6436dd2942a7fa8ae8536b0de, type: 3}
+    displayName: "Chim Con"
+    primaryElement: 12
+    secondaryElement: 13
   - definitionId: chick
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 20d480f9f0b88c148853bfab3b57feb3, type: 3}
+    displayName: "G\u00E0 L\u00F4i"
+    primaryElement: 12
+    secondaryElement: 13
   - definitionId: chick
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 13aac3624e546e74f92b7c49a3d4502b, type: 3}
+    displayName: "G\u00E0 Gi\u00F3 L\u1ED1c"
+    primaryElement: 12
+    secondaryElement: 13
   - definitionId: bat
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: 5a6ab5b08820ca241a3446c80a97a57b, type: 3}
+    displayName: "D\u01A1i Nh\u1ECF"
+    primaryElement: 9
+    secondaryElement: 12
   - definitionId: bat
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 7305f2b68cd957c4a85fdf3ba7ab50ba, type: 3}
+    displayName: "D\u01A1i Ma C\u00E0 R\u1ED3ng"
+    primaryElement: 9
+    secondaryElement: 12
   - definitionId: bat
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 656f11ffedf653740b96ad4aac0bbef9, type: 3}
+    displayName: "D\u01A1i Ch\u00FAa T\u1EC3"
+    primaryElement: 9
+    secondaryElement: 12
   - definitionId: sun-blossom
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: eb4f3636ae4c4af419919587424ebdc4, type: 3}
+    displayName: "H\u01B0\u1EDBng D\u01B0\u01A1ng N\u1EA3y M\u1EA7m"
+    primaryElement: 1
+    secondaryElement: 12
   - definitionId: sun-blossom
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 2fcdcf804183e8e4c95ec4664f4ca2c4, type: 3}
+    displayName: "H\u01B0\u1EDBng D\u01B0\u01A1ng Ti\u00EAn"
+    primaryElement: 1
+    secondaryElement: 12
   - definitionId: sun-blossom
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 049cb7170f927004a820f487c8b5e2b2, type: 3}
+    displayName: "H\u01B0\u1EDBng D\u01B0\u01A1ng N\u1EEF Ho\u00E0ng"
+    primaryElement: 1
+    secondaryElement: 12
   - definitionId: dragon-fire
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: dc2be1dc358c14e48a083f2eca623df7, type: 3}
+    displayName: "Kh\u1EE7ng Long L\u1EEDa"
+    primaryElement: 2
+    secondaryElement: 10
   - definitionId: dragon-fire
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 848f48cbb61ce6d4caae2e202b0fa64c, type: 3}
+    displayName: "R\u1ED3ng L\u1EEDa Bay"
+    primaryElement: 2
+    secondaryElement: 10
   - definitionId: dragon-fire
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: ad6b6080d1afd99429089b40b18db182, type: 3}
+    displayName: "R\u1ED3ng L\u1EEDa \u0110\u1ECBa Ng\u1EE5c"
+    primaryElement: 2
+    secondaryElement: 10
   - definitionId: ghost
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: 9d63cba7d49a8c84c9827a646e643490, type: 3}
+    displayName: "Ma Nh\u1ECF"
+    primaryElement: 9
+    secondaryElement: 0
   - definitionId: ghost
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: c8f971810f3803b42b00e0ef4aafb68e, type: 3}
+    displayName: "Ma M\u1EB7t N\u1EA1"
+    primaryElement: 9
+    secondaryElement: 0
   - definitionId: ghost
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 8bc7cd3691be4be4dac8baeb4494ded5, type: 3}
+    displayName: "Ma Nguy\u1EC1n R\u1EE7a"
+    primaryElement: 9
+    secondaryElement: 0
   - definitionId: cat-electric
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: d105e8f46ae9fcc4e82e2f986b9df2d0, type: 3}
+    displayName: "M\u00E8o \u0110i\u1EC7n"
+    primaryElement: 6
+    secondaryElement: 0
   - definitionId: cat-electric
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: d836a8f72a4a411448ed7b0811ebd57d, type: 3}
+    displayName: "M\u00E8o Tia Ch\u1EDBp"
+    primaryElement: 6
+    secondaryElement: 0
   - definitionId: cat-electric
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 0bd712b3415f30a4187992c96165494c, type: 3}
+    displayName: "M\u00E8o S\u1EA5m S\u00E9t"
+    primaryElement: 6
+    secondaryElement: 0
   - definitionId: shell
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: 86b4ece01f74cd542b48267e3f58c311, type: 3}
+    displayName: "\u1ED0c Nh\u00E0"
+    primaryElement: 3
+    secondaryElement: 0
   - definitionId: shell
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 6d187bff9e5a98f42af111987c04cc64, type: 3}
+    displayName: "\u1ED0c Gai"
+    primaryElement: 3
+    secondaryElement: 0
   - definitionId: shell
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 54a5505aab0ffa84a9f520acf4a85939, type: 3}
+    displayName: "\u1ED0c M\u01B0\u1EE3n H\u1ED3n Vua"
+    primaryElement: 3
+    secondaryElement: 0
   - definitionId: snake-fire
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: 64aa7d8720d140841bf56c34fa093f7f, type: 3}
+    displayName: "R\u1EAFn L\u1EEDa"
+    primaryElement: 2
+    secondaryElement: 0
   - definitionId: snake-fire
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 83f53a524bf0e8d4db1c34f0ef1772d3, type: 3}
+    displayName: "R\u1EAFn B\u00F9ng Ch\u00E1y"
+    primaryElement: 2
+    secondaryElement: 0
   - definitionId: snake-fire
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 5d91ab8e5f65a024c868ba1d4e9186ce, type: 3}
+    displayName: "R\u1EAFn 3 \u0110\u1EA7u"
+    primaryElement: 2
+    secondaryElement: 10
   - definitionId: Dragon Dusk
     aliases:
     - Dragon Nightfall
@@ -117,6 +189,9 @@ MonoBehaviour:
     - Dragon Dusk Elder
     formId: 01
     avatar: {fileID: 21300000, guid: 7f5438365e3289243ac5dbf19f2d7b66, type: 3}
+    displayName: "R\u1ED3ng Ch\u1EA1ng V\u1EA1ng"
+    primaryElement: 9
+    secondaryElement: 10
   - definitionId: Dragon Dusk
     aliases:
     - Dragon Nightfall
@@ -125,6 +200,9 @@ MonoBehaviour:
     - Dragon Dusk Elder
     formId: 02
     avatar: {fileID: 21300000, guid: 76b9541a488b2cd44b579d65568cb7a3, type: 3}
+    displayName: "R\u1ED3ng \u0110\u00EAm T\u1ED1i"
+    primaryElement: 9
+    secondaryElement: 10
   - definitionId: Dragon Dusk
     aliases:
     - Dragon Nightfall
@@ -133,27 +211,48 @@ MonoBehaviour:
     - Dragon Dusk Elder
     formId: 03
     avatar: {fileID: 21300000, guid: 52c2bf9b2e45e0744b0d3c3eb1bd932c, type: 3}
+    displayName: "R\u1ED3ng B\u00F3ng T\u1ED1i"
+    primaryElement: 9
+    secondaryElement: 10
   - definitionId: wolf
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: fca5f40bf7e17f441acae646345e619f, type: 3}
+    displayName: "S\u00F3i T\u00ED N\u1ECB"
+    primaryElement: 9
+    secondaryElement: 0
   - definitionId: wolf
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 361040a0e64957b45a1f1904f9197c53, type: 3}
+    displayName: "S\u00F3i B\u00F3ng T\u1ED1i"
+    primaryElement: 9
+    secondaryElement: 0
   - definitionId: wolf
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: 9b30e715e5a37a341bbfcf682fa8852f, type: 3}
+    displayName: "Ng\u01B0\u1EDDi S\u00F3i Qu\u1EF7"
+    primaryElement: 9
+    secondaryElement: 11
   - definitionId: egg-shadow
     aliases: []
     formId: 01
     avatar: {fileID: 21300000, guid: 5b9f4cae6a1d80d4c81db1f496e56a36, type: 3}
+    displayName: "Tr\u1EE9ng Ma Qu\u00E1i"
+    primaryElement: 9
+    secondaryElement: 0
   - definitionId: egg-shadow
     aliases: []
     formId: 02
     avatar: {fileID: 21300000, guid: 933104ba23a2a7447b2ea9edfa4daa82, type: 3}
+    displayName: "Qu\u00E1i Tr\u1EE9ng Qu\u1EF7"
+    primaryElement: 9
+    secondaryElement: 0
   - definitionId: egg-shadow
     aliases: []
     formId: 03
     avatar: {fileID: 21300000, guid: abdcfcaf8ea6bcc408fcd559fb1bc239, type: 3}
+    displayName: "Qu\u00E1i Tr\u1EE9ng L\u1EF1c S\u0129"
+    primaryElement: 9
+    secondaryElement: 11

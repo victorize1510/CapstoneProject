@@ -15,26 +15,50 @@ MonoBehaviour:
   definitionId: chick
   displayName: "D\xF2ng chim"
   legacyDefinitionIds: []
-  evolutionRulesReviewed: 0
+  evolutionRulesReviewed: 1
   forms:
   - formId: 01
     displayName: Chim Con
+    typingStatus: 1
+    primaryElement: 12
+    secondaryElement: 13
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 4719582422183974118, guid: 15a9f5662fbe9b847899280e4c8a17d4, type: 3}
     avatar: {fileID: 21300000, guid: edd4e1b6436dd2942a7fa8ae8536b0de, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: e040de28bddeef9c56cc6afe2fcc87e9, type: 2}
+    skillSet: {fileID: 11400000, guid: dd4bc3ab9a8fa87d9b0400a00d03c2b9, type: 2}
+    visualPrefab: {fileID: 4719582422183974118, guid: 02fed10276694e81bdcc50fb7c5d9e1c, type: 3}
+    animationProfile: {fileID: 11400000, guid: 744bc1eee1c74ed2b22f35877074061e, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: 63039a30c3aff23d242fa0ded598a41f, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 5b761b0745dfe3b0aca7991f0959db3b, type: 3}
   - formId: 02
     displayName: "G\xE0 L\xF4i"
+    typingStatus: 1
+    primaryElement: 12
+    secondaryElement: 13
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 4159865771020837940, guid: 503946becf6396149a114b5b90a8b0d0, type: 3}
     avatar: {fileID: 21300000, guid: 20d480f9f0b88c148853bfab3b57feb3, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 355da7546eeb7a847b8ea046e895203c, type: 2}
+    skillSet: {fileID: 11400000, guid: dd4bc3ab9a8fa87d9b0400a00d03c2b9, type: 2}
+    visualPrefab: {fileID: 4159865771020837940, guid: 7acb023f84c847ca95ea59c2df14a965, type: 3}
+    animationProfile: {fileID: 11400000, guid: 88ab38b11cd5401a83644803aad9b1b6, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: 3030d5e55830ba0d7e71581e629c79e4, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 7c9a65f6b029bd25fa2b95689e629ea2, type: 3}
   - formId: 03
     displayName: "G\xE0 Gi\xF3 L\u1ED1c"
+    typingStatus: 1
+    primaryElement: 12
+    secondaryElement: 13
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 3241044673727534746, guid: ec95dcc3c39d3e941b38c3e2909f6999, type: 3}
     avatar: {fileID: 21300000, guid: 13aac3624e546e74f92b7c49a3d4502b, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: e145ac81f43714b2bbd9140ce62fe3b0, type: 2}
+    skillSet: {fileID: 11400000, guid: 37c4bf35cf274f27757318a56f7d9bdc, type: 2}
+    visualPrefab: {fileID: 3241044673727534746, guid: 276b0a2d43914492b4e41665677c0ac6, type: 3}
+    animationProfile: {fileID: 11400000, guid: 57fbd8c1c8c24d4a85c66628e757710b, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: ddcdfcc255852d6b8d8db1af64db4d4c, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 39cc69f2fb5aa161765e15143808d262, type: 3}

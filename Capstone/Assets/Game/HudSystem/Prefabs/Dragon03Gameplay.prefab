@@ -462,7 +462,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     description: Close-range bite attack.
     icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
     animatorStates:
@@ -484,7 +484,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     description: Short magic blast.
     icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
     animatorStates:
@@ -528,7 +528,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     description: Wing strike attack.
     icon: {fileID: 0}
     animatorStates:
@@ -550,7 +550,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     description: Close-range bite attack.
     icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
     animatorStates:
@@ -572,7 +572,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     description: Short magic blast.
     icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
     animatorStates:
@@ -616,7 +616,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     description: Wing strike attack.
     icon: {fileID: 0}
     animatorStates:
@@ -651,8 +651,8 @@ MonoBehaviour:
   definitionId: Dragon Dusk
   species: Dragon Darkness
   gender: Unknown
-  element: 10
-  secondaryElement: 9
+  element: 9
+  secondaryElement: 10
   rarity: 3
   nickname: 
   favorite: 0
@@ -694,8 +694,8 @@ MonoBehaviour:
     targetDisplayName: Dragon Nightfall
     targetSpecies: Dragon Nightfall
     targetIcon: {fileID: 21300000, guid: 8e40f1bd685177d4d8dd58e6d5f63777, type: 3}
-    targetElement: 10
-    targetSecondaryElement: 9
+    targetElement: 9
+    targetSecondaryElement: 10
     targetRarity: 3
     targetVisualPrefab: {fileID: 2488614154046801509, guid: c24f091d97b67fa458193d14d82b9927, type: 3}
     trigger: 2
@@ -714,8 +714,8 @@ MonoBehaviour:
     targetDisplayName: Dragon Darkness
     targetSpecies: Dragon Darkness
     targetIcon: {fileID: 21300000, guid: 8e40f1bd685177d4d8dd58e6d5f63777, type: 3}
-    targetElement: 10
-    targetSecondaryElement: 9
+    targetElement: 9
+    targetSecondaryElement: 10
     targetRarity: 4
     targetVisualPrefab: {fileID: 29666394940913172, guid: 32a31c60827cb7b4dacea823c9a33f95, type: 3}
     trigger: 2

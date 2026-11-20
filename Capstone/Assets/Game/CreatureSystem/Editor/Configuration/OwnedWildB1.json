@@ -1,0 +1,729 @@
+{
+  "schema": 1,
+  "trial": true,
+  "scope": [
+    "chick",
+    "cat-electric"
+  ],
+  "skills": [
+    {
+      "id": "peck.flying",
+      "name": "Mổ",
+      "element": "Bay",
+      "delivery": "Melee",
+      "offense": "ATK",
+      "power": 1.15,
+      "cooldown": 2.6,
+      "action": "Attack/Bite đúng clip mổ",
+      "approval": "PROPOSED_ONLY",
+      "range": 3,
+      "speed": 9,
+      "radius": 0.18,
+      "lifetime": 3,
+      "retreat": 0,
+      "preferred": 3,
+      "release": 0.36,
+      "icon": "Assets/Prefabs/Trung/Icons/Mổ.png",
+      "effect": "Assets/Game/Skills/Data/B1/Effects/peck.flying.prefab",
+      "effectSource": "Assets/Prefabs/Trung/Skills/Flying/Mổ.prefab",
+      "definition": "Assets/Game/Skills/Data/Definitions/Skill_peck.flying.asset",
+      "combat": "Assets/Game/Skills/Data/B1/Combat/Combat_peck.flying.asset",
+      "presentation": "Assets/Game/Skills/Data/B1/Presentation/Presentation_peck.flying.asset"
+    },
+    {
+      "id": "gust.flying",
+      "name": "Gió cắt",
+      "element": "Bay",
+      "delivery": "Projectile",
+      "offense": "ATK",
+      "power": 1.3,
+      "cooldown": 3.4,
+      "action": "Cast hoặc Projectile",
+      "approval": "PROPOSED_ONLY",
+      "range": 10,
+      "speed": 16,
+      "radius": 0.18,
+      "lifetime": 3,
+      "retreat": 2.4,
+      "preferred": 5,
+      "release": 0.43,
+      "icon": "Assets/Prefabs/Trung/Icons/Gió cắt.png",
+      "effect": "Assets/Game/Skills/Data/B1/Effects/gust.flying.prefab",
+      "effectSource": "Assets/Prefabs/Trung/Skills/Flying/Chém Gió.prefab",
+      "definition": "Assets/Game/Skills/Data/Definitions/Skill_gust.flying.asset",
+      "combat": "Assets/Game/Skills/Data/B1/Combat/Combat_gust.flying.asset",
+      "presentation": "Assets/Game/Skills/Data/B1/Presentation/Presentation_gust.flying.asset"
+    },
+    {
+      "id": "spark.electric",
+      "name": "Tia lửa điện",
+      "element": "Điện",
+      "delivery": "Targeted",
+      "offense": "SP.ATK",
+      "power": 1.25,
+      "cooldown": 3.2,
+      "action": "Cast",
+      "approval": "PROPOSED_ONLY",
+      "range": 9,
+      "speed": 9,
+      "radius": 0.18,
+      "lifetime": 3,
+      "retreat": 2.4,
+      "preferred": 5,
+      "release": 0.43,
+      "icon": "Assets/Prefabs/Trung/Icons/Tia Lửa Điện.png",
+      "effect": "Assets/Game/Skills/Data/B1/Effects/spark.electric.prefab",
+      "effectSource": "Assets/Prefabs/Trung/Skills/Electric/Tia Lửa.prefab",
+      "definition": "Assets/Game/Skills/Data/Definitions/Skill_spark.electric.asset",
+      "combat": "Assets/Game/Skills/Data/B1/Combat/Combat_spark.electric.asset",
+      "presentation": "Assets/Game/Skills/Data/B1/Presentation/Presentation_spark.electric.asset"
+    },
+    {
+      "id": "orb.electric",
+      "name": "Cầu điện",
+      "element": "Điện",
+      "delivery": "Projectile",
+      "offense": "SP.ATK",
+      "power": 1.5,
+      "cooldown": 4,
+      "action": "Projectile",
+      "approval": "PROPOSED_ONLY",
+      "range": 12,
+      "speed": 9,
+      "radius": 0.18,
+      "lifetime": 3,
+      "retreat": 2.4,
+      "preferred": 5,
+      "release": 0.3,
+      "icon": "Assets/Prefabs/Trung/Icons/Quả Cầu Điện.png",
+      "effect": "Assets/Game/Skills/Data/B1/Effects/orb.electric.prefab",
+      "effectSource": "Assets/Prefabs/Trung/Skills/Electric/Điện Cầu.prefab",
+      "definition": "Assets/Game/Skills/Data/Definitions/Skill_orb.electric.asset",
+      "combat": "Assets/Game/Skills/Data/B1/Combat/Combat_orb.electric.asset",
+      "presentation": "Assets/Game/Skills/Data/B1/Presentation/Presentation_orb.electric.asset"
+    },
+    {
+      "id": "bolt.electric",
+      "name": "Tia sét",
+      "element": "Điện",
+      "delivery": "Targeted",
+      "offense": "SP.ATK",
+      "power": 1.75,
+      "cooldown": 6,
+      "action": "Cast",
+      "approval": "PROPOSED_ONLY",
+      "range": 9,
+      "speed": 9,
+      "radius": 0.18,
+      "lifetime": 3,
+      "retreat": 2.4,
+      "preferred": 5,
+      "release": 0.43,
+      "icon": "Assets/Prefabs/Trung/Icons/Tia Sét.png",
+      "effect": "Assets/Game/Skills/Data/B1/Effects/bolt.electric.prefab",
+      "effectSource": "Assets/Prefabs/Trung/Skills/Electric/Tia Lửa.prefab",
+      "definition": "Assets/Game/Skills/Data/Definitions/Skill_bolt.electric.asset",
+      "combat": "Assets/Game/Skills/Data/B1/Combat/Combat_bolt.electric.asset",
+      "presentation": "Assets/Game/Skills/Data/B1/Presentation/Presentation_bolt.electric.asset",
+      "effectFallbackReason": "Tia Set source has missing material b85bb668bf945fe47a123c232f435529; reuse real electric spark VFX for B1, not certified lightning art."
+    }
+  ],
+  "forms": [
+    {
+      "family": "chick",
+      "form": "01",
+      "name": "Chim Con",
+      "baseStats": [
+        40,
+        55,
+        30,
+        35,
+        35,
+        85
+      ],
+      "catchRate": 255,
+      "source": "Assets/Prefabs/Trung/Pets/Chim Con.prefab",
+      "avatar": {
+        "path": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Chick Cute Series/FBX/Chick.FBX",
+        "guid": "e2564e28a1c3304458cb2b41e1ad2837"
+      },
+      "visual": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Visual/Visual_chick_01.prefab",
+      "profile": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Animation/Animation_chick_01.asset",
+      "controller": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Animation/chick_01.controller",
+      "iconGuid": "edd4e1b6436dd2942a7fa8ae8536b0de",
+      "headPath": "RigPevis/RigSpine/RigHead",
+      "bodyPath": "RigPevis/RigSpine",
+      "headId": "1763777138132952163",
+      "bodyId": "4978917037256919029",
+      "box": {
+        "min": [
+          -0.4822442340627681,
+          -0.20931674296278976,
+          -0.31531470250734894
+        ],
+        "max": [
+          0.4822441268057866,
+          0.5894034033191131,
+          0.32399700732850023
+        ],
+        "size": [
+          0.9644883608685547,
+          0.7987201462819029,
+          0.6393117098358492
+        ],
+        "radius": 0.2,
+        "height": 0.5894034033191131,
+        "center": [
+          -5.362849075929432e-8,
+          0.29470170165955656,
+          0.004341152410575644
+        ],
+        "visualY": 0
+      },
+      "stat": "Assets/Resources/PetStats/chick_01.asset",
+      "set": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Species_chick.asset",
+      "owned": "Assets/Game/CreatureSystem/Runtime/Chicks/OwnedPet/OwnedPet_chick_01.prefab",
+      "wild": "Assets/Game/CreatureSystem/Runtime/Chicks/Wild/Wild_chick_01.prefab",
+      "entries": [
+        {
+          "id": "bite.normal",
+          "level": 1,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Chick Cute Series/FBX/Chick@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_shared_bite.normal.asset"
+        },
+        {
+          "id": "peck.flying",
+          "level": 5,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Chick Cute Series/FBX/Chick@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_shared_peck.flying.asset"
+        },
+        {
+          "id": "gust.flying",
+          "level": 12,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Chick Cute Series/FBX/Chick@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_shared_gust.flying.asset"
+        }
+      ],
+      "ownedGoId": "1679457036408839924",
+      "ownedPetComponentId": "3905486807277576643",
+      "wildGoId": "3303902416035471862"
+    },
+    {
+      "family": "chick",
+      "form": "02",
+      "name": "Gà Lôi",
+      "baseStats": [
+        55,
+        80,
+        45,
+        50,
+        50,
+        110
+      ],
+      "catchRate": 150,
+      "source": "Assets/Prefabs/Trung/Pets/Gà Lôi.prefab",
+      "avatar": {
+        "path": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Fledgling Cute Series/FBX/Fledgling.FBX",
+        "guid": "99e29cecf057f3c44af5f80efbbe7863"
+      },
+      "visual": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Visual/Visual_chick_02.prefab",
+      "profile": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Animation/Animation_chick_02.asset",
+      "controller": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Animation/chick_02.controller",
+      "iconGuid": "20d480f9f0b88c148853bfab3b57feb3",
+      "headPath": "RigPelvis/RigSpine/RigHead",
+      "bodyPath": "RigPelvis/RigSpine",
+      "headId": "185768173388337553",
+      "bodyId": "5651909416486070400",
+      "box": {
+        "min": [
+          -0.5480240588499035,
+          -0.015048647400872445,
+          -0.4780227104523803
+        ],
+        "max": [
+          0.5480237358204609,
+          0.7925663745395762,
+          0.4133699060825716
+        ],
+        "size": [
+          1.0960477946703644,
+          0.8076150219404487,
+          0.8913926165349519
+        ],
+        "radius": 0.20502030180303896,
+        "height": 0.7925663745395762,
+        "center": [
+          -1.6151472126413324e-7,
+          0.3962831872697881,
+          -0.032326402184904346
+        ],
+        "visualY": 0
+      },
+      "stat": "Assets/Resources/PetStats/chick_02.asset",
+      "set": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Species_chick.asset",
+      "owned": "Assets/Game/CreatureSystem/Runtime/Chicks/OwnedPet/OwnedPet_chick_02.prefab",
+      "wild": "Assets/Game/CreatureSystem/Runtime/Chicks/Wild/Wild_chick_02.prefab",
+      "entries": [
+        {
+          "id": "bite.normal",
+          "level": 1,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Fledgling Cute Series/FBX/Fledgling@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_shared_bite.normal.asset"
+        },
+        {
+          "id": "peck.flying",
+          "level": 5,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Fledgling Cute Series/FBX/Fledgling@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_shared_peck.flying.asset"
+        },
+        {
+          "id": "gust.flying",
+          "level": 12,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Fledgling Cute Series/FBX/Fledgling@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_shared_gust.flying.asset"
+        }
+      ],
+      "ownedGoId": "1679457036408839924",
+      "ownedPetComponentId": "3905486807277576643",
+      "wildGoId": "3303902416035471862"
+    },
+    {
+      "family": "chick",
+      "form": "03",
+      "name": "Gà Gió Lốc",
+      "baseStats": [
+        75,
+        100,
+        70,
+        65,
+        65,
+        135
+      ],
+      "catchRate": 75,
+      "source": "Assets/Prefabs/Trung/Pets/Gà Gió Lốc.prefab",
+      "avatar": {
+        "path": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Bird Cute Series/FBX/Bird.FBX",
+        "guid": "f23115f35c3b52f4ab230c9854adc176"
+      },
+      "visual": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Visual/Visual_chick_03.prefab",
+      "profile": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Animation/Animation_chick_03.asset",
+      "controller": "Assets/Game/CreatureSystem/Runtime/AnimationReady/chick/Animation/chick_03.controller",
+      "iconGuid": "13aac3624e546e74f92b7c49a3d4502b",
+      "headPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage/RigNeck/RigHead",
+      "bodyPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage",
+      "headId": "8557195312993639211",
+      "bodyId": "2405605407581091190",
+      "box": {
+        "min": [
+          -1.8497168730695526,
+          -0.5891663752855381,
+          -1.3270658864118654
+        ],
+        "max": [
+          1.8468755208188572,
+          1.5516409407026523,
+          1.0397191881294034
+        ],
+        "size": [
+          3.6965923938884098,
+          2.1408073159881904,
+          2.366785074541269
+        ],
+        "radius": 0.5443605671444919,
+        "height": 1.5516409407026523,
+        "center": [
+          -0.0014206761253476863,
+          0.7758204703513262,
+          -0.14367334914123098
+        ],
+        "visualY": 0
+      },
+      "stat": "Assets/Resources/PetStats/chick_03.asset",
+      "set": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Species_chick_03.asset",
+      "owned": "Assets/Game/CreatureSystem/Runtime/Chicks/OwnedPet/OwnedPet_chick_03.prefab",
+      "wild": "Assets/Game/CreatureSystem/Runtime/Chicks/Wild/Wild_chick_03.prefab",
+      "entries": [
+        {
+          "id": "bite.normal",
+          "level": 1,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Bird Cute Series/FBX/Bird@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_03_bite.normal.asset"
+        },
+        {
+          "id": "peck.flying",
+          "level": 5,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Bird Cute Series/FBX/Bird@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_03_peck.flying.asset"
+        },
+        {
+          "id": "gust.flying",
+          "level": 12,
+          "action": 11,
+          "state": "Projectile Attack",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Bird Cute Series/FBX/Bird@Projectile Attack.FBX",
+          "release": 0.3,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_03_gust.flying.asset"
+        },
+        {
+          "id": "wing strike",
+          "level": 36,
+          "action": 11,
+          "state": "Projectile Attack",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 01 Cute Series/Bird Cute Series/FBX/Bird@Projectile Attack.FBX",
+          "release": 0.3,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/Chicks/Skills/Presentation_03_wing_strike.asset"
+        }
+      ],
+      "ownedGoId": "1679457036408839924",
+      "ownedPetComponentId": "3905486807277576643",
+      "wildGoId": "3303902416035471862"
+    },
+    {
+      "family": "cat-electric",
+      "form": "01",
+      "name": "Mèo Điện",
+      "baseStats": [
+        45,
+        50,
+        60,
+        35,
+        45,
+        85
+      ],
+      "catchRate": 210,
+      "source": "Assets/Prefabs/Trung/Pets/Mèo Điện.prefab",
+      "avatar": {
+        "path": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Meow Cute Series/FBX/Cat Meow.FBX",
+        "guid": "4f531470c28de4a478c31dbb0b28886f"
+      },
+      "visual": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Visual/Visual_cat-electric_01.prefab",
+      "profile": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Animation/Animation_cat-electric_01.asset",
+      "controller": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Animation/cat-electric_01.controller",
+      "iconGuid": "d105e8f46ae9fcc4e82e2f986b9df2d0",
+      "headPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage/RigNeck/RigHead",
+      "bodyPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage",
+      "headId": "3511604127336772445",
+      "bodyId": "2708929186289875184",
+      "box": {
+        "min": [
+          -0.343974218773384,
+          -0.024610803832827766,
+          -0.7885195978112679
+        ],
+        "max": [
+          0.34397394216877775,
+          1.1182245284991121,
+          0.51403972389889
+        ],
+        "size": [
+          0.6879481609421618,
+          1.14283533233194,
+          1.3025593217101579
+        ],
+        "radius": 0.2,
+        "height": 1.1182245284991121,
+        "center": [
+          -1.3830230313760516e-7,
+          0.5591122642495561,
+          -0.13723993695618897
+        ],
+        "visualY": 0
+      },
+      "stat": "Assets/Resources/PetStats/cat-electric_01.asset",
+      "set": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Species_cat-electric.asset",
+      "owned": "Assets/Game/CreatureSystem/Runtime/ElectricCats/OwnedPet/OwnedPet_cat-electric_01.prefab",
+      "wild": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Wild/Wild_cat-electric_01.prefab",
+      "entries": [
+        {
+          "id": "bite.normal",
+          "level": 1,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Meow Cute Series/FBX/Cat Meow@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_bite.normal.asset"
+        },
+        {
+          "id": "spark.electric",
+          "level": 5,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Meow Cute Series/FBX/Cat Meow@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_spark.electric.asset"
+        },
+        {
+          "id": "orb.electric",
+          "level": 12,
+          "action": 11,
+          "state": "Projectile Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Meow Cute Series/FBX/Cat Meow@Projectile Attack.FBX",
+          "release": 0.3,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_orb.electric.asset"
+        },
+        {
+          "id": "bolt.electric",
+          "level": 30,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Meow Cute Series/FBX/Cat Meow@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_bolt.electric.asset"
+        }
+      ],
+      "ownedGoId": "1679457036408839924",
+      "ownedPetComponentId": "3905486807277576643",
+      "wildGoId": "3303902416035471862"
+    },
+    {
+      "family": "cat-electric",
+      "form": "02",
+      "name": "Mèo Tia Chớp",
+      "baseStats": [
+        60,
+        65,
+        85,
+        50,
+        60,
+        110
+      ],
+      "catchRate": 110,
+      "source": "Assets/Prefabs/Trung/Pets/Mèo Tia Chớp.prefab",
+      "avatar": {
+        "path": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Lightning Cute Series/FBX/Cat Lightning.FBX",
+        "guid": "a4edf5790880e064e96352253f7b56d0"
+      },
+      "visual": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Visual/Visual_cat-electric_02.prefab",
+      "profile": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Animation/Animation_cat-electric_02.asset",
+      "controller": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Animation/cat-electric_02.controller",
+      "iconGuid": "d836a8f72a4a411448ed7b0811ebd57d",
+      "headPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage/RigNeck/RigHead",
+      "bodyPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage",
+      "headId": "5253521265535890146",
+      "bodyId": "3346217244669903139",
+      "box": {
+        "min": [
+          -0.5527729995561794,
+          -0.056610645149142824,
+          -1.3604048427688362
+        ],
+        "max": [
+          0.552772653294649,
+          1.7222803962804698,
+          0.7996192295267298
+        ],
+        "size": [
+          1.1055456528508283,
+          1.7788910414296126,
+          2.160024072295566
+        ],
+        "radius": 0.2542755001556905,
+        "height": 1.7222803962804698,
+        "center": [
+          -1.7313076522418314e-7,
+          0.8611401981402349,
+          -0.2803928066210532
+        ],
+        "visualY": 0
+      },
+      "stat": "Assets/Resources/PetStats/cat-electric_02.asset",
+      "set": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Species_cat-electric.asset",
+      "owned": "Assets/Game/CreatureSystem/Runtime/ElectricCats/OwnedPet/OwnedPet_cat-electric_02.prefab",
+      "wild": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Wild/Wild_cat-electric_02.prefab",
+      "entries": [
+        {
+          "id": "bite.normal",
+          "level": 1,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Lightning Cute Series/FBX/Cat Lightning@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_bite.normal.asset"
+        },
+        {
+          "id": "spark.electric",
+          "level": 5,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Lightning Cute Series/FBX/Cat Lightning@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_spark.electric.asset"
+        },
+        {
+          "id": "orb.electric",
+          "level": 12,
+          "action": 11,
+          "state": "Projectile Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Lightning Cute Series/FBX/Cat Lightning@Projectile Attack.FBX",
+          "release": 0.3,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_orb.electric.asset"
+        },
+        {
+          "id": "bolt.electric",
+          "level": 30,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Lightning Cute Series/FBX/Cat Lightning@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_bolt.electric.asset"
+        }
+      ],
+      "ownedGoId": "1679457036408839924",
+      "ownedPetComponentId": "3905486807277576643",
+      "wildGoId": "3303902416035471862"
+    },
+    {
+      "family": "cat-electric",
+      "form": "03",
+      "name": "Mèo Sấm Sét",
+      "baseStats": [
+        75,
+        80,
+        110,
+        65,
+        75,
+        135
+      ],
+      "catchRate": 55,
+      "source": "Assets/Prefabs/Trung/Pets/Mèo Sấm Sét.prefab",
+      "avatar": {
+        "path": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Bolt Cute Series/FBX/Cat Bolt.FBX",
+        "guid": "726f33cc14692a9498966297f049cbaa"
+      },
+      "visual": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Visual/Visual_cat-electric_03.prefab",
+      "profile": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Animation/Animation_cat-electric_03.asset",
+      "controller": "Assets/Game/CreatureSystem/Runtime/AnimationReady/cat-electric/Animation/cat-electric_03.controller",
+      "iconGuid": "0bd712b3415f30a4187992c96165494c",
+      "headPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage/RigNeck/RigHead",
+      "bodyPath": "RigPelvis/RigSpine1/RigSpine2/RigRibcage",
+      "headId": "4869446359500870084",
+      "bodyId": "1725433437491679392",
+      "box": {
+        "min": [
+          -0.631895566192795,
+          -0.05092796068976507,
+          -2.0768404433452696
+        ],
+        "max": [
+          0.6318951002065744,
+          2.148918797287174,
+          1.1873240359759194
+        ],
+        "size": [
+          1.2637906663993692,
+          2.1998467579769394,
+          3.264164479321189
+        ],
+        "radius": 0.2906718532718549,
+        "height": 2.148918797287174,
+        "center": [
+          -2.3299311030511305e-7,
+          1.074459398643587,
+          -0.4447582036846751
+        ],
+        "visualY": 0
+      },
+      "stat": "Assets/Resources/PetStats/cat-electric_03.asset",
+      "set": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Species_cat-electric.asset",
+      "owned": "Assets/Game/CreatureSystem/Runtime/ElectricCats/OwnedPet/OwnedPet_cat-electric_03.prefab",
+      "wild": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Wild/Wild_cat-electric_03.prefab",
+      "entries": [
+        {
+          "id": "bite.normal",
+          "level": 1,
+          "action": 8,
+          "state": "Bite Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Bolt Cute Series/FBX/Cat Bolt@Bite Attack.FBX",
+          "release": 0.36,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_bite.normal.asset"
+        },
+        {
+          "id": "spark.electric",
+          "level": 5,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Bolt Cute Series/FBX/Cat Bolt@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_spark.electric.asset"
+        },
+        {
+          "id": "orb.electric",
+          "level": 12,
+          "action": 11,
+          "state": "Projectile Attack",
+          "duration": 0.8333333333333334,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Bolt Cute Series/FBX/Cat Bolt@Projectile Attack.FBX",
+          "release": 0.3,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_orb.electric.asset"
+        },
+        {
+          "id": "bolt.electric",
+          "level": 30,
+          "action": 9,
+          "state": "Cast Spell",
+          "duration": 1,
+          "motion": "Assets/UnityAssset/Trung/Monsters Ultimate Pack 03 Cute Series/Cat Bolt Cute Series/FBX/Cat Bolt@Cast Spell.FBX",
+          "release": 0.43,
+          "presentation": "Assets/Game/CreatureSystem/Runtime/ElectricCats/Skills/Presentation_shared_bolt.electric.asset"
+        }
+      ],
+      "ownedGoId": "1679457036408839924",
+      "ownedPetComponentId": "3905486807277576643",
+      "wildGoId": "3303902416035471862"
+    }
+  ],
+  "catalog": "Assets/Game/CreatureSystem/Runtime/CreatureRuntimeCatalog.asset",
+  "skillCatalog": "Assets/Game/Skills/Resources/PetSkills/PetSkillCatalog.asset",
+  "ownedTemplate": "Assets/Game/CreatureSystem/Runtime/Bats/OwnedPet/OwnedPet_Bat01.prefab",
+  "wildTemplate": "Assets/Game/CreatureSystem/Runtime/Bats/Wild/Wild_Bat01.prefab",
+  "aiTemplate": "Assets/Game/CreatureSystem/Runtime/DemoSceneOne/WildEnemy_Bat01.prefab",
+  "tables": [
+    "Assets/Game/CreatureSystem/Runtime/SpawnZones/ApprovedSix/SpawnTable_Grass_Easy.asset",
+    "Assets/Game/CreatureSystem/Runtime/SpawnZones/ApprovedSix/SpawnTable_Grass_Mid.asset",
+    "Assets/Game/CreatureSystem/Runtime/SpawnZones/ApprovedSix/SpawnTable_Grass_Hard.asset"
+  ]
+}

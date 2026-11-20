@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17c454ea0bc778f488b17b8270673990, type: 3}
+  m_Name: Species_wolf_01
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSpeciesSkillSet
+  speciesId: wolf/01
+  startingMana: 0
+  catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
+  initializeFreshWildLoadout: 1
+  learnset: 
+  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - "Bite Attack"
+    animationDuration: 0.83333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 75e7b3b75a96a434f919c13a4a382288, type: 2}
+  - skill: {fileID: 11400000, guid: 160489a26e93970d7c2d65e3edd29e9d, type: 2}
+    learnAtLevel: 12
+    overrideAnimation: 1
+    animatorStates:
+    - "Bite Attack"
+    animationDuration: 0.83333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: eb41e323802f81f5dc59285ee6488d3a, type: 2}
+  - skill: {fileID: 11400000, guid: f4f605f9756e3c840a6ef10fbdb064d8, type: 2}
+    learnAtLevel: 18
+    overrideAnimation: 1
+    animatorStates:
+    - "Cast Spell"
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: c0f0d6245b0db2d4088f457d57a38e8d, type: 2}
+  - skill: {fileID: 11400000, guid: ebd9df2772d78802f3de386797990a8b, type: 2}
+    learnAtLevel: 36
+    overrideAnimation: 1
+    animatorStates:
+    - "Bite Attack"
+    animationDuration: 0.83333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: f99578c48fe97daaa789bd2db1969492, type: 2}
+  defaultLoadout: 
+  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - {fileID: 11400000, guid: 160489a26e93970d7c2d65e3edd29e9d, type: 2}
+  - {fileID: 11400000, guid: f4f605f9756e3c840a6ef10fbdb064d8, type: 2}
+  - {fileID: 11400000, guid: ebd9df2772d78802f3de386797990a8b, type: 2}

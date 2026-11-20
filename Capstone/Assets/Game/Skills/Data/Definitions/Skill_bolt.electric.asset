@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_bolt.electric
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: bolt.electric
+  legacyIds: []
+  displayName: "Tia sét"
+  description: "Tấn công một mục tiêu hợp lệ trong tầm nhìn."
+  element: 6
+  icon: {fileID: 21300000, guid: 2b64a5cb0de1cd64290cc61988ba8241, type: 3}
+  cooldownSeconds: 6
+  manaCost: 0
+  criticalRateBonus: 0
+  criticalDamageBonus: 0
+  animatorStates: 
+  - Cast Spell
+  animationDuration: 1
+  animationFade: 0.08
+  windupSeconds: 0
+  recoverySeconds: 0
+  presentation: {fileID: 11400000, guid: d4765fb9fb79abd21c460cbeb9c52a99, type: 2}
+  combat: {fileID: 11400000, guid: 1f18d844094f4273d7336e5a96ee95ed, type: 2}

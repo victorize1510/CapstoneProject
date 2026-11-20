@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17c454ea0bc778f488b17b8270673990, type: 3}
+  m_Name: Species_chick_03
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSpeciesSkillSet
+  speciesId: chick/03
+  startingMana: 0
+  catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
+  initializeFreshWildLoadout: 1
+  learnset: 
+  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - Bite Attack
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 0ebb7c18f7717d49e8e1dce05f04f4a8, type: 2}
+  - skill: {fileID: 11400000, guid: 3f4ea6b70659336447f8ca6631b9d1e3, type: 2}
+    learnAtLevel: 5
+    overrideAnimation: 1
+    animatorStates:
+    - Bite Attack
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 576e4d993d83007c25e419499124dc07, type: 2}
+  - skill: {fileID: 11400000, guid: bc4392a8d0f06855f74b9f8e7c77e94a, type: 2}
+    learnAtLevel: 12
+    overrideAnimation: 1
+    animatorStates:
+    - Projectile Attack
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 77274066d162658cbfe2df4aafc63c20, type: 2}
+  - skill: {fileID: 11400000, guid: 67c3331c9c0221e479c2e4c1e893a3a9, type: 2}
+    learnAtLevel: 36
+    overrideAnimation: 1
+    animatorStates:
+    - Projectile Attack
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 02688f52ea8c30249e55b019a065ed32, type: 2}
+  defaultLoadout: 
+  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - {fileID: 11400000, guid: 3f4ea6b70659336447f8ca6631b9d1e3, type: 2}
+  - {fileID: 11400000, guid: bc4392a8d0f06855f74b9f8e7c77e94a, type: 2}
+  - {fileID: 11400000, guid: 67c3331c9c0221e479c2e4c1e893a3a9, type: 2}

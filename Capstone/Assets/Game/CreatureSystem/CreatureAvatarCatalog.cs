@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using Capstone.Game.Elements;
+using Capstone.Game.HudSystem;
 using UnityEngine;
 
 namespace Capstone.Game.CreatureSystem {
-    /// <summary>Generated lightweight projection. Contains sprites and keys, never prefabs, stat profiles or skill sets.</summary>
+    /// <summary>Generated form identities, sprites and typing. Does not load gameplay prefabs.</summary>
     public sealed class CreatureAvatarCatalog : ScriptableObject {
         [Serializable]
         public sealed class Entry {
@@ -11,6 +13,9 @@ namespace Capstone.Game.CreatureSystem {
             public string[] aliases = Array.Empty<string>();
             public string formId;
             public Sprite avatar;
+            public string displayName;
+            public PetElement primaryElement;
+            public PetElement secondaryElement;
         }
         public List<Entry> entries = new List<Entry>();
         readonly Dictionary<string, Entry> byKey = new Dictionary<string, Entry>(StringComparer.OrdinalIgnoreCase);
@@ -23,6 +28,12 @@ namespace Capstone.Game.CreatureSystem {
         void OnValidate() => Invalidate();
         public bool TryResolve(string definitionId, string formId, out Sprite avatar) {
             avatar = null;
+            if (!TryGetEntry(definitionId, formId, out var found)) return false;
+            avatar = found.avatar;
+            return true; // A configured null avatar must show the missing-art state.
+        }
+        bool TryGetEntry(string definitionId, string formId, out Entry found) {
+            found = null;
             if (string.IsNullOrWhiteSpace(definitionId)) return false;
             if (!cached) {
                 cached = true;
@@ -33,9 +44,7 @@ namespace Capstone.Game.CreatureSystem {
                 }
             }
             string key = Key(definitionId, formId);
-            if (ambiguous.Contains(key) || !byKey.TryGetValue(key, out var found)) return false;
-            avatar = found.avatar;
-            return true; // A configured null avatar must show the UI's missing-art state, not a different form's image.
+            return !ambiguous.Contains(key) && byKey.TryGetValue(key, out found);
         }
         void Add(string id, Entry entry) {
             if (string.IsNullOrWhiteSpace(id)) return;
@@ -52,8 +61,26 @@ namespace Capstone.Game.CreatureSystem {
             return key;
         }
         public static Sprite Resolve(string definitionId, string formId, Sprite legacyFallback) {
+            var catalog = LoadDefault();
+            return catalog != null && catalog.TryResolve(definitionId, formId, out var sprite) ? sprite : legacyFallback;
+        }
+        public static bool TryResolveTyping(string definitionId, string formId, out PetElement primary, out PetElement secondary) {
+            primary = secondary = PetElement.Unknown;
+            var catalog = LoadDefault();
+            if (catalog == null || !catalog.TryGetEntry(definitionId, formId, out var entry)
+                || entry.primaryElement == entry.secondaryElement
+                || !ElementCatalog.IsValidCreatureTypes(entry.primaryElement, entry.secondaryElement)) return false;
+            primary = entry.primaryElement;
+            secondary = entry.secondaryElement;
+            return true;
+        }
+        internal static string ResolveDisplayName(string definitionId, string formId) {
+            var catalog = LoadDefault();
+            return catalog != null && catalog.TryGetEntry(definitionId, formId, out var entry) ? entry.displayName : null;
+        }
+        static CreatureAvatarCatalog LoadDefault() {
             if (!attemptedLoad) { attemptedLoad = true; loaded = Resources.Load<CreatureAvatarCatalog>("Creatures/CreatureAvatarCatalog"); }
-            return loaded != null && loaded.TryResolve(definitionId, formId, out var sprite) ? sprite : legacyFallback;
+            return loaded;
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetCache() { loaded = null; attemptedLoad = false; }

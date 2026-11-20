@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 2799883359901829659}
   - component: {fileID: 2076861798303715732}
   - component: {fileID: 1891080393285929720}
+  - component: {fileID: 8987167586597598356}
   m_Layer: 0
   m_Name: OwnedPet_Dragon03
   m_TagString: Untagged
@@ -186,7 +187,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -212,7 +213,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -264,7 +265,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     uiMetadata:
       damageKind: 0
       effects: []
@@ -290,7 +291,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -316,7 +317,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -368,7 +369,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     uiMetadata:
       damageKind: 0
       effects: []
@@ -407,8 +408,8 @@ MonoBehaviour:
   definitionId: Dragon Dusk
   species: Dragon Darkness
   gender: Unknown
-  element: 10
-  secondaryElement: 9
+  element: 9
+  secondaryElement: 10
   rarity: 3
   nickname: 
   favorite: 0
@@ -451,8 +452,8 @@ MonoBehaviour:
     targetDisplayName: Dragon Nightfall
     targetSpecies: Dragon Nightfall
     targetIcon: {fileID: 21300000, guid: 76b9541a488b2cd44b579d65568cb7a3, type: 3}
-    targetElement: 10
-    targetSecondaryElement: 9
+    targetElement: 9
+    targetSecondaryElement: 10
     targetRarity: 3
     targetVisualPrefab: {fileID: 3622403656948730236, guid: d7f5ca7d8986eab439e3c5fc8fdc04cc, type: 3}
     trigger: 2
@@ -471,8 +472,8 @@ MonoBehaviour:
     targetDisplayName: Dragon Darkness
     targetSpecies: Dragon Darkness
     targetIcon: {fileID: 21300000, guid: 52c2bf9b2e45e0744b0d3c3eb1bd932c, type: 3}
-    targetElement: 10
-    targetSecondaryElement: 9
+    targetElement: 9
+    targetSecondaryElement: 10
     targetRarity: 4
     targetVisualPrefab: {fileID: 8647867395065679038, guid: f21187517c109334388efb15595ca318, type: 3}
     trigger: 2
@@ -660,3 +661,26 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3838494629399968092, guid: f21187517c109334388efb15595ca318, type: 3}
   m_PrefabInstance: {fileID: 5064357089437411878}
   m_PrefabAsset: {fileID: 0}
+--- !u!136 &8987167586597598356
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212456052354837003}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.35
+  m_Height: 1.2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.65, z: 0}

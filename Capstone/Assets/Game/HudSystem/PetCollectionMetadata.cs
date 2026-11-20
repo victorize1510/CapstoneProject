@@ -7,17 +7,17 @@ using UnityEngine;
 
 namespace Capstone.Game.HudSystem {
     public enum PetElement {
-        Unknown,
-        Nature,
-        Fire,
-        Water,
-        Wind,
-        Earth,
-        Electric,
-        Ice,
-        Light,
-        Dark,
-        Dragon,
+        Unknown = 0,
+        Nature = 1,
+        Fire = 2,
+        Water = 3,
+        Wind = 4,
+        Earth = 5,
+        Electric = 6,
+        Ice = 7,
+        Light = 8,
+        Dark = 9,
+        Dragon = 10,
         Fighting = 11,
         Flying = 12,
         Normal = 13
@@ -36,54 +36,54 @@ namespace Capstone.Game.HudSystem {
     public sealed class PetCollectionMetadata : MonoBehaviour {
         const int MaxNicknameLength = 16;
 
-        [Header("Identity")]
+        [Header("Dinh danh")]
         [SerializeField] string petId = string.Empty;
         [SerializeField] string definitionId = string.Empty;
         [SerializeField] string species = string.Empty;
         [SerializeField] string gender = string.Empty;
-        [SerializeField] PetElement element = PetElement.Unknown;
-        [SerializeField] PetElement secondaryElement = PetElement.Unknown;
+        [SerializeField, Capstone.Game.Elements.SupportedElement] PetElement element = PetElement.Unknown;
+        [SerializeField, Capstone.Game.Elements.SupportedElement(true)] PetElement secondaryElement = PetElement.Unknown;
         [SerializeField] PetRarity rarity = PetRarity.Unknown;
 
-        [Header("Player Customization")]
+        [Header("Tuy chinh nguoi choi")]
         [SerializeField] string nickname = string.Empty;
         [SerializeField] bool favorite;
         [SerializeField, HideInInspector] bool released;
 
-        [Header("Progress")]
+        [Header("Tien trinh")]
         [SerializeField, Min(0)] int experience;
         [SerializeField, Min(0)] int experienceToNextLevel;
         [SerializeField] long obtainedOrder;
 
-        [Header("Pet Details")]
+        [Header("Thong tin thu")]
         [SerializeField] string captureDate = string.Empty;
         [SerializeField] string captureLocation = string.Empty;
         [SerializeField] string captureBallId = string.Empty;
         [SerializeField] string trainerName = string.Empty;
         [SerializeField] string personality = string.Empty;
 
-        [Header("Battle Genetics")]
+        [Header("Di truyen chien dau")]
         [SerializeField] bool geneticsInitialized;
         [SerializeField] bool captureGeneticsRolled;
         [SerializeField] PetStatValues individualValues;
         [SerializeField] PetStatValues effortValues;
         [SerializeField] string nature = "Serious";
 
-        [Header("Codex")]
+        [Header("Cam nang")]
         [SerializeField] bool codexRegistered;
         [SerializeField] string codexNumber = string.Empty;
         [SerializeField, TextArea(2, 4)] string codexDescription = string.Empty;
 
-        [Header("Evolution State")]
+        [Header("Trang thai tien hoa")]
         [SerializeField] string currentFormId = "base";
         [SerializeField, Min(0)] int evolutionStage;
         [SerializeField] List<string> promptedEvolutionIds = new List<string>();
         [SerializeField] List<PetEvolutionRule> evolutionRules = new List<PetEvolutionRule>();
 
-        [Header("Investment History")]
+        [Header("Lich su huan luyen")]
         [SerializeField] List<PetResourceInvestment> resourceInvestments = new List<PetResourceInvestment>();
 
-        [Header("Legacy Evolution (fallback)")]
+        [Header("Tien hoa legacy - du phong")]
         [SerializeField] bool hasNextEvolution;
         [SerializeField] string nextEvolutionName = string.Empty;
         [SerializeField] Sprite nextEvolutionIcon = null;
@@ -100,6 +100,7 @@ namespace Capstone.Game.HudSystem {
             ? (species ?? string.Empty).Trim()
             : definitionId.Trim();
         public string Species => species;
+        public string SpeciesDisplayName => Capstone.Game.CreatureSystem.CreatureDisplayNames.Species(DefinitionId, CurrentFormId, species);
         public string Gender => gender;
         public PetElement Element => element;
         public PetElement SecondaryElement => secondaryElement;
@@ -170,6 +171,7 @@ namespace Capstone.Game.HudSystem {
             EnsurePersistentId();
             if (string.IsNullOrWhiteSpace(definitionId) && !string.IsNullOrWhiteSpace(species))
                 definitionId = species.Trim();
+            ApplyFormTyping();
         }
 
         public PetStatSnapshot GetStatsAtLevel(int level) => PetStatCalculator.Calculate(this, level);
@@ -191,6 +193,20 @@ namespace Capstone.Game.HudSystem {
 
         public void AssignDefinitionId(string value) {
             definitionId = value?.Trim() ?? string.Empty;
+            ApplyFormTyping();
+        }
+
+        void ApplyFormTyping(PetEvolutionRule fallback = null) {
+            if (Capstone.Game.CreatureSystem.CreatureAvatarCatalog.TryResolveTyping(DefinitionId, CurrentFormId,
+                out var primary, out var secondary)) {
+                element = primary;
+                secondaryElement = secondary;
+                return;
+            }
+            if (fallback == null) return;
+            if (fallback.TargetElement != PetElement.Unknown) element = fallback.TargetElement;
+            if (fallback.ReplaceSecondaryElement || fallback.TargetSecondaryElement != PetElement.Unknown)
+                secondaryElement = fallback.TargetSecondaryElement;
         }
 
         public void RollGeneticsForNewCapture() {
@@ -251,7 +267,9 @@ namespace Capstone.Game.HudSystem {
         }
 
         public string ResolveDisplayName(string fallback) {
-            return string.IsNullOrWhiteSpace(nickname) ? fallback : nickname.Trim();
+            return string.IsNullOrWhiteSpace(nickname)
+                ? Capstone.Game.CreatureSystem.CreatureDisplayNames.Name(DefinitionId, CurrentFormId, fallback)
+                : nickname.Trim();
         }
 
         public bool TrySetNickname(string value, out string error) {
@@ -356,8 +374,7 @@ namespace Capstone.Game.HudSystem {
             currentFormId = rule.TargetFormId;
             if (string.Equals(DefinitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) codexNumber = FormCode;
             if (!string.IsNullOrWhiteSpace(rule.TargetSpecies)) species = rule.TargetSpecies;
-            if (rule.TargetElement != PetElement.Unknown) element = rule.TargetElement;
-            if (rule.TargetSecondaryElement != PetElement.Unknown) secondaryElement = rule.TargetSecondaryElement;
+            ApplyFormTyping(rule);
             if (rule.TargetRarity != PetRarity.Unknown) rarity = rule.TargetRarity;
             nextEvolutionDiscovered = false;
             Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
@@ -382,21 +399,20 @@ namespace Capstone.Game.HudSystem {
 
         public void RestoreEvolutionPresentation(PetHudRuntimeStats runtimeStats) {
             PetEvolutionRule applied = FindAppliedEvolutionRule();
+            ApplyFormTyping(applied);
             PetController pet = GetComponentInParent<PetController>();
             PetEvolutionVisualController visualController = pet != null
                 ? pet.GetComponentInChildren<PetEvolutionVisualController>(true)
                 : null;
             if (applied == null) {
-                // The base form must also be restored. With Scene Reload disabled, a
-                // previous play session can leave Dusk's meshes disabled.
+                // Khoi phuc ca dang goc. Khi tat Scene Reload, phien Play truoc
+                // co the de lai mesh Dusk bi an.
                 if (EvolutionStage == 0) visualController?.RestoreForm(0);
                 return;
             }
             if (string.Equals(DefinitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) codexNumber = FormCode;
 
             if (!string.IsNullOrWhiteSpace(applied.TargetSpecies)) species = applied.TargetSpecies;
-            if (applied.TargetElement != PetElement.Unknown) element = applied.TargetElement;
-            if (applied.TargetSecondaryElement != PetElement.Unknown) secondaryElement = applied.TargetSecondaryElement;
             if (applied.TargetRarity != PetRarity.Unknown) rarity = applied.TargetRarity;
             if (runtimeStats != null) {
                 string baseName = string.IsNullOrWhiteSpace(applied.TargetDisplayName)
@@ -483,6 +499,7 @@ namespace Capstone.Game.HudSystem {
             evolutionStage = Mathf.Max(0, saveData.evolutionStage);
             secondaryElement = saveData.secondaryElement != PetElement.Unknown
                 ? saveData.secondaryElement : secondaryElement;
+            ApplyFormTyping();
             resourceInvestments = RestoreInvestmentSaveData(saveData.resourceInvestments);
             promptedEvolutionIds = saveData.promptedEvolutionIds != null
                 ? new List<string>(saveData.promptedEvolutionIds)
@@ -613,8 +630,8 @@ namespace Capstone.Game.HudSystem {
                 return species.Trim() + ":" + obtainedOrder;
             }
 
-            // An organizer may contain multiple actors. Identity belongs to this pet,
-            // never to the shared scene/prefab container.
+            // Container co the chua nhieu actor. Identity thuoc rieng pet nay,
+            // khong thuoc container scene/prefab dung chung.
             PetController actor = GetComponentInParent<PetController>(true);
             Transform root = actor != null ? actor.transform : transform;
             string scenePath = root.gameObject.scene.path;

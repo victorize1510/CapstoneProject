@@ -70,7 +70,7 @@ namespace Capstone.Game.CodexSystem {
                     if(captured&&profile!=null)profile.RecordCodexForm(key,false);
                     bool known=captured||(profile!=null&&profile.KnowsCodexForm(key));
                     entries.Add(new PetCodexEntryViewData {
-                        Id = definition.id, Number = definition.number, Name = source.Species,
+                        Id = definition.id, Number = definition.number, Name = source.SpeciesDisplayName,
                         PrimaryType = MapType(source.Element), SecondaryType = MapType(source.SecondaryElement),
                         Rarity = source.Rarity, Region = definition.region,
                         Discovery = known ? CodexDiscovery.Captured : CodexDiscovery.Unknown,
@@ -92,7 +92,7 @@ namespace Capstone.Game.CodexSystem {
                         var target = catalog.FindForm(source.DefinitionId, rule.TargetFormId);
                         if (target == null) continue;
                         nodes.Add(new PetCodexEvolutionViewData {
-                            Name = target.Metadata.Species, Icon = target.Icon,
+                            Name = target.Metadata.SpeciesDisplayName, Icon = target.Icon,
                             Known = entries.Exists(e => e.Id == target.id && e.Known), Requirement = Requirement(rule)
                         });
                     }
@@ -109,6 +109,6 @@ namespace Capstone.Game.CodexSystem {
             return rule.Trigger == PetEvolutionTrigger.Level ? level
                 : rule.Trigger == PetEvolutionTrigger.Item ? itemText : level + " hoặc " + itemText;
         }
-        static CodexType MapType(PetElement value) => Enum.TryParse(value.ToString(), out CodexType result) ? result : CodexType.Unknown;
+        static CodexType MapType(PetElement value) => Capstone.Game.Elements.CodexElementAdapter.ToCodex(value);
     }
 }

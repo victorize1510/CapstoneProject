@@ -189,7 +189,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -215,7 +215,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -267,7 +267,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     uiMetadata:
       damageKind: 0
       effects: []
@@ -293,7 +293,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -319,7 +319,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -371,7 +371,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     uiMetadata:
       damageKind: 0
       effects: []
@@ -410,8 +410,8 @@ MonoBehaviour:
   definitionId: Dragon Dusk
   species: Dragon Darkness
   gender: Unknown
-  element: 10
-  secondaryElement: 9
+  element: 9
+  secondaryElement: 10
   rarity: 3
   nickname: 
   favorite: 0
@@ -454,8 +454,8 @@ MonoBehaviour:
     targetDisplayName: Dragon Nightfall
     targetSpecies: Dragon Nightfall
     targetIcon: {fileID: 21300000, guid: 76b9541a488b2cd44b579d65568cb7a3, type: 3}
-    targetElement: 10
-    targetSecondaryElement: 9
+    targetElement: 9
+    targetSecondaryElement: 10
     targetRarity: 3
     targetVisualPrefab: {fileID: 3622403656948730236, guid: d7f5ca7d8986eab439e3c5fc8fdc04cc, type: 3}
     trigger: 2
@@ -474,8 +474,8 @@ MonoBehaviour:
     targetDisplayName: Dragon Darkness
     targetSpecies: Dragon Darkness
     targetIcon: {fileID: 21300000, guid: 52c2bf9b2e45e0744b0d3c3eb1bd932c, type: 3}
-    targetElement: 10
-    targetSecondaryElement: 9
+    targetElement: 9
+    targetSecondaryElement: 10
     targetRarity: 4
     targetVisualPrefab: {fileID: 8647867395065679038, guid: f21187517c109334388efb15595ca318, type: 3}
     trigger: 2

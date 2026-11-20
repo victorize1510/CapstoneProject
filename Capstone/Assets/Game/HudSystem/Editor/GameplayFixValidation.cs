@@ -42,6 +42,7 @@ namespace Capstone.Game.HudSystem.Editor {
                 var player = Child(root.transform, "Fixture player"); player.transform.position = new Vector3(5000, 0, 5000);
                 var cameraObject = Child(root.transform, "Fixture camera");
                 var camera = cameraObject.AddComponent<Camera>(); camera.enabled = false;
+                cameraObject.transform.position=player.transform.position+new Vector3(0,1,-8);
                 var follow = cameraObject.AddComponent<BasicCameraFollow>();
                 follow.target = player.transform; follow.lockSearchRadius = 1; follow.lockBreakDistance = 35;
                 follow.freeLookRig = cameraObject.AddComponent<PlayerFreeLookRig>();
@@ -53,7 +54,7 @@ namespace Capstone.Game.HudSystem.Editor {
                 Set(follow, "lockedEnemy", owned[0]);
                 var visited = new HashSet<DummyEnemy>();
                 for (int i = 0; i < 6; i++) {
-                    cameraObject.transform.rotation = Quaternion.Euler(0, i * 70, 0);
+                    cameraObject.transform.rotation = Quaternion.identity;
                     var next = (DummyEnemy)Invoke(follow, "FindSwitchLockCandidate", 1f);
                     Check(next != null, "collinear cycle step " + i);
                     visited.Add(next); Set(follow, "lockedEnemy", next);
@@ -63,7 +64,7 @@ namespace Capstone.Game.HudSystem.Editor {
                 Set(follow, "lockedEnemy", forward);
                 Check((DummyEnemy)Invoke(follow, "FindSwitchLockCandidate", -1f) == owned[0], "reverse wheel restores previous target");
                 var newcomer = Child(root.transform, "New enemy").AddComponent<DummyEnemy>();
-                newcomer.transform.position = player.transform.position + Vector3.right * 15;
+                newcomer.transform.position = player.transform.position + new Vector3(3,0,15);
                 owned.Add(newcomer); registry.Add(newcomer); visited.Clear();
                 for (int i = 0; i < 4; i++) {
                     var next = (DummyEnemy)Invoke(follow, "FindSwitchLockCandidate", 1f);
@@ -109,13 +110,15 @@ namespace Capstone.Game.HudSystem.Editor {
                 Check((DummyEnemy)Invoke(follow, "FindLockCandidate") == bosses[0], "initial pin prioritizes nearest Boss over nearer regular enemy");
                 Set(owned[0], "alive", false); Set(follow, "lockedEnemy", owned[0]); Set(follow, "enemyLockActive", true);
                 Invoke(follow, "UpdateLockedEnemyTracking", player.transform.position, .016f);
-                Check(follow.TryGetLockedEnemy(out var selected) && selected == bosses[0], "dead target reacquires Boss without exiting aim");
+                Check(!follow.HasLockedEnemy, "dead target exits aim without replacing capture selection");
+                Set(follow,"lockedEnemy",bosses[0]);Set(follow,"enemyLockActive",true);
                 Set(bosses[0], "alive", false);
                 Invoke(follow, "UpdateLockedEnemyTracking", player.transform.position, .016f);
-                Check(follow.TryGetLockedEnemy(out selected) && selected == bosses[1], "next living Boss wins before regular enemies");
+                Check(!follow.HasLockedEnemy, "second dead target does not auto-select next Boss");
+                Set(follow,"lockedEnemy",bosses[1]);Set(follow,"enemyLockActive",true);
                 bosses[1].gameObject.SetActive(false);
                 Invoke(follow, "UpdateLockedEnemyTracking", player.transform.position, .016f);
-                Check(follow.TryGetLockedEnemy(out selected) && selected == nearest, "no Boss falls back to closest enemy around player");
+                Check(!follow.HasLockedEnemy, "disabled target does not auto-select nearby enemy");
                 Set(nearest, "alive", false);
                 Invoke(follow, "UpdateLockedEnemyTracking", player.transform.position, .016f);
                 Check(!follow.HasLockedEnemy && !(bool)Get(follow, "enemyLockActive"), "no targets within 35m exits aim");
@@ -123,7 +126,7 @@ namespace Capstone.Game.HudSystem.Editor {
                 Set(follow, "lockedEnemy", bosses[0]); Set(follow, "enemyLockActive", true);
                 registry.Remove(bosses[0]); Object.DestroyImmediate(bosses[0].gameObject);
                 Invoke(follow, "UpdateLockedEnemyTracking", player.transform.position, .016f);
-                Check(follow.TryGetLockedEnemy(out selected) && selected == nearest, "destroyed target preserves lock intent and reacquires");
+                Check(!follow.HasLockedEnemy, "destroyed target exits aim without automatic replacement");
                 Invoke(follow, "ClearLockedEnemy");
                 Invoke(follow, "UpdateLockedEnemyTracking", player.transform.position, .016f);
                 Check(!follow.HasLockedEnemy, "explicit M3 unlock does not immediately reacquire");

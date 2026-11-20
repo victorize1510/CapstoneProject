@@ -15,26 +15,50 @@ MonoBehaviour:
   definitionId: cat-electric
   displayName: "D\xF2ng m\xE8o \u0111i\u1EC7n"
   legacyDefinitionIds: []
-  evolutionRulesReviewed: 0
+  evolutionRulesReviewed: 1
   forms:
   - formId: 01
     displayName: "M\xE8o \u0110i\u1EC7n"
+    typingStatus: 1
+    primaryElement: 6
+    secondaryElement: 0
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 7758441624808241871, guid: bbaa40adf7694124fbd217a15219a6b2, type: 3}
     avatar: {fileID: 21300000, guid: d105e8f46ae9fcc4e82e2f986b9df2d0, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 1936568e17bbed17f65eb36268baf33e, type: 2}
+    skillSet: {fileID: 11400000, guid: 82c1919c9ca418a8630e52b5e087e0bc, type: 2}
+    visualPrefab: {fileID: 7758441624808241871, guid: 88eb860ffb3c4129b8817f221fdce49b, type: 3}
+    animationProfile: {fileID: 11400000, guid: a52c68e9f5c34417a23e2b7989499869, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: b20f01118c47a884966ff1d28e83ce4e, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 8ce78f659761b4565277240ded36b3ee, type: 3}
   - formId: 02
     displayName: "M\xE8o Tia Ch\u1EDBp"
+    typingStatus: 1
+    primaryElement: 6
+    secondaryElement: 0
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 3038762023446854208, guid: e4f1d38ae45aea24eb15487ce93cbd59, type: 3}
     avatar: {fileID: 21300000, guid: d836a8f72a4a411448ed7b0811ebd57d, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: ffff7d3a76a8e4168cb383ea0f389d85, type: 2}
+    skillSet: {fileID: 11400000, guid: 82c1919c9ca418a8630e52b5e087e0bc, type: 2}
+    visualPrefab: {fileID: 3038762023446854208, guid: 1c47d03b77184a37994954f2fa410d42, type: 3}
+    animationProfile: {fileID: 11400000, guid: f3ed8405536249aaa220c03d1972ead4, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: 12fbc27050ec4337704fa8060a5a2fbf, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: e101625631469dda6a8f41505abd974b, type: 3}
   - formId: 03
     displayName: "M\xE8o S\u1EA5m S\xE9t"
+    typingStatus: 1
+    primaryElement: 6
+    secondaryElement: 0
+    typingNote: "Official form typing. Source prefabs may retain legacy authoring."
     sourcePrefab: {fileID: 4639804460225126341, guid: 0853e7f1c29a1ab489176cfe8f9982cf, type: 3}
     avatar: {fileID: 21300000, guid: 0bd712b3415f30a4187992c96165494c, type: 3}
     heroPortrait: {fileID: 0}
-    statProfile: {fileID: 0}
-    skillSet: {fileID: 0}
+    statProfile: {fileID: 11400000, guid: 9126331d82982f18ef191ddde00690a6, type: 2}
+    skillSet: {fileID: 11400000, guid: 82c1919c9ca418a8630e52b5e087e0bc, type: 2}
+    visualPrefab: {fileID: 4639804460225126341, guid: 0179260b0fc342ab87527f9009cf4daa, type: 3}
+    animationProfile: {fileID: 11400000, guid: 92cff7e1e3db4a1b8561aa6e8299403b, type: 2}
+    petPrefab: {fileID: 1679457036408839924, guid: 27efe81ad24ad49f3d7b6a916b2fe061, type: 3}
+    wildPrefab: {fileID: 3303902416035471862, guid: 6089b07d71e1c2fafee715920bfaf65a, type: 3}

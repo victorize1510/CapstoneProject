@@ -46514,7 +46514,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     description: Close-range bite attack.
     icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
     animatorStates:
@@ -46536,7 +46536,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     description: Short magic blast.
     icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
     animatorStates:
@@ -46580,7 +46580,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     description: Wing strike attack.
     icon: {fileID: 0}
     animatorStates:
@@ -46602,7 +46602,7 @@ MonoBehaviour:
     displayName: Bite
     skillLevel: 1
     requiredPetLevel: 1
-    element: 1
+    element: 13
     description: Close-range bite attack.
     icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
     animatorStates:
@@ -46624,7 +46624,7 @@ MonoBehaviour:
     displayName: Blast
     skillLevel: 1
     requiredPetLevel: 1
-    element: 8
+    element: 13
     description: Short magic blast.
     icon: {fileID: 21300000, guid: 172774604c1bee84185a69041576525b, type: 3}
     animatorStates:
@@ -46668,7 +46668,7 @@ MonoBehaviour:
     displayName: Wing Strike
     skillLevel: 1
     requiredPetLevel: 1
-    element: 4
+    element: 12
     description: Wing strike attack.
     icon: {fileID: 0}
     animatorStates:

@@ -484,7 +484,7 @@ namespace Capstone.Game.HudSystem {
 
             SetPortrait(detailsPortrait, detailsPortraitFallback, source?.Icon, displayName);
             SetNamedText(documentRoot, "pet-details-name", displayName);
-            SetNamedText(documentRoot, "pet-details-species", DisplayOrDash(metadata.Species));
+            SetNamedText(documentRoot, "pet-details-species", DisplayOrDash(metadata.SpeciesDisplayName));
             SetNamedText(documentRoot, "pet-details-gender", Capstone.Game.UISystem.VietnameseUI.Gender(metadata.Gender));
             SetNamedText(documentRoot, "pet-details-element", FormatElements(metadata));
             SetNamedText(documentRoot, "pet-details-rarity", FormatRarity(metadata.Rarity));
@@ -795,7 +795,7 @@ namespace Capstone.Game.HudSystem {
                             : evolution?.DisabledReason ?? "Chưa có dữ liệu tiến hóa.";
                 }
             }
-            if (selectedSpecies != null) selectedSpecies.text = $"Loài: {(metadata != null ? DisplayOrDash(metadata.Species) : "—")}";
+            if (selectedSpecies != null) selectedSpecies.text = $"Loài: {(metadata != null ? DisplayOrDash(metadata.SpeciesDisplayName) : "—")}";
             if (selectedLevel != null) selectedLevel.text = hasPet && pet.level > 0 ? $"Cấp {pet.level}" : "Cấp —";
             if (selectedGender != null) selectedGender.text = $"Giới tính: {(metadata != null ? Capstone.Game.UISystem.VietnameseUI.Gender(metadata.Gender) : "—")}";
             if (selectedRarity != null) selectedRarity.text = $"Độ hiếm: {(metadata != null ? FormatRarity(metadata.Rarity) : "—")}";
@@ -810,7 +810,7 @@ namespace Capstone.Game.HudSystem {
                 : 0f);
             // Keep the live preview texture when data events update HP/stats.
             // Replacing it with an icon each refresh causes visible flashes.
-            // Large 2D illustration is a separate presentation asset; never enlarge the HUD avatar here.
+            // 2D reuses the party avatar; the 3D branch keeps its live preview texture.
             RefreshCompanionPortrait(selectedController);
 
             bool hasStatProfile=metadata!=null&&PetStatCalculator.TryGetProfile(metadata,out _);
@@ -1226,19 +1226,11 @@ namespace Capstone.Game.HudSystem {
                 return;
             }
 
-            switch (element) {
-                case PetElement.Nature: label.text = "◆"; label.AddToClassList("is-nature"); break;
-                case PetElement.Fire: label.text = "▲"; label.AddToClassList("is-fire"); break;
-                case PetElement.Water: label.text = "●"; label.AddToClassList("is-water"); break;
-                case PetElement.Wind: label.text = "≈"; label.AddToClassList("is-wind"); break;
-                case PetElement.Earth: label.text = "■"; label.AddToClassList("is-earth"); break;
-                case PetElement.Electric: label.text = "ϟ"; label.AddToClassList("is-electric"); break;
-                case PetElement.Ice: label.text = "✦"; label.AddToClassList("is-ice"); break;
-                case PetElement.Light: label.text = "☀"; label.AddToClassList("is-light"); break;
-                case PetElement.Dark: label.text = "☾"; label.AddToClassList("is-dark"); break;
-                case PetElement.Dragon: label.text = "✥"; label.AddToClassList("is-dragon"); break;
-                default: label.text = "?"; label.AddToClassList("is-unknown"); break;
-            }
+            var token = Capstone.Game.UISystem.ElementUi.Find(element);
+            label.text = token != null ? string.Empty : "?";
+            label.tooltip = Capstone.Game.UISystem.ElementUi.Name(element);
+            label.style.backgroundImage = token != null ? new StyleBackground(Capstone.Game.UISystem.ElementUi.Art(token.id + "-glyph")) : StyleKeyword.None;
+            label.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain);
         }
 
         static void SetGenderIcon(Label label, string value, bool visible) {

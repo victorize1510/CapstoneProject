@@ -46,7 +46,7 @@ namespace Capstone.Game.CodexSystem {
             int order = 0;
             switch (Sort) {
                 case CodexSort.Name: order = string.Compare(nameKeys[a], nameKeys[b], StringComparison.Ordinal); break;
-                case CodexSort.Type: order = (a.Known ? a.PrimaryType : CodexType.Unknown).CompareTo(b.Known ? b.PrimaryType : CodexType.Unknown); break;
+                case CodexSort.Type: order = Capstone.Game.Elements.CodexElementAdapter.DisplayOrder(a.Known ? a.PrimaryType : CodexType.Unknown).CompareTo(Capstone.Game.Elements.CodexElementAdapter.DisplayOrder(b.Known ? b.PrimaryType : CodexType.Unknown)); break;
                 case CodexSort.Region: order = string.Compare(a.Known ? a.Region : null, b.Known ? b.Region : null, StringComparison.Ordinal); break;
                 case CodexSort.Rarity: order = (b.Known ? b.Rarity : 0).CompareTo(a.Known ? a.Rarity : 0); break;
             }
@@ -55,9 +55,7 @@ namespace Capstone.Game.CodexSystem {
         }
 
         public static string TypeName(CodexType type) {
-            if (type == CodexType.Mythic) return "Thần thoại";
-            return Enum.TryParse(type.ToString(), out Capstone.Game.HudSystem.PetElement element)
-                ? VietnameseUI.Element(element) : VietnameseUI.Unknown;
+            return Capstone.Game.Elements.ElementCatalog.Name(Capstone.Game.Elements.CodexElementAdapter.ToPet(type));
         }
     }
 }

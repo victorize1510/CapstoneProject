@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4846f64c3a484bc4bc43b6e5f579ccc5, type: 3}
+  m_Name: SpawnTable_Grass_Hard
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureSpawnTable
+  ownedPetCatalog: {fileID: 11400000, guid: 0c4a7b5965529b040b47d1f2f21c207a, type: 2}
+  excludedDefinitionIds:
+  - sun-blossom
+  - dragon-fire
+  - shell
+  species:
+  - enabled: 1
+    definitionId: cat-electric
+    weight: 1
+    minimumLevel: 8
+    maximumLevel: 10
+    forms:
+    - enabled: 1
+      formId: "01"
+      prefab: {fileID: 3303902416035471862, guid: 8ce78f659761b4565277240ded36b3ee, type: 3}
+      weight: 100
+      minimumZoneLevel: 1
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "02"
+      prefab: {fileID: 3303902416035471862, guid: e101625631469dda6a8f41505abd974b, type: 3}
+      weight: 0
+      minimumZoneLevel: 18
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "03"
+      prefab: {fileID: 3303902416035471862, guid: 6089b07d71e1c2fafee715920bfaf65a, type: 3}
+      weight: 0
+      minimumZoneLevel: 36
+      configurationBlocker: ""
+  - enabled: 1
+    definitionId: wolf
+    weight: 1
+    minimumLevel: 8
+    maximumLevel: 12
+    forms:
+    - enabled: 1
+      formId: "01"
+      prefab: {fileID: 3303902416035471862, guid: 682263d0cd296a54177f7ca93a137f4e, type: 3}
+      weight: 100
+      minimumZoneLevel: 1
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "02"
+      prefab: {fileID: 3303902416035471862, guid: e915d560973d83d0e295b3ef5b847f45, type: 3}
+      weight: 0
+      minimumZoneLevel: 18
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "03"
+      prefab: {fileID: 3303902416035471862, guid: df5fa28dd09c3affaec8f032817ecfe1, type: 3}
+      weight: 0
+      minimumZoneLevel: 36
+      configurationBlocker: ""
+  - enabled: 1
+    definitionId: snake-fire
+    weight: 1
+    minimumLevel: 8
+    maximumLevel: 12
+    forms:
+    - enabled: 1
+      formId: "01"
+      prefab: {fileID: 3303902416035471862, guid: 945f293f5c02edbd336ef859cf9ecd84, type: 3}
+      weight: 100
+      minimumZoneLevel: 1
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "02"
+      prefab: {fileID: 3303902416035471862, guid: c00db1d38b9dabcbce94673030b1caf1, type: 3}
+      weight: 0
+      minimumZoneLevel: 18
+      configurationBlocker: ""
+    - enabled: 0
+      formId: "03"
+      prefab: {fileID: 3303902416035471862, guid: 9930ff7f6d7818655e9a84cbd8bdcb60, type: 3}
+      weight: 0
+      minimumZoneLevel: 36
+      configurationBlocker: ""

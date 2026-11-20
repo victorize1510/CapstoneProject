@@ -6,13 +6,13 @@ namespace Capstone.Game.Skills {
     public enum PetSkillReleaseMode { Timed, AnimationEvent, NormalizedAnimation }
     [Serializable]
     public sealed class PetSkillCue {
-        [Tooltip("A prefab containing ParticleSystem and/or VisualEffect components. Optional.")]
+        [Tooltip("Prefab chua ParticleSystem hoac VisualEffect. Co the de trong.")]
         public GameObject effectPrefab;
         public AudioClip sound;
-        [Tooltip("Key from the pet's presentation player socket list. Empty = pet root.")]
+        [Tooltip("Khoa trong danh sach socket cua presentation player. De trong de dung goc pet.")]
         public string socket;
         public bool followSocket;
-        [Tooltip("Position follows the socket, but rotation/offset use the actor axes (useful for jaw VFX).")]
+        [Tooltip("Vi tri theo socket; goc xoay va offset theo truc actor, phu hop VFX tai mieng.")]
         public bool actorSpace;
         public Vector3 localOffset;
         public Vector3 localEulerAngles;
@@ -27,9 +27,9 @@ namespace Capstone.Game.Skills {
         [Range(.05f, .95f)] public float releaseNormalized = .36f;
         [Range(.1f, 1)] public float chainNormalized = .85f;
         [Range(.75f, 1.25f)] public float playbackSpeed = 1;
-        [Tooltip("Seconds after animation START, in addition to the skill's pre-animation windup.")]
+        [Tooltip("So giay sau khi animation bat dau, ngoai khoang chuan bi truoc animation cua skill.")]
         [Min(0)] public float releaseDelaySeconds = 0.25f;
-        [Tooltip("Accept real collision impact callbacks for at most this long; does not create a projectile or damage.")]
+        [Tooltip("Gioi han thoi gian nhan callback va cham that; khong tu tao dan hoac damage.")]
         [Range(0.1f, 30)] public float impactWindowSeconds = 5;
         public AudioMixerGroup mixerGroup;
         [Range(0, 1)] public float spatialBlend = 1;

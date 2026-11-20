@@ -33,7 +33,7 @@ namespace Capstone.Game.CodexSystem {
         VisualElement detailPortrait, evolution;
         Label evolutionUnknown;
         bool detailsDirty = true, changingFavorite;
-        static readonly CodexType?[] Types = { null,CodexType.Fire,CodexType.Water,CodexType.Nature,CodexType.Electric,CodexType.Fighting,CodexType.Flying,CodexType.Normal,CodexType.Dark,CodexType.Dragon };
+        static readonly CodexType?[] Types = Capstone.Game.Elements.CodexElementAdapter.CreateFilterTypes();
         static readonly string[] SortNames = { "Theo số thứ tự", "Theo hệ", "Theo khu vực", "Độ hiếm", "Theo tên" };
         static readonly string[] DiscoveryNames = { "Mọi trạng thái", "Chưa khám phá", "Đã gặp", "Đã ghi nhận", "Đã thu phục" };
         IPetCodexProvider provider;
@@ -281,7 +281,7 @@ namespace Capstone.Game.CodexSystem {
             Sprite sprite = entry.Portrait != null ? entry.Portrait : entry.Icon;
             detailPortrait.style.backgroundImage = sprite != null ? new StyleBackground(sprite) : StyleKeyword.None;
             detailPortrait.style.unityBackgroundImageTintColor = entry.Known ? Color.white : new Color(0, 0, 0, .22f);
-            for (int i = 0; i < badges.Count; i++) { var type = !entry.Known ? CodexType.Unknown : i == 0 ? entry.PrimaryType : entry.SecondaryType; badges[i].text = entry.Known ? PetCodexQuery.TypeName(type) : string.Empty; if(entry.Known&&Enum.TryParse<PetElement>(type.ToString(),out var badgeType))ElementUi.Label(badges[i],badgeType); Show(badges[i].parent, entry.Known && type != CodexType.Unknown); }
+            for (int i = 0; i < badges.Count; i++) { var type = !entry.Known ? CodexType.Unknown : i == 0 ? entry.PrimaryType : entry.SecondaryType; badges[i].text = entry.Known ? PetCodexQuery.TypeName(type) : string.Empty; if(entry.Known)ElementUi.Label(badges[i],Capstone.Game.Elements.CodexElementAdapter.ToPet(type)); Show(badges[i].parent, entry.Known && type != CodexType.Unknown); }
             LabelText("codex-basic", entry.Known ? $"Chiều cao: {Value(entry.Height)}\nCân nặng: {Value(entry.Weight)}\nKhu vực sinh sống: {Value(entry.Habitat)}\nĐặc tính: {Value(entry.Trait)}\nThức ăn ưa thích: {Value(entry.FavoriteFood)}\nĐộ hiếm: {VietnameseUI.Rarity(entry.Rarity)}" : VietnameseUI.Unknown);
             favorite.text = entry.Known && entry.Favorite ? "★  Đã yêu thích" : "Đánh dấu yêu thích";
             favorite.SetEnabled(entry.Known && provider?.CanSetFavorite == true);

@@ -1,0 +1,98 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100000
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 400000}
+  - component: {fileID: 6500000}
+  - component: {fileID: 11400000}
+  m_Layer: 0
+  m_Name: Zone_Grass_Mid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &400000
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6500000
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 18, y: 6, z: 18}
+  m_Center: {x: 0, y: 1.5, z: 0}
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f4f67c5f1274e79882427e470261850, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureEncounterZone
+  zoneId: capstone-grass-mid
+  zoneName: Dong co trung binh
+  zoneBounds: {fileID: 6500000}
+  spawningEnabled: 1
+  baseLevel: 7
+  levelVariance: 3
+  minimumLevel: 4
+  maximumLevel: 10
+  regionMinimumLevel: 2
+  regionMaximumLevel: 12
+  formEligibilityUsesIndividualLevel: 1
+  allowPartialConfiguration: 1
+  requireSupportedTypes: 1
+  respawnDelay: 5
+  minimumSpawnSeparation: 2.5
+  minimumPlayerSpawnDistance: 5
+  allowNearPlayerFallback: 0
+  spawnTable: {fileID: 11400000, guid: 820c1783dd814a28ac57f0152f26ceb5, type: 2}
+  ownedPetCatalog: {fileID: 0}
+  species: []
+  formLevelOverrides: []
+  player: {fileID: 0}
+  positionAttempts: 24
+  navMeshSampleDistance: 2
+  obstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967291
+  smokePrefab: {fileID: 1053215512877636524, guid: b6d9ef730bcfb5c40aee5d3abc75cf57, type: 3}
+  downedStarsPrefab: {fileID: 8841819868658855667, guid: 1a862e6752119834b991d75e620a1680, type: 3}
+  drawGizmos: 1

@@ -13,7 +13,16 @@ namespace Capstone.Game.HudSystem {
         CapturePresentation presentation;
         public bool IsCapturing => processing || presentation != null && presentation.IsPlaying;
         public bool CanCaptureFromBag(MonsterItemDefinition ball, MonsterInventoryAdapter inventory, out string reason) {
-            var target=LockedTarget();bool valid=ValidateAttempt(ball,inventory,target,out _,out var failure);reason=CaptureMessages.For(failure);return valid;
+            var target=LockedTarget();bool valid=ValidateAttempt(ball,inventory,target,out _,out var failure);reason=CaptureMessages.For(failure);return valid&&CanPresentThrow(out reason);
+        }
+        bool CanPresentThrow(out string reason){
+            var player=roster?.PartyInput;
+            var movement=player!=null?player.GetComponent<BasicPlayerMovement>():null;
+            var socket=player!=null?player.GetComponent<PetSummon.PetSummonHandSocket>():null;
+            var director=player!=null?player.GetComponent<PetSummon.PetSummonDirector>():null;
+            if(movement==null||!movement.CanStartPetThrow||director!=null&&director.IsSequenceRunning){reason="Chờ nhân vật đứng vững và kết thúc động tác hiện tại để ném bóng.";return false;}
+            if(socket==null||!socket.IsConfigured||CaptureAssets.Settings?.ballVisual==null){reason="Chưa cấu hình tay ném hoặc model bóng thu phục.";return false;}
+            reason=CaptureMessages.For(CaptureFailure.None);return true;
         }
         WildPetCaptureTarget LockedTarget()=>WildCaptureTargeting.Find(FindFirstObjectByType<PetCommandInput>(),FindFirstObjectByType<BasicCameraFollow>());
         bool ValidateAttempt(MonsterItemDefinition ball,MonsterInventoryAdapter inventory,WildPetCaptureTarget target,out CaptureContext context,out CaptureFailure failure){
@@ -42,7 +51,7 @@ namespace Capstone.Game.HudSystem {
         {
             result=default;
             if(!Capstone.Game.UISystem.PlayerActionGate.TryBegin(this,"capture-throw",out var lease)){error=CaptureMessages.For(CaptureFailure.Busy);return false;}
-            using(lease)return TryCaptureTarget(ball,inventory,LockedTarget(),out result,out error);
+            using(lease){ResolveReferences();if(!CanPresentThrow(out error))return false;return TryCaptureTarget(ball,inventory,LockedTarget(),out result,out error);}
         }
         internal bool TryCaptureTarget(MonsterItemDefinition ball,MonsterInventoryAdapter inventory,WildPetCaptureTarget target,out CapturePresentationResult result,out string error){
             result=default;
@@ -51,7 +60,7 @@ namespace Capstone.Game.HudSystem {
             try{
                 RandomSource??=new SeededCaptureRandom(Guid.NewGuid().GetHashCode());
                 if(!CaptureCalculator.TryRoll(context,RandomSource,out var roll,out failure)){error=CaptureMessages.For(failure);return false;}
-                result=new CapturePresentationResult(roll,target);
+                result=new CapturePresentationResult(roll,target,true);
                 if(!CommitAttempt(target.Pet,target.Metadata.PersistentId,target.Metadata.DefinitionId,roll.Success,ball,inventory,target,out error)){result=default;return false;}
                 if(!roll.Success)target.HoldDownedPresentation();
                 error=result.Message;return true;

@@ -10,28 +10,30 @@ namespace Capstone.Game.HudSystem {
 
     [Serializable]
     public sealed class PetEvolutionRule {
-        [Header("Stage")]
+        [Header("Giai doan")]
         [SerializeField] string evolutionId = string.Empty;
         [SerializeField, Min(0)] int sourceStage;
         [SerializeField] string targetFormId = string.Empty;
 
-        [Header("Target Form")]
+        [Header("Dang dich")]
         [SerializeField] string targetDisplayName = string.Empty;
         [SerializeField] string targetSpecies = string.Empty;
         [SerializeField] Sprite targetIcon = null;
-        [SerializeField] PetElement targetElement = PetElement.Unknown;
-        [SerializeField] PetElement targetSecondaryElement = PetElement.Unknown;
+        [SerializeField, Capstone.Game.Elements.SupportedElement(true)] PetElement targetElement = PetElement.Unknown;
+        [SerializeField, Capstone.Game.Elements.SupportedElement(true)] PetElement targetSecondaryElement = PetElement.Unknown;
+        [Tooltip("Cho phep xoa he phu cua form legacy khi rule khong khai bao he phu.")]
+        [SerializeField] bool replaceSecondaryElement;
         [SerializeField] PetRarity targetRarity = PetRarity.Unknown;
-        [Tooltip("Optional model-only prefab. Assign a PetEvolutionVisualController before using this field.")]
+        [Tooltip("Prefab chi chua model. Gan PetEvolutionVisualController truoc khi dung.")]
         [SerializeField] GameObject targetVisualPrefab = null;
 
-        [Header("Requirement")]
+        [Header("Dieu kien")]
         [SerializeField] PetEvolutionTrigger trigger = PetEvolutionTrigger.Level;
         [SerializeField, Min(1)] int requiredLevel = 1;
         [SerializeField] string requiredItemId = string.Empty;
         [SerializeField, Min(1)] int requiredItemQuantity = 1;
 
-        [Header("One-time Stat Growth")]
+        [Header("Tang chi so mot lan")]
         [SerializeField, Min(1f)] float maxHealthMultiplier = 1.15f;
         [SerializeField, Min(0)] int attackBonus;
         [SerializeField, Min(0)] int defenseBonus;
@@ -47,11 +49,12 @@ namespace Capstone.Game.HudSystem {
         public string TargetFormId => string.IsNullOrWhiteSpace(targetFormId)
             ? $"form-{TargetStage}"
             : targetFormId.Trim();
-        public string TargetDisplayName => targetDisplayName?.Trim() ?? string.Empty;
+        public string TargetDisplayName => Capstone.Game.CreatureSystem.CreatureDisplayNames.LocalizeSystemName(targetDisplayName?.Trim());
         public string TargetSpecies => targetSpecies?.Trim() ?? string.Empty;
         public Sprite TargetIcon => targetIcon;
         public PetElement TargetElement => targetElement;
         public PetElement TargetSecondaryElement => targetSecondaryElement;
+        public bool ReplaceSecondaryElement => replaceSecondaryElement;
         public PetRarity TargetRarity => targetRarity;
         public GameObject TargetVisualPrefab => targetVisualPrefab;
         public PetEvolutionTrigger Trigger => trigger;

@@ -21,13 +21,13 @@ namespace Capstone.Game.CreatureSystem {
         public void Place(string id,Vector3 position,InventoryItemRarity rarity){
             if(!live.TryGetValue(id,out var glow)){if(pool.Count==0)return;glow=pool.Dequeue();live.Add(id,glow);glow.root.gameObject.SetActive(true);}
             Color color=rarity switch{InventoryItemRarity.Uncommon=>new Color(.42f,1,.6f),InventoryItemRarity.Rare=>new Color(.35f,.72f,1),InventoryItemRarity.Epic=>new Color(.8f,.45f,1),InventoryItemRarity.Legendary=>new Color(1,.87f,.51f),_=>new Color(.85f,.94f,1)};
-            glow.root.position=position+Vector3.up*(.04f*Mathf.Sin(Time.unscaledTime*3+glow.phase));glow.root.rotation=Quaternion.Euler(0,Time.unscaledTime*35,0);
+            glow.root.position=position+Vector3.up*(.04f*Mathf.Sin(UISystem.GameplayPause.PlayTime*3+glow.phase));glow.root.rotation=Quaternion.Euler(0,UISystem.GameplayPause.PlayTime*35,0);
             glow.ring.startColor=glow.ring.endColor=color;glow.core.startColor=glow.core.endColor=color;
         }
-        public void Remove(string id){if(!live.TryGetValue(id,out var glow))return;live.Remove(id);glow.root.gameObject.SetActive(false);pool.Enqueue(glow);}
-        public void Receive(Vector3 position,InventoryItemRarity rarity){string id="received:"+(++receiptSequence);Place(id,position,rarity);receipts[id]=Time.unscaledTime+.45f;}
-        void Update(){if(receipts.Count==0)return;string expired=null;foreach(var pair in receipts)if(Time.unscaledTime>=pair.Value){expired=pair.Key;break;}if(expired!=null){receipts.Remove(expired);Remove(expired);}}
-        public void Clear(){foreach(var glow in live.Values){glow.root.gameObject.SetActive(false);pool.Enqueue(glow);}live.Clear();receipts.Clear();}
+        public void Remove(string id){if(!live.TryGetValue(id,out var glow))return;live.Remove(id);if(glow.root!=null){glow.root.gameObject.SetActive(false);pool.Enqueue(glow);}}
+        public void Receive(Vector3 position,InventoryItemRarity rarity){string id="received:"+(++receiptSequence);Place(id,position,rarity);receipts[id]=UISystem.GameplayPause.PlayTime+.45f;}
+        void Update(){if(UISystem.GameplayPause.IsPaused||receipts.Count==0)return;string expired=null;foreach(var pair in receipts)if(UISystem.GameplayPause.PlayTime>=pair.Value){expired=pair.Key;break;}if(expired!=null){receipts.Remove(expired);Remove(expired);}}
+        public void Clear(){foreach(var glow in live.Values)if(glow.root!=null){glow.root.gameObject.SetActive(false);pool.Enqueue(glow);}live.Clear();receipts.Clear();}
         void OnDestroy(){if(host!=null)Destroy(host.gameObject);}
     }
 }

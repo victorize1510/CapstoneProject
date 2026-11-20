@@ -513,7 +513,7 @@ namespace Capstone.Game.HudSystem {
         }
 
         PetElement EffectiveElement(SkillHudData skill) {
-            return skill.element; // Missing skill classification must not inherit the pet type.
+            return skill.element; // Skill chua phan loai khong duoc tu lay he cua pet.
         }
 
         void ShowEquippedTooltip(int slotIndex) {

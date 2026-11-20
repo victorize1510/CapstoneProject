@@ -73,6 +73,10 @@ namespace Capstone.Game.PetSummon
         public SequenceState State { get; private set; } = SequenceState.Idle;
         public bool IsSequenceRunning => sequenceRunning;
         public int PendingSlotIndex => pendingSlotIndex;
+        // AI may retain the provoked team through a switch, but must not attack the unspawned pet.
+        public PetController PendingSummonPet {
+            get { int slot=queuedSlotIndex>=0?queuedSlotIndex:sequenceRunning&&State!=SequenceState.Recall?pendingSlotIndex:-1;return slot>=0&&TryGetPetInSlot(slot,out var pet)?pet:null; }
+        }
         public Vector3 LastHoverPosition { get; private set; }
         public string LastFailureReason { get; private set; } = string.Empty;
         public PetSummonReleaseEffect ReleaseEffect => releaseEffect;
@@ -253,20 +257,20 @@ namespace Capstone.Game.PetSummon
                     queuedSlotIndex = -1;
                     break;
                 }
-                if (!movement.CanStartPetThrow || Time.unscaledTime < nextLandingCheck)
+                if (!movement.CanStartPetThrow || Capstone.Game.UISystem.GameplayPause.PlayTime < nextLandingCheck)
                 {
                     yield return null;
                     continue;
                 }
                 // A blocked destination can remain blocked for seconds; avoid repeated multi-ray searches every frame.
-                nextLandingCheck = Time.unscaledTime + .2f;
+                nextLandingCheck = Capstone.Game.UISystem.GameplayPause.PlayTime + .2f;
                 if (!TryResolveLanding(out _, out _)) { yield return null; continue; }
 
                 int nextSlot = queuedSlotIndex;
                 queuedSlotIndex = -1;
                 if (RequestSummonSlotCore(nextSlot)) break;
                 queuedSlotIndex = nextSlot;
-                yield return new WaitForSecondsRealtime(0.35f);
+                yield return Capstone.Game.UISystem.GameplayPause.WaitForSeconds(0.35f);
             }
             queuedSwitchRoutine = null;
         }
@@ -327,9 +331,9 @@ namespace Capstone.Game.PetSummon
                 pet.SetRecallLocked(true);
 
                 State = SequenceState.Recall;
-                float deadline = Time.unscaledTime + pickupStartTimeout;
+                float deadline = Capstone.Game.UISystem.GameplayPause.PlayTime + pickupStartTimeout;
                 bool pickupStarted = false;
-                while (!pickupStarted && Time.unscaledTime < deadline)
+                while (!pickupStarted && Capstone.Game.UISystem.GameplayPause.PlayTime < deadline)
                 {
                     pickupStarted = movement.TryPlayScriptedPickup();
                     if (!pickupStarted)
@@ -344,8 +348,8 @@ namespace Capstone.Game.PetSummon
                     yield break;
                 }
 
-                deadline = Time.unscaledTime + pickupStartTimeout;
-                while (Time.unscaledTime < deadline
+                deadline = Capstone.Game.UISystem.GameplayPause.PlayTime + pickupStartTimeout;
+                while (Capstone.Game.UISystem.GameplayPause.PlayTime < deadline
                     && movement.ActiveScriptedAction != BasicPlayerMovement.ScriptedAction.PickingUp)
                 {
                     yield return null;
@@ -357,8 +361,8 @@ namespace Capstone.Game.PetSummon
                     yield break;
                 }
 
-                float pickupDeadline = Time.unscaledTime + pickupCompletionTimeout;
-                while (Time.unscaledTime < pickupDeadline
+                float pickupDeadline = Capstone.Game.UISystem.GameplayPause.PlayTime + pickupCompletionTimeout;
+                while (Capstone.Game.UISystem.GameplayPause.PlayTime < pickupDeadline
                     && movement.IsScriptedActionPlaying
                     && movement.ActiveScriptedAction == BasicPlayerMovement.ScriptedAction.PickingUp
                     && movement.ScriptedActionNormalizedTime < recallEffectNormalizedTime)
@@ -400,7 +404,7 @@ namespace Capstone.Game.PetSummon
 
                 handSocket.DestroyHeldBall();
 
-                while (Time.unscaledTime < pickupDeadline
+                while (Capstone.Game.UISystem.GameplayPause.PlayTime < pickupDeadline
                     && movement.IsScriptedActionPlaying
                     && movement.ActiveScriptedAction == BasicPlayerMovement.ScriptedAction.PickingUp)
                 {
@@ -463,9 +467,9 @@ namespace Capstone.Game.PetSummon
                 }
 
                 State = SequenceState.Throw;
-                float deadline = Time.unscaledTime + throwStartTimeout;
+                float deadline = Capstone.Game.UISystem.GameplayPause.PlayTime + throwStartTimeout;
                 bool throwStarted = false;
-                while (!throwStarted && Time.unscaledTime < deadline)
+                while (!throwStarted && Capstone.Game.UISystem.GameplayPause.PlayTime < deadline)
                 {
                     throwStarted = movement.TryPlayScriptedThrow();
                     if (!throwStarted)
@@ -480,8 +484,8 @@ namespace Capstone.Game.PetSummon
                     yield break;
                 }
 
-                deadline = Time.unscaledTime + throwStartTimeout;
-                while (Time.unscaledTime < deadline
+                deadline = Capstone.Game.UISystem.GameplayPause.PlayTime + throwStartTimeout;
+                while (Capstone.Game.UISystem.GameplayPause.PlayTime < deadline
                     && movement.ActiveScriptedAction != BasicPlayerMovement.ScriptedAction.Throw)
                 {
                     yield return null;
@@ -494,9 +498,9 @@ namespace Capstone.Game.PetSummon
                 }
 
                 float releaseNormalizedTime = 0f;
-                float clipDeadline = Time.unscaledTime + 0.25f;
+                float clipDeadline = Capstone.Game.UISystem.GameplayPause.PlayTime + 0.25f;
                 while (!TryGetThrowReleaseTime(out releaseNormalizedTime)
-                    && Time.unscaledTime < clipDeadline)
+                    && Capstone.Game.UISystem.GameplayPause.PlayTime < clipDeadline)
                 {
                     yield return null;
                 }
@@ -668,94 +672,12 @@ namespace Capstone.Game.PetSummon
 
         bool TryGetThrowReleaseTime(out float normalizedTime)
         {
-            normalizedTime = 0f;
-            Animator animator = visualSwitcher != null ? visualSwitcher.ActiveVisualAnimator : null;
-            animator ??= movement != null ? movement.animator : null;
-            if (animator == null || animator.runtimeAnimatorController == null)
-            {
-                return false;
-            }
-
-            AnimationClip throwClip = null;
-            AnimatorClipInfo[] playingClips = animator.IsInTransition(0)
-                ? animator.GetNextAnimatorClipInfo(0)
-                : animator.GetCurrentAnimatorClipInfo(0);
-            for (int i = 0; i < playingClips.Length; i++)
-            {
-                AnimationClip clip = playingClips[i].clip;
-                if (clip != null && clip.name.IndexOf("Throw", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    throwClip = clip;
-                    break;
-                }
-            }
-
-            if (throwClip == null && playingClips.Length > 0)
-            {
-                AnimatorStateInfo stateInfo = animator.IsInTransition(0)
-                    ? animator.GetNextAnimatorStateInfo(0)
-                    : animator.GetCurrentAnimatorStateInfo(0);
-                if (stateInfo.shortNameHash == Animator.StringToHash("Throw"))
-                {
-                    throwClip = playingClips[0].clip;
-                }
-            }
-
-            if (throwClip == null)
-            {
-                AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
-                for (int i = 0; i < clips.Length; i++)
-                {
-                    AnimationClip clip = clips[i];
-                    if (clip != null && clip.name.IndexOf("Throw", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        throwClip = clip;
-                        break;
-                    }
-                }
-            }
-
-            if (throwClip == null || throwClip.length <= 0f || throwClip.frameRate <= 0f)
-            {
-                return false;
-            }
-
-            var profile = visualSwitcher != null ? visualSwitcher.ActiveVisualProfile : null;
-            int activeReleaseFrame = profile != null && profile.throwReleaseFrame > 0
-                ? profile.throwReleaseFrame : releaseFrame;
-            normalizedTime = Mathf.Clamp01(activeReleaseFrame / (throwClip.length * throwClip.frameRate));
-            return normalizedTime > 0f && normalizedTime < 1f;
+            return PlayerThrowPlayback.TryRelease(movement, visualSwitcher, releaseFrame, out normalizedTime);
         }
 
         bool TryGetThrowPlaybackTime(out float normalizedTime)
         {
-            normalizedTime = 0f;
-            Animator animator = visualSwitcher != null ? visualSwitcher.ActiveVisualAnimator : null;
-            animator ??= movement != null ? movement.animator : null;
-            if (animator == null)
-            {
-                return false;
-            }
-
-            int throwHash = Animator.StringToHash("Throw");
-            if (animator.IsInTransition(0))
-            {
-                AnimatorStateInfo next = animator.GetNextAnimatorStateInfo(0);
-                if (next.shortNameHash == throwHash)
-                {
-                    normalizedTime = next.normalizedTime;
-                    return true;
-                }
-            }
-
-            AnimatorStateInfo current = animator.GetCurrentAnimatorStateInfo(0);
-            if (current.shortNameHash != throwHash)
-            {
-                return false;
-            }
-
-            normalizedTime = current.normalizedTime;
-            return true;
+            return PlayerThrowPlayback.TryProgress(movement, visualSwitcher, out normalizedTime);
         }
 
         bool TryResolveLanding(out LandingPlan landing, out string failureDetail)

@@ -112,6 +112,7 @@ namespace Capstone.Game.UISystem {
         }
 
         void OnDisable() {
+            GameplayPause.SetPaused(this,false);
             if (inventory != null) inventory.CodexBackRequested -= HandleCodexBack;
             if (subscribedInventoryBack != null) subscribedInventoryBack.BackRequested -= HandleInventoryBack;
             subscribedInventoryBack = null;
@@ -732,6 +733,7 @@ namespace Capstone.Game.UISystem {
         }
 
         void SetInputMode(GameInputMode mode) {
+            GameplayPause.SetPaused(this,IsMenuOpen||IsInventoryOpen()||IsMapOpen()||IsProfileOpen()||(placeholderPanel!=null&&placeholderPanel.gameObject.activeSelf));
             menuPresentation.SetMenuVisible(IsMenuOpen,true);
             bool showMinimap = mode == GameInputMode.Gameplay || IsMenuOpen;
             if (inputModeApplied && CurrentMode == mode && minimapPresentationApplied == showMinimap) return;

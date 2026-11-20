@@ -19,7 +19,7 @@ MonoBehaviour:
   projectileSpeed: 9
   projectileRadius: 0.18
   lifetime: 3
-  projectileVisual: {fileID: 1943929973302761377, guid: 53532ad673171ec40b7e3a3b84962619, type: 3}
+  projectileVisual: {fileID: 100006, guid: 9722fc5f825be8619c313209b039e228, type: 3}
   releaseSocket: Mouth
   autoAcquireTarget: 1
   meleeHalfAngle: 55
@@ -27,6 +27,6 @@ MonoBehaviour:
   offenseBuffPercent: 20
   buffDuration: 6
   buffVisual: {fileID: 0}
-  retreatDistance: 0
+  retreatDistance: 2.4
   retreatSpeed: 12
   preferredDistance: 5

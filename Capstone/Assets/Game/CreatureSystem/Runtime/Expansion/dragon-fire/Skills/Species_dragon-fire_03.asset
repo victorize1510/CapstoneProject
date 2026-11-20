@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17c454ea0bc778f488b17b8270673990, type: 3}
+  m_Name: Species_dragon-fire_03
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSpeciesSkillSet
+  speciesId: dragon-fire/03
+  startingMana: 0
+  catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
+  initializeFreshWildLoadout: 1
+  learnset: 
+  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - "Bite Attack"
+    animationDuration: 0.83333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 75e7b3b75a96a434f919c13a4a382288, type: 2}
+  - skill: {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
+    learnAtLevel: 5
+    overrideAnimation: 1
+    animatorStates:
+    - "Projectile Attack"
+    animationDuration: 0.83333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 299903d27d2c1a2be325802616a50f9c, type: 2}
+  - skill: {fileID: 11400000, guid: 6e0a2e6ac64529b6046903cf536044b7, type: 2}
+    learnAtLevel: 12
+    overrideAnimation: 1
+    animatorStates:
+    - "Cast Spell"
+    animationDuration: 1.16667
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: c23b38635ba3d80b92f6b04ecb8abb76, type: 2}
+  - skill: {fileID: 11400000, guid: 6c064ab232d8a6fdca6d327a73bba39f, type: 2}
+    learnAtLevel: 30
+    overrideAnimation: 1
+    animatorStates:
+    - "Cast Spell"
+    animationDuration: 1.16667
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 099af939fc148be4d2cde3691d54b0d1, type: 2}
+  defaultLoadout: 
+  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
+  - {fileID: 11400000, guid: 6e0a2e6ac64529b6046903cf536044b7, type: 2}
+  - {fileID: 11400000, guid: 6c064ab232d8a6fdca6d327a73bba39f, type: 2}

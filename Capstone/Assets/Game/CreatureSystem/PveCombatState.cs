@@ -30,6 +30,7 @@ namespace Capstone.Game.CreatureSystem {
             if(item==null){item=new PetDamageContribution{pet=pet,petId=metadata.PetId,level=stats.Level};target.contributions.Add(item);}item.healthLost+=result.HpLost;
         }
         void Update(){
+            if(UISystem.GameplayPause.IsPaused)return;
             if(Time.time<nextTick)return;nextTick=Time.time+.25f;float delta=Mathf.Min(.35f,Mathf.Max(0,Time.time-lastTick));lastTick=Time.time;
             if(stats==null||combat==null||!combat.IsAlive)return;
             if(combat.IsEnemy){
@@ -43,8 +44,8 @@ namespace Capstone.Game.CreatureSystem {
             foreach(var hostile in DummyEnemy.ActiveEnemies){var ai=hostile!=null&&hostile.IsAlive?hostile.GetComponent<BasicCreatureEnemy>():null;if(ai!=null&&ai.enabled&&ai.Target==combat){pursued=true;break;}}
             if(pursued){lastUnsafe=Time.time;return;}
             if(SafeSeconds<8)return;
-            float health=Mathf.Min(stats.MaxHealth,stats.Health+stats.MaxHealth*.05f*delta),mana=Mathf.Min(stats.MaxEnergy,stats.Energy+10*delta);
-            if(Mathf.Abs(health-stats.Health)>.0001f||Mathf.Abs(mana-stats.Energy)>.0001f)stats.SetStatus(health,stats.MaxHealth,mana,stats.MaxEnergy);
+            float health=Mathf.Min(stats.MaxHealth,stats.Health+stats.MaxHealth*.05f*delta);
+            if(Mathf.Abs(health-stats.Health)>.0001f)stats.SetStatus(health,stats.MaxHealth,0,0);
         }
     }
 }

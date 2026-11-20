@@ -19,16 +19,21 @@ namespace Capstone.Game.CreatureSystem {
             public float aggroRadius = 10, leashRadius = 18, attackRange = 2.3f, moveSpeed = 3,
                 attackInterval = 1.4f, hitDelay = .35f, attackDuration = .85f, patrolRadius = 3.5f;
             public Collider territory;
+            public bool useSkills=true;
+            [Range(0,1)] public float skillChance=.35f;
+            public float decisionInterval=.3f,pathInterval=.25f,searchSeconds=2;
             public void Read(BasicCreatureEnemy brain) {
                 aggroRadius=brain.aggroRadius;leashRadius=brain.leashRadius;attackRange=brain.attackRange;moveSpeed=brain.moveSpeed;
                 attackInterval=brain.attackInterval;hitDelay=brain.hitDelay;attackDuration=brain.attackDuration;patrolRadius=brain.patrolRadius;territory=brain.territory;
+                useSkills=brain.useSkills;skillChance=brain.skillChance;decisionInterval=brain.decisionInterval;pathInterval=brain.pathInterval;searchSeconds=brain.searchSeconds;
             }
             public void Apply(BasicCreatureEnemy brain) {
                 brain.aggroRadius=aggroRadius;brain.leashRadius=leashRadius;brain.attackRange=attackRange;brain.moveSpeed=moveSpeed;
                 brain.attackInterval=attackInterval;brain.hitDelay=hitDelay;brain.attackDuration=attackDuration;brain.patrolRadius=patrolRadius;brain.territory=territory;
+                brain.useSkills=useSkills;brain.skillChance=skillChance;brain.decisionInterval=decisionInterval;brain.pathInterval=pathInterval;brain.searchSeconds=searchSeconds;
             }
         }
-        enum Phase { Live, Death, Smoke, Waiting }
+        enum Phase { Live, Death, Waiting }
         Phase phase;
         DummyEnemy actor;
         WildPetCaptureTarget capture;
@@ -36,7 +41,7 @@ namespace Capstone.Game.CreatureSystem {
         CreatureAnimationDriver driver;
         GameObject smoke;
         float phaseAt, nextSpawnAt, smokeUntil;
-        bool hidden;
+        internal CreatureEncounterZone ZoneOwner;
         readonly Collider[] overlaps = new Collider[32];
         public DummyEnemy CurrentActor => actor;
         public int Generation { get; private set; }
@@ -46,7 +51,7 @@ namespace Capstone.Game.CreatureSystem {
         void OnEnable() {
             if (actor == null && initialActor != null) Attach(initialActor);
             else if (actor != null) Attach(actor);
-            else { phase=Phase.Waiting;nextSpawnAt=Time.time+respawnDelay; }
+            else { phase=Phase.Waiting;nextSpawnAt=ZoneOwner!=null?Time.time:Time.time+respawnDelay; }
         }
         void OnDisable() {
             Unsubscribe(); ReturnSmoke(); Generation++;
@@ -55,8 +60,9 @@ namespace Capstone.Game.CreatureSystem {
         }
         void Unsubscribe() { if (actor != null && defeatHandler != null) actor.Defeated -= defeatHandler; defeatHandler=null; }
         void Attach(DummyEnemy next) {
+            next.DeathManagedByEncounter=true;next.DeathVisualComplete=false;
             Unsubscribe(); actor=next;capture=next.GetComponent<WildPetCaptureTarget>();driver=next.GetComponent<CreatureAnimationDriver>();
-            next.autoRevive=false;Generation++;phase=Phase.Live;hidden=false;
+            next.autoRevive=false;Generation++;phase=Phase.Live;
             var expected=next;
             defeatHandler = _ => { if(isActiveAndEnabled && actor==expected && phase==Phase.Live) { phase=Phase.Death;phaseAt=Time.time; } };
             next.Defeated+=defeatHandler;
@@ -70,6 +76,7 @@ namespace Capstone.Game.CreatureSystem {
         }
         void ScheduleRespawn() { Generation++;phase=Phase.Waiting;nextSpawnAt=Time.time+Mathf.Max(.1f,respawnDelay); }
         void Update() {
+            if(UISystem.GameplayPause.IsPaused)return;
             if(smoke!=null && Time.time>=smokeUntil)ReturnSmoke();
             if(phase==Phase.Live) {
                 if(actor==null){ScheduleRespawn();return;}
@@ -77,33 +84,34 @@ namespace Capstone.Game.CreatureSystem {
             } else if(phase==Phase.Death) {
                 if(actor==null){ScheduleRespawn();return;}
                 if(DeathFinished()) {
+                    actor.DeathVisualComplete=true;
                     smoke=CombatEffectPool.Rent(smokePrefab,actor.TargetPosition,Quaternion.identity);
-                    smokeUntil=Time.time+2;phase=Phase.Smoke;phaseAt=Time.time;
-                }
-            } else if(phase==Phase.Smoke) {
-                if(!hidden && Time.time-phaseAt>=.2f) {
-                    hidden=true;
-                    if(actor!=null)actor.gameObject.SetActive(false);
-                }
-                if(Time.time-phaseAt>=.65f) {
+                    smokeUntil=Time.time+2;
+                    actor.gameObject.SetActive(false);
                     Unsubscribe();if(initialActor==actor)initialActor=null;
-                    if(actor!=null)Destroy(actor.gameObject);
-                    actor=null;capture=null;driver=null;ScheduleRespawn();
+                    Destroy(actor.gameObject);actor=null;capture=null;driver=null;
+                    ScheduleRespawn();
                 }
             } else if(Time.time>=nextSpawnAt) {
                 if(!TrySpawn())nextSpawnAt=Time.time+1; // Blocked home retries; no overlapping replacements.
             }
         }
         bool DeathFinished() {
-            if(Time.time-phaseAt>=3)return true;
             var animator=driver!=null?driver.BoundAnimator:null;
-            if(animator==null||!animator.isActiveAndEnabled||Time.time-phaseAt<.08f)return false;
-            if(!driver.TryGetStates(CreatureAction.Death,out var states))return false;
+            if(animator==null||!animator.isActiveAndEnabled)return true;
+            if(Time.time-phaseAt<.08f)return false;
+            if(!driver.TryGetStates(CreatureAction.Death,out var states))return true;
             var state=animator.GetCurrentAnimatorStateInfo(0);
-            foreach(string name in states)if(state.IsName(name)&&state.normalizedTime>=.98f&&!animator.IsInTransition(0))return true;
-            return false;
+            foreach(string name in states)if(state.IsName(name))return state.normalizedTime>=1f||Time.time-phaseAt>Mathf.Max(3,state.length+1);
+            return Time.time-phaseAt>=3;
         }
         bool TrySpawn() {
+            // Chi cac slot do Zone tao moi dung nhanh nay; encounter cu giu nguyen.
+            if (ZoneOwner != null) {
+                if (actor != null || !ZoneOwner.TryCreateActor(this, out var zoneActor)) return false;
+                Attach(zoneActor);
+                return true;
+            }
             if(encounterPrefab==null || actor!=null || !FindSafeHome(out var position))return false;
             var go=Instantiate(encounterPrefab,position,transform.rotation);
             go.transform.localScale=actorScale;

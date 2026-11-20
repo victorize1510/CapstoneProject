@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17c454ea0bc778f488b17b8270673990, type: 3}
+  m_Name: Species_chick
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSpeciesSkillSet
+  speciesId: chick
+  startingMana: 0
+  catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
+  initializeFreshWildLoadout: 1
+  learnset: 
+  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 1
+    animatorStates:
+    - Bite Attack
+    animationDuration: 0.8333333333333334
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: c7dd1757199f6dd20d4a46095baf1761, type: 2}
+  - skill: {fileID: 11400000, guid: 3f4ea6b70659336447f8ca6631b9d1e3, type: 2}
+    learnAtLevel: 5
+    overrideAnimation: 1
+    animatorStates:
+    - Bite Attack
+    animationDuration: 0.8333333333333334
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 03d21496aad4703c4a0763506d1ea119, type: 2}
+  - skill: {fileID: 11400000, guid: bc4392a8d0f06855f74b9f8e7c77e94a, type: 2}
+    learnAtLevel: 12
+    overrideAnimation: 1
+    animatorStates:
+    - Cast Spell
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 78d2ba9ad4b6e67942f87898ad406fbc, type: 2}
+  defaultLoadout: 
+  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - {fileID: 11400000, guid: 3f4ea6b70659336447f8ca6631b9d1e3, type: 2}
+  - {fileID: 11400000, guid: bc4392a8d0f06855f74b9f8e7c77e94a, type: 2}

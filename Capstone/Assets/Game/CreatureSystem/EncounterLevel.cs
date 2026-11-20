@@ -15,9 +15,23 @@ namespace Capstone.Game.CreatureSystem {
             var pet = GetComponent<PetController>();
             var stats = GetComponent<PetHudRuntimeStats>();
             if (enemy == null || enemy.IsTrainingDummy || enemy.IsBoss || stats == null || (pet != null && !pet.IsWildEncounter)) return;
+            ApplyLevel(stats, enemy, openingEncounter ? 5 : PveBalanceRules.EncounterLevel(Random.Range(0, 1000000) / 1000000d));
+        }
+        // Zone chi dat cap mot lan; khong chay tien hoa hoac thay form/skill set.
+        internal bool InitializeAtLevel(int level) {
+            if (initialized) return false;
+            var enemy = GetComponent<DummyEnemy>();
+            var pet = GetComponent<PetController>();
+            var stats = GetComponent<PetHudRuntimeStats>();
+            if (enemy == null || enemy.IsTrainingDummy || enemy.IsBoss || stats == null || pet == null || !pet.IsWildEncounter) return false;
+            ApplyLevel(stats, enemy, level);
+            return true;
+        }
+        void ApplyLevel(PetHudRuntimeStats stats, DummyEnemy enemy, int level) {
             initialized = true;
-            RolledLevel = openingEncounter ? 5 : PveBalanceRules.EncounterLevel(Random.Range(0, 1000000) / 1000000d);
+            RolledLevel = Mathf.Clamp(level, 1, PetStatCalculator.MaxLevel);
             stats.SetIdentity(stats.DisplayName, RolledLevel, stats.Icon);
+            stats.InitializeFreshWildLoadout();
             stats.SetStatus(stats.MaxHealth, stats.MaxHealth, 0, 0);
             enemy.InitializeCaptureHealth(stats.Health, stats.MaxHealth);
         }

@@ -1,0 +1,266 @@
+[
+  {
+    "family": "Dragon Dusk",
+    "form": "01",
+    "name": "Rồng Chạng Vạng",
+    "codex_proposal": 1,
+    "skill_set": "Assets/Game/Skills/Data/Species/Dragon01.asset",
+    "runtime": true
+  },
+  {
+    "family": "Dragon Dusk",
+    "form": "02",
+    "name": "Rồng Đêm Tối",
+    "codex_proposal": 2,
+    "skill_set": "Assets/Game/Skills/Data/Species/Dragon02.asset",
+    "runtime": true
+  },
+  {
+    "family": "Dragon Dusk",
+    "form": "03",
+    "name": "Dragon Bóng Tối",
+    "codex_proposal": 3,
+    "skill_set": "Assets/Game/Skills/Data/Species/Dragon03.asset",
+    "runtime": true
+  },
+  {
+    "family": "bat",
+    "form": "01",
+    "name": "Dơi Nhỏ",
+    "codex_proposal": 4,
+    "skill_set": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Bat01.asset",
+    "runtime": true
+  },
+  {
+    "family": "bat",
+    "form": "02",
+    "name": "Dơi Ma Cà Rồng",
+    "codex_proposal": 5,
+    "skill_set": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Bat02.asset",
+    "runtime": true
+  },
+  {
+    "family": "bat",
+    "form": "03",
+    "name": "Dơi Chúa Tể",
+    "codex_proposal": 6,
+    "skill_set": "Assets/Game/CreatureSystem/Runtime/Bats/Skills/Bat03.asset",
+    "runtime": true
+  },
+  {
+    "family": "cat-electric",
+    "form": "01",
+    "name": "Mèo Điện",
+    "codex_proposal": 7,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "cat-electric",
+    "form": "02",
+    "name": "Mèo Tia Chớp",
+    "codex_proposal": 8,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "cat-electric",
+    "form": "03",
+    "name": "Mèo Sấm Sét",
+    "codex_proposal": 9,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "chick",
+    "form": "01",
+    "name": "Chim Con",
+    "codex_proposal": 10,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "chick",
+    "form": "02",
+    "name": "Gà Lôi",
+    "codex_proposal": 11,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "chick",
+    "form": "03",
+    "name": "Gà Gió Lốc",
+    "codex_proposal": 12,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "dragon-fire",
+    "form": "01",
+    "name": "Khủng Long Lửa",
+    "codex_proposal": 13,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "dragon-fire",
+    "form": "02",
+    "name": "Rồng Lửa Bay",
+    "codex_proposal": 14,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "dragon-fire",
+    "form": "03",
+    "name": "Rồng Lửa Địa Ngục",
+    "codex_proposal": 15,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "egg-shadow",
+    "form": "01",
+    "name": "Trứng Ma Quái",
+    "codex_proposal": 16,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "egg-shadow",
+    "form": "02",
+    "name": "Quái Trứng Quỷ",
+    "codex_proposal": 17,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "egg-shadow",
+    "form": "03",
+    "name": "Quái Trứng Lực SĨ",
+    "codex_proposal": 18,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "ghost",
+    "form": "01",
+    "name": "Ma Nhỏ",
+    "codex_proposal": 19,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "ghost",
+    "form": "02",
+    "name": "Ma Mặt Nạ",
+    "codex_proposal": 20,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "ghost",
+    "form": "03",
+    "name": "Ma Nguyền Rủa",
+    "codex_proposal": 21,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "shell",
+    "form": "01",
+    "name": "Ốc Nhà",
+    "codex_proposal": 22,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "shell",
+    "form": "02",
+    "name": "Ốc Gai",
+    "codex_proposal": 23,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "shell",
+    "form": "03",
+    "name": "Ốc Mượn Hồn Vua",
+    "codex_proposal": 24,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "snake-fire",
+    "form": "01",
+    "name": "Rắn Lửa",
+    "codex_proposal": 25,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "snake-fire",
+    "form": "02",
+    "name": "Rắn Bùng Cháy",
+    "codex_proposal": 26,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "snake-fire",
+    "form": "03",
+    "name": "Rắn 3 Đầu",
+    "codex_proposal": 27,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "sun-blossom",
+    "form": "01",
+    "name": "Hướng Dương Nảy Mầm",
+    "codex_proposal": 28,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "sun-blossom",
+    "form": "02",
+    "name": "Hướng Dương Tiên",
+    "codex_proposal": 29,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "sun-blossom",
+    "form": "03",
+    "name": "Hướng Dương Nữ Hoàng",
+    "codex_proposal": 30,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "wolf",
+    "form": "01",
+    "name": "Sói Tí Nị",
+    "codex_proposal": 31,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "wolf",
+    "form": "02",
+    "name": "Sói Bóng Tối",
+    "codex_proposal": 32,
+    "skill_set": "",
+    "runtime": false
+  },
+  {
+    "family": "wolf",
+    "form": "03",
+    "name": "Người Sói Quỷ",
+    "codex_proposal": 33,
+    "skill_set": "",
+    "runtime": false
+  }
+]

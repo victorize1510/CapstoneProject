@@ -46,7 +46,7 @@ namespace Capstone.Game.Skills.Editor {
                                 if (newDefinition) {
                                     skill.skillId = legacy.skillId; skill.legacyIds = legacy.legacySkillIds ?? Array.Empty<string>();
                                     skill.displayName = legacy.displayName; skill.description = legacy.description;
-                                    skill.icon = legacy.icon; skill.element = legacy.element; skill.cooldownSeconds = legacy.cooldownSeconds;
+                                    skill.icon = legacy.icon; skill.element = Capstone.Game.Elements.SkillElementAssignments.Resolve(skill.Id, legacy.element); skill.cooldownSeconds = legacy.cooldownSeconds;
                                     skill.criticalRateBonus = legacy.criticalRateBonus; skill.criticalDamageBonus = legacy.criticalDamageBonus;
                                     skill.animatorStates = legacy.animatorStates; skill.animationDuration = legacy.animationDuration;
                                     skill.animationFade = legacy.animationFade; skill.windupSeconds = legacy.windupSeconds; skill.recoverySeconds = legacy.recoverySeconds;

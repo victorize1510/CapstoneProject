@@ -510,16 +510,10 @@ namespace Capstone.Game.HudSystem {
             RegisterButton(moveButton, MoveSelectedPetToBox);
             RegisterButton(detailsButton, RequestDetails);
             RegisterButton(allFilterButton, SelectAllElements);
-            RegisterElementButton("box-filter-nature", PetElement.Nature);
-            RegisterElementButton("box-filter-fire", PetElement.Fire);
-            RegisterElementButton("box-filter-water", PetElement.Water);
-            RegisterElementButton("box-filter-wind", PetElement.Wind);
-            RegisterElementButton("box-filter-earth", PetElement.Earth);
-            RegisterElementButton("box-filter-electric", PetElement.Electric);
-            RegisterElementButton("box-filter-ice", PetElement.Ice);
-            RegisterElementButton("box-filter-light", PetElement.Light);
-            RegisterElementButton("box-filter-dark", PetElement.Dark);
-
+            // Giu query ID va khung cu; gan chin vi tri theo catalog chung.
+            string[] filterIds = { "box-filter-nature", "box-filter-fire", "box-filter-water", "box-filter-wind", "box-filter-earth", "box-filter-electric", "box-filter-ice", "box-filter-light", "box-filter-dark" };
+            elementButtons.Clear();
+            for (int i = 0; i < filterIds.Length; i++) RegisterElementButton(filterIds[i], Capstone.Game.Elements.ElementCatalog.Entries[i].Element);
             BuildSortOptions();
             searchField?.RegisterValueChangedCallback(HandleSearchChanged);
             controlsRegistered = true;
@@ -578,6 +572,7 @@ namespace Capstone.Game.HudSystem {
         void RegisterElementButton(string name, PetElement element) {
             Button button = document?.rootVisualElement?.Q<Button>(name);
             if (button == null) return;
+            button.text = VietnameseUI.Element(element);
             elementButtons[element] = button;
             RegisterButton(button, () => ToggleElement(element));
         }
@@ -1257,7 +1252,7 @@ namespace Capstone.Game.HudSystem {
             return new PetSnapshot {
                 pet = pet,
                 displayName = metadata != null ? metadata.ResolveDisplayName(baseName) : baseName,
-                species = metadata?.Species,
+                species = metadata?.SpeciesDisplayName,
                 gender = metadata?.Gender,
                 element = metadata != null ? metadata.Element : PetElement.Unknown,
                 secondaryElement = metadata != null ? metadata.SecondaryElement : PetElement.Unknown,

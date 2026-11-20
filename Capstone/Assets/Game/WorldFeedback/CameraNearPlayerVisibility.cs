@@ -20,13 +20,14 @@ namespace Capstone.Game.WorldFeedback
         readonly List<Material> current = new List<Material>(8);
         readonly Shader lit, simple, unlit;
         Transform root;
+        readonly bool includeCreatures;
         bool cachedMaterials, rebuild;
         public float Fade { get; private set; }
         public int MaterialCount { get; private set; }
         public int RendererCount => entries.Count;
 
-        internal CameraNearPlayerVisibility(Shader lit, Shader simple, Shader unlit)
-        { this.lit = lit; this.simple = simple; this.unlit = unlit; }
+        internal CameraNearPlayerVisibility(Shader lit, Shader simple, Shader unlit, bool includeCreatures=false)
+        { this.lit = lit; this.simple = simple; this.unlit = unlit; this.includeCreatures=includeCreatures; }
 
         // Bounds distance protects heads/hair/outfits of both player models, rather
         // than assuming one body radius. Finish fading before the lens cuts the skin.
@@ -37,7 +38,7 @@ namespace Capstone.Game.WorldFeedback
             return 1 - Mathf.SmoothStep(0, 1, Mathf.InverseLerp(hide, hide + .65f, distance));
         }
 
-        internal void Update(Transform playerRoot, Camera camera, float deltaTime)
+        internal void Update(Transform playerRoot, Camera camera, float deltaTime, Vector3? playerPoint=null)
         {
             if (root != playerRoot || rebuild) Bind(playerRoot);
             if (camera == null || root == null) { Reset(); return; }
@@ -54,11 +55,49 @@ namespace Capstone.Game.WorldFeedback
             float halfHeight = camera.nearClipPlane * Mathf.Tan(camera.fieldOfView * .5f * Mathf.Deg2Rad);
             float radius = Mathf.Sqrt(halfHeight * halfHeight * (1 + camera.aspect * camera.aspect)
                 + camera.nearClipPlane * camera.nearClipPlane);
-            float desired = DesiredFade(bounds, camera.transform.position, radius);
+            float desired = 0f;
+
+if (!includeCreatures)
+{
+    desired = DesiredFade(bounds, camera.transform.position, radius);
+}
+else if (playerPoint.HasValue)
+{
+    Vector3 lens = camera.transform.position;
+    Vector3 direction = playerPoint.Value - lens;
+    float distance = direction.magnitude;
+
+    if (distance > .001f)
+    {
+        var ray = new Ray(lens, direction / distance);
+
+        foreach (var entry in entries)
+        {
+            var renderer = entry.renderer;
+            if (renderer == null || !renderer.enabled
+                || !renderer.gameObject.activeInHierarchy)
+                continue;
+
+            Bounds actorBounds = renderer.bounds;
+
+            bool blocksView = actorBounds.Contains(lens)
+                || (actorBounds.IntersectRay(ray, out float hitDistance)
+                    && hitDistance >= 0f
+                    && hitDistance < distance - .15f);
+
+            if (!blocksView)
+                continue;
+
+            desired = Mathf.Max(
+                desired,
+                Mathf.Max(.7f, DesiredFade(actorBounds, lens, radius)));
+        }
+    }
+}
             // A wall can move the camera inside the body in one frame. Safety must
             // be immediate there; only the surrounding transition is time-smoothed.
             Fade = desired >= .999f ? 1 : Mathf.MoveTowards(Fade, desired,
-                Mathf.Max(0, deltaTime) / (desired > Fade ? .08f : .18f));
+                Mathf.Max(0, deltaTime) / (desired > Fade ? (includeCreatures?.12f:.08f) : (includeCreatures?.2f:.18f)));
             if (Fade > .001f && !cachedMaterials) CacheMaterials();
         }
 
@@ -69,9 +108,10 @@ namespace Capstone.Game.WorldFeedback
             foreach (var renderer in root.GetComponentsInChildren<Renderer>(true))
             {
                 if (!(renderer is SkinnedMeshRenderer) && !(renderer is MeshRenderer)) continue;
+                if(renderer.GetComponent<TextMesh>()!=null||renderer.GetComponent<TMPro.TMP_Text>()!=null)continue;
                 if (renderer.GetComponentInParent<Canvas>() != null
                     || renderer.GetComponentInParent<AAMAP.MapIcon>(true) != null
-                    || renderer.GetComponentInParent<PetController>() != null) continue;
+                    || !includeCreatures && renderer.GetComponentInParent<PetController>() != null) continue;
                 entries.Add(new Entry { renderer = renderer });
             }
         }
