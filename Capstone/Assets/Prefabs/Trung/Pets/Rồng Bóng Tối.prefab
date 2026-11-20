@@ -77,7 +77,11 @@ GameObject:
   - component: {fileID: 8373760370876104114}
   - component: {fileID: 7377743676707440253}
   m_Layer: 0
+<<<<<<<< HEAD:Capstone/Assets/Prefabs/Trung/Pets/Rồng Bóng Tối.prefab
   m_Name: "R\u1ED3ng B\xF3ng T\u1ED1i"
+========
+  m_Name: "R\u1ED3ng \xC1c M\u1ED9ng"
+>>>>>>>> origin/Trung044:Capstone/Assets/Prefabs/Trung/Pets/Rồng Ác Mộng.prefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: fab0e9186d9231a40a0e9d258d0921c7
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 295906
+  packageName: AFS - Caves Pack
+  packageVersion: 1.0.0
+  assetPath: Assets/Aquarius Fantasy  - Caves/Demo/DemoCharacter.cs
+  uploadId: 691847
