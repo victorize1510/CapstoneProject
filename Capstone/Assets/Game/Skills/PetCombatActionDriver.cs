@@ -138,7 +138,7 @@ namespace Capstone.Game.Skills
             LastRejection = "";
             if (!InputReady() || !stats.PrepareCoordinatedSkill(slot, out var candidate))
             {
-                LastRejection = "Kỹ năng chưa sẵn sàng.";
+                LastRejection = !string.IsNullOrEmpty(stats?.LastSkillRejection) ? stats.LastSkillRejection : "Kỹ năng chưa sẵn sàng.";
                 return false;
             }
 

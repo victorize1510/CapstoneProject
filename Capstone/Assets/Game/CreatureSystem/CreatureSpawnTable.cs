@@ -28,7 +28,14 @@ namespace Capstone.Game.CreatureSystem
         [Tooltip("0: khong gioi han them; lay giao voi khoang cap Zone va khu vuc.")]
         [Min(0)] public int minimumLevel;
         [Min(0)] public int maximumLevel;
+        [Tooltip("Gio trong game. Hai moc bang nhau = ca ngay; khoang qua nua dem duoc ho tro.")]
+        [Range(0, 24)] public float spawnFromHour, spawnUntilHour;
         public List<CreatureSpawnForm> forms = new List<CreatureSpawnForm>();
+
+        internal bool HasTimeWindow => !Mathf.Approximately(spawnFromHour, spawnUntilHour);
+        internal bool MatchesHour(float hour) => !HasTimeWindow || (spawnFromHour < spawnUntilHour
+            ? hour >= spawnFromHour && hour < spawnUntilHour
+            : hour >= spawnFromHour || hour < spawnUntilHour);
     }
 
     [Serializable]

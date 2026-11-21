@@ -691,7 +691,7 @@ public class BasicCameraFollow : MonoBehaviour
             }
 
             float centerDistance = Vector2.Distance(new Vector2(viewport.x, viewport.y), new Vector2(0.5f, 0.5f));
-            float score = worldDistance + centerDistance * lockVisibleCenterWeight;
+            float score = centerDistance + .01f * worldDistance / Mathf.Max(1f, lockBreakDistance);
             if (score < bestScore)
             {
                 bestScore = score;
@@ -792,22 +792,9 @@ public class BasicCameraFollow : MonoBehaviour
 
     private DummyEnemy FindPreferredLockCandidate()
     {
-        DummyEnemy best = null;
-        float bestDistance = float.PositiveInfinity;
-        Vector3 origin = target != null ? target.position : transform.position;
-        foreach (DummyEnemy enemy in DummyEnemy.ActiveEnemies)
-        {
-            if (!IsLockCycleCandidate(enemy)) continue;
-            float distance = FlatDistance(origin, enemy.TargetPosition);
-            if (best == null || (enemy.IsBoss && !best.IsBoss)
-                || (enemy.IsBoss == best.IsBoss && (distance < bestDistance
-                    || (Mathf.Approximately(distance, bestDistance) && enemy.GetInstanceID() < best.GetInstanceID()))))
-            {
-                best = enemy;
-                bestDistance = distance;
-            }
-        }
-        return best;
+        var view = GetComponent<Camera>();
+        if (view == null) view = Camera.main;
+        return view != null ? FindNearestVisibleEnemy(view) : null;
     }
 
     private int CompareLockCycleCandidates(DummyEnemy a, DummyEnemy b)
@@ -1090,6 +1077,8 @@ public class BasicCameraFollow : MonoBehaviour
 
         currentLockSide = Mathf.MoveTowards(currentLockSide, targetLockSide, lockSideSwitchSpeed * deltaTime);
     }
+
+    internal void ClearPartyDefeatLock() => ClearLockedEnemy();
 
     private void ClearLockedEnemy()
     {

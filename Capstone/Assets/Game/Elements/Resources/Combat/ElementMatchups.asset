@@ -25,18 +25,15 @@ MonoBehaviour:
   - attack: 6
     strong: 030000000c000000
     weak: 01000000
-  - attack: 11
-    strong: 0d00000009000000
-    weak: 0c000000
   - attack: 12
-    strong: 010000000b000000
+    strong: 01000000
     weak: 0600000009000000
   - attack: 13
     strong: 
     weak: 
   - attack: 9
     strong: 0c000000
-    weak: 020000000b000000
+    weak: 02000000
   - attack: 10
     strong: 0a000000
     weak: 

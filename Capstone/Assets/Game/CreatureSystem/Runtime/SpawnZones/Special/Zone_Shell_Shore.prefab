@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6500000}
   - component: {fileID: 11400000}
   m_Layer: 0
-  m_Name: Zone_Bat_Example
+  m_Name: Zone_Shell_Shore
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 100000}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 48.7, y: -95.44241, z: 44.3}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -66,21 +66,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f4f67c5f1274e79882427e470261850, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureEncounterZone
-  zoneId: bat-demo-zone-01
-  zoneName: Bat Demo Zone
+  zoneId: capstone-special-shell
+  zoneName: Ốc ven nước
   zoneBounds: {fileID: 6500000}
   spawningEnabled: 1
-  baseLevel: 5
-  levelVariance: 2
+  baseLevel: 7
+  levelVariance: 3
+  minimumLevel: 4
+  maximumLevel: 10
+  regionMinimumLevel: 2
+  regionMaximumLevel: 12
+  formEligibilityUsesIndividualLevel: 1
+  allowPartialConfiguration: 1
+  requireSupportedTypes: 1
   respawnDelay: 5
   minimumSpawnSeparation: 2.5
   minimumPlayerSpawnDistance: 5
-  allowNearPlayerFallback: 1
-  spawnTable: {fileID: 11400000, guid: 757451728b3f464da8d24c448b913713, type: 2}
+  allowNearPlayerFallback: 0
+  spawnTable: {fileID: 11400000, guid: 4df4d5a9bb264eecb399aa9e1f9734cb, type: 2}
   ownedPetCatalog: {fileID: 0}
   species: []
   formLevelOverrides: []
   player: {fileID: 0}
+  requireWaterNearby: 1
+  waterBoundary: {fileID: 0}
+  maximumDistanceFromWater: 5
   positionAttempts: 24
   navMeshSampleDistance: 2
   obstacleMask:

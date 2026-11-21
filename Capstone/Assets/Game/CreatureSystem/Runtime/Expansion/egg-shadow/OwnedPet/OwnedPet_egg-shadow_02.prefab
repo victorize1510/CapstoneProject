@@ -267,7 +267,7 @@ MonoBehaviour:
     displayName: "Tr\u1ECDng k\xEDch"
     skillLevel: 1
     requiredPetLevel: 36
-    element: 11
+    element: 13
     uiMetadata:
       damageKind: 0
       effects: []
@@ -373,7 +373,7 @@ MonoBehaviour:
     targetSpecies: "Qu\xE1i Tr\u1EE9ng L\u1EF1c S\u0129"
     targetIcon: {fileID: 21300000, guid: abdcfcaf8ea6bcc408fcd559fb1bc239, type: 3}
     targetElement: 9
-    targetSecondaryElement: 11
+    targetSecondaryElement: 13
     replaceSecondaryElement: 1
     targetRarity: 0
     targetVisualPrefab: {fileID: 8896114049923019563, guid: 27da9998ac1945e7b0d47c23e06220d5, type: 3}

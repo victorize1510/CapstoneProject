@@ -93,8 +93,8 @@ namespace Capstone.Game.CreatureSystem.Editor
                 VerifyCodex(Check);
                 var table = ElementCombatSettings.Lookup;
                 Check(table.IsValid, "Runtime matchup asset is valid");
-                Check(ElementDamageMath.Effectiveness(table, PetElement.Fighting, PetElement.Flying, PetElement.Normal) == 1f,
-                    "Chick: Fighting x0.5 against Flying and x2 against Normal");
+                Check(!ElementCatalog.IsSupported(PetElement.Fighting) && ElementDamageMath.Effectiveness(table, PetElement.Fighting, PetElement.Flying, PetElement.Normal) == 1f,
+                    "Retired Fighting remains neutral for legacy calls");
                 Check(ElementDamageMath.Multiplier(table, new CombatElementSnapshot(PetElement.Electric, PetElement.Electric, PetElement.Unknown),
                     PetElement.Flying, PetElement.Normal) == 3f, "Electric against Chick plus same-type bonus = x3");
             }

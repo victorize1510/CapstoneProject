@@ -22,47 +22,51 @@ MonoBehaviour:
     definitionId: bat
     weight: 1
     minimumLevel: 12
-    maximumLevel: 18
+    maximumLevel: 40
+    spawnFromHour: 0
+    spawnUntilHour: 0
     forms:
     - enabled: 1
-      formId: "01"
+      formId: 01
       prefab: {fileID: 3303902416035471862, guid: 660bc1c6bd3fb6c468b78fad4eaf5a57, type: 3}
       weight: 75
       minimumZoneLevel: 1
-      configurationBlocker: ""
+      configurationBlocker: 
     - enabled: 1
-      formId: "02"
+      formId: 02
       prefab: {fileID: 1106331304754840548, guid: 64bee044dfb63354180f22828addf844, type: 3}
       weight: 25
       minimumZoneLevel: 18
-      configurationBlocker: ""
+      configurationBlocker: 
     - enabled: 0
-      formId: "03"
+      formId: 03
       prefab: {fileID: 1536715140522227698, guid: ac564a5e29678a544a5dbdec1056790e, type: 3}
       weight: 0
       minimumZoneLevel: 36
-      configurationBlocker: ""
+      configurationBlocker: 
   - enabled: 1
     definitionId: wolf
     weight: 1
     minimumLevel: 12
     maximumLevel: 18
+    spawnFromHour: 18
+    spawnUntilHour: 6
     forms:
     - enabled: 1
-      formId: "01"
+      formId: 01
       prefab: {fileID: 3303902416035471862, guid: 682263d0cd296a54177f7ca93a137f4e, type: 3}
       weight: 75
       minimumZoneLevel: 1
-      configurationBlocker: ""
+      configurationBlocker: 
     - enabled: 1
-      formId: "02"
+      formId: 02
       prefab: {fileID: 3303902416035471862, guid: e915d560973d83d0e295b3ef5b847f45, type: 3}
       weight: 25
       minimumZoneLevel: 18
-      configurationBlocker: ""
+      configurationBlocker: 
     - enabled: 0
-      formId: "03"
+      formId: 03
       prefab: {fileID: 3303902416035471862, guid: df5fa28dd09c3affaec8f032817ecfe1, type: 3}
       weight: 0
       minimumZoneLevel: 36
-      configurationBlocker: ""
+      configurationBlocker: 

@@ -15,6 +15,9 @@ namespace Capstone.Game.Skills {
         [Range(.1f, 10)] public float lifetime = 3;
         public GameObject projectileVisual;
         public string releaseSocket = "Mouth";
+        [Tooltip("Cho phép chiêu cập nhật hướng hoặc điểm đánh theo mục tiêu đến lúc phát.")]
+        public bool trackTargetUntilRelease;
+        [Min(.1f)] public float targetedImpactRadius = 1f;
         [Header("Ngam: khoa, dich gan nhin thay, roi huong dang quay")]
         public bool autoAcquireTarget = true;
         [Range(5, 89)] public float meleeHalfAngle = 55;

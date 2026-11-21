@@ -19,12 +19,12 @@ namespace Capstone.Game.Elements
         }
     }
 
-    /// <summary>Nguon duy nhat cho thu tu hien thi, ten, icon va danh muc chin he.</summary>
+    /// <summary>Nguon duy nhat cho thu tu hien thi, ten, icon va danh muc tam he.</summary>
     public static class ElementCatalog
     {
-        public const int Count = 9;
+        public const int Count = 8;
         public const string UnclassifiedName = "Chưa phân loại";
-        static readonly ElementDescriptor[] entries = {new ElementDescriptor(PetElement.Fire, "Lửa", "fire", "#EE9B58"), new ElementDescriptor(PetElement.Water, "Nước", "water", "#73B6E2"), new ElementDescriptor(PetElement.Nature, "Cỏ", "grass", "#9DCD75"), new ElementDescriptor(PetElement.Electric, "Điện", "electric", "#F0CD63"), new ElementDescriptor(PetElement.Fighting, "Giác đấu", "fighting", "#DB8174"), new ElementDescriptor(PetElement.Flying, "Bay", "flying", "#A0D5E8"), new ElementDescriptor(PetElement.Normal, "Thường", "normal", "#C5BCA9"), new ElementDescriptor(PetElement.Dark, "Tối", "dark", "#65517D", true), new ElementDescriptor(PetElement.Dragon, "Rồng", "dragon", "#655AB2", true)};
+        static readonly ElementDescriptor[] entries = {new ElementDescriptor(PetElement.Fire, "Lửa", "fire", "#EE9B58"), new ElementDescriptor(PetElement.Water, "Nước", "water", "#73B6E2"), new ElementDescriptor(PetElement.Nature, "Cỏ", "grass", "#9DCD75"), new ElementDescriptor(PetElement.Electric, "Điện", "electric", "#F0CD63"), new ElementDescriptor(PetElement.Flying, "Bay", "flying", "#A0D5E8"), new ElementDescriptor(PetElement.Normal, "Thường", "normal", "#C5BCA9"), new ElementDescriptor(PetElement.Dark, "Tối", "dark", "#65517D", true), new ElementDescriptor(PetElement.Dragon, "Rồng", "dragon", "#655AB2", true)};
         public static IReadOnlyList<ElementDescriptor> Entries { get; } = Array.AsReadOnly(entries);
         public static int IndexOf(PetElement element)
         {
@@ -38,16 +38,14 @@ namespace Capstone.Game.Elements
                     return 2;
                 case PetElement.Electric:
                     return 3;
-                case PetElement.Fighting:
-                    return 4;
                 case PetElement.Flying:
-                    return 5;
+                    return 4;
                 case PetElement.Normal:
-                    return 6;
+                    return 5;
                 case PetElement.Dark:
-                    return 7;
+                    return 6;
                 case PetElement.Dragon:
-                    return 8;
+                    return 7;
                 default:
                     return -1;
             }

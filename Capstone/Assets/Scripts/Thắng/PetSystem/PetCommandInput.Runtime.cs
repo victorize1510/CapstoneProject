@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using Capstone.Game.HudSystem;
+using Capstone.Game.Inventory;
+using UnityEngine.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,14 +19,147 @@ public partial class PetCommandInput
     readonly List<PetController> ownedSleepBatch = new List<PetController>();
     Coroutine ownedSleepRoutine;
 
+    [Header("Hồi về điểm xuất phát khi cả đội gục")]
+    [SerializeField] Transform partyDefeatSpawnPoint;
+    Vector3 initialPlayerPosition;
+    Quaternion initialPlayerRotation;
+    Coroutine partyDefeatRecovery;
+    GameObject partyDefeatOverlay;
+    bool defeatInputLocked;
+
     void Start()
     {
+        initialPlayerPosition = transform.position;
+        initialPlayerRotation = transform.rotation;
         runtimeRoster = FindFirstObjectByType<PetBoxRuntimeProvider>(FindObjectsInactive.Include);
         if (runtimeRoster != null && runtimeRoster.PartyInput == this)
             runtimeRoster.Changed += OrganizeOwnedPetRoster;
         else runtimeRoster = null;
         SceneManager.activeSceneChanged += MoveOwnedRuntimeToOwnerScene;
         OrganizeOwnedPetRoster();
+    }
+
+    internal void HandleActivePetDefeat(PetController defeated)
+    {
+        if (isActiveAndEnabled && activePet == defeated && partyDefeatRecovery == null)
+            partyDefeatRecovery = StartCoroutine(RecoverAfterPetDefeat(defeated));
+    }
+
+    int NextHealthySlot(PetController defeated)
+    {
+        if (petSlots == null || petSlots.Length == 0) return -1;
+        int current = System.Array.IndexOf(petSlots, defeated);
+        for (int offset = 1; offset <= petSlots.Length; offset++)
+        {
+            int index = (current + offset) % petSlots.Length;
+            var pet = petSlots[index];
+            if (pet != null && pet != defeated && pet.GetComponentInChildren<PetHudRuntimeStats>(true)?.Health > 0f)
+                return index;
+        }
+        return -1;
+    }
+
+    IEnumerator RecoverAfterPetDefeat(PetController defeated)
+    {
+        yield return new WaitForSeconds(.35f);
+        try
+        {
+            var movement = GetComponent<BasicPlayerMovement>();
+            if (movement == null) yield break;
+            while (activePet == defeated && (InventoryInputController.GameplayInputBlocked ||
+                Capstone.Game.UISystem.GameplayPause.IsPaused || summonDirector != null && summonDirector.IsSequenceRunning))
+                yield return null;
+            if (activePet != defeated) yield break;
+
+            int next = NextHealthySlot(defeated);
+            if (next >= 0)
+            {
+                while (activePet == defeated && next >= 0)
+                {
+                    if (!InventoryInputController.GameplayInputBlocked && !Capstone.Game.UISystem.GameplayPause.IsPaused)
+                    {
+                        if (summonDirector != null && !summonDirector.IsSequenceRunning) RequestSummonSlot(next);
+                        else if (summonDirector == null && TryGetPetInSlot(next, out var replacement))
+                        {
+                            replacement.AssignOwner(transform);
+                            if (replacement.TryRestoreSummonedNearOwner()) SetActivePet(replacement);
+                        }
+                        if (summonDirector != null && summonDirector.IsSequenceRunning)
+                            while (summonDirector.IsSequenceRunning && activePet == defeated) yield return null;
+                    }
+                    if (activePet != defeated) yield break;
+                    yield return new WaitForSeconds(.5f);
+                    next = NextHealthySlot(defeated);
+                }
+                if (activePet != defeated) yield break;
+            }
+
+            bool hasEquipped = false;
+            foreach (var pet in petSlots)
+            {
+                if (pet == null) continue;
+                var stats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+                if (stats == null || stats.Health > 0f) yield break;
+                hasEquipped = true;
+            }
+            if (!hasEquipped) yield break;
+
+            InventoryInputController.SetExternalGameplayInputBlocked(this, true);
+            defeatInputLocked = true;
+            partyDefeatOverlay = new GameObject("Party defeat fade", typeof(RectTransform), typeof(Canvas));
+            SceneManager.MoveGameObjectToScene(partyDefeatOverlay, gameObject.scene);
+            var canvas = partyDefeatOverlay.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 32000;
+            var curtain = Capstone.Game.HudSystem.GameplayHudVisuals.Image(canvas.transform, "Blackout");
+            Capstone.Game.HudSystem.GameplayHudVisuals.Stretch(curtain.rectTransform);
+            yield return FadeDefeatCurtain(curtain, false);
+
+            var point = partyDefeatSpawnPoint;
+            movement.WarpAfterPartyDefeat(point != null ? point.position : initialPlayerPosition,
+                point != null ? point.rotation : initialPlayerRotation);
+            selectedEnemy = null;
+            cameraLock?.ClearPartyDefeatLock();
+            foreach (var pet in petSlots)
+            {
+                if (pet == null) continue;
+                pet.Withdraw();
+                if (pet.GetComponentInChildren<PetHudRuntimeStats>(true) is PetHudRuntimeStats stats)
+                    stats.SetStatus(stats.MaxHealth, stats.MaxHealth, stats.MaxEnergy, stats.MaxEnergy);
+            }
+            FindFirstObjectByType<Capstone.Game.SaveSystem.PlayerSaveController>()?.RequestSave();
+            yield return FadeDefeatCurtain(curtain, true);
+        }
+        finally { ClearPartyDefeatPresentation(); partyDefeatRecovery = null; }
+    }
+
+    static IEnumerator FadeDefeatCurtain(Image curtain, bool reveal)
+    {
+        const float duration = .45f;
+        float started = Time.unscaledTime;
+        while (curtain != null)
+        {
+            float t = Mathf.Clamp01((Time.unscaledTime - started) / duration);
+            curtain.color = new Color(0f, 0f, 0f, reveal ? 1f - t : t);
+            if (t >= 1f) yield break;
+            yield return null;
+        }
+    }
+
+    void CancelPartyDefeatRecovery()
+    {
+        if (partyDefeatRecovery != null) StopCoroutine(partyDefeatRecovery);
+        partyDefeatRecovery = null;
+        ClearPartyDefeatPresentation();
+    }
+
+    void ClearPartyDefeatPresentation()
+    {
+        if (partyDefeatOverlay != null) Destroy(partyDefeatOverlay);
+        partyDefeatOverlay = null;
+        if (!defeatInputLocked) return;
+        defeatInputLocked = false;
+        InventoryInputController.SetExternalGameplayInputBlocked(this, false);
     }
 
     void OnDestroy()

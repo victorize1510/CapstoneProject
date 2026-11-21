@@ -259,6 +259,17 @@ public partial class BasicPlayerMovement : MonoBehaviour
     private Vector3 jumpCarryDirection;
     private Vector3 landingCarryDirection;
     private float verticalVelocity;
+
+    internal void WarpAfterPartyDefeat(Vector3 point, Quaternion rotation)
+    {
+        var controller = characterController != null ? characterController : GetComponent<CharacterController>();
+        bool enabledBefore = controller != null && controller.enabled;
+        if (enabledBefore) controller.enabled = false;
+        verticalVelocity = 0f;
+        transform.SetPositionAndRotation(point, rotation);
+        if (enabledBefore) controller.enabled = true;
+        Physics.SyncTransforms();
+    }
     private float jumpHorizontalSpeed;
     private float jumpExpectedAirTime;
     private float jumpLandingCarryDistance;

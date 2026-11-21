@@ -49,6 +49,7 @@ public partial class PetCommandInput : MonoBehaviour
         if (subscribedCamera != null) subscribedCamera.EnemyPinned -= SelectPinnedEnemy;
         subscribedCamera = null;
         PauseOwnedPetStorage();
+        CancelPartyDefeatRecovery();
     }
     void SelectPinnedEnemy(DummyEnemy enemy)
     {
@@ -150,7 +151,7 @@ public partial class PetCommandInput : MonoBehaviour
             return false;
         }
 
-        if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "attack"))
+        if (!activePet.CanAcceptAttackCommand(enemy) || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "attack"))
         {
             return false;
         }

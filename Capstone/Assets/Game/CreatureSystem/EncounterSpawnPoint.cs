@@ -41,6 +41,7 @@ namespace Capstone.Game.CreatureSystem {
         CreatureAnimationDriver driver;
         GameObject smoke;
         float phaseAt, nextSpawnAt, smokeUntil;
+        float nextScheduleCheck;
         internal CreatureEncounterZone ZoneOwner;
         readonly Collider[] overlaps = new Collider[32];
         public DummyEnemy CurrentActor => actor;
@@ -81,6 +82,16 @@ namespace Capstone.Game.CreatureSystem {
             if(phase==Phase.Live) {
                 if(actor==null){ScheduleRespawn();return;}
                 if(capture!=null && !capture.IsWild){DetachCaptured();return;}
+                if(ZoneOwner != null && Time.time >= nextScheduleCheck) {
+                    nextScheduleCheck = Time.time + 1f;
+                    if (ZoneOwner.CanRetireForSchedule(actor)) {
+                        Unsubscribe();
+                        actor.gameObject.SetActive(false);
+                        Destroy(actor.gameObject);
+                        actor=null;capture=null;driver=null;
+                        ScheduleRespawn();
+                    }
+                }
             } else if(phase==Phase.Death) {
                 if(actor==null){ScheduleRespawn();return;}
                 if(DeathFinished()) {

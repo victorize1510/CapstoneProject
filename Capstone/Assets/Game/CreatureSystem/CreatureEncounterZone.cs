@@ -47,9 +47,16 @@ namespace Capstone.Game.CreatureSystem
 
         [Header("Vi tri va hieu ung")]
         public Transform player;
+        public DayNightCycle dayNightClock;
+        [Tooltip("Zone ven nuoc: gan trigger BoxCollider phu mat nuoc, dat Zone tren bo.")]
+        public bool requireWaterNearby;
+        public BoxCollider waterBoundary;
+        [Min(.1f)] public float maximumDistanceFromWater = 5f;
         [Range(1, 128)] public int positionAttempts = 24;
         [Min(.1f)] public float navMeshSampleDistance = 2;
         public LayerMask obstacleMask = Physics.DefaultRaycastLayers;
+        [Tooltip("Dung sai tiep xuc rieng o chan capsule (met). Mat san phai do tai diem dat va khong cham phan than. 0 = khong bo qua tiep xuc.")]
+        [Min(0)] public float groundIgnoreHeight = .2f;
         public GameObject smokePrefab, downedStarsPrefab;
         public bool drawGizmos = true;
 
@@ -72,9 +79,12 @@ namespace Capstone.Game.CreatureSystem
         readonly List<float> formWeights = new List<float>();
         readonly List<string> configurationIssues = new List<string>();
         readonly Collider[] overlaps = new Collider[32];
+        readonly Collider[] aboveFootOverlaps = new Collider[32];
+        readonly RaycastHit[] surfaceHits = new RaycastHit[32];
         Random random;
         GameObject lifecycleRoot, staging;
         float initializeAt, findPlayerAt;
+        float findClockAt;
         bool initialized;
         public int TargetPopulation { get; private set; }
         public int EligibleSpeciesCount => eligible.Count;
@@ -281,27 +291,27 @@ namespace Capstone.Game.CreatureSystem
             if (zoneBounds == null) zoneBounds = GetComponent<BoxCollider>();
             var box = zoneBounds;
             if (box == null || !box.enabled || !box.gameObject.activeInHierarchy) return "Khong do duoc: Box/Zone dang tat hoac chua gan.";
-            var types = new HashSet<int>();
+            var filters = new HashSet<(int agentType, int areaMask)>();
             var entries = spawnTable != null ? spawnTable.species : species;
             if (entries != null) foreach (var entry in entries) if (entry?.forms != null)
                         foreach (var form in entry.forms)
                         {
                             var agent = form?.prefab != null ? form.prefab.GetComponent<NavMeshAgent>() : null;
-                            if (agent != null) types.Add(agent.agentTypeID);
+                            if (agent != null) filters.Add((agent.agentTypeID, agent.areaMask));
                         }
-            bool generic = types.Count == 0;
-            if (generic && NavMesh.GetSettingsCount() > 0) types.Add(NavMesh.GetSettingsByIndex(0).agentTypeID);
-            if (types.Count == 0) return "Khong co Agent Type/NavMesh settings.";
+            bool generic = filters.Count == 0;
+            if (generic && NavMesh.GetSettingsCount() > 0) filters.Add((NavMesh.GetSettingsByIndex(0).agentTypeID, NavMesh.AllAreas));
+            if (filters.Count == 0) return "Khong co Agent Type/NavMesh settings.";
             var reports = new List<string>();
-            foreach (int type in types)
+            foreach (var (agentType, areaMask) in filters)
             {
-                var filter = new NavMeshQueryFilter { agentTypeID = type, areaMask = NavMesh.AllAreas };
+                var filter = new NavMeshQueryFilter { agentTypeID = agentType, areaMask = areaMask };
                 int covered = 0, height = 0, outside = 0;
                 for (int x = 0; x < 3; x++) for (int z = 0; z < 3; z++)
                     {
                         Vector3 local = box.center + new Vector3((x - 1) * box.size.x / 3, 0, (z - 1) * box.size.z / 3);
                         Vector3 point = box.transform.TransformPoint(local);
-                        if (NavMesh.SamplePosition(point, out var hit, navMeshSampleDistance, filter))
+                        if (TrySampleNavMesh(point, filter, out var hit))
                         {
                             if (Contains(hit.position)) covered++; else outside++;
                         }
@@ -309,7 +319,7 @@ namespace Capstone.Game.CreatureSystem
                             && HorizontalSquared(wide.position - point) <= navMeshSampleDistance * navMeshSampleDistance
                             && Mathf.Abs(wide.position.y - point.y) > navMeshSampleDistance) height++;
                     }
-                reports.Add("AgentType " + type + ": " + covered + "/9 mau trong Box; sai do cao=" + height + "; ngoai Box=" + outside);
+                reports.Add("AgentType " + agentType + ", AreaMask " + areaMask + ": " + covered + "/9 mau trong Box (co chieu theo mat san); sai do cao=" + height + "; ngoai Box=" + outside);
             }
             return string.Join("\n", reports) + (generic ? "\nChua co prefab san sang: chi do hinh hoc, chua kiem actor." : "")
                 + "\nDay la mau coverage, khong dam bao moi vi tri deu du cho collider. 0/9: kiem Surface bat, Agent Type, vi tri va chieu cao Box; khong tu bake.";
@@ -389,7 +399,7 @@ namespace Capstone.Game.CreatureSystem
             speciesWeights.Clear(); represented.Clear();
             foreach (var group in eligible)
             {
-                speciesWeights.Add(group.source.weight);
+                speciesWeights.Add(CanSpawnNow(group.source) ? group.source.weight : 0f);
                 bool present = false;
                 foreach (var slot in slots)
                 {
@@ -400,7 +410,7 @@ namespace Capstone.Game.CreatureSystem
                 represented.Add(present);
             }
             int speciesIndex = CreatureSpawnRules.Pick(speciesWeights, represented, random);
-            if (speciesIndex < 0) return false;
+            if (speciesIndex < 0) { LastStatus = "Đang chờ khung giờ xuất hiện hoặc thiếu DayNightCycle."; return false; }
             var selected = eligible[speciesIndex];
             int rolled = 0;
             if (formEligibilityUsesIndividualLevel) rolled = random.Next(selected.minimumLevel, selected.maximumLevel + 1);
@@ -414,12 +424,12 @@ namespace Capstone.Game.CreatureSystem
             if (formIndex < 0) return false;
             var form = selected.forms[formIndex];
             if (form.prefab == null) { LastStatus = "Prefab da mat; dung Play va kiem tra Spawn Table."; return false; }
-            if (!FindPosition(form.prefab, out var position, out bool nearPlayer)) return false;
+            if (!FindPosition(form.prefab, out var position, out var rotation, out bool nearPlayer)) return false;
             GameObject instance = null;
             try
             {
                 // Inactive parent cho phep gan ID/cap truoc Awake va truoc cooldown dau tien.
-                instance = Instantiate(form.prefab, position, Quaternion.Euler(0, (float)random.NextDouble() * 360, 0), staging.transform);
+                instance = Instantiate(form.prefab, position, rotation, staging.transform);
                 var metadata = instance.GetComponent<PetCollectionMetadata>();
                 metadata.AssignPersistentId("wild-" + Guid.NewGuid().ToString("N"));
                 metadata.InitializeWildIndividual();
@@ -455,25 +465,92 @@ namespace Capstone.Game.CreatureSystem
             }
         }
 
-        bool FindPosition(GameObject prefab, out Vector3 position, out bool nearPlayer)
+        bool CanSpawnNow(CreatureSpawnSpecies entry)
         {
-            position = default; nearPlayer = false;
+            if (!entry.HasTimeWindow) return true;
+            if (dayNightClock == null && Time.time >= findClockAt)
+            {
+                findClockAt = Time.time + 1f;
+                foreach (var clock in FindObjectsByType<DayNightCycle>(FindObjectsSortMode.None))
+                    if (clock.gameObject.scene == gameObject.scene) { dayNightClock = clock; break; }
+            }
+            return dayNightClock != null && entry.MatchesHour(Mathf.Repeat(dayNightClock.timeOfDay, 1f) * 24f);
+        }
+
+        internal bool CanRetireForSchedule(DummyEnemy actor)
+        {
+            if (!isActiveAndEnabled || !spawningEnabled || dayNightClock == null || player == null || actor == null
+                || !actor.IsAlive || actor.IsDowned || actor.CaptureLocked
+                || (actor.transform.position - player.position).sqrMagnitude < 144f) return false;
+            var metadata = actor.GetComponent<PetCollectionMetadata>();
+            if (metadata == null) return false;
+            var group = eligible.Find(entry => Same(entry.source.definitionId, metadata.DefinitionId));
+            if (group == null || CanSpawnNow(group.source)) return false;
+            var brain = actor.GetComponent<BasicCreatureEnemy>();
+            var commands = player.GetComponent<PetCommandInput>();
+            if (brain == null || brain.Target != null || (commands != null &&
+                (commands.SelectedEnemy == actor || commands.activePet != null && commands.activePet.CombatTarget == actor))) return false;
+            var view = commands != null && commands.commandCamera != null ? commands.commandCamera : Camera.main;
+            if (view == null) return false;
+            Vector3 point = view.WorldToViewportPoint(actor.TargetPosition);
+            return point.z <= 0 || point.x < -.12f || point.x > 1.12f || point.y < -.12f || point.y > 1.12f;
+        }
+
+        bool TrySampleNavMesh(Vector3 candidate, NavMeshQueryFilter filter, out NavMeshHit nav)
+        {
+            if (NavMesh.SamplePosition(candidate, out nav, navMeshSampleDistance, filter) && Contains(nav.position)) return true;
+
+            // Search at the local floor height for this X/Z instead of increasing the
+            // spherical radius, which can snap to a distant tile or another storey.
+            var bounds = zoneBounds.bounds;
+            Vector3 origin = new Vector3(candidate.x, bounds.max.y + .05f, candidate.z);
+            int count = Physics.RaycastNonAlloc(origin, Vector3.down, surfaceHits, bounds.size.y + .10f,
+                obstacleMask, QueryTriggerInteraction.Ignore);
+            if (count == surfaceHits.Length) return false;
+            float closestHeight = float.PositiveInfinity;
+            bool found = false;
+            for (int i = 0; i < count; i++)
+            {
+                var floor = surfaceHits[i];
+                if (floor.normal.y < .5f || !Contains(floor.point) || IsActorCollider(floor.collider)) continue;
+                float height = Mathf.Abs(floor.point.y - candidate.y);
+                if (height >= closestHeight || !NavMesh.SamplePosition(floor.point, out var sample, navMeshSampleDistance, filter)
+                    || !Contains(sample.position) || Mathf.Abs(sample.position.y - floor.point.y) > Mathf.Max(.10f, groundIgnoreHeight)) continue;
+                closestHeight = height;
+                nav = sample;
+                found = true;
+            }
+            return found;
+        }
+
+        bool FindPosition(GameObject prefab, out Vector3 position, out Quaternion rotation, out bool nearPlayer)
+        {
+            position = default; rotation = Quaternion.identity; nearPlayer = false;
+            if (requireWaterNearby && (waterBoundary == null || !waterBoundary.enabled || !waterBoundary.gameObject.activeInHierarchy)) {
+                LastStatus = "Zone ven nước cần gắn Water Boundary đang hoạt động.";
+                return false;
+            }
             var capsule = prefab.GetComponent<CapsuleCollider>();
             var agent = prefab.GetComponent<NavMeshAgent>();
             var filter = new NavMeshQueryFilter { agentTypeID = agent.agentTypeID, areaMask = agent.areaMask };
             Vector3 size = zoneBounds.size, center = zoneBounds.center, scale = prefab.transform.localScale;
             float radius = Mathf.Max(.05f, capsule.radius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z)));
             float height = Mathf.Max(radius * 2, capsule.height * Mathf.Abs(scale.y));
-            int noNav = 0, wrongHeight = 0, outside = 0, edges = 0, players = 0, separation = 0, obstacles = 0;
+            int noNav = 0, wrongHeight = 0, outside = 0, edges = 0, players = 0, separation = 0, obstacles = 0, awayFromWater = 0;
             string blocker = "";
             for (int attempt = 0; attempt < positionAttempts; attempt++)
             {
                 var local = center + new Vector3(((float)random.NextDouble() - .5f) * size.x, 0, ((float)random.NextDouble() - .5f) * size.z);
                 var candidate = zoneBounds.transform.TransformPoint(local);
-                if (!NavMesh.SamplePosition(candidate, out var nav, navMeshSampleDistance, filter)) { noNav++; continue; }
+                if (!TrySampleNavMesh(candidate, filter, out var nav)) { noNav++; continue; }
                 if (Mathf.Abs(nav.position.y - zoneBounds.bounds.center.y) > zoneBounds.bounds.extents.y) { wrongHeight++; continue; }
                 if (!Contains(nav.position)) { outside++; continue; }
-                if (NavMesh.FindClosestEdge(nav.position, out var edge, filter) && edge.distance < radius) { edges++; continue; }
+                if (requireWaterNearby) {
+                    var shore = waterBoundary.ClosestPoint(nav.position);
+                    float distance = HorizontalSquared(shore - nav.position);
+                    if (distance < .0025f || distance > maximumDistanceFromWater * maximumDistanceFromWater
+                        || Mathf.Abs(shore.y - nav.position.y) > 2.5f) { awayFromWater++; continue; }
+                }
                 bool close = player != null && HorizontalSquared(nav.position - player.position) < minimumPlayerSpawnDistance * minimumPlayerSpawnDistance;
                 if (close && (!allowNearPlayerFallback || attempt < positionAttempts * 2 / 3)) { players++; continue; }
                 bool separated = true;
@@ -482,40 +559,89 @@ namespace Capstone.Game.CreatureSystem
                 if (separated) foreach (var other in CreatureCombatant.Active)
                         if (other != null && !other.IsEnemy && other.CanBeAttacked && HorizontalSquared(nav.position - other.transform.position) < minimumSpawnSeparation * minimumSpawnSeparation) { separated = false; break; }
                 if (!separated) { separation++; continue; }
-                // Dung radius bao capsule cho moi yaw; khong phu thuoc huong xoay ngau nhien.
-                Vector3 bodyCenter = nav.position + Vector3.up * (capsule.center.y * scale.y);
-                float horizontalOffset = new Vector2(capsule.center.x * scale.x, capsule.center.z * scale.z).magnitude;
-                float clearance = radius + horizontalOffset;
-                Vector3 halfSegment = Vector3.up * Mathf.Max(0, height * .5f - radius);
-                if (!ContainsBody(bodyCenter, clearance, height * .5f)) { outside++; continue; }
-                int count = Physics.OverlapCapsuleNonAlloc(bodyCenter - halfSegment + Vector3.up * .03f, bodyCenter + halfSegment + Vector3.up * .03f,
-                    clearance, overlaps, obstacleMask, QueryTriggerInteraction.Collide);
-                bool blocked = count == overlaps.Length;
-                for (int i = 0; i < count && !blocked; i++)
-                {
-                    var other = overlaps[i];
-                    // Bo trigger Zone/sensor, nhung van tranh hurtbox trigger cua pet/enemy.
-                    if (other != null && (!other.isTrigger || other.GetComponentInParent<CreatureCombatant>() != null)) { blocked = true; blocker = other.name; }
-                }
-                if (blocked) { obstacles++; continue; }
+                var yaw = Quaternion.Euler(0, (float)random.NextDouble() * 360, 0);
+                Vector3 bodyOffset = yaw * Vector3.Scale(capsule.center, scale);
+                float clearance = radius + Mathf.Sqrt(HorizontalSquared(bodyOffset));
+                if (!NavMesh.FindClosestEdge(nav.position, out var edge, filter) || edge.distance < clearance) { edges++; continue; }
+                Vector3 bodyCenter = nav.position + bodyOffset;
+                Vector3 halfSegment = Vector3.up * (height * .5f - radius);
+                Vector3 lower = bodyCenter - halfSegment, upper = bodyCenter + halfSegment;
+                if (!ContainsBody(lower, upper, radius)) { outside++; continue; }
+                if (BodyBlocked(nav.position, lower, upper, radius, out blocker)) { obstacles++; continue; }
                 LastPlacementReport = "Vi tri hop le sau " + (attempt + 1) + " lan thu";
-                position = nav.position; nearPlayer = close; return true;
+                position = nav.position; rotation = yaw; nearPlayer = close; return true;
             }
             LastPlacementReport = prefab.name + ": NavMesh khong tim thay=" + noNav + ", sai do cao=" + wrongHeight
                 + ", ngoai Box/body khong vua=" + outside + ", sat mep NavMesh=" + edges + ", gan player=" + players
-                + ", sat actor=" + separation + ", vat can=" + obstacles + (blocker.Length > 0 ? " (" + blocker + ")" : "");
+                + ", sat actor=" + separation + ", sai khoang cach bo nuoc=" + awayFromWater
+                + ", vat can=" + obstacles + (blocker.Length > 0 ? " (" + blocker + ")" : "");
             LastStatus = LastPlacementReport + ". Thu lai sau 1 giay; dung nut coverage de phan biet NavMesh thieu/sai do cao.";
             return false;
         }
 
         static float HorizontalSquared(Vector3 value) => value.x * value.x + value.z * value.z;
-        bool ContainsBody(Vector3 center, float radius, float halfHeight)
+        static bool IsActorCollider(Collider collider) => collider != null &&
+            (collider.GetComponentInParent<CreatureCombatant>() != null || collider.GetComponentInParent<BasicPlayerMovement>() != null);
+
+        bool BodyBlocked(Vector3 foot, Vector3 lower, Vector3 upper, float radius, out string blocker)
         {
-            Vector3 local = zoneBounds.transform.InverseTransformPoint(center) - zoneBounds.center;
-            Vector3 half = zoneBounds.size * .5f, scale = zoneBounds.transform.lossyScale;
-            return Mathf.Abs(local.x) + radius / Mathf.Abs(scale.x) <= half.x
-                && Mathf.Abs(local.y) + halfHeight / Mathf.Abs(scale.y) <= half.y
-                && Mathf.Abs(local.z) + radius / Mathf.Abs(scale.z) <= half.z;
+            blocker = "";
+            int mask = obstacleMask.value;
+            var playerBody = player != null ? player.GetComponent<CharacterController>() : null;
+            if (playerBody != null) mask |= 1 << playerBody.gameObject.layer;
+            // A small sole clearance avoids rejecting exact ground contact due to float error.
+            Vector3 lift = Vector3.up * .03f;
+            lower += lift;
+            upper += lift;
+            int count = Physics.OverlapCapsuleNonAlloc(lower, upper, radius, overlaps, mask, QueryTriggerInteraction.Collide);
+            if (count == overlaps.Length) { blocker = "overlap buffer"; return true; }
+            float tolerance = Mathf.Min(groundIgnoreHeight, radius * .5f);
+            int aboveCount = -1;
+            for (int i = 0; i < count; i++)
+            {
+                var other = overlaps[i];
+                if (other == null) continue;
+                bool actor = IsActorCollider(other);
+                if (!actor && (other.isTrigger || (obstacleMask.value & (1 << other.gameObject.layer)) == 0)) continue;
+                if (!actor && tolerance > 0f && IsLocalSupport(other, foot, lower.y - radius, tolerance))
+                {
+                    if (aboveCount < 0)
+                    {
+                        Vector3 raised = lower + Vector3.up * tolerance;
+                        var top = Vector3.Max(raised, upper);
+                        aboveCount = Physics.OverlapCapsuleNonAlloc(raised, top, radius, aboveFootOverlaps, mask, QueryTriggerInteraction.Collide);
+                    }
+                    if (aboveCount < aboveFootOverlaps.Length && Array.IndexOf(aboveFootOverlaps, other, 0, aboveCount) < 0) continue;
+                }
+                blocker = other.name;
+                return true;
+            }
+            return false;
+        }
+
+        static bool IsLocalSupport(Collider collider, Vector3 foot, float soleY, float tolerance)
+        {
+            // Measure height at the feet, not the top of the terrain's world AABB.
+            float top = Mathf.Max(foot.y, soleY) + tolerance + .03f;
+            float bottom = Mathf.Min(foot.y, soleY) - tolerance;
+            return collider.Raycast(new Ray(new Vector3(foot.x, top, foot.z), Vector3.down), out var hit, top - bottom)
+                && hit.normal.y >= .5f && Mathf.Abs(hit.point.y - foot.y) <= tolerance + .03f
+                && hit.point.y <= soleY + tolerance;
+        }
+
+        bool ContainsBody(Vector3 lower, Vector3 upper, float radius)
+        {
+            var inverse = zoneBounds.transform.worldToLocalMatrix;
+            Vector3 a = inverse.MultiplyPoint3x4(lower) - zoneBounds.center;
+            Vector3 b = inverse.MultiplyPoint3x4(upper) - zoneBounds.center;
+            Vector3 half = zoneBounds.size * .5f;
+            for (int axis = 0; axis < 3; axis++)
+            {
+                var row = inverse.GetRow(axis);
+                float inset = radius * new Vector3(row.x, row.y, row.z).magnitude;
+                if (Mathf.Max(Mathf.Abs(a[axis]), Mathf.Abs(b[axis])) + inset > half[axis]) return false;
+            }
+            return true;
         }
         bool Contains(Vector3 point)
         {

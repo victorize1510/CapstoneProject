@@ -99,7 +99,7 @@ namespace Capstone.Game.HudSystem {
             else if(intent==HubPressGesture.Intent.Tap&&!IsPickerOpen)TryThrow();
         }
         public bool TryThrow(){
-            if(IsPickerOpen||InventoryInputController.GameplayInputBlocked||lastIntentFrame==Time.frameCount)return false;
+            if(IsPickerOpen||InventoryInputController.GameplayInputBlocked||lastIntentFrame==Time.frameCount||coordinator!=null&&coordinator.IsCapturing)return false;
             lastIntentFrame=Time.frameCount;ThrowIntents++;Refresh();var selected=Selected();
             if(coordinator==null){Feedback("Chưa kết nối dịch vụ thu phục.");return false;}
             if(!(selected?.ItemBase is MonsterItemDefinition ball)||selected.Quantity<1){Feedback("Chưa có bóng thu phục. Giữ G để chọn bóng.");return false;}
