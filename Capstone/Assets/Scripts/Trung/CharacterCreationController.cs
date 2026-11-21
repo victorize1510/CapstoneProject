@@ -5,6 +5,10 @@ using UnityEngine.UI;
 
 public class CharacterCreationController : MonoBehaviour
 {
+    // Khớp với quy định của PlayerProfileRuntimeProvider.TrySetDisplayName.
+    const int MinNameLength = 2;
+    const int MaxNameLength = 20;
+
     [Header("Khung đặt tên (ẩn tới khi chọn giới tính)")]
     public TMP_InputField nameInputField;
 
@@ -24,7 +28,7 @@ public class CharacterCreationController : MonoBehaviour
     public Button cancelButton;
 
     [Header("Scene tiếp theo")]
-    public string gameplaySceneName = "GameplayScene";
+    public string gameplaySceneName = "DemoScene";
 
     string selectedGender;
     Image maleImage;
@@ -35,12 +39,16 @@ public class CharacterCreationController : MonoBehaviour
         if (maleButton != null) maleImage = maleButton.GetComponent<Image>();
         if (femaleButton != null) femaleImage = femaleButton.GetComponent<Image>();
 
-        if (nameInputField != null) nameInputField.gameObject.SetActive(false);
+        if (nameInputField != null)
+        {
+            nameInputField.characterLimit = MaxNameLength;
+            nameInputField.gameObject.SetActive(false);
+        }
         if (confirmPopup != null) confirmPopup.SetActive(false);
         if (errorText != null) errorText.gameObject.SetActive(false);
 
-        if (maleButton != null) maleButton.onClick.AddListener(() => SelectGender("Male"));
-        if (femaleButton != null) femaleButton.onClick.AddListener(() => SelectGender("Female"));
+        if (maleButton != null) maleButton.onClick.AddListener(() => SelectGender(CharacterSelectionData.Male));
+        if (femaleButton != null) femaleButton.onClick.AddListener(() => SelectGender(CharacterSelectionData.Female));
         if (createCharaterButton != null) createCharaterButton.onClick.AddListener(OnCreateClicked);
         if (acceptButton != null) acceptButton.onClick.AddListener(OnAcceptConfirm);
         if (cancelButton != null) cancelButton.onClick.AddListener(OnCancelConfirm);
@@ -50,8 +58,8 @@ public class CharacterCreationController : MonoBehaviour
     {
         selectedGender = gender;
 
-        SetImageAlpha(maleImage, gender == "Male" ? 1f : dimmedAlpha);
-        SetImageAlpha(femaleImage, gender == "Female" ? 1f : dimmedAlpha);
+        SetImageAlpha(maleImage, gender == CharacterSelectionData.Male ? 1f : dimmedAlpha);
+        SetImageAlpha(femaleImage, gender == CharacterSelectionData.Female ? 1f : dimmedAlpha);
 
         if (nameInputField != null) nameInputField.gameObject.SetActive(true);
         if (errorText != null) errorText.gameObject.SetActive(false);
@@ -79,11 +87,17 @@ public class CharacterCreationController : MonoBehaviour
             ShowError("Vui lòng nhập tên nhân vật.");
             return;
         }
+        if (typedName.Length < MinNameLength || typedName.Length > MaxNameLength)
+        {
+            ShowError($"Tên phải có từ {MinNameLength} đến {MaxNameLength} ký tự.");
+            return;
+        }
 
-        string genderLabel = selectedGender == "Male" ? "Nam" : "Nữ";
+        string genderLabel = selectedGender == CharacterSelectionData.Male ? "Nam" : "Nữ";
         if (confirmText != null)
             confirmText.text = $"Bạn muốn chọn nhân vật {genderLabel} tên \"{typedName}\"?";
 
+        if (errorText != null) errorText.gameObject.SetActive(false);
         if (confirmPopup != null) confirmPopup.SetActive(true);
     }
 
@@ -106,22 +120,36 @@ public class CharacterCreationController : MonoBehaviour
 
     void OnAcceptConfirm()
     {
-        string typedName = nameInputField != null ? nameInputField.text.Trim() : "";
-
-        CharacterSelectionData.Gender = selectedGender;
-        CharacterSelectionData.PlayerName = typedName;
-
         if (string.IsNullOrWhiteSpace(gameplaySceneName))
         {
             Debug.LogWarning($"{name}: chưa gán Gameplay Scene Name.");
             return;
         }
+
+        CharacterSelectionData.Gender = selectedGender;
+        CharacterSelectionData.PlayerName = nameInputField != null ? nameInputField.text.Trim() : "";
+        CharacterSelectionData.PlayNewGameIntro = true;   // DemoScene sẽ chạy đoạn mở đầu.
         SceneManager.LoadScene(gameplaySceneName);
     }
 }
 
 public static class CharacterSelectionData
 {
+    public const string Male = "Male";
+    public const string Female = "Female";
+
     public static string Gender;
     public static string PlayerName;
+
+    // Bật khi vừa tạo nhân vật xong. NewGameIntroSequence đọc rồi tự tắt.
+    // Không bị Clear() xóa, để Load Game không chạy lại đoạn mở đầu.
+    public static bool PlayNewGameIntro;
+
+    public static bool HasPendingSelection => !string.IsNullOrEmpty(Gender);
+
+    public static void Clear()
+    {
+        Gender = null;
+        PlayerName = null;
+    }
 }
