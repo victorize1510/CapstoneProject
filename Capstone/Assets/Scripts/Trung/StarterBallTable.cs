@@ -1,15 +1,20 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Capstone.Game.HudSystem;
 using Capstone.Game.Inventory;
+using Capstone.Game.ProfileSystem;
 using Capstone.Game.UISystem;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 // Bàn chọn bóng khởi đầu.
 // Tới gần -> "[F] Chọn bóng". Bấm F -> camera lia vào bàn, ẩn Player.
 // A/D/W/S (hoặc phím mũi tên, hoặc rê chuột) đổi bóng, bóng đang chọn sáng viền.
-// Enter / Space / click -> xác nhận (gọi onBallConfirmed). Esc / Backspace -> thoát.
+// F / click -> hiện hình thú + hỏi "Bạn có muốn chọn ... không?" với [Xác nhận] / [Hủy].
+// Xác nhận -> "Xin chúc mừng..." -> nhận thú (onPetGranted) -> camera về lại gameplay.
+// Esc / Backspace -> thoát khỏi bàn.
 [DisallowMultipleComponent]
 public class StarterBallTable : MonoBehaviour
 {
@@ -17,7 +22,14 @@ public class StarterBallTable : MonoBehaviour
     public class BallSlot
     {
         public Transform ball;
+        [Tooltip("Chỉ dùng khi chưa gán Pet Prefab và Pet Name")]
         public string displayName = "Bóng";
+        [Tooltip("Prefab thú trong quả bóng này (vd. Ốc Gai)")]
+        public GameObject petPrefab;
+        [Tooltip("Tên hiện trên bóng. Để trống = lấy tên Prefab")]
+        public string petName;
+        [Tooltip("Hình con thú hiện ra khi bấm chọn quả bóng này")]
+        public Sprite petImage;
     }
 
     [Header("Bóng trên bàn")]
@@ -36,10 +48,27 @@ public class StarterBallTable : MonoBehaviour
     [SerializeField, Min(0.5f)] float interactDistance = 2.5f;
     [SerializeField] string enterText = "Chọn bóng";
 
-    [Header("Xác nhận (gắn hành động sau)")]
+    [Header("Hội thoại chọn thú  ({pet} = tên thú, {name} = tên Player)")]
+    [Tooltip("Tên người nói trên hộp thoại. Để trống = không hiện bảng tên")]
+    [SerializeField] string speakerName = "";
+    [SerializeField] string askText = "Bạn có muốn chọn {pet} làm thú đồng hành đầu tiên không?";
+    [SerializeField] string confirmText = "Xác nhận";
+    [SerializeField] string cancelText = "Hủy";
+    [SerializeField] string congratsText = "Xin chúc mừng! {name} đã nhận được {pet}!";
+    [SerializeField, Min(5f)] float typingSpeed = 40f;
+    [Tooltip("Để trống = dùng khung hội thoại tự chỉnh trong DialogueCanvas (nếu có)")]
+    [SerializeField] DialogueBoxUI dialogueBox;
+
+    [Header("Sau khi nhận thú")]
+    [SerializeField] bool hideChosenBall = true;
+    [Tooltip("Chọn xong thì bàn không cho chọn nữa")]
+    [SerializeField] bool disableAfterChoosing = true;
+    [Tooltip("Thú đã tự vào Party (StarterPetGranter). Ô này để gắn thêm việc khác nếu cần, vd. bật quest")]
+    public UnityEvent<GameObject> onPetGranted = new UnityEvent<GameObject>();
+    [Tooltip("Gọi khi xác nhận chọn. Tham số = số thứ tự quả bóng")]
     public UnityEvent<int> onBallConfirmed = new UnityEvent<int>();
 
-    enum State { Idle, Entering, Selecting, Exiting }
+    enum State { Idle, Entering, Selecting, Confirming, Exiting }
 
     State state = State.Idle;
     int selected = -1;
@@ -53,6 +82,13 @@ public class StarterBallTable : MonoBehaviour
     GameMenuController menu;
     bool blockedWithMenu;
     Vector3 lastMousePosition;
+    bool completed;
+    CanvasGroup revealGroup;
+    RectTransform revealRoot;
+    Image revealGlow;
+    Image revealImage;
+    Text revealName;
+    static Sprite glowSprite;
 
     public bool IsSelecting => state != State.Idle;
     public int SelectedIndex => selected;
@@ -93,6 +129,7 @@ public class StarterBallTable : MonoBehaviour
 
     void UpdateIdle()
     {
+        if (completed) { DoorPrompt.Hide(this); return; }
         ResolvePlayer();
         bool near = player != null && balls.Count > 0
             && !InventoryInputController.GameplayInputBlocked && IsPlayerNear();
@@ -166,9 +203,12 @@ public class StarterBallTable : MonoBehaviour
 
         int hovered = UpdateMouseHover();
 
-        bool confirm = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-            || Input.GetKeyDown(KeyCode.Space) || (Input.GetMouseButtonDown(0) && hovered >= 0);
-        if (confirm && selected >= 0) Confirm();
+        bool confirm = Input.GetKeyDown(interactKey) || (Input.GetMouseButtonDown(0) && hovered >= 0);
+        if (confirm && selected >= 0)
+        {
+            StartCoroutine(ConfirmRoutine());
+            return;   // Không vẽ lại tooltip tên bóng khi đang hỏi xác nhận.
+        }
 
         UpdateSelectionPrompt();
     }
@@ -212,17 +252,250 @@ public class StarterBallTable : MonoBehaviour
         return hovered;
     }
 
-    void Confirm()
+    IEnumerator ConfirmRoutine()
     {
-        Debug.Log($"[StarterBall] Đã chọn bóng {selected}: {balls[selected].displayName}");
-        onBallConfirmed?.Invoke(selected);
+        state = State.Confirming;
+        DoorPrompt.Hide(this);
+        BallSlot slot = balls[selected];
+        string petName = PetName(slot);
+
+        // 1. Hiện hình con thú + hỏi xác nhận.
+        EnsureDialogueBox();
+        yield return ShowReveal(slot.petImage, petName);
+        yield return dialogueBox.Show(speakerName, null);
+        yield return dialogueBox.TypeLine(FormatText(askText, petName), typingSpeed, false);
+        int choice = -1;
+        yield return dialogueBox.Choose(new[] { confirmText, cancelText }, result => choice = result);
+
+        if (choice != 0)
+        {
+            // Hủy (hoặc Esc): quay lại chọn bóng.
+            yield return dialogueBox.Hide();
+            yield return HideReveal();
+            lastMousePosition = Input.mousePosition;
+            state = State.Selecting;
+            yield break;
+        }
+
+        // 2. Thêm thú vào Party (Party đầy thì vào Box).
+        var granter = GetComponent<StarterPetGranter>();
+        if (granter == null) granter = gameObject.AddComponent<StarterPetGranter>();
+        if (!granter.TryGrant(slot.petPrefab, out string grantError))
+        {
+            Debug.LogWarning($"[StarterBall] Không nhận được thú: {grantError}", this);
+            yield return dialogueBox.TypeLine($"Không thể nhận {petName}: {grantError}", typingSpeed);
+            yield return dialogueBox.Hide();
+            yield return HideReveal();
+            lastMousePosition = Input.mousePosition;
+            state = State.Selecting;
+            yield break;
+        }
+        int chosen = selected;
+        onBallConfirmed?.Invoke(chosen);
+        onPetGranted?.Invoke(slot.petPrefab);
+
+        // 3. Chúc mừng.
+        yield return dialogueBox.TypeLine(FormatText(congratsText, petName), typingSpeed);
+        yield return dialogueBox.Hide();
+        yield return HideReveal();
+
+        SetSelected(-1);
+        if (hideChosenBall && slot.ball != null) slot.ball.gameObject.SetActive(false);
+        completed = disableAfterChoosing;
+
+        // 4. Về lại gameplay.
+        yield return ExitRoutine();
+    }
+
+    string PetName(BallSlot slot)
+    {
+        if (!string.IsNullOrWhiteSpace(slot.petName)) return slot.petName.Trim();
+        if (slot.petPrefab != null) return slot.petPrefab.name;
+        return slot.displayName;
+    }
+
+    string FormatText(string text, string petName)
+    {
+        string playerName = null;
+        var provider = FindFirstObjectByType<PlayerProfileRuntimeProvider>(FindObjectsInactive.Include);
+        if (provider != null) playerName = provider.GetSnapshot().DisplayName;
+        if (string.IsNullOrWhiteSpace(playerName)) playerName = "Bạn";
+        return (text ?? string.Empty).Replace("{pet}", petName).Replace("{name}", playerName);
+    }
+
+    void EnsureDialogueBox()
+    {
+        if (dialogueBox == null)
+        {
+            // Ưu tiên khung đã chỉnh tay trong DialogueCanvas để mọi cảnh trông giống nhau.
+            foreach (var candidate in FindObjectsByType<DialogueBoxUI>(FindObjectsSortMode.None))
+                if (candidate.HasManualLayout) { dialogueBox = candidate; break; }
+        }
+        if (dialogueBox == null) dialogueBox = gameObject.AddComponent<DialogueBoxUI>();
+
+        if (!dialogueBox.HasManualLayout && !dialogueBox.IsBuilt)
+        {
+            var canvasObject = new GameObject("BallTableDialogueCanvas", typeof(Canvas), typeof(CanvasScaler));
+            canvasObject.transform.SetParent(transform, false);
+            SetupCanvas(canvasObject, 1001);
+            dialogueBox.Build(canvasObject.transform);
+        }
+        else dialogueBox.Build(null);
+    }
+
+    // ---------- Hình thú hiện ra ----------
+
+    IEnumerator ShowReveal(Sprite image, string petName)
+    {
+        BuildReveal();
+        revealImage.sprite = image;
+        revealImage.enabled = image != null;
+        revealName.text = petName;
+        revealRoot.gameObject.SetActive(true);
+
+        float t = 0f;
+        const float time = 0.4f;
+        while (t < time)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / time);
+            float pop = 1f + 0.12f * Mathf.Sin(k * Mathf.PI);   // Phóng quá một chút rồi về 1.
+            revealGroup.alpha = k;
+            revealRoot.localScale = Vector3.one * Mathf.Lerp(0.6f, 1f, k) * pop;
+            yield return null;
+        }
+        revealGroup.alpha = 1f;
+        revealRoot.localScale = Vector3.one;
+    }
+
+    IEnumerator HideReveal()
+    {
+        if (revealRoot == null || !revealRoot.gameObject.activeSelf) yield break;
+        float t = 0f;
+        const float time = 0.25f;
+        while (t < time)
+        {
+            t += Time.unscaledDeltaTime;
+            revealGroup.alpha = 1f - t / time;
+            yield return null;
+        }
+        revealGroup.alpha = 0f;
+        revealRoot.gameObject.SetActive(false);
+    }
+
+    void LateUpdate()
+    {
+        // Vầng sáng sau lưng con thú xoay chậm + nhấp nháy nhẹ.
+        if (revealRoot == null || !revealRoot.gameObject.activeSelf) return;
+        revealGlow.rectTransform.localRotation = Quaternion.Euler(0f, 0f, Time.unscaledTime * 12f);
+        revealGlow.rectTransform.localScale = Vector3.one * (1f + 0.05f * Mathf.Sin(Time.unscaledTime * 3f));
+    }
+
+    void BuildReveal()
+    {
+        if (revealRoot != null) return;
+        var canvasObject = new GameObject("StarterPetRevealCanvas", typeof(Canvas), typeof(CanvasScaler));
+        canvasObject.transform.SetParent(transform, false);
+        SetupCanvas(canvasObject, 1000);
+
+        var rootObject = new GameObject("Reveal", typeof(RectTransform), typeof(CanvasGroup));
+        rootObject.transform.SetParent(canvasObject.transform, false);
+        revealRoot = (RectTransform)rootObject.transform;
+        revealRoot.anchorMin = revealRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        revealRoot.anchoredPosition = new Vector2(0f, 110f);
+        revealRoot.sizeDelta = new Vector2(600f, 600f);
+        revealGroup = rootObject.GetComponent<CanvasGroup>();
+        revealGroup.alpha = 0f;
+        revealGroup.blocksRaycasts = false;
+
+        revealGlow = NewImage(revealRoot, "Glow", new Color(1f, 0.85f, 0.4f, 0.75f), GlowSprite, new Vector2(620f, 620f), Vector2.zero);
+        revealImage = NewImage(revealRoot, "Pet", Color.white, null, new Vector2(420f, 420f), Vector2.zero);
+        revealImage.preserveAspect = true;
+
+        var nameObject = new GameObject("Name", typeof(RectTransform), typeof(Text));
+        nameObject.transform.SetParent(revealRoot, false);
+        revealName = nameObject.GetComponent<Text>();
+        revealName.font = MenuTypography.Font != null ? MenuTypography.Font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        revealName.fontSize = 48;
+        revealName.fontStyle = FontStyle.Bold;
+        revealName.alignment = TextAnchor.MiddleCenter;
+        revealName.color = new Color(1f, 0.92f, 0.6f);
+        revealName.horizontalOverflow = HorizontalWrapMode.Overflow;
+        revealName.raycastTarget = false;
+        var nameRect = revealName.rectTransform;
+        nameRect.anchorMin = nameRect.anchorMax = new Vector2(0.5f, 0.5f);
+        nameRect.sizeDelta = new Vector2(800f, 70f);
+        nameRect.anchoredPosition = new Vector2(0f, -250f);
+        var outline = nameObject.AddComponent<Outline>();
+        outline.effectColor = new Color(0.25f, 0.12f, 0.02f, 0.9f);
+        outline.effectDistance = new Vector2(3f, -3f);
+
+        revealRoot.gameObject.SetActive(false);
+    }
+
+    static Image NewImage(RectTransform parent, string objectName, Color color, Sprite sprite, Vector2 size, Vector2 position)
+    {
+        var go = new GameObject(objectName, typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(parent, false);
+        var image = go.GetComponent<Image>();
+        image.sprite = sprite;
+        image.color = color;
+        image.raycastTarget = false;
+        var rect = image.rectTransform;
+        rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = size;
+        rect.anchoredPosition = position;
+        return image;
+    }
+
+    static Canvas SetupCanvas(GameObject canvasObject, int sortingOrder)
+    {
+        var canvas = canvasObject.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = sortingOrder;
+        var scaler = canvasObject.GetComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight = 0.5f;
+        return canvas;
+    }
+
+    // Vầng sáng tròn: sáng ở giữa, mờ dần ra ngoài, có vài tia sáng.
+    static Sprite GlowSprite
+    {
+        get
+        {
+            if (glowSprite != null) return glowSprite;
+            const int size = 128;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false)
+            {
+                name = "PetRevealGlow", hideFlags = HideFlags.HideAndDontSave, wrapMode = TextureWrapMode.Clamp
+            };
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 d = new Vector2(x + 0.5f - size * 0.5f, y + 0.5f - size * 0.5f) / (size * 0.5f);
+                    float r = d.magnitude;
+                    float glow = Mathf.Pow(Mathf.Clamp01(1f - r), 2f);
+                    float rays = Mathf.Pow(Mathf.Abs(Mathf.Cos(Mathf.Atan2(d.y, d.x) * 6f)), 12f) * Mathf.Clamp01(1f - r) * 0.5f;
+                    pixels[y * size + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(glow + rays));
+                }
+            }
+            texture.SetPixels(pixels);
+            texture.Apply();
+            glowSprite = Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+            glowSprite.hideFlags = HideFlags.HideAndDontSave;
+            return glowSprite;
+        }
     }
 
     void UpdateSelectionPrompt()
     {
         if (selected < 0) { DoorPrompt.Hide(this); return; }
-        string ballName = balls[selected].displayName;
-        string hint = "<size=18><color=#FFD54A>[Enter]</color> Chọn    "
+        string ballName = PetName(balls[selected]);
+        string hint = $"<size=18><color=#FFD54A>[{interactKey}]</color> Chọn    "
             + "<color=#FFD54A>[Esc]</color> Thoát</size>";
         DoorPrompt.Show(this, BallTop(selected) + Vector3.up * 0.15f, $"<b>{ballName}</b>\n{hint}");
     }

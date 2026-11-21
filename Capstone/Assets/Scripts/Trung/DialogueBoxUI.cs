@@ -222,6 +222,7 @@ public class DialogueBoxUI : MonoBehaviour
     public void HideImmediate()
     {
         if (box == null) return;
+        if (choicePanel != null) choicePanel.gameObject.SetActive(false);
         group.alpha = 0f;
         body.text = string.Empty;
         box.anchoredPosition = basePosition;
@@ -229,7 +230,8 @@ public class DialogueBoxUI : MonoBehaviour
     }
 
     // Chạy chữ 1 câu, rồi đợi người chơi bấm Space / Enter / click để qua câu.
-    public IEnumerator TypeLine(string line, float charactersPerSecond)
+    // waitForInput = false: chạy chữ xong là trả về ngay (dùng trước khi hiện lựa chọn).
+    public IEnumerator TypeLine(string line, float charactersPerSecond, bool waitForInput = true)
     {
         if (box == null) yield break;
         line ??= string.Empty;
@@ -256,6 +258,7 @@ public class DialogueBoxUI : MonoBehaviour
         }
         body.text = line;
         yield return null;
+        if (!waitForInput) yield break;
 
         // Hạt kim cương nhún nhảy chờ bấm.
         nextMarker.gameObject.SetActive(true);
@@ -274,8 +277,123 @@ public class DialogueBoxUI : MonoBehaviour
         nextMarker.gameObject.SetActive(false);
     }
 
+    // ---------- Lựa chọn (Xác nhận / Hủy ...) ----------
+
+    RectTransform choicePanel;
+    readonly System.Collections.Generic.List<Image> choiceBackgrounds = new System.Collections.Generic.List<Image>();
+    readonly System.Collections.Generic.List<Text> choiceLabels = new System.Collections.Generic.List<Text>();
+    readonly System.Collections.Generic.List<Image> choiceMarkers = new System.Collections.Generic.List<Image>();
+
+    // Hiện các lựa chọn phía trên góc phải hộp thoại.
+    // W/S/A/D hoặc phím mũi tên / rê chuột: đổi lựa chọn. F / Enter / Space / click: chọn. Esc: hủy (trả về -1).
+    public IEnumerator Choose(string[] options, System.Action<int> onChosen, int defaultIndex = 0)
+    {
+        if (box == null || options == null || options.Length == 0) { onChosen?.Invoke(-1); yield break; }
+        BuildChoices(options);
+        int index = Mathf.Clamp(defaultIndex, 0, options.Length - 1);
+        RefreshChoices(index, 0f);
+        choicePanel.gameObject.SetActive(true);
+        yield return null;   // Phím vừa bấm để mở lựa chọn không được tính.
+
+        int result;
+        float time = 0f;
+        while (true)
+        {
+            time += Time.unscaledDeltaTime;
+            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)
+                || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+                index = (index - 1 + options.Length) % options.Length;
+            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)
+                || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+                index = (index + 1) % options.Length;
+
+            int hovered = -1;
+            for (int i = 0; i < options.Length; i++)
+                if (RectTransformUtility.RectangleContainsScreenPoint(choiceBackgrounds[i].rectTransform, Input.mousePosition, null))
+                    hovered = i;
+            if (hovered >= 0) index = hovered;
+
+            if (Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
+                || Input.GetKeyDown(KeyCode.Space) || (Input.GetMouseButtonDown(0) && hovered >= 0)) { result = index; break; }
+            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace)) { result = -1; break; }
+
+            RefreshChoices(index, time);
+            yield return null;
+        }
+
+        choicePanel.gameObject.SetActive(false);
+        onChosen?.Invoke(result);
+    }
+
+    void BuildChoices(string[] options)
+    {
+        if (choicePanel == null)
+        {
+            var panelObject = new GameObject("Choices", typeof(RectTransform), typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            panelObject.transform.SetParent(box, false);
+            choicePanel = (RectTransform)panelObject.transform;
+            choicePanel.anchorMin = choicePanel.anchorMax = new Vector2(1f, 1f);
+            choicePanel.pivot = new Vector2(1f, 0f);
+            choicePanel.anchoredPosition = new Vector2(-24f, 16f);
+            var layout = panelObject.GetComponent<VerticalLayoutGroup>();
+            layout.spacing = 8f;
+            layout.childControlWidth = layout.childControlHeight = true;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
+            var fitter = panelObject.GetComponent<ContentSizeFitter>();
+            fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
+
+        Font font = nameText != null ? nameText.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        while (choiceBackgrounds.Count < options.Length)
+        {
+            var row = NewImage(choicePanel, "Choice", fillColor, RoundedSprite);
+            row.type = Image.Type.Sliced;
+            row.pixelsPerUnitMultiplier = SpriteCorner / 12f;
+            var element = row.gameObject.AddComponent<LayoutElement>();
+            element.preferredWidth = 300f;
+            element.preferredHeight = 58f;
+            var outline = row.gameObject.AddComponent<Outline>();
+            outline.effectColor = borderColor;
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            var label = NewText(row.rectTransform, "Label", font, bodyFontSize, TextAnchor.MiddleLeft, bodyTextColor);
+            Stretch(label.rectTransform, 0f);
+            label.rectTransform.offsetMin = new Vector2(52f, 0f);
+            label.fontStyle = FontStyle.Bold;
+
+            var marker = AddDiamond(row.rectTransform, new Vector2(0f, 0.5f), new Vector2(28f, 0f), 14f, accentColor);
+            choiceBackgrounds.Add(row);
+            choiceLabels.Add(label);
+            choiceMarkers.Add(marker);
+        }
+
+        for (int i = 0; i < choiceBackgrounds.Count; i++)
+        {
+            bool used = i < options.Length;
+            choiceBackgrounds[i].gameObject.SetActive(used);
+            if (used) choiceLabels[i].text = options[i];
+        }
+        choicePanel.SetAsLastSibling();
+    }
+
+    void RefreshChoices(int selectedIndex, float time)
+    {
+        for (int i = 0; i < choiceBackgrounds.Count; i++)
+        {
+            if (!choiceBackgrounds[i].gameObject.activeSelf) continue;
+            bool selected = i == selectedIndex;
+            choiceBackgrounds[i].color = selected ? accentColor : fillColor;
+            choiceLabels[i].color = selected ? nameTextColor : bodyTextColor;
+            choiceMarkers[i].enabled = selected;
+            if (selected)
+                choiceMarkers[i].rectTransform.anchoredPosition = new Vector2(28f + Mathf.Sin(time * 8f) * 3f, 0f);
+        }
+    }
+
     public static bool AdvancePressed() =>
-        Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)
+        Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)
         || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetMouseButtonDown(0);
 
     // ---------- Dựng UI ----------
