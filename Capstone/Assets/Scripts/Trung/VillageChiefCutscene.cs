@@ -47,6 +47,8 @@ public class VillageChiefCutscene : MonoBehaviour
     [SerializeField] bool returnHomeAfterTalk = true;
     [Tooltip("Ẩn NPC tới khi cutscene bắt đầu. NPC xuất hiện ở điểm ĐẦU của Approach Path (nên đặt ngoài khung hình)")]
     [SerializeField] bool hideNpcUntilCutscene = true;
+    [Tooltip("Bật = trước cutscene NPC vẫn đứng trong nhà (chỗ bạn đặt Prefab). Tới cutscene thì NPC được đưa tới NpcPath1 rồi đi tới Player, xong lại về nhà")]
+    [SerializeField] bool npcStaysHomeBeforeCutscene = true;
     [Tooltip("Camera lia lên xong, đợi bao lâu (giây) rồi trưởng làng mới xuất hiện")]
     [SerializeField, Min(0f)] float npcAppearDelay = 0.5f;
     [Tooltip("Chỗ NPC đứng sau cutscene (trong nhà trưởng làng). Camera lia về Player thì NPC đã ở sẵn đây")]
@@ -114,6 +116,9 @@ public class VillageChiefCutscene : MonoBehaviour
     Vector3 npcHomePosition;
     Quaternion npcHomeRotation;
     Behaviour npcAgent;
+    Rigidbody npcBody;
+    bool npcBodyWasKinematic;
+    readonly List<MonoBehaviour> disabledNpcScripts = new List<MonoBehaviour>();
     Transform cameraTarget;     // Camera xoay theo object này (null = đứng yên).
     Canvas fadeCanvas;
     Image fadeImage;
@@ -146,7 +151,7 @@ public class VillageChiefCutscene : MonoBehaviour
         npcWalkHash = string.IsNullOrEmpty(npcWalkState) ? 0 : Animator.StringToHash(npcWalkState);
 
         // Chưa tới cutscene thì không cho thấy trưởng làng.
-        if (npc != null && hideNpcUntilCutscene) npc.gameObject.SetActive(false);
+        if (npc != null && hideNpcUntilCutscene && !npcStaysHomeBeforeCutscene) npc.gameObject.SetActive(false);
     }
 
     void OnTriggerEnter(Collider other)
@@ -377,16 +382,22 @@ public class VillageChiefCutscene : MonoBehaviour
     {
         if (!hideNpcUntilCutscene) { npc.gameObject.SetActive(true); return; }
 
-        Transform first = approachPath.Count > 0 ? approachPath[0] : null;
+        int firstIndex = approachPath.FindIndex(point => point != null);
+        Transform first = firstIndex >= 0 ? approachPath[firstIndex] : null;
         if (first != null)
         {
-            Vector3 lookAt = approachPath.Count > 1 && approachPath[1] != null ? approachPath[1].position
-                : (player != null ? player.position : first.position + first.forward);
+            Transform next = null;
+            for (int i = firstIndex + 1; i < approachPath.Count && next == null; i++) next = approachPath[i];
+            Vector3 lookAt = next != null ? next.position : (player != null ? player.position : first.position + first.forward);
             Vector3 direction = lookAt - first.position;
             direction.y = 0f;
-            npc.SetPositionAndRotation(first.position,
-                direction.sqrMagnitude > 0.001f ? Quaternion.LookRotation(direction.normalized) : first.rotation);
+            Vector3 spawn = first.position;
+            if (snapNpcToGround) spawn.y = GroundHeight(spawn, spawn.y);
+            npc.gameObject.SetActive(true);
+            TeleportNpc(spawn, direction.sqrMagnitude > 0.001f ? Quaternion.LookRotation(direction.normalized) : first.rotation);
+            Debug.Log($"[ChiefCutscene] Trưởng làng xuất hiện ở {first.name} {spawn}", this);
         }
+        else Debug.LogWarning($"{name}: Approach Path chưa có điểm nào -> trưởng làng đi từ chỗ đang đứng.", this);
         npc.gameObject.SetActive(true);
         npcCurrentStateHash = 0;
         SetNpcWalking(false);
@@ -403,12 +414,30 @@ public class VillageChiefCutscene : MonoBehaviour
                 + "trưởng làng sẽ hiện ra đột ngột. Kéo điểm này ra ngoài khung hình (khuất sau nhà / ngoài mép màn hình).", approachPath[0]);
     }
 
+    // Dịch chuyển tức thời. CharacterController / Rigidbody trên NPC sẽ kéo NPC về chỗ cũ nếu chỉ đổi transform.
+    void TeleportNpc(Vector3 position, Quaternion rotation)
+    {
+        var controller = npc.GetComponent<CharacterController>();
+        bool controllerWasEnabled = controller != null && controller.enabled;
+        if (controller != null) controller.enabled = false;
+        var body = npc.GetComponent<Rigidbody>();
+        if (body != null)
+        {
+            body.position = position;
+            body.rotation = rotation;
+            if (!body.isKinematic) { body.linearVelocity = Vector3.zero; body.angularVelocity = Vector3.zero; }
+        }
+        npc.SetPositionAndRotation(position, rotation);
+        if (controller != null) controller.enabled = controllerWasEnabled;
+        Physics.SyncTransforms();
+    }
+
     // Sau cutscene: NPC đứng sẵn trong nhà trưởng làng, đứng yên (Idle).
     void PlaceNpcAtFinal()
     {
-        if (npcFinalPoint != null) npc.SetPositionAndRotation(npcFinalPoint.position, npcFinalPoint.rotation);
-        else if (hideNpcUntilCutscene) npc.SetPositionAndRotation(npcHomePosition, npcHomeRotation);
         npc.gameObject.SetActive(true);
+        if (npcFinalPoint != null) TeleportNpc(npcFinalPoint.position, npcFinalPoint.rotation);
+        else if (hideNpcUntilCutscene) TeleportNpc(npcHomePosition, npcHomeRotation);
         SetNpcWalking(false);
         if (npcAnimator != null) npcAnimator.applyRootMotion = npcRootMotion;
         RestoreNpcAgent();
@@ -497,12 +526,35 @@ public class VillageChiefCutscene : MonoBehaviour
         npcAgent = npc.GetComponent("NavMeshAgent") as Behaviour;
         if (npcAgent != null && npcAgent.enabled) npcAgent.enabled = false;
         else npcAgent = null;
+
+        // Rigidbody không kinematic sẽ kéo NPC theo vật lý -> tạm cho kinematic.
+        npcBody = npc.GetComponent<Rigidbody>();
+        npcBodyWasKinematic = npcBody != null && npcBody.isKinematic;
+        if (npcBody != null) npcBody.isKinematic = true;
+
+        // Script tự đi lại của NPC (đi tuần, wander...) sẽ kéo NPC đi chỗ khác -> tắt tạm.
+        disabledNpcScripts.Clear();
+        foreach (var script in npc.GetComponentsInChildren<MonoBehaviour>())
+        {
+            if (script == null || !script.enabled || script == this) continue;
+            string typeName = script.GetType().Name;
+            if (typeName.Contains("Wander") || typeName.Contains("Patrol") || typeName.Contains("AI")
+                || typeName.Contains("Movement") || typeName.Contains("Move") || typeName.Contains("Follow"))
+            {
+                script.enabled = false;
+                disabledNpcScripts.Add(script);
+            }
+        }
     }
 
     void RestoreNpcAgent()
     {
         if (npcAgent != null) npcAgent.enabled = true;
         npcAgent = null;
+        if (npcBody != null) npcBody.isKinematic = npcBodyWasKinematic;
+        npcBody = null;
+        foreach (var script in disabledNpcScripts) if (script != null) script.enabled = true;
+        disabledNpcScripts.Clear();
     }
 
     // ---------- Player ----------
@@ -782,7 +834,8 @@ public class VillageChiefCutscene : MonoBehaviour
         }
 
         Gizmos.color = Color.yellow;
-        Vector3? previous = npc != null ? npc.position : (Vector3?)null;
+        // NPC được đưa thẳng tới điểm đầu -> không vẽ đường từ chỗ NPC đứng tới đó.
+        Vector3? previous = npc != null && !hideNpcUntilCutscene ? npc.position : (Vector3?)null;
         foreach (Transform point in approachPath)
         {
             if (point == null) continue;
