@@ -57,15 +57,15 @@ namespace Capstone.Game.Elements
             try
             {
                 var asset = Resources.Load<ElementMatchupTable>("Combat/ElementMatchups");
-                Check(asset != null && asset.Lookup.IsValid && asset.rows.Count == 9, "one valid authored nine-row matchup table");
+                Check(asset != null && asset.Lookup.IsValid && asset.rows.Count == ElementCatalog.Count, "one valid authored eight-row matchup table");
                 var table = asset.Lookup;
                 float[,] expected = {
-                    {1,.5f,2,1,1,1,1,2,.5f}, {2,1,.5f,1,1,1,1,1,1}, {.5f,2,1,1,1,.5f,1,1,1},
-                    {1,2,.5f,1,1,2,1,1,1}, {1,1,1,1,1,.5f,2,2,1}, {1,1,2,.5f,2,1,1,.5f,1},
-                    {1,1,1,1,1,1,1,1,1}, {.5f,1,1,1,.5f,2,1,1,1}, {1,1,1,1,1,1,1,1,2}
+                    {1,.5f,2,1,1,1,2,.5f}, {2,1,.5f,1,1,1,1,1}, {.5f,2,1,1,.5f,1,1,1},
+                    {1,2,.5f,1,2,1,1,1}, {1,1,2,.5f,1,1,.5f,1}, {1,1,1,1,1,1,1,1},
+                    {.5f,1,1,1,2,1,1,1}, {1,1,1,1,1,1,1,2}
                 };
-                for (int row = 0; row < 9; row++)
-                    for (int col = 0; col < 9; col++)
+                for (int row = 0; row < ElementCatalog.Count; row++)
+                    for (int col = 0; col < ElementCatalog.Count; col++)
                         Check(table.Against(ElementCatalog.Entries[row].Element, ElementCatalog.Entries[col].Element) == expected[row, col], "matrix " + row + "/" + col);
                 Check(ElementDamageMath.Effectiveness(table, PetElement.Fire, PetElement.Nature, PetElement.Dark) == 4, "dual weakness x4");
                 Check(ElementDamageMath.Effectiveness(table, PetElement.Fire, PetElement.Water, PetElement.Dragon) == .25f, "dual resistance x0.25");
@@ -303,7 +303,7 @@ namespace Capstone.Game.Elements
                             "real wind volley reports emission count and keeps raw damage budget");
                     }
                 }
-                check(stats.MaxEnergy == 0 && stats.Energy == 0 && stats.GetSkills().All(s => s.manaCost == 0), "MP retirement remains intact");
+                check(stats.MaxEnergy == 100 && stats.Energy >= 0 && stats.Energy <= stats.MaxEnergy, "Mana stays within the available pool");
                 Write("element-skill-impact-results.csv", "skill,cast,emission,element,sourcePrimary,sourceSecondary,kind,raw,hpLost,critical,dot\n" + string.Join("\n", events.Select(e => string.Join(",", e.Hit.SkillId,e.Hit.CastId,e.Hit.EmissionIndex,e.Hit.Elements.Attack,e.Hit.Elements.SourcePrimary,e.Hit.Elements.SourceSecondary,e.Hit.Kind,e.Hit.RawDamage.ToString(System.Globalization.CultureInfo.InvariantCulture),e.HpLost.ToString(System.Globalization.CultureInfo.InvariantCulture),e.Hit.Critical,e.Hit.DamageOverTime))));
                 await UiBindings(check, gap);
             }
@@ -322,11 +322,11 @@ namespace Capstone.Game.Elements
                 check(docs.Any(d => d.rootVisualElement?.Q("pets-panel") != null), "real Pet document present " + width);
                 menu.OpenBoxDirect(); await gap(180);
                 var box = docs.Select(d => d.rootVisualElement?.Q("box-filter-panel")).FirstOrDefault(r => r != null);
-                check(box != null && box.Query<Button>(className: "box-filter-chip").ToList().Count == 10, "BOX retains all plus nine existing filter slots " + width);
+                check(box != null && box.Query<Button>(className: "box-filter-chip").ToList().Count(button => button.style.display.value != DisplayStyle.None) == ElementCatalog.Count + 1, "BOX shows all plus active element filters " + width);
                 await EnemyAiVerification.ResolutionForElements(width, height, "box");
                 menu.OpenCodexDirect(); await gap(180);
                 var codex = docs.Select(d => d.rootVisualElement?.Q("codex-panel")).FirstOrDefault(r => r != null);
-                check(codex != null && codex.Query<Button>(className: "codex-category").ToList().Count == 10, "Codex all plus nine catalog types " + width);
+                check(codex != null && codex.Query<Button>(className: "codex-category").ToList().Count == ElementCatalog.Count + 1, "Codex all plus active element filters " + width);
                 await EnemyAiVerification.ResolutionForElements(width, height, "codex");
                 menu.HandleShortcut(KeyCode.Escape); await gap(150);
                 check(!GameplayPause.IsPaused, "Back restores gameplay gate " + width);

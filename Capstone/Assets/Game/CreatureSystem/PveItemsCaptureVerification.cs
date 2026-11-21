@@ -114,7 +114,7 @@ namespace Capstone.Game.CreatureSystem {
                 var go=Spawn("Assets/Game/CreatureSystem/Runtime/Dragons/OwnedPet/OwnedPet_Dragon"+form.ToString("00")+".prefab",player.transform.position+player.transform.forward*(2+form),created);
                 var pet=go.GetComponent<PetController>();pet.owner=player.transform;pet.roamAroundOwner=false;
                 var stats=go.GetComponent<PetHudRuntimeStats>();stats.SetIdentity(stats.DisplayName,5,stats.Icon);stats.SetStatus(stats.MaxHealth,stats.MaxHealth,0,0);
-                Check(stats.GetSkills().All(s=>s.manaCost==0)&&stats.MaxEnergy==0,"form "+form+" has cooldown-only skills");
+                Check(stats.MaxEnergy==100&&stats.Energy==100,"form "+form+" initializes a full mana pool");
                 Check(pet.TrySummonAt(go.transform.position,player.transform.forward),"form "+form+" real summon placement");
                 for(int i=0;i<35&&!pet.CanReceiveCommands;i++)await Gap();
                 Check(pet.CanReceiveCommands,"form "+form+" ready after spawn animation");

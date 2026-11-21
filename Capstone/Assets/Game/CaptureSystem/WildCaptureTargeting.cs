@@ -7,10 +7,17 @@ namespace Capstone.Game.CaptureSystem {
         public static WildPetCaptureTarget Find(PetCommandInput player,BasicCameraFollow camera){
             if(player==null)return null;
             // Chon ro rang se giu nguyen ca the, ke ca khi tam thoi ngoai tam/bi che.
+            if(camera!=null&&camera.TryGetLockedEnemy(out var locked))return Valid(locked,player);
             if(player.SelectedEnemy!=null)return Valid(player.SelectedEnemy,player);
-            if(camera!=null&&camera.TryGetLockedEnemy(out var locked)){var target=Valid(locked,player);if(target!=null)return target;}
             float nearest=float.PositiveInfinity;WildPetCaptureTarget best=null;
-            foreach(var enemy in DummyEnemy.ActiveEnemies){var target=Valid(enemy,player);if(target==null)continue;float d=(enemy.transform.position-player.transform.position).sqrMagnitude;if(d<nearest){nearest=d;best=target;}}
+            var view=player.commandCamera!=null?player.commandCamera:Camera.main;
+            if(view==null)return null;
+            foreach(var enemy in DummyEnemy.ActiveEnemies){
+                var target=Valid(enemy,player);if(target==null)continue;
+                var point=view.WorldToViewportPoint(enemy.TargetPosition);
+                float d=new Vector2((point.x-.5f)*view.aspect,point.y-.5f).sqrMagnitude;
+                if(d<nearest){nearest=d;best=target;}
+            }
             return best;
         }
         static WildPetCaptureTarget Valid(DummyEnemy enemy,PetCommandInput player){

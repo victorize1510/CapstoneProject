@@ -16,7 +16,7 @@ MonoBehaviour:
   legacyIds: []
   displayName: "Tr\u1ECDng k\u00EDch"
   description: "\u0110\u00E1nh m\u1ED9t m\u1EE5c ti\u00EAu \u1EDF c\u1EF1 ly g\u1EA7n."
-  element: 11
+  element: 13
   icon: {fileID: 0}
   cooldownSeconds: 5.2
   animationDuration: 1

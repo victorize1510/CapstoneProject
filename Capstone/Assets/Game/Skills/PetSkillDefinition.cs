@@ -18,7 +18,7 @@ namespace Capstone.Game.Skills
         public Sprite icon;
         [Min(0)]
         public float cooldownSeconds;
-        [Min(0), Tooltip("Du lieu MP cu de tuong thich. Runtime da retire MP va bo qua gia tri nay.")]
+        [Min(0), Tooltip("Mana dung khi tung chieu. Chi co combat va gia tri 0 dung mac dinh 10.")]
         public float manaCost;
         [Range(0, 100)]
         public float criticalRateBonus;
@@ -39,7 +39,8 @@ namespace Capstone.Game.Skills
         public PetSkillCombatProfile combat;
         [Header("Mo ta UI tuy chon - khong sinh co che combat")]
         public SkillUiMetadata uiMetadata = new SkillUiMetadata();
+        public float ManaCost => manaCost > 0f ? manaCost : combat != null ? 10f : 0f;
         public string Id => (skillId ?? string.Empty).Trim();
-        public SkillHudData CreateHudData(int requiredLevel = 1, bool unlocked = true) => new SkillHudData{skillId = Id, legacySkillIds = legacyIds, displayName = displayName, description = description, element = Capstone.Game.Elements.SkillElementAssignments.Resolve(Id, element), icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds), manaCost = 0, uiMetadata = uiMetadata, criticalRateBonus = criticalRateBonus, criticalDamageBonus = criticalDamageBonus, animatorStates = animatorStates, animationDuration = animationDuration, animationFade = animationFade, windupSeconds = windupSeconds, recoverySeconds = recoverySeconds, requiredPetLevel = Mathf.Max(1, requiredLevel), skillLevel = 1, unlocked = unlocked, usable = true};
+        public SkillHudData CreateHudData(int requiredLevel = 1, bool unlocked = true) => new SkillHudData{skillId = Id, legacySkillIds = legacyIds, displayName = displayName, description = description, element = Capstone.Game.Elements.SkillElementAssignments.Resolve(Id, element), icon = icon, cooldownSeconds = Mathf.Max(0, cooldownSeconds), manaCost = ManaCost, uiMetadata = uiMetadata, criticalRateBonus = criticalRateBonus, criticalDamageBonus = criticalDamageBonus, animatorStates = animatorStates, animationDuration = animationDuration, animationFade = animationFade, windupSeconds = windupSeconds, recoverySeconds = recoverySeconds, requiredPetLevel = Mathf.Max(1, requiredLevel), skillLevel = 1, unlocked = unlocked, usable = true};
     }
 }

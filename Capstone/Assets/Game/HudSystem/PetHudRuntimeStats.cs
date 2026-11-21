@@ -8,6 +8,7 @@ namespace Capstone.Game.HudSystem {
     [DisallowMultipleComponent]
     public sealed class PetHudRuntimeStats : MonoBehaviour, IPetHudDataSource, IPetSkillRequestReceiver, IPetSkillLoadoutDataSource {
         const float PrototypeBaseHealth = 100f;
+        const float DefaultMana = 100f;
 
         [Header("Dinh danh")]
         [SerializeField] string displayName = string.Empty;
@@ -79,9 +80,17 @@ namespace Capstone.Game.HudSystem {
         public float Energy => maxEnergy > 0f ? Mathf.Clamp(energy, 0f, maxEnergy) : 0f;
         public float MaxEnergy => Mathf.Max(0f, maxEnergy);
         public string LastSkillRejection { get; private set; }
-        void RetireLegacyMana() {
-            // Giu truong serialize cu de doc; combat realtime dung cooldown thay MP.
-            energy = maxEnergy = 0;
+        void InitializeMana() {
+            if (maxEnergy > 0f) return;
+            energy = maxEnergy = DefaultMana;
+        }
+        internal bool SpendMana(float cost) {
+            if (cost <= 0f) return true;
+            if (Energy < cost) { LastSkillRejection = "Không đủ mana."; return false; }
+            energy -= cost;
+            HudDataChanged?.Invoke();
+            PersistentDataChanged?.Invoke();
+            return true;
         }
         public Sprite Icon {
             get {
@@ -125,7 +134,7 @@ namespace Capstone.Game.HudSystem {
             }
             EnsureSkillList();
             EnsureLearnedSkillList();
-            RetireLegacyMana();
+            InitializeMana();
             if (speciesSkillSet != null && GetComponent<PetSkillPresentationPlayer>() == null)
                 gameObject.AddComponent<PetSkillPresentationPlayer>();
             GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
@@ -181,7 +190,7 @@ namespace Capstone.Game.HudSystem {
                     skill.cooldownPercent = 0f;
                 }
 
-                skill.manaCost = 0;
+                skill.usable &= Energy >= skill.manaCost;
                 runtimeSkills.Add(skill);
             }
 
@@ -291,9 +300,12 @@ namespace Capstone.Game.HudSystem {
 
         public void SetStatus(float nextHealth, float nextMaxHealth, float nextEnergy, float nextMaxEnergy) {
             maxHealth = Mathf.Max(0f, nextMaxHealth);
-            maxEnergy = 0f;
             health = maxHealth > 0f ? Mathf.Clamp(nextHealth, 0f, maxHealth) : 0f;
-            energy = 0f;
+            InitializeMana();
+            if (nextMaxEnergy > 0f) {
+                maxEnergy = nextMaxEnergy;
+                energy = Mathf.Clamp(nextEnergy, 0f, maxEnergy);
+            }
             HudDataChanged?.Invoke();
             PersistentDataChanged?.Invoke();
         }
@@ -377,7 +389,7 @@ namespace Capstone.Game.HudSystem {
             GetComponentInParent<PetCollectionMetadata>(true)?.SyncRuntimeHealth(this);
             maxEnergy = Mathf.Max(0f, saveData.maxEnergy);
             energy = maxEnergy > 0f ? Mathf.Clamp(saveData.energy, 0f, maxEnergy) : 0f;
-            RetireLegacyMana();
+            InitializeMana();
             equippedSkillSlotCount = Mathf.Clamp(saveData.equippedSkillSlotCount, 2, 4);
 
             EnsureSkillList(false);
@@ -449,7 +461,7 @@ namespace Capstone.Game.HudSystem {
             // khi ky nang chung da cau hinh duoc dung lan dau.
             if (combatProfile != null && execution == null && Application.isPlaying) execution = gameObject.AddComponent<PetSkillCombatExecutor>();
             if (combatProfile != null && (execution == null || !execution.Prepare(ResolveSkillId(skill), combatProfile))) return;
-            if (!skill.unlocked || !skill.usable || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
+            if (!skill.unlocked || !skill.usable || Energy < skill.manaCost || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
             // Dong bo moc animation/release voi cung ke hoach lui da duoc chap nhan.
             if (execution != null) skill.windupSeconds += execution.PreparedRetreatSeconds;
             if (animationDriver != null && animationDriver.Profile != null) {
@@ -489,6 +501,7 @@ namespace Capstone.Game.HudSystem {
             skill = skills[index];
             LastSkillRejection = "";
             if (!skill.unlocked || !skill.usable) return false;
+            if (Energy < skill.manaCost) { LastSkillRejection = "Không đủ mana."; return false; }
             if (animationDriver != null && animationDriver.Profile != null && !animationDriver.TryGetSkillStates(ResolveSkillId(skill), out skill.animatorStates)) return false;
             if (animator == null || skill.animatorStates == null) return false;
             bool valid = false;

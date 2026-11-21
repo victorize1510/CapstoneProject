@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4846f64c3a484bc4bc43b6e5f579ccc5, type: 3}
+  m_Name: SpawnTable_SunBlossom_Morning
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureSpawnTable
+  ownedPetCatalog: {fileID: 11400000, guid: 0c4a7b5965529b040b47d1f2f21c207a, type: 2}
+  excludedDefinitionIds: []
+  species:
+  - enabled: 1
+    definitionId: sun-blossom
+    weight: 1
+    minimumLevel: 0
+    maximumLevel: 40
+    spawnFromHour: 6
+    spawnUntilHour: 10
+    forms:
+    - enabled: 1
+      formId: 01
+      prefab: {fileID: 3303902416035471862, guid: c71c9c7ae806805a76f5429edf4cfd21, type: 3}
+      weight: 100
+      minimumZoneLevel: 1
+      configurationBlocker: 

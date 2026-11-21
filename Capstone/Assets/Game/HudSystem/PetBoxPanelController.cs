@@ -510,10 +510,17 @@ namespace Capstone.Game.HudSystem {
             RegisterButton(moveButton, MoveSelectedPetToBox);
             RegisterButton(detailsButton, RequestDetails);
             RegisterButton(allFilterButton, SelectAllElements);
-            // Giu query ID va khung cu; gan chin vi tri theo catalog chung.
+            // Reuse the authored slots and hide any slot outside the current catalog.
             string[] filterIds = { "box-filter-nature", "box-filter-fire", "box-filter-water", "box-filter-wind", "box-filter-earth", "box-filter-electric", "box-filter-ice", "box-filter-light", "box-filter-dark" };
             elementButtons.Clear();
-            for (int i = 0; i < filterIds.Length; i++) RegisterElementButton(filterIds[i], Capstone.Game.Elements.ElementCatalog.Entries[i].Element);
+            var elements = Capstone.Game.Elements.ElementCatalog.Entries;
+            for (int i = 0; i < filterIds.Length; i++) {
+                if (i < elements.Count) RegisterElementButton(filterIds[i], elements[i].Element);
+                else {
+                    var unused = document.rootVisualElement.Q<Button>(filterIds[i]);
+                    if (unused != null) unused.style.display = DisplayStyle.None;
+                }
+            }
             BuildSortOptions();
             searchField?.RegisterValueChangedCallback(HandleSearchChanged);
             controlsRegistered = true;

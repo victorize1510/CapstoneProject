@@ -23,7 +23,7 @@ namespace Capstone.Game.Elements
                 return PetElement.Flying;
             }
 
-            return stored;
+            return stored == PetElement.Fighting ? PetElement.Normal : stored;
         }
     }
 }

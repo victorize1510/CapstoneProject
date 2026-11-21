@@ -18,6 +18,9 @@ namespace Capstone.Game.Skills
             public CreatureCombatTarget target;
             public PetSkillCombatProfile profile;
             public Vector3 position, direction;
+            public Vector3 impactPoint;
+            public bool aimedAtTarget;
+            public float manaCost;
             public float expires, remaining;
             public bool released;
             public GameObject visual;
@@ -76,7 +79,8 @@ namespace Capstone.Game.Skills
             if(Valid(current))return current;
             return profile.autoAcquireTarget?Nearest(profile,combat.Center,transform.forward,false):default;
         }
-        public Vector3 AimDirection => LastCombatTarget.Alive ? LastCombatTarget.Center - transform.position : castFacing;
+        public Vector3 AimDirection => trackCastTarget && LastCombatTarget.Alive ? LastCombatTarget.Center - transform.position : castFacing;
+        bool trackCastTarget;
         Vector3 castFacing;
         void OnEnable()
         {
@@ -201,6 +205,12 @@ namespace Capstone.Game.Skills
             facing.y = 0;
             castFacing = facing.sqrMagnitude > .001f ? facing.normalized : transform.forward;
             LastCombatTarget = preparedTarget;
+            trackCastTarget = preparedProfile.trackTargetUntilRelease;
+            Vector3 impactPoint = preparedTarget.Exists ? preparedTarget.Center : combat.Center + castFacing * preparedProfile.range;
+            Vector3 origin = presentation.SocketPosition(preparedProfile.releaseSocket);
+            Vector3 launch = preparedTarget.Exists ? impactPoint - origin : castFacing;
+            if (launch.sqrMagnitude < .001f) launch = castFacing;
+            float cost = stats.SpeciesSkillSet != null && stats.SpeciesSkillSet.TryGet(id, out var entry) ? entry.skill.ManaCost : 0f;
             retreatDirection = -castFacing;
             retreatDirection.y = 0;
             retreatDirection.Normalize();
@@ -230,7 +240,7 @@ namespace Capstone.Game.Skills
                     Remove(0);
                 }
 
-                shots.Add(new Shot{token = token, emission = emission, emissionCount = count, id = id, target = preparedTarget, profile = preparedProfile, elements = elements, direction = preparedDirection, damage = new CombatOffenseRoll(rolled.RawDamage / count, rolled.Critical), bleed = preparedProfile.bleedPower > 0 ? combat.NonCriticalOffense(CreatureDamageKind.Physical, preparedProfile.bleedPower) : 0, expires = Time.time + 10});
+                shots.Add(new Shot{token = token, emission = emission, emissionCount = count, id = id, target = preparedTarget, profile = preparedProfile, elements = elements, direction = launch.normalized, impactPoint = impactPoint, aimedAtTarget = preparedTarget.Exists, manaCost = cost, damage = new CombatOffenseRoll(rolled.RawDamage / count, rolled.Critical), bleed = preparedProfile.bleedPower > 0 ? combat.NonCriticalOffense(CreatureDamageKind.Physical, preparedProfile.bleedPower) : 0, expires = Time.time + 10});
             }
 
             preparedProfile = null;
@@ -246,6 +256,10 @@ namespace Capstone.Game.Skills
                 if (shot.token == token && shot.emission == emission && !shot.released)
                 {
                     shot.released = true;
+                    if (emission == 0 && !stats.SpendMana(shot.manaCost)) {
+                        foreach (var pending in shots) if (pending.token == token) { pending.released = true; pending.expires = 0; }
+                        return;
+                    }
                     if (shot.profile.delivery == PetSkillDelivery.SelfBuff)
                     {
                         if (presentation.NotifyImpact(token, combat.Center, Vector3.up))
@@ -259,11 +273,24 @@ namespace Capstone.Game.Skills
                     }
 
                     Vector3 start = presentation.SocketPosition(shot.profile.releaseSocket);
-                    shot.direction = transform.forward;
+                    if (shot.profile.delivery == PetSkillDelivery.Targeted) {
+                        var point = shot.profile.trackTargetUntilRelease && shot.target.Alive ? shot.target.Center : shot.impactPoint;
+                        float radius = Mathf.Max(.1f, shot.profile.targetedImpactRadius);
+                        if (InReach(shot.target, shot.profile, combat.Center)
+                            && (shot.target.ClosestPoint(point) - point).sqrMagnitude <= radius * radius)
+                            Hit(shot, shot.target, point, Vector3.up);
+                        else {
+                            presentation.NotifyImpact(token, emission, point, Vector3.up);
+                            ShowDodgeIfMoved(shot, radius);
+                        }
+                        shot.expires = 0;
+                        return;
+                    }
                     if (shot.profile.delivery != PetSkillDelivery.Projectile)
                     {
-                        bool aimed = InReach(shot.target, shot.profile, combat.Center) && (shot.profile.delivery == PetSkillDelivery.Targeted || InArc(shot.target, combat.Center, shot.direction, shot.profile.meleeHalfAngle));
-                        var victim = aimed ? shot.target : Nearest(shot.profile, combat.Center, shot.direction, true);
+                        Vector3 facing = AimDirection;
+                        bool aimed = InReach(shot.target, shot.profile, combat.Center) && InArc(shot.target, combat.Center, facing, shot.profile.meleeHalfAngle);
+                        var victim = aimed ? shot.target : Nearest(shot.profile, combat.Center, facing, true);
                         if (victim.Exists)
                         {
                             Hit(shot, victim, victim.ClosestPoint(start), -shot.direction);
@@ -271,15 +298,20 @@ namespace Capstone.Game.Skills
                         else
                         {
                             LastRejection = "Không có mục tiêu trong vùng đánh: " + LastTargetMode;
+                            ShowDodgeIfMoved(shot, .75f);
                         }
 
                         shot.expires = 0;
                         return;
                     }
 
-                    if (InReach(shot.target, shot.profile, start))
+                    if (shot.profile.trackTargetUntilRelease && InReach(shot.target, shot.profile, start))
                     {
                         shot.direction = (shot.target.Center - start).normalized;
+                    }
+                    else if (shot.aimedAtTarget && !shot.profile.trackTargetUntilRelease && (shot.impactPoint - start).sqrMagnitude > .001f)
+                    {
+                        shot.direction = (shot.impactPoint - start).normalized;
                     }
 
                     shot.position = start;
@@ -304,6 +336,12 @@ namespace Capstone.Game.Skills
                     return;
                 }
             }
+        }
+
+        void ShowDodgeIfMoved(Shot shot, float radius) {
+            if (!shot.profile.trackTargetUntilRelease && shot.aimedAtTarget && shot.target.Alive
+                && (shot.target.Center - shot.impactPoint).sqrMagnitude > radius * radius)
+                FloatingCombatText.ShowDodge(shot.target.Center);
         }
 
         void Update()
@@ -396,6 +434,7 @@ namespace Capstone.Game.Skills
 
                 if (shot.remaining <= .001f)
                 {
+                    if (shot.emissionCount == 1) ShowDodgeIfMoved(shot, Mathf.Max(.75f, shot.profile.projectileRadius));
                     Remove(i);
                 }
             }

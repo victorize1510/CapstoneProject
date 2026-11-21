@@ -22,23 +22,25 @@ MonoBehaviour:
     definitionId: chick
     weight: 1
     minimumLevel: 2
-    maximumLevel: 6
+    maximumLevel: 40
+    spawnFromHour: 0
+    spawnUntilHour: 0
     forms:
     - enabled: 1
-      formId: "01"
+      formId: 01
       prefab: {fileID: 3303902416035471862, guid: 5b761b0745dfe3b0aca7991f0959db3b, type: 3}
       weight: 100
       minimumZoneLevel: 1
-      configurationBlocker: ""
+      configurationBlocker: 
     - enabled: 0
-      formId: "02"
+      formId: 02
       prefab: {fileID: 3303902416035471862, guid: 7c9a65f6b029bd25fa2b95689e629ea2, type: 3}
-      weight: 0
+      weight: 100
       minimumZoneLevel: 18
-      configurationBlocker: ""
+      configurationBlocker: 
     - enabled: 0
-      formId: "03"
+      formId: 03
       prefab: {fileID: 3303902416035471862, guid: 39cc69f2fb5aa161765e15143808d262, type: 3}
-      weight: 0
+      weight: 100
       minimumZoneLevel: 36
-      configurationBlocker: ""
+      configurationBlocker: 

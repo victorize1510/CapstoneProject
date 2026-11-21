@@ -20,6 +20,12 @@ namespace Capstone.Game.WorldFeedback {
             public float ActiveUntil, Health = -1, Maximum = -1, NextSight; public bool InSight;
         }
         static EnemyHealthBars live;
+        readonly Dictionary<DummyEnemy, float> recentHits = new Dictionary<DummyEnemy, float>();
+        readonly List<DummyEnemy> expiredHits = new List<DummyEnemy>();
+        internal static void RevealHit(DummyEnemy enemy) {
+            if (live != null && enemy != null) live.recentHits[enemy] = Time.unscaledTime + 6f;
+        }
+        bool WasHitRecently(DummyEnemy enemy) => recentHits.TryGetValue(enemy, out var until) && until > Time.unscaledTime;
         readonly List<Bar> bars = new List<Bar>(Capacity);
         readonly List<DummyEnemy> candidates = new List<DummyEnemy>(64);
         readonly RaycastHit[] sight = new RaycastHit[32];
@@ -68,7 +74,14 @@ namespace Capstone.Game.WorldFeedback {
             var pet = enemy.GetComponent<PetController>();
             return pet == null || pet.IsWildEncounter;
         }
+        float CenterDistance(DummyEnemy enemy) {
+            Vector3 point = cameraSource.WorldToViewportPoint(enemy.TargetPosition);
+            return point.z > 0 ? new Vector2((point.x - .5f) * cameraSource.aspect, point.y - .5f).sqrMagnitude : float.PositiveInfinity;
+        }
         void RefreshCandidates() {
+            expiredHits.Clear();
+            foreach (var hit in recentHits) if (hit.Key == null || hit.Value <= Time.unscaledTime) expiredHits.Add(hit.Key);
+            foreach (var enemy in expiredHits) recentHits.Remove(enemy);
             if (cameraSource == null) cameraSource = Camera.main;
             if (cameraLock == null) cameraLock = FindFirstObjectByType<BasicCameraFollow>();
             if (party == null) party = FindFirstObjectByType<PetCommandInput>();
@@ -79,7 +92,9 @@ namespace Capstone.Game.WorldFeedback {
                 if (Eligible(enemy) && (enemy.transform.position - from).sqrMagnitude <= 625) candidates.Add(enemy);
             candidates.Sort((a, b) => {
                 if (a == locked) return b == locked ? 0 : -1; if (b == locked) return 1;
-                bool aa = a.GetComponent<BasicCreatureEnemy>()?.Target != null, bb = b.GetComponent<BasicCreatureEnemy>()?.Target != null;
+                bool aa = CenterDistance(a) < .0064f, bb = CenterDistance(b) < .0064f;
+                if (aa != bb) return aa ? -1 : 1;
+                aa = WasHitRecently(a); bb = WasHitRecently(b);
                 if (aa != bb) return aa ? -1 : 1;
                 return (a.transform.position - from).sqrMagnitude.CompareTo((b.transform.position - from).sqrMagnitude);
             });
@@ -97,6 +112,7 @@ namespace Capstone.Game.WorldFeedback {
             bar.Root.gameObject.SetActive(false);
             if (enemy == null) return;
             enemy.HealthChanged += OnHealthChanged;
+            bar.Health = enemy.CurrentHealth;
             bar.Anchor = enemy.GetComponent<EnemyHealthAnchor>(); if (bar.Anchor == null) bar.Anchor = enemy.gameObject.AddComponent<EnemyHealthAnchor>();
             bar.Brain = enemy.GetComponent<BasicCreatureEnemy>();
             var stats = enemy.GetComponent<PetHudRuntimeStats>();
@@ -106,7 +122,8 @@ namespace Capstone.Game.WorldFeedback {
         void OnHealthChanged(DummyEnemy enemy) {
             foreach (var bar in bars) if (bar.Enemy == enemy) {
                 if (bar.Health >= 0 && enemy.CurrentHealth < bar.Health) bar.ActiveUntil = Time.unscaledTime + 6;
-                bar.Health = -1;
+                bar.Health = enemy.CurrentHealth;
+                bar.Maximum = -1;
                 break;
             }
         }
@@ -115,6 +132,15 @@ namespace Capstone.Game.WorldFeedback {
             VisibleCount = 0;
             bool hidden = cameraSource == null || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying;
             DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
+            DummyEnemy centered = null;
+            float closestToCenter = .0064f;
+            foreach (var bar in bars) {
+                if (hidden || !Eligible(bar.Enemy)) continue;
+                float distance = CenterDistance(bar.Enemy);
+                if (distance >= closestToCenter || !ClearSight(bar.Enemy.TargetPosition, bar.Enemy)) continue;
+                centered = bar.Enemy;
+                closestToCenter = distance;
+            }
             foreach (var bar in bars) {
                 if (hidden || !Eligible(bar.Enemy)) { bar.Root.gameObject.SetActive(false); continue; }
                 Vector3 anchor = bar.Anchor.Position;
@@ -124,22 +150,19 @@ namespace Capstone.Game.WorldFeedback {
                     bar.NextSight = Time.unscaledTime + .1f;
                     bar.InSight = ClearSight(anchor, bar.Enemy);
                 }
-                bar.Root.gameObject.SetActive(inView && bar.InSight);
+                bool revealed = bar.Enemy == locked || bar.Enemy == centered || WasHitRecently(bar.Enemy) || Time.unscaledTime < bar.ActiveUntil;
+                bar.Root.gameObject.SetActive(revealed && inView && bar.InSight);
                 if (!bar.Root.gameObject.activeSelf) continue;
                 VisibleCount++;
                 if (bar.Health != bar.Enemy.CurrentHealth || bar.Maximum != bar.Enemy.maxHealth) {
                     bar.Health = bar.Enemy.CurrentHealth; bar.Maximum = bar.Enemy.maxHealth;
                     bar.Fill.anchorMax = new Vector2(bar.Maximum > 0 ? Mathf.Clamp01(bar.Health / bar.Maximum) : 0, 1);
                 }
-                bool active = bar.Enemy.IsDowned || bar.Enemy == locked || bar.Brain != null && bar.Brain.Target != null;
                 bar.Cue.gameObject.SetActive(bar.Enemy.IsDowned);
                 bar.Fill.parent.gameObject.SetActive(!bar.Enemy.IsDowned);
                 if(bar.Enemy.IsDowned){bar.Cue.text=Mathf.CeilToInt(bar.Enemy.DownedSecondsRemaining).ToString();bar.Ring.SetRemaining(bar.Enemy.DownedSecondsRemaining/Mathf.Max(.01f,bar.Enemy.DownedDuration));}
                 if(Time.unscaledTime>=bar.NextTitle){bar.NextTitle=Time.unscaledTime+.1f;bar.Title.text=bar.Identity;}
-                if (active) bar.ActiveUntil = Time.unscaledTime + 6;
-                active |= Time.unscaledTime < bar.ActiveUntil;
-                bar.Group.alpha = Mathf.MoveTowards(bar.Group.alpha, active ? 1 : .45f, Time.unscaledDeltaTime * 5);
-                bar.Title.enabled = active && !bar.Enemy.IsDowned;
+                bar.Title.enabled = !bar.Enemy.IsDowned;
                 Vector3 pixel = cameraSource.ViewportToScreenPoint(screen);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(surface, pixel, null, out var point);
                 bar.Root.anchoredPosition = point;

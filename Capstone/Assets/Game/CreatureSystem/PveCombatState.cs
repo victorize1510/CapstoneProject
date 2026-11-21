@@ -45,7 +45,8 @@ namespace Capstone.Game.CreatureSystem {
             if(pursued){lastUnsafe=Time.time;return;}
             if(SafeSeconds<8)return;
             float health=Mathf.Min(stats.MaxHealth,stats.Health+stats.MaxHealth*.05f*delta);
-            if(Mathf.Abs(health-stats.Health)>.0001f)stats.SetStatus(health,stats.MaxHealth,0,0);
+            float mana=Mathf.Min(stats.MaxEnergy,stats.Energy+5f*delta);
+            if(Mathf.Abs(health-stats.Health)>.0001f||mana>stats.Energy)stats.SetStatus(health,stats.MaxHealth,mana,stats.MaxEnergy);
         }
     }
 }

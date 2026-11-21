@@ -301,6 +301,7 @@ public partial class PetController : MonoBehaviour
         bool visible = IsSummoned;
         combatActions?.Cancel();
         EnterDormant();
+        if (visible && owner != null) owner.GetComponent<PetCommandInput>()?.HandleActivePetDefeat(this);
         if (!visible || animator == null)
             return;
         CacheWorldPresence();
@@ -512,6 +513,9 @@ public partial class PetController : MonoBehaviour
         MoveTo(commandedPoint, commandSpeed, pointStoppingDistance);
     }
 
+    internal bool CanAcceptAttackCommand(DummyEnemy enemy) => state != PetState.AttackTarget && !IsSkillAnimationActive()
+        && (target != enemy || state != PetState.ChaseTarget);
+
     public void CommandAttack(DummyEnemy enemy)
     {
         if (!CanReceiveCommands)
@@ -529,6 +533,8 @@ public partial class PetController : MonoBehaviour
             ReturnToOwner();
             return;
         }
+
+        if (!CanAcceptAttackCommand(enemy)) return;
 
         commandedReturnAt = -1f;
         closeFollowRequested = returnAfterBasic = false;
