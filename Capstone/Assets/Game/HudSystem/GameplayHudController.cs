@@ -49,6 +49,7 @@ namespace Capstone.Game.HudSystem {
         PetPartyCarouselView carousel;
         GameplayHudQuickItemsView quickItems;
         PetRadialHudView radial; HubCaptureHud captureHud;
+        EvolutionHudPromptController evolutionPrompts;
         PetStatusHudData confirmedStatus;
         readonly PetSlotHudData[] confirmedSlots=new PetSlotHudData[6];
         bool waitPartyKeyUp;int partyKeyFrame=-1;PartyPickerMode previousPartyMode;
@@ -126,6 +127,8 @@ namespace Capstone.Game.HudSystem {
                 minimapPanel.SetParent(targetCanvas.transform, false);
             V.Stretch(root); root.SetAsLastSibling(); V.Clear(root); skills.Clear();
             BuildMinimap(); BuildPetStatus(); BuildCarousel(); BuildSkills(); BuildQuickItems();
+            evolutionPrompts = GetComponent<EvolutionHudPromptController>() ?? gameObject.AddComponent<EvolutionHudPromptController>();
+            evolutionPrompts.Build(root);
             SubscribeProvider(); HideExtraHud(); RefreshHud(); SyncVisibility();
         }
         public void BindPetProvider(MonoBehaviour providerComponent) {
@@ -189,6 +192,7 @@ namespace Capstone.Game.HudSystem {
             partyManuallyOpened=!close;
         }
         public bool TryCloseTransientHud() {
+            if(evolutionPrompts!=null&&evolutionPrompts.TryDismissForBack())return true;
             if(captureHud!=null&&captureHud.IsPickerOpen){captureHud.ClosePicker();return true;}
             if(IsPartyOpen){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;radial.SetOpen(false);waitPartyKeyUp=Input.GetKey(partyKey);return true;}return false;
         }
@@ -317,6 +321,7 @@ namespace Capstone.Game.HudSystem {
             }
             SyncActiveBadge();
             bool visible = !hideWhileUiOpen || !InventoryInputController.GameplayInputBlocked
+                || evolutionPrompts != null && evolutionPrompts.IsOpen && !InventoryInputController.IsBlockedByOtherThan(evolutionPrompts)
                 || (trainerMenu != null && trainerMenu.IsMenuOpen)||captureHud!=null&&(captureHud.IsPickerOpen||captureHud.IsPresenting
                     ||captureHud.OwnsPickerInput&&!InventoryInputController.IsBlockedByOtherThan(captureHud));
             if (root.gameObject.activeSelf != visible) root.gameObject.SetActive(visible);

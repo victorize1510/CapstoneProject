@@ -26,7 +26,8 @@ public partial class PetController
         return true;
     }
 
-    private bool TryFindSafeSpotNearOwner(out Vector3 spot, float ownerGroundTolerance = 1f, bool expandedSearch = false)
+    private bool TryFindSafeSpotNearOwner(out Vector3 spot, float ownerGroundTolerance = 1f, bool expandedSearch = false,
+        bool requireClearOwnerSide = false)
     {
         spot = default;
         if (owner == null || !TryFindWalkableGround(owner.position, ownerGroundTolerance, out Vector3 ownerGround))
@@ -34,14 +35,14 @@ public partial class PetController
             return false;
         }
 
-        if (TryResolveSafeSpot(followOffset, ownerGround.y, out spot))
+        if (TryResolveSafeSpot(followOffset, ownerGround, requireClearOwnerSide, out spot))
         {
             return true;
         }
 
         for (int i = 0; i < SafeSpotFallbackOffsets.Length; i++)
         {
-            if (TryResolveSafeSpot(SafeSpotFallbackOffsets[i], ownerGround.y, out spot))
+            if (TryResolveSafeSpot(SafeSpotFallbackOffsets[i], ownerGround, requireClearOwnerSide, out spot))
             {
                 return true;
             }
@@ -58,7 +59,7 @@ public partial class PetController
                 {
                     float angle = step * Mathf.PI / 6f;
                     Vector3 offset = new Vector3(Mathf.Sin(angle) * radius, 0f, Mathf.Cos(angle) * radius);
-                    if (TryResolveSafeSpot(offset, ownerGround.y, out spot))
+                    if (TryResolveSafeSpot(offset, ownerGround, requireClearOwnerSide, out spot))
                         return true;
                 }
             }
@@ -67,17 +68,75 @@ public partial class PetController
         return false;
     }
 
-    private bool TryResolveSafeSpot(Vector3 localOffset, float groundHeight, out Vector3 spot)
+    private bool TryResolveSafeSpot(Vector3 localOffset, Vector3 ownerGround, bool requireClearOwnerSide, out Vector3 spot)
     {
         Vector3 candidate = owner.TransformPoint(localOffset);
-        candidate.y = groundHeight;
-        if (TryFindWalkableGround(candidate, 0.6f, out spot) && HasRoomAt(spot))
+        candidate.y = ownerGround.y;
+        if (TryFindWalkableGround(candidate, 0.6f, out spot) && HasRoomAt(spot)
+            && (!requireClearOwnerSide || HasClearReturnRoute(ownerGround, spot)))
         {
             return true;
         }
 
         spot = default;
         return false;
+    }
+
+    private bool HasClearReturnRoute(Vector3 ownerGround, Vector3 petGround)
+    {
+        if (Mathf.Abs(ownerGround.y - petGround.y) > 1f) return false;
+        Vector3 delta = petGround - ownerGround;
+        float distance = delta.magnitude;
+        if (distance <= 0.01f) return true;
+
+        int count = Physics.RaycastNonAlloc(ownerGround + Vector3.up * directProbeHeight, delta / distance,
+            directObstacleHits, distance, directObstacleMask, QueryTriggerInteraction.Ignore);
+        if (count == directObstacleHits.Length) return false;
+        for (int i = 0; i < count; i++)
+        {
+            Collider obstacle = directObstacleHits[i].collider;
+            if (obstacle != null && !IsIgnoredDirectObstacle(obstacle)) return false;
+        }
+        return true;
+    }
+
+    private void UpdateCloseFollow()
+    {
+        Vector3 offset = followOffset;
+        offset.y = 0;
+        if (offset.sqrMagnitude < .01f) offset = Vector3.back;
+        var body = GetComponent<CapsuleCollider>();
+        var playerBody = owner.GetComponent<CharacterController>();
+        float radius = body != null ? Mathf.Max(body.bounds.extents.x, body.bounds.extents.z) : directBodyRadius;
+        float playerRadius = playerBody != null ? playerBody.radius * Mathf.Max(owner.lossyScale.x, owner.lossyScale.z) : .5f;
+        float spacing = Mathf.Max(closeFollowDistance, radius + playerRadius + .3f);
+        Vector3 destination = owner.position + owner.TransformDirection(offset.normalized) * spacing;
+        float distance = FlatDistance(transform.position, destination);
+        if (distance <= .4f && HasClearReturnRoute(owner.position, transform.position))
+        {
+            commandedReturnAt = -1f;
+            returnProgressPosition = transform.position;
+            StopMovement();
+            return;
+        }
+        if (commandedReturnAt < 0f || FlatDistance(transform.position, returnProgressPosition) >= .2f)
+        {
+            commandedReturnAt = Time.time + CommandedReturnTimeout;
+            returnProgressPosition = transform.position;
+        }
+        if (Time.time >= commandedReturnAt)
+        {
+            if (TeleportNearOwner(forReturnCommand: true))
+            {
+                returnProgressPosition = transform.position;
+                commandedReturnAt = Time.time + CommandedReturnTimeout;
+                return;
+            }
+            commandedReturnAt = Time.time + .25f;
+        }
+        float speed = Mathf.Lerp(followSpeed, followSpeed * fastReturnSpeedMultiplier, Mathf.InverseLerp(1f, 4f, distance));
+        MoveTo(destination, speed, .3f);
+        UpdateAnimator(GetCurrentSpeed());
     }
 
     private bool HasRoomAt(Vector3 point)
@@ -205,9 +264,15 @@ public partial class PetController
         return TryPlaceAgentOnNavMesh(position, searchRadius);
     }
 
-    private bool TryPlaceAgentOnNavMesh(Vector3 position, float searchRadius)
+    private bool TryPlaceAgentOnNavMesh(Vector3 position, float searchRadius, bool forReturnCommand = false)
     {
         if (agent == null || !agent.gameObject.activeInHierarchy || !NavMesh.SamplePosition(position, out NavMeshHit hit, Mathf.Max(0.25f, searchRadius), agent.areaMask) || Mathf.Abs(hit.position.y - position.y) > 0.35f)
+        {
+            return false;
+        }
+
+        if (forReturnCommand && (!TryFindWalkableGround(owner.position, 2.5f, out Vector3 ownerGround)
+            || !HasRoomAt(hit.position) || !HasClearReturnRoute(ownerGround, hit.position)))
         {
             return false;
         }
@@ -262,7 +327,8 @@ public partial class PetController
             {
                 directStuckSince = Time.time;
             }
-            else if (Time.time - directStuckSince > 2.5f && (state == PetState.FollowOwner || state == PetState.RoamAroundOwner))
+            else if (commandedReturnAt < 0f && Time.time - directStuckSince > 2.5f
+                && (state == PetState.FollowOwner || state == PetState.RoamAroundOwner))
             {
                 TeleportNearOwner();
                 directStuckSince = 0f;
@@ -275,7 +341,8 @@ public partial class PetController
         directStuckSince = 0f;
         transform.position = next;
         FaceDirection(direction);
-        directMoveSpeed = step / Mathf.Max(Time.deltaTime, 0.0001f);
+        directMoveSpeed = FlatDistance(current, transform.position) / Mathf.Max(Time.deltaTime, 0.0001f);
+        directMoveFrame = Time.frameCount;
     }
 
     private bool TryChooseDirectStep(Vector3 current, Vector3 desiredDirection, float step, out Vector3 next, out Vector3 chosenDirection)
@@ -473,14 +540,15 @@ public partial class PetController
         return FlatDistance(transform.position, point) <= tolerance;
     }
 
-    private bool TeleportNearOwner()
+    private bool TeleportNearOwner(bool forReturnCommand = false)
     {
-        if (!TryFindSafeSpotNearOwner(out Vector3 spot))
+        if (!TryFindSafeSpotNearOwner(out Vector3 spot, forReturnCommand ? 2.5f : 1f,
+            expandedSearch: forReturnCommand, requireClearOwnerSide: forReturnCommand))
         {
             return false;
         }
 
-        if (useNavMeshWhenAvailable && TryPlaceAgentOnNavMesh(spot, 0.75f))
+        if (useNavMeshWhenAvailable && TryPlaceAgentOnNavMesh(spot, 0.75f, forReturnCommand))
         {
             StopMovement();
             return true;
@@ -530,10 +598,10 @@ public partial class PetController
     {
         if (agent != null && agent.enabled && agent.isOnNavMesh)
         {
-            return agent.velocity.magnitude;
+            return agent.isStopped ? 0f : Vector3.ProjectOnPlane(agent.velocity, Vector3.up).magnitude;
         }
 
-        return directMoveSpeed;
+        return directMoveFrame == Time.frameCount ? directMoveSpeed : 0f;
     }
 
     private bool TryFindWalkableGround(Vector3 position, float maxHeightChange, out Vector3 groundPoint)

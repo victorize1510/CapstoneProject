@@ -240,17 +240,25 @@ namespace Capstone.Game.CreatureSystem
         // Cung duong cho Pet va Enemy: phong thu truoc, khac he/STAB sau, chi mot lan.
         public float ResolveDamage(CombatHit hit)
         {
-            return ResolveElementalDamage(Mitigate(hit.RawDamage, hit.Kind), hit, metadata);
+            return ResolveDamage(hit, out _);
         }
 
-        internal static float ResolveElementalDamage(float mitigated, CombatHit hit, PetCollectionMetadata metadata)
+        internal float ResolveDamage(CombatHit hit, out float effectiveness)
         {
+            return ResolveElementalDamage(Mitigate(hit.RawDamage, hit.Kind), hit, metadata, out effectiveness);
+        }
+
+        internal static float ResolveElementalDamage(float mitigated, CombatHit hit, PetCollectionMetadata metadata, out float effectiveness)
+        {
+            effectiveness = 1f;
             if (hit.DamageOverTime || !hit.Elements.Enabled)
             {
                 return mitigated;
             }
 
-            return mitigated * ElementDamageMath.Multiplier(ElementCombatSettings.Lookup, hit.Elements, metadata != null ? metadata.Element : PetElement.Unknown, metadata != null ? metadata.SecondaryElement : PetElement.Unknown);
+            effectiveness = ElementDamageMath.Effectiveness(ElementCombatSettings.Lookup, hit.Elements.Attack,
+                metadata != null ? metadata.Element : PetElement.Unknown, metadata != null ? metadata.SecondaryElement : PetElement.Unknown);
+            return mitigated * (effectiveness * ElementDamageMath.Stab(hit.Elements));
         }
 
         public bool ReceiveDamage(float rawDamage, CreatureDamageKind kind, GameObject source)
@@ -272,8 +280,8 @@ namespace Capstone.Game.CreatureSystem
             }
 
             float before = stats.Health;
-            stats.SetStatus(Mathf.Max(0, stats.Health - ResolveDamage(hit)), stats.MaxHealth, stats.Energy, stats.MaxEnergy);
-            var result = new CombatDamageResult(hit, gameObject, before - stats.Health, stats.Health <= 0);
+            stats.SetStatus(Mathf.Max(0, stats.Health - ResolveDamage(hit, out float effectiveness)), stats.MaxHealth, stats.Energy, stats.MaxEnergy);
+            var result = new CombatDamageResult(hit, gameObject, before - stats.Health, stats.Health <= 0, effectiveness);
             CombatDamageEvents.Publish(result);
             if (stats.Health <= 0)
             {

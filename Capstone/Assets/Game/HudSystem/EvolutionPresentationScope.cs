@@ -20,14 +20,21 @@ namespace Capstone.Game.HudSystem {
         readonly Dictionary<VisualElement,StyleEnum<DisplayStyle>> documents = new();
         readonly CursorLockMode cursorLock;
         readonly bool cursorVisible;
+        readonly bool wasActive;
         readonly int defaultLayer;
         bool disposed;
         public EvolutionPresentationScope(object owner, PetController pet, MonoBehaviour[] extraScripts) {
             this.owner=owner; this.pet=pet; parent=pet.transform.parent; scene=pet.gameObject.scene;
+            wasActive=pet.gameObject.activeSelf;
             position=pet.transform.position; rotation=pet.transform.rotation; defaultLayer=pet.gameObject.layer;
             cursorLock=Cursor.lockState; cursorVisible=Cursor.visible;
             foreach(var t in pet.GetComponentsInChildren<Transform>(true)) layers[t]=t.gameObject.layer;
             Remember(pet);
+            var actions=pet.GetComponent<Capstone.Game.Skills.PetCombatActionDriver>();
+            if(actions!=null){actions.Cancel();Remember(actions);}
+            var agent=pet.GetComponent<UnityEngine.AI.NavMeshAgent>();
+            if(agent!=null)Remember(agent);
+            if(!wasActive)pet.gameObject.SetActive(true);
             if(extraScripts!=null)foreach(var script in extraScripts)if(script!=null&&!ReferenceEquals(script,owner))Remember(script);
             foreach(var camera in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
                 if(camera.gameObject.scene==scene&&camera.cameraType==CameraType.Game&&camera.targetTexture==null)Remember(camera);
@@ -52,9 +59,11 @@ namespace Capstone.Game.HudSystem {
                 if(parent!=null&&parent.gameObject.scene==pet.gameObject.scene)pet.transform.SetParent(parent,true);
                 foreach(var t in pet.GetComponentsInChildren<Transform>(true))t.gameObject.layer=layers.TryGetValue(t,out int layer)?layer:defaultLayer;
             }
+            pet?.ResumeAfterEvolution();
             foreach(var pair in behaviours)if(pair.Key!=null)pair.Key.enabled=pair.Value;
             foreach(var pair in documents)if(pair.Key.panel!=null)pair.Key.style.display=pair.Value;
             pet?.RefreshVisualPresence();
+            if(pet!=null&&!wasActive)pet.gameObject.SetActive(false);
             InventoryInputController.SetExternalGameplayInputBlocked(owner,false);
             Cursor.lockState=cursorLock; Cursor.visible=cursorVisible;
         }

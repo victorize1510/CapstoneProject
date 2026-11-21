@@ -1,408 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1679457036408839924
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3000001}
-  - component: {fileID: 4644604259815771338}
-  - component: {fileID: 3905486807277576643}
-  - component: {fileID: 8738544199266003928}
-  - component: {fileID: 3300363739359206422}
-  - component: {fileID: 8023277399098412113}
-  - component: {fileID: 5718988677615218039}
-  - component: {fileID: 8613781253541288461}
-  - component: {fileID: 3327497057220080534}
-  - component: {fileID: 3714990457027401581}
-  - component: {fileID: 350358632984081500}
-  - component: {fileID: 5093377439794075276}
-  - component: {fileID: 5520635010043253393}
-  m_Layer: 0
-  m_Name: OwnedPet_cat-electric_01
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &4644604259815771338
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: 
-  - {fileID: 2000058}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3905486807277576643
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c9aa72542e2a0304fab22d2a812a7db7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PetController
-  owner: {fileID: 0}
-  wildEncounter: 0
-  animator: {fileID: 2000059}
-  agent: {fileID: 8738544199266003928}
-  followOffset: {x: -1.4, y: 0, z: -1.6}
-  followDistance: 4
-  followResumeDistance: 7
-  leashDistance: 10
-  teleportDistance: 24
-  followSpeed: 4.2
-  commandSpeed: 5.3
-  acceleration: 18
-  angularSpeed: 720
-  turnSharpness: 14
-  pointStoppingDistance: 0.35
-  useNavMeshWhenAvailable: 0
-  useDirectMoveFallback: 1
-  snapFallbackToGround: 1
-  groundMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  directBodyRadius: 0.32
-  directProbeHeight: 0.65
-  directLookAhead: 0.9
-  directMaxStepHeight: 0.3
-  directMinGroundNormal: 0.65
-  directObstacleMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  minimumNavigationRadius: 0.65
-  navPathRefreshInterval: 0.12
-  navDestinationThreshold: 0.15
-  navMeshRetryInterval: 1
-  attackRange: 1.45
-  attackApproachDistance: 0.65
-  attackReachPadding: 0.18
-  attackRepathInterval: 0.12
-  snapFaceTargetOnCommand: 1
-  attackDamage: 20
-  attackCooldown: 0.95
-  attackHitDelay: 0.28
-  attackStateTime: 0.75
-  useSelfInput: 0
-  summonKey: 49
-  spawnDuration: 1.1
-  summonOnCommand: 0
-  roamAroundOwner: 1
-  roamMinRadius: 2.2
-  roamMaxRadius: 5
-  roamIdleTimeMin: 1
-  roamIdleTimeMax: 3
-  roamWalkSpeed: 2
-  roamRunSpeed: 4.6
-  roamRunChance: 0.12
-  roamPointTolerance: 0.45
-  spawnStates: 
-  - Cast Spell
-  - Idle
-  idleStates: 
-  - Idle
-  moveStates: 
-  - Run Forward In Place
-  attackStates: 
-  - Bite Attack
-  locomotionFade: 0.14
-  attackFade: 0.08
-  speedParameter: Speed
-  movingParameter: IsMoving
-  attackTriggerParameter: Attack
-  attackingParameter: IsAttacking
---- !u!195 &8738544199266003928
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 0
-  m_AgentTypeID: 0
-  m_Radius: 0.2
-  m_Speed: 5.3
-  m_Acceleration: 18
-  avoidancePriority: 50
-  m_AngularSpeed: 720
-  m_StoppingDistance: 1.45
-  m_AutoTraverseOffMeshLink: 0
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 1.1182245284991121
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
---- !u!114 &3300363739359206422
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d1383d0e9b1b704a9ae4c5ccbc532d1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetHudRuntimeStats
-  displayName: "Mèo Điện"
-  icon: {fileID: 21300000, guid: d105e8f46ae9fcc4e82e2f986b9df2d0, type: 3}
-  level: 1
-  health: 44
-  maxHealth: 44
-  energy: 0
-  maxEnergy: 0
-  speciesSkillSet: {fileID: 11400000, guid: 82c1919c9ca418a8630e52b5e087e0bc, type: 2}
-  autoResolveSpeciesSkillSet: 0
-  equippedSkillSlotCount: 4
-  usePrototypeSkillsWhenEmpty: 0
-  skills: []
-  learnedSkills: []
-  petController: {fileID: 3905486807277576643}
-  animator: {fileID: 2000059}
-  autoFindAnimationReferences: 1
-  stopMovementDuringSkill: 1
-  faceTargetDuringSkill: 1
-  cooldownHudRefreshInterval: 0.05
---- !u!114 &8023277399098412113
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5486cfda78ec2cc4293deba51edcff3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetCollectionMetadata
-  petId: ""
-  definitionId: cat-electric
-  species: "Mèo Điện"
-  gender: Unknown
-  element: 6
-  secondaryElement: 0
-  rarity: 3
-  nickname: ""
-  favorite: 0
-  released: 0
-  experience: 0
-  experienceToNextLevel: 100
-  obtainedOrder: 0
-  captureDate: ""
-  captureLocation: ""
-  captureBallId: ""
-  trainerName: ""
-  personality: Curious
-  geneticsInitialized: 0
-  captureGeneticsRolled: 0
-  individualValues: 
-    hp: 0
-    attack: 0
-    defense: 0
-    magicAttack: 0
-    magicDefense: 0
-    speed: 0
-  effortValues: 
-    hp: 0
-    attack: 0
-    defense: 0
-    magicAttack: 0
-    magicDefense: 0
-    speed: 0
-  nature: Serious
-  codexRegistered: 0
-  codexNumber: ""
-  codexDescription: ""
-  currentFormId: "01"
-  evolutionStage: 0
-  promptedEvolutionIds: []
-  evolutionRules: 
-  - evolutionId: cat-electric.01-to-02.level
-    sourceStage: 0
-    targetFormId: "02"
-    targetDisplayName: "Mèo Tia Chớp"
-    targetSpecies: "Mèo Tia Chớp"
-    targetIcon: {fileID: 21300000, guid: d836a8f72a4a411448ed7b0811ebd57d, type: 3}
-    targetElement: 6
-    targetSecondaryElement: 0
-    replaceSecondaryElement: 1
-    targetRarity: 0
-    targetVisualPrefab: {fileID: 3038762023446854208, guid: 1c47d03b77184a37994954f2fa410d42, type: 3}
-    trigger: 0
-    requiredLevel: 18
-    requiredItemId: ""
-    requiredItemQuantity: 1
-    maxHealthMultiplier: 1
-    attackBonus: 0
-    defenseBonus: 0
-    speedBonus: 0
-    magicAttackBonus: 0
-    magicDefenseBonus: 0
-  - evolutionId: cat-electric.02-to-03.level
-    sourceStage: 1
-    targetFormId: "03"
-    targetDisplayName: "Mèo Sấm Sét"
-    targetSpecies: "Mèo Sấm Sét"
-    targetIcon: {fileID: 21300000, guid: 0bd712b3415f30a4187992c96165494c, type: 3}
-    targetElement: 6
-    targetSecondaryElement: 0
-    replaceSecondaryElement: 1
-    targetRarity: 0
-    targetVisualPrefab: {fileID: 4639804460225126341, guid: 0179260b0fc342ab87527f9009cf4daa, type: 3}
-    trigger: 0
-    requiredLevel: 36
-    requiredItemId: ""
-    requiredItemQuantity: 1
-    maxHealthMultiplier: 1
-    attackBonus: 0
-    defenseBonus: 0
-    speedBonus: 0
-    magicAttackBonus: 0
-    magicDefenseBonus: 0
-  resourceInvestments: []
-  hasNextEvolution: 0
-  nextEvolutionName: 
-  nextEvolutionIcon: {fileID: 0}
-  nextEvolutionDiscovered: 0
-  evolutionLevelRequirement: 0
-  evolutionFriendshipRequirement: 0
-  extraEvolutionRequirement: 
---- !u!114 &5718988677615218039
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a434cab88218450eaa54565404b54bdd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetEvolutionVisualController
-  visualRoot: {fileID: 4644604259815771338}
-  baseVisual: {fileID: 2000057}
-  baseVisualPrefab: {fileID: 7758441624808241871, guid: 88eb860ffb3c4129b8817f221fdce49b, type: 3}
---- !u!114 &8613781253541288461
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 77e327733fb1a46469a21d05df50fa72, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillPresentationPlayer
-  sockets: 
-  - key: Head
-    anchor: {fileID: 2000056}
-  - key: Body
-    anchor: {fileID: 2000067}
-  - key: Ground
-    anchor: {fileID: 4644604259815771338}
-  maxLiveEffects: 12
-  maxPooledEffects: 8
---- !u!114 &3327497057220080534
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53f93741467a06646b1cc8ba19fc1964, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureAnimationDriver
---- !u!114 &3714990457027401581
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2b6aa07dd2f62b2459f8a2476e983b0f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureRolePresentation
-  role: 0
---- !u!136 &350358632984081500
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.2
-  m_Height: 1.1182245284991121
-  m_Direction: 1
-  m_Center: {x: -1.3830230313760516e-7, y: 0.5591122642495561, z: -0.13723993695618897}
---- !u!114 &5093377439794075276
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a2a055770a414340b7e6745ebf02344, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureCombatant
---- !u!114 &5520635010043253393
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e238706d8dc0134f8a8060d66a842a7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatExecutor
---- !u!114 &3000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1679457036408839924}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bad84af05a307904685329c30813ff28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetCombatActionDriver
 --- !u!1 &2000000
 GameObject:
   m_ObjectHideFlags: 0
@@ -1442,6 +1039,31 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &2000070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75f8292220cbb1f4cab4201c240ea32f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
+  animationProfile: {fileID: 11400000, guid: a52c68e9f5c34417a23e2b7989499869, type: 2}
+  skillSet: {fileID: 11400000, guid: 82c1919c9ca418a8630e52b5e087e0bc, type: 2}
+  presentationScale: 1
+  sockets:
+  - key: Head
+    anchor: {fileID: 2000056}
+  - key: Body
+    anchor: {fileID: 2000067}
+  - key: Ground
+    anchor: {fileID: 2000058}
+  actorRadius: 0
+  actorHeight: 0
+  actorCenter: {x: 0, y: 0, z: 0}
 --- !u!1 &2000060
 GameObject:
   m_ObjectHideFlags: 0
@@ -1602,25 +1224,560 @@ Transform:
   - {fileID: 2000009}
   m_Father: {fileID: 2000042}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2000070
+--- !u!1 &1679457036408839924
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4644604259815771338}
+  - component: {fileID: 3000001}
+  - component: {fileID: 3905486807277576643}
+  - component: {fileID: 8738544199266003928}
+  - component: {fileID: 3300363739359206422}
+  - component: {fileID: 8023277399098412113}
+  - component: {fileID: 5718988677615218039}
+  - component: {fileID: 8613781253541288461}
+  - component: {fileID: 3327497057220080534}
+  - component: {fileID: 3714990457027401581}
+  - component: {fileID: 350358632984081500}
+  - component: {fileID: 5093377439794075276}
+  - component: {fileID: 5520635010043253393}
+  m_Layer: 0
+  m_Name: OwnedPet_cat-electric_01
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4644604259815771338
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2000058}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3000001
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2000057}
+  m_GameObject: {fileID: 1679457036408839924}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75f8292220cbb1f4cab4201c240ea32f, type: 3}
+  m_Script: {fileID: 11500000, guid: bad84af05a307904685329c30813ff28, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
-  animationProfile: {fileID: 11400000, guid: a52c68e9f5c34417a23e2b7989499869, type: 2}
-  skillSet: {fileID: 11400000, guid: 82c1919c9ca418a8630e52b5e087e0bc, type: 2}
-  presentationScale: 1
-  sockets: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetCombatActionDriver
+--- !u!114 &3905486807277576643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9aa72542e2a0304fab22d2a812a7db7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetController
+  owner: {fileID: 0}
+  wildEncounter: 0
+  animator: {fileID: 2000059}
+  agent: {fileID: 8738544199266003928}
+  followOffset: {x: -1.4, y: 0, z: -1.6}
+  followDistance: 4
+  followResumeDistance: 7
+  leashDistance: 10
+  teleportDistance: 24
+  followSpeed: 4.2
+  commandSpeed: 5.3
+  acceleration: 18
+  angularSpeed: 720
+  turnSharpness: 14
+  pointStoppingDistance: 0.35
+  useNavMeshWhenAvailable: 0
+  useDirectMoveFallback: 1
+  snapFallbackToGround: 1
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  directBodyRadius: 0.32
+  directProbeHeight: 0.65
+  directLookAhead: 0.9
+  directMaxStepHeight: 0.3
+  directMinGroundNormal: 0.65
+  directObstacleMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  minimumNavigationRadius: 0.65
+  navPathRefreshInterval: 0.12
+  navDestinationThreshold: 0.15
+  navMeshRetryInterval: 1
+  attackRange: 1.45
+  attackApproachDistance: 0.65
+  attackReachPadding: 0.18
+  attackRepathInterval: 0.12
+  snapFaceTargetOnCommand: 1
+  attackDamage: 20
+  attackCooldown: 0.95
+  attackHitDelay: 0.28
+  attackStateTime: 0.75
+  useSelfInput: 0
+  summonKey: 49
+  spawnDuration: 1.1
+  summonOnCommand: 0
+  roamAroundOwner: 1
+  roamMinRadius: 2.2
+  roamMaxRadius: 5
+  roamIdleTimeMin: 1
+  roamIdleTimeMax: 3
+  roamWalkSpeed: 2
+  roamRunSpeed: 4.6
+  roamRunChance: 0.12
+  roamPointTolerance: 0.45
+  spawnStates:
+  - Cast Spell
+  - Idle
+  idleStates:
+  - Idle
+  moveStates:
+  - Run Forward In Place
+  attackStates:
+  - Bite Attack
+  locomotionFade: 0.14
+  attackFade: 0.08
+  speedParameter: Speed
+  movingParameter: IsMoving
+  attackTriggerParameter: Attack
+  attackingParameter: IsAttacking
+--- !u!195 &8738544199266003928
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 0
+  m_AgentTypeID: 0
+  m_Radius: 0.2
+  m_Speed: 5.3
+  m_Acceleration: 18
+  avoidancePriority: 50
+  m_AngularSpeed: 720
+  m_StoppingDistance: 1.45
+  m_AutoTraverseOffMeshLink: 0
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1.1182245
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &3300363739359206422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d1383d0e9b1b704a9ae4c5ccbc532d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetHudRuntimeStats
+  displayName: "M\xE8o \u0110i\u1EC7n"
+  icon: {fileID: 21300000, guid: d105e8f46ae9fcc4e82e2f986b9df2d0, type: 3}
+  level: 1
+  health: 44
+  maxHealth: 44
+  energy: 0
+  maxEnergy: 0
+  speciesSkillSet: {fileID: 11400000, guid: 82c1919c9ca418a8630e52b5e087e0bc, type: 2}
+  autoResolveSpeciesSkillSet: 0
+  equippedSkillSlotCount: 4
+  usePrototypeSkillsWhenEmpty: 0
+  skills:
+  - skillId: bite.normal
+    legacySkillIds: []
+    unlocked: 1
+    usable: 1
+    displayName: "C\u1EAFn"
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 13
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
+    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
+    animatorStates:
+    - Bite Attack
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 0.8333333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    cooldownPercent: 0
+    cooldownSeconds: 1.6
+    manaCost: 0
+  learnedSkills:
+  - skillId: bite.normal
+    legacySkillIds: []
+    unlocked: 1
+    usable: 1
+    displayName: "C\u1EAFn"
+    skillLevel: 1
+    requiredPetLevel: 1
+    element: 13
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
+    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
+    animatorStates:
+    - Bite Attack
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 0.8333333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    cooldownPercent: 0
+    cooldownSeconds: 1.6
+    manaCost: 0
+  - skillId: spark.electric
+    legacySkillIds: []
+    unlocked: 0
+    usable: 1
+    displayName: "Tia l\u1EEDa \u0111i\u1EC7n"
+    skillLevel: 1
+    requiredPetLevel: 5
+    element: 6
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: "T\u1EA5n c\xF4ng m\u1ED9t m\u1EE5c ti\xEAu h\u1EE3p l\u1EC7 trong
+      t\u1EA7m nh\xECn."
+    icon: {fileID: 21300000, guid: 5743882b42878c641a853aa8389b864f, type: 3}
+    animatorStates:
+    - Cast Spell
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    cooldownPercent: 0
+    cooldownSeconds: 3.2
+    manaCost: 0
+  - skillId: orb.electric
+    legacySkillIds: []
+    unlocked: 0
+    usable: 1
+    displayName: "C\u1EA7u \u0111i\u1EC7n"
+    skillLevel: 1
+    requiredPetLevel: 12
+    element: 6
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: "Ph\xF3ng m\u1ED9t \u0111\u1EA1n theo h\u01B0\u1EDBng thi tri\u1EC3n;
+      g\xE2y s\xE1t th\u01B0\u01A1ng khi va ch\u1EA1m."
+    icon: {fileID: 21300000, guid: 1af81a3699ff967469dca70d810c8b2e, type: 3}
+    animatorStates:
+    - Projectile Attack
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 0.8333333
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    cooldownPercent: 0
+    cooldownSeconds: 4
+    manaCost: 0
+  - skillId: bolt.electric
+    legacySkillIds: []
+    unlocked: 0
+    usable: 1
+    displayName: "Tia s\xE9t"
+    skillLevel: 1
+    requiredPetLevel: 30
+    element: 6
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: "T\u1EA5n c\xF4ng m\u1ED9t m\u1EE5c ti\xEAu h\u1EE3p l\u1EC7 trong
+      t\u1EA7m nh\xECn."
+    icon: {fileID: 21300000, guid: 2b64a5cb0de1cd64290cc61988ba8241, type: 3}
+    animatorStates:
+    - Cast Spell
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    cooldownPercent: 0
+    cooldownSeconds: 6
+    manaCost: 0
+  - skillId: laser.electric
+    legacySkillIds: []
+    unlocked: 0
+    usable: 1
+    displayName: "Ch\xF9m Tia Laser"
+    skillLevel: 1
+    requiredPetLevel: 36
+    element: 6
+    uiMetadata:
+      damageKind: 0
+      effects: []
+      facts: []
+    description: "G\xE2y s\xE1t th\u01B0\u01A1ng l\xEAn m\u1ED9t m\u1EE5c ti\xEAu
+      trong t\u1EA7m."
+    icon: {fileID: 21300000, guid: 6a1ca1a90e8cb4c4fa79697a6a1c43c4, type: 3}
+    animatorStates:
+    - Cast Spell
+    criticalRateBonus: 0
+    criticalDamageBonus: 0
+    animationDuration: 1
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    cooldownPercent: 0
+    cooldownSeconds: 5.2
+    manaCost: 0
+  petController: {fileID: 3905486807277576643}
+  animator: {fileID: 2000059}
+  autoFindAnimationReferences: 1
+  stopMovementDuringSkill: 1
+  faceTargetDuringSkill: 1
+  cooldownHudRefreshInterval: 0.05
+--- !u!114 &8023277399098412113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5486cfda78ec2cc4293deba51edcff3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetCollectionMetadata
+  petId: auto-Ok93bmVkUGV0X2NhdC1lbGVjdHJpY18wMTow
+  definitionId: cat-electric
+  species: "M\xE8o \u0110i\u1EC7n"
+  gender: Unknown
+  element: 6
+  secondaryElement: 0
+  rarity: 3
+  nickname: 
+  favorite: 0
+  released: 0
+  experience: 0
+  experienceToNextLevel: 100
+  obtainedOrder: 0
+  captureDate: 
+  captureLocation: 
+  captureBallId: 
+  trainerName: 
+  personality: Curious
+  geneticsInitialized: 0
+  captureGeneticsRolled: 0
+  individualValues:
+    hp: 0
+    attack: 0
+    defense: 0
+    magicAttack: 0
+    magicDefense: 0
+    speed: 0
+  effortValues:
+    hp: 0
+    attack: 0
+    defense: 0
+    magicAttack: 0
+    magicDefense: 0
+    speed: 0
+  nature: Serious
+  codexRegistered: 0
+  codexNumber: 
+  codexDescription: 
+  currentFormId: 01
+  evolutionStage: 0
+  promptedEvolutionIds: []
+  evolutionRules:
+  - evolutionId: cat-electric.01-to-02.level
+    sourceStage: 0
+    targetFormId: 02
+    targetDisplayName: "M\xE8o Tia Ch\u1EDBp"
+    targetSpecies: "M\xE8o Tia Ch\u1EDBp"
+    targetIcon: {fileID: 21300000, guid: d836a8f72a4a411448ed7b0811ebd57d, type: 3}
+    targetElement: 6
+    targetSecondaryElement: 0
+    replaceSecondaryElement: 1
+    targetRarity: 0
+    targetVisualPrefab: {fileID: 3038762023446854208, guid: 1c47d03b77184a37994954f2fa410d42, type: 3}
+    trigger: 0
+    requiredLevel: 18
+    requiredItemId: 
+    requiredItemQuantity: 1
+    maxHealthMultiplier: 1
+    attackBonus: 0
+    defenseBonus: 0
+    speedBonus: 0
+    magicAttackBonus: 0
+    magicDefenseBonus: 0
+  - evolutionId: cat-electric.02-to-03.level
+    sourceStage: 1
+    targetFormId: 03
+    targetDisplayName: "M\xE8o S\u1EA5m S\xE9t"
+    targetSpecies: "M\xE8o S\u1EA5m S\xE9t"
+    targetIcon: {fileID: 21300000, guid: 0bd712b3415f30a4187992c96165494c, type: 3}
+    targetElement: 6
+    targetSecondaryElement: 0
+    replaceSecondaryElement: 1
+    targetRarity: 0
+    targetVisualPrefab: {fileID: 4639804460225126341, guid: 0179260b0fc342ab87527f9009cf4daa, type: 3}
+    trigger: 0
+    requiredLevel: 36
+    requiredItemId: 
+    requiredItemQuantity: 1
+    maxHealthMultiplier: 1
+    attackBonus: 0
+    defenseBonus: 0
+    speedBonus: 0
+    magicAttackBonus: 0
+    magicDefenseBonus: 0
+  resourceInvestments: []
+  hasNextEvolution: 0
+  nextEvolutionName: 
+  nextEvolutionIcon: {fileID: 0}
+  nextEvolutionDiscovered: 0
+  evolutionLevelRequirement: 0
+  evolutionFriendshipRequirement: 0
+  extraEvolutionRequirement: 
+--- !u!114 &5718988677615218039
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a434cab88218450eaa54565404b54bdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetEvolutionVisualController
+  visualRoot: {fileID: 4644604259815771338}
+  baseVisual: {fileID: 2000057}
+  baseVisualPrefab: {fileID: 7758441624808241871, guid: 88eb860ffb3c4129b8817f221fdce49b, type: 3}
+--- !u!114 &8613781253541288461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77e327733fb1a46469a21d05df50fa72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillPresentationPlayer
+  sockets:
   - key: Head
     anchor: {fileID: 2000056}
   - key: Body
     anchor: {fileID: 2000067}
   - key: Ground
-    anchor: {fileID: 2000058}
+    anchor: {fileID: 4644604259815771338}
+  maxLiveEffects: 12
+  maxPooledEffects: 8
+--- !u!114 &3327497057220080534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53f93741467a06646b1cc8ba19fc1964, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureAnimationDriver
+--- !u!114 &3714990457027401581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b6aa07dd2f62b2459f8a2476e983b0f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureRolePresentation
+  role: 0
+--- !u!136 &350358632984081500
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.2
+  m_Height: 1.1182245
+  m_Direction: 1
+  m_Center: {x: -0.0000001383023, y: 0.55911225, z: -0.13723993}
+--- !u!114 &5093377439794075276
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a2a055770a414340b7e6745ebf02344, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureCombatant
+--- !u!114 &5520635010043253393
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1679457036408839924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e238706d8dc0134f8a8060d66a842a7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatExecutor

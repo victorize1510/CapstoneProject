@@ -93,6 +93,15 @@ namespace Capstone.Game.HudSystem {
                 preview.DisabledReason = "Không tìm thấy PlayerSaveController để lưu tiến hóa.";
             }
 
+            if (saveController != null && (saveController.IsSaveBlocked || (saveController.HasSave && !saveController.IsCurrentSlotLoaded))) {
+                preview.DisabledReason = string.IsNullOrEmpty(saveController.SaveBlockedReason)
+                    ? "Hãy tải save hiện có trước khi tiến hóa." : saveController.SaveBlockedReason;
+                preview.RequirementMet = false;
+            }
+            if (preview.RuntimeStats.Health <= 0) {
+                preview.DisabledReason = "Hãy hồi phục thú trước khi tiến hóa.";
+                preview.RequirementMet = false;
+            }
             preview.CanEvolve = preview.RequirementMet && saveController != null;
             preview.ShouldAutoPrompt = method == PetEvolutionMethod.Level && preview.CanEvolve
                 && !preview.Metadata.WasEvolutionPrompted(rule.EvolutionId);

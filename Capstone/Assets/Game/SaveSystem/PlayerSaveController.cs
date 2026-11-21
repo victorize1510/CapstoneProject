@@ -460,8 +460,9 @@ namespace Capstone.Game.SaveSystem {
         PetController RestoreMissingPet(PetInstanceSaveData petState) {
             if (petState == null) return null;
             PetController pet = null;
-            bool fromCatalog = petPrefabCatalog != null && petPrefabCatalog.TryInstantiate(
-                petState.definitionId, petState.customization?.currentFormId, restoredPetRoot, out pet);
+            bool fromCatalog = petPrefabCatalog != null && petPrefabCatalog.TryInstantiateSaved(
+                petState.definitionId, petState.customization?.currentFormId,
+                petState.customization?.evolutionStage ?? 0, restoredPetRoot, out pet);
             if (!fromCatalog) {
                 PetController template = FindScenePetTemplate(petState.definitionId);
                 if (template == null) return null;
@@ -678,8 +679,9 @@ namespace Capstone.Game.SaveSystem {
             foreach (var state in data.pets.petStates) {
                 PetController pet;
                 if (!pets.TryGetValue(state.petId, out pet)) {
-                    if ((petPrefabCatalog == null || !petPrefabCatalog.TryGetPrefab(
-                            state.definitionId, state.customization?.currentFormId, out pet))
+                    if ((petPrefabCatalog == null || !petPrefabCatalog.TryGetSavedPrefab(
+                            state.definitionId, state.customization?.currentFormId,
+                            state.customization?.evolutionStage ?? 0, out pet))
                         && (pet = FindScenePetTemplate(state.definitionId)) == null)
                         throw new InvalidOperationException("Missing pet definition " + state.definitionId + " for " + state.petId + "; save is protected.");
                 }

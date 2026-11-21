@@ -14,8 +14,8 @@ namespace Capstone.Game.HudSystem {
         const float Duration = .9f;
         static FloatingCombatText live;
         sealed class Entry {
-            public Text label; public CombatDamageMark mark; public Vector3 world; public float born;
-            public Vector2 control, end, start; public Color color; public bool active, critical, dot;
+            public Text label, matchup; public CombatDamageMark mark; public Vector3 world; public float born;
+            public Vector2 control, end, start; public Color color, matchupColor; public bool active, critical, dot;
         }
         readonly Entry[] entries = new Entry[Capacity];
         RectTransform surface;
@@ -36,11 +36,12 @@ namespace Capstone.Game.HudSystem {
         }
         public static void ShowDamage(CombatDamageResult result) {
             var recipient = result.Target != null ? result.Target.GetComponent<CreatureCombatant>() : null;
-            ShowNumber(result.Hit.Point, result.HpLost, result.Hit.Critical, result.Hit.DamageOverTime, recipient != null && !recipient.IsEnemy, false);
+            ShowNumber(result.Hit.Point, result.HpLost, result.Hit.Critical, result.Hit.DamageOverTime,
+                recipient != null && !recipient.IsEnemy, false, result.Effectiveness);
         }
         /// <summary>Only call after an actual successful HP transaction, never from a preview or HP refresh.</summary>
-        public static void ShowHealing(Vector3 point, float hpGained) => ShowNumber(point, hpGained, false, false, false, true);
-        static void ShowNumber(Vector3 hitPoint, float amount, bool critical, bool dot, bool ally, bool healing) {
+        public static void ShowHealing(Vector3 point, float hpGained) => ShowNumber(point, hpGained, false, false, false, true, 1f);
+        static void ShowNumber(Vector3 hitPoint, float amount, bool critical, bool dot, bool ally, bool healing, float effectiveness) {
             if (!Application.isPlaying || amount <= 0 || float.IsNaN(amount) || float.IsInfinity(amount)
                 || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying) return;
             var camera = Camera.main;
@@ -52,7 +53,7 @@ namespace Capstone.Game.HudSystem {
                 var go = new GameObject("Floating Combat Damage", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
                 live = go.AddComponent<FloatingCombatText>(); DontDestroyOnLoad(go);
             }
-            live.worldCamera = camera; live.Push(point, amount, critical, dot, ally, healing);
+            live.worldCamera = camera; live.Push(point, amount, critical, dot, ally, healing, effectiveness);
         }
         void Awake() {
             live = this; surface = (RectTransform)transform;
@@ -66,16 +67,38 @@ namespace Capstone.Game.HudSystem {
                 rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(.5f, .5f); rect.sizeDelta = new Vector2(150, 56);
                 var text = rect.gameObject.AddComponent<Text>(); text.font = NumericFont; text.fontSize = 29; text.fontStyle = FontStyle.Normal;
                 text.alignment = TextAnchor.MiddleCenter; text.raycastTarget = false;
-                var outline = rect.gameObject.AddComponent<Outline>(); outline.effectColor = new Color(.025f, .035f, .06f, .85f); outline.effectDistance = new Vector2(.8f, -.8f);
+                AddOutline(text, 1.25f);
                 var mark = new GameObject("Hit qualifier", typeof(RectTransform)).AddComponent<CombatDamageMark>();
                 mark.transform.SetParent(rect, false); mark.rectTransform.sizeDelta = new Vector2(13, 16); mark.raycastTarget = false;
-                entries[i] = new Entry { label = text, mark = mark }; rect.gameObject.SetActive(false);
+                var matchup = new GameObject("Element effectiveness", typeof(RectTransform)).AddComponent<Text>();
+                matchup.transform.SetParent(rect, false);
+                matchup.rectTransform.sizeDelta = new Vector2(110, 22);
+                matchup.rectTransform.anchoredPosition = new Vector2(0, -24);
+                matchup.font = MenuTypography.Font ?? NumericFont;
+                matchup.fontSize = 16;
+                matchup.alignment = TextAnchor.MiddleCenter;
+                matchup.raycastTarget = false;
+                AddOutline(matchup, 1);
+                entries[i] = new Entry { label = text, mark = mark, matchup = matchup }; rect.gameObject.SetActive(false);
             }
             SceneManager.activeSceneChanged += SceneChanged;
         }
         void OnDestroy() { SceneManager.activeSceneChanged -= SceneChanged; if (live == this) live = null; }
         void SceneChanged(Scene previous, Scene current) => Clear();
-        void Push(Vector3 point, float amount, bool critical, bool dot, bool damageToAlly, bool healing) {
+        static void AddOutline(Graphic graphic, float width) {
+            var outline = graphic.gameObject.AddComponent<Outline>();
+            outline.effectColor = new Color(.025f, .035f, .06f, .95f);
+            outline.effectDistance = new Vector2(width, -width);
+        }
+
+        internal static string FormatEffectiveness(float value) {
+            if (value <= 0 || float.IsNaN(value) || float.IsInfinity(value) || Mathf.Approximately(value, 1)) return string.Empty;
+            if (Mathf.Approximately(value, .25f)) return "↓ ×¼";
+            if (Mathf.Approximately(value, .5f)) return "↓ ×½";
+            return (value > 1 ? "↑ ×" : "↓ ×") + value.ToString("0.##", CultureInfo.InvariantCulture);
+        }
+
+        void Push(Vector3 point, float amount, bool critical, bool dot, bool damageToAlly, bool healing, float effectiveness) {
             using (SpawnMarker.Auto()) {
             var e = entries[next]; next = (next + 1) % Capacity; serial++;
             float variation = ((serial * 73) % 101) / 100f;
@@ -101,11 +124,16 @@ namespace Capstone.Game.HudSystem {
             e.color=damageToAlly?new Color(1,.48f,.43f):new Color(.72f,.96f,1);
             if (healing) e.color = new Color(.65f, 1, .79f);
             if(e.dot)e.color=Color.Lerp(e.color,new Color(.88f,.66f,.72f),.3f);
-            e.label.fontSize = e.dot ? 23 : e.critical ? 35 : 29;
+            e.label.fontSize = e.dot ? 23 : e.critical ? 38 : 30;
             e.label.text = (healing ? "+" : "") + amount.ToString(amount < 1 ? "0.##" : "0.#", CultureInfo.InvariantCulture);
             e.mark.Dot = e.dot; e.mark.gameObject.SetActive(e.dot || e.critical);
             e.mark.rectTransform.anchoredPosition = new Vector2(-e.label.preferredWidth * .5f - 10, 0);
-            e.mark.color = e.color; e.mark.SetAllDirty();
+            e.mark.color = e.critical && !e.dot ? new Color(1, .83f, .38f) : e.color;
+            e.mark.SetAllDirty();
+            e.matchup.text = dot || healing ? string.Empty : FormatEffectiveness(effectiveness);
+            e.matchup.gameObject.SetActive(e.matchup.text.Length > 0);
+            e.matchupColor = effectiveness > 1 ? new Color(1, .86f, .52f) : new Color(.82f, .82f, 1);
+            e.matchup.color = e.matchupColor;
             e.label.color = e.color; e.label.enabled = true; e.active = true; e.label.gameObject.SetActive(true); e.label.transform.SetAsLastSibling();
             if (healing) HealingSpawnedCount++;
             else { SpawnedCount++; LastDamage = amount; LastText = e.label.text; LastCritical = e.critical; }
@@ -119,8 +147,8 @@ namespace Capstone.Game.HudSystem {
                 float t = (Time.unscaledTime - e.born) / Duration;
                 if (t >= 1 || worldCamera == null) { e.active = false; e.label.gameObject.SetActive(false); continue; }
                 Vector3 screen = worldCamera.WorldToScreenPoint(e.world);
-                if (screen.z <= 0) { e.label.enabled = false; continue; }
-                e.label.enabled = true;
+                e.label.enabled = e.mark.enabled = e.matchup.enabled = screen.z > 0;
+                if (screen.z <= 0) continue;
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(surface, screen, null, out var p);
                 float travel = 1 - Mathf.Pow(1 - t, 1.5f);
                 Vector2 arc = (1 - travel) * (1 - travel) * e.start + 2 * (1 - travel) * travel * e.control + travel * travel * e.end;
@@ -133,7 +161,10 @@ namespace Capstone.Game.HudSystem {
                 float scale = age < .065f ? Mathf.Lerp(.82f, e.critical ? 1.18f : 1.12f, age / .065f)
                     : Mathf.Lerp(e.critical ? 1.18f : 1.12f, 1, Mathf.Clamp01((age - .065f) / .10f));
                 e.label.rectTransform.localScale = Vector3.one * scale;
-                var color = e.color; color.a = 1 - Mathf.Clamp01((t - .6f) / .4f); e.label.color = color; e.mark.color = color;
+                float alpha = 1 - Mathf.Clamp01((t - .6f) / .4f);
+                var color = e.color; color.a = alpha; e.label.color = color;
+                var mark = e.mark.color; mark.a = alpha; e.mark.color = mark;
+                var matchup = e.matchupColor; matchup.a = alpha; e.matchup.color = matchup;
             }
             }
         }

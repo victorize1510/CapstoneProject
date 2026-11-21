@@ -17,9 +17,9 @@ MonoBehaviour:
   hp: 60
   attack: 65
   magicAttack: 25
-  defense: 60
-  magicDefense: 45
-  speed: 30
+  defense: 65
+  magicDefense: 50
+  speed: 35
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

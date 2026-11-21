@@ -22,6 +22,7 @@ namespace Capstone.Game.CreatureSystem
         public readonly string SkillId;
         public readonly int CastId;
         public readonly int EmissionIndex;
+        public readonly int EmissionCount;
         public readonly float RawDamage;
         public readonly CreatureDamageKind Kind;
         public readonly bool Critical, DamageOverTime;
@@ -36,6 +37,11 @@ namespace Capstone.Game.CreatureSystem
         }
 
         public CombatHit(GameObject source, string skillId, int castId, float rawDamage, CreatureDamageKind kind, bool critical, bool damageOverTime, Vector3 point, int emissionIndex, CombatElementSnapshot elements)
+            : this(source, skillId, castId, rawDamage, kind, critical, damageOverTime, point, emissionIndex, elements, 1)
+        {
+        }
+
+        public CombatHit(GameObject source, string skillId, int castId, float rawDamage, CreatureDamageKind kind, bool critical, bool damageOverTime, Vector3 point, int emissionIndex, CombatElementSnapshot elements, int emissionCount)
         {
             Source = source;
             SkillId = skillId;
@@ -46,6 +52,7 @@ namespace Capstone.Game.CreatureSystem
             DamageOverTime = damageOverTime;
             Point = point;
             EmissionIndex = emissionIndex;
+            EmissionCount = emissionCount;
             Elements = elements;
         }
     }
@@ -56,12 +63,18 @@ namespace Capstone.Game.CreatureSystem
         public readonly GameObject Target;
         public readonly float HpLost;
         public readonly bool Killed;
-        public CombatDamageResult(CombatHit hit, GameObject target, float hpLost, bool killed)
+        public readonly float Effectiveness;
+        public CombatDamageResult(CombatHit hit, GameObject target, float hpLost, bool killed) : this(hit, target, hpLost, killed, 1)
+        {
+        }
+
+        public CombatDamageResult(CombatHit hit, GameObject target, float hpLost, bool killed, float effectiveness)
         {
             Hit = hit;
             Target = target;
             HpLost = hpLost;
             Killed = killed;
+            Effectiveness = effectiveness;
         }
     }
 

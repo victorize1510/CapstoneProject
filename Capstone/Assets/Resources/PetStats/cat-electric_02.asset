@@ -16,10 +16,10 @@ MonoBehaviour:
   formId: "02"
   hp: 60
   attack: 65
-  magicAttack: 85
-  defense: 50
-  magicDefense: 60
-  speed: 110
+  magicAttack: 75
+  defense: 75
+  magicDefense: 55
+  speed: 105
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

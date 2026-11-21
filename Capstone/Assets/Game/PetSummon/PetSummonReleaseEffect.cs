@@ -122,7 +122,10 @@ namespace Capstone.Game.PetSummon
         }
 
         public IEnumerator PlaySummon(PetController pet, Vector3 spawnPoint, Transform ball, Action releasePet,
-            Vector3? groundPoint = null)
+            Vector3? groundPoint = null) => PlaySummon(pet, spawnPoint, ball, releasePet, groundPoint, false);
+
+        public IEnumerator PlaySummon(PetController pet, Vector3 spawnPoint, Transform ball, Action releasePet,
+            Vector3? groundPoint, bool preservePendingOnFailure)
         {
             Cancel();
             if (pet == null || ball == null) yield break;
@@ -170,7 +173,7 @@ namespace Capstone.Game.PetSummon
                     Debug.LogWarning("Pet summon animation exceeded its completion timeout.",pet);
                 if (!pet.CompleteSummonPresentation(spawnPoint)) pet.Withdraw();
             }
-            finally { if (version == sequenceVersion) RestoreAndReturn(); }
+            finally { if (version == sequenceVersion) RestoreAndReturn(preservePendingOnFailure); }
         }
 
         public IEnumerator PlayRecall(PetController pet, Transform ball, Action hidePet, float durationOverride = 0)
@@ -502,7 +505,7 @@ namespace Capstone.Game.PetSummon
             activeInstance.ResetPresentation(); activeInstance.gameObject.SetActive(false); activeInstance = null;
         }
 
-        void RestoreAndReturn()
+        void RestoreAndReturn(bool preservePendingSummon = false)
         {
             RestoreBody(); ReturnVfx();
             for (int i=0;i<bodies.Count;i++) {
@@ -526,7 +529,7 @@ namespace Capstone.Game.PetSummon
                 if (hiddenBallRenderers[i] != null) hiddenBallRenderers[i].enabled = true;
             hiddenBallRenderers.Clear();
             if (presentationPet != null) {
-                if (presentationPet.IsSummonPresentationPending) presentationPet.Withdraw();
+                if (!preservePendingSummon && presentationPet.IsSummonPresentationPending) presentationPet.Withdraw();
                 presentationPet.SetRecallPresentation(false);
             }
             presentationPet = null; releaseBall = null; ballCollider = null;

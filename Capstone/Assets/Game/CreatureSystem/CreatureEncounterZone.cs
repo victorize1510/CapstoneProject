@@ -32,6 +32,8 @@ namespace Capstone.Game.CreatureSystem
         public bool allowPartialConfiguration;
         public bool requireSupportedTypes;
         [Min(.1f)] public float respawnDelay = 5;
+        [Tooltip("So Pet hoang toi thieu/toi da cung luc (so slot). De Maximum = 0 de dung cong thuc cu cua CreatureSpawnRules. Min = Max la so co dinh.")]
+        [Min(0)] public int minimumPopulation, maximumPopulation;
         [Min(0)] public float minimumSpawnSeparation = 2.5f;
         [Min(0)] public float minimumPlayerSpawnDistance = 5;
         public bool allowNearPlayerFallback = true;
@@ -50,6 +52,9 @@ namespace Capstone.Game.CreatureSystem
         public LayerMask obstacleMask = Physics.DefaultRaycastLayers;
         public GameObject smokePrefab, downedStarsPrefab;
         public bool drawGizmos = true;
+
+        // Gioi han cung de tranh tao qua nhieu slot do nhap sai.
+        const int MaxPopulationCap = 32;
 
         sealed class EligibleSpecies
         {
@@ -77,15 +82,18 @@ namespace Capstone.Game.CreatureSystem
         public string LastStatus { get; private set; } = "Chua khoi tao";
         public IReadOnlyList<string> ConfigurationIssues => configurationIssues;
         public string LastPlacementReport { get; private set; } = "Chua thu vi tri";
-        public int OccupiedSlots {
-            get {
+        public int OccupiedSlots
+        {
+            get
+            {
                 int count = 0;
                 foreach (var slot in slots) if (slot != null && slot.CurrentActor != null) count++;
                 return count;
             }
         }
 
-        void Reset() {
+        void Reset()
+        {
             zoneId = Guid.NewGuid().ToString("N");
             zoneBounds = GetComponent<BoxCollider>();
             zoneBounds.isTrigger = true;
@@ -93,19 +101,24 @@ namespace Capstone.Game.CreatureSystem
             zoneBounds.size = new Vector3(18, 6, 18);
         }
 
-        void OnValidate() {
+        void OnValidate()
+        {
             baseLevel = Mathf.Clamp(baseLevel, 1, PetStatCalculator.MaxLevel);
             levelVariance = Mathf.Clamp(levelVariance, 0, PetStatCalculator.MaxLevel);
             respawnDelay = Mathf.Max(.1f, respawnDelay);
+            maximumPopulation = Mathf.Clamp(maximumPopulation, 0, MaxPopulationCap);
+            if (maximumPopulation > 0) minimumPopulation = Mathf.Clamp(minimumPopulation, 1, maximumPopulation);
             minimumSpawnSeparation = Mathf.Max(0, minimumSpawnSeparation);
             minimumPlayerSpawnDistance = Mathf.Max(0, minimumPlayerSpawnDistance);
             navMeshSampleDistance = Mathf.Max(.1f, navMeshSampleDistance);
             positionAttempts = Mathf.Clamp(positionAttempts, 1, 128);
         }
 
-        void Update() {
+        void Update()
+        {
             if (!spawningEnabled || UISystem.GameplayPause.IsPaused) return;
-            if (player == null && Time.time >= findPlayerAt) {
+            if (player == null && Time.time >= findPlayerAt)
+            {
                 findPlayerAt = Time.time + 1;
                 var movement = FindFirstObjectByType<BasicPlayerMovement>();
                 if (movement != null) player = movement.transform;
@@ -114,14 +127,15 @@ namespace Capstone.Game.CreatureSystem
             initializeAt = Time.time + 1;
             if (!ValidateConfiguration(out var reason)) { LastStatus = reason; return; }
             random = new Random(Guid.NewGuid().GetHashCode());
-            TargetPopulation = CreatureSpawnRules.Population(eligible.Count, random);
+            TargetPopulation = ResolvePopulation();
             lifecycleRoot = new GameObject(zoneName + " - zone lifecycle");
             SceneManager.MoveGameObjectToScene(lifecycleRoot, gameObject.scene);
             staging = new GameObject("Inactive spawn staging");
             staging.transform.SetParent(lifecycleRoot.transform, false);
             staging.SetActive(false);
             // Owner khong nam duoi Zone: tat collider/Zone van ket thuc duoc chet va capture.
-            for (int i = 0; i < TargetPopulation; i++) {
+            for (int i = 0; i < TargetPopulation; i++)
+            {
                 var host = new GameObject("Slot " + (i + 1));
                 host.SetActive(false);
                 host.transform.SetParent(lifecycleRoot.transform, false);
@@ -137,33 +151,50 @@ namespace Capstone.Game.CreatureSystem
             LastStatus = "San sang: " + TargetPopulation + " slot";
         }
 
-        public bool ValidateConfiguration(out string reason) {
+        // Maximum = 0: giu nguyen cong thuc cu (Zone hien co khong doi hanh vi).
+        // Maximum > 0: roll ngau nhien trong [Minimum, Maximum] moi lan Zone khoi tao.
+        int ResolvePopulation()
+        {
+            if (maximumPopulation <= 0) return CreatureSpawnRules.Population(eligible.Count, random);
+            int max = Mathf.Clamp(maximumPopulation, 1, MaxPopulationCap);
+            int min = Mathf.Clamp(minimumPopulation, 1, max);
+            return random.Next(min, max + 1);
+        }
+
+        public bool ValidateConfiguration(out string reason)
+        {
             eligible.Clear();
             configurationIssues.Clear();
             reason = "Form trung ID hoac weight khong hop le.";
             if (zoneBounds == null) zoneBounds = GetComponent<BoxCollider>();
-            if (zoneBounds == null || !zoneBounds.isTrigger || !zoneBounds.enabled) {
+            if (zoneBounds == null || !zoneBounds.isTrigger || !zoneBounds.enabled)
+            {
                 reason = "Zone can BoxCollider bat va IsTrigger."; return false;
             }
             Vector3 up = zoneBounds.transform.up;
             Vector3 boundsScale = zoneBounds.transform.lossyScale;
-            if (Vector3.Dot(up, Vector3.up) < .999f || zoneBounds.size.x <= 0 || zoneBounds.size.y <= 0 || zoneBounds.size.z <= 0) {
+            if (Vector3.Dot(up, Vector3.up) < .999f || zoneBounds.size.x <= 0 || zoneBounds.size.y <= 0 || zoneBounds.size.z <= 0)
+            {
                 reason = "Box phai dung theo truc Y, kich thuoc duong; co the xoay yaw."; return false;
             }
-            if (Mathf.Abs(boundsScale.x * boundsScale.y * boundsScale.z) < .000001f) {
+            if (Mathf.Abs(boundsScale.x * boundsScale.y * boundsScale.z) < .000001f)
+            {
                 reason = "Scale Zone khong duoc bang 0."; return false;
             }
             var entries = spawnTable != null ? spawnTable.species : species;
             var catalog = spawnTable != null ? spawnTable.ownedPetCatalog : ownedPetCatalog;
             if (entries == null || catalog == null) { reason = "Thieu danh sach Species hoac catalog OwnedPet de load sau capture."; return false; }
             var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var entry in entries) {
+            foreach (var entry in entries)
+            {
                 if (entry == null || !entry.enabled || entry.weight == 0) continue;
                 string id = entry.definitionId?.Trim();
-                if (string.IsNullOrEmpty(id) || !ids.Add(id) || !CreatureSpawnRules.ValidWeight(entry.weight)) {
+                if (string.IsNullOrEmpty(id) || !ids.Add(id) || !CreatureSpawnRules.ValidWeight(entry.weight))
+                {
                     reason = "DefinitionId trung/trong hoac weight khong hop le."; eligible.Clear(); return false;
                 }
-                if (spawnTable != null && spawnTable.excludedDefinitionIds != null && spawnTable.excludedDefinitionIds.Exists(excluded => Same(excluded, id))) {
+                if (spawnTable != null && spawnTable.excludedDefinitionIds != null && spawnTable.excludedDefinitionIds.Exists(excluded => Same(excluded, id)))
+                {
                     reason = id + ": Family bi loai khoi table nay.";
                     configurationIssues.Add(reason);
                     if (!allowPartialConfiguration) { eligible.Clear(); return false; }
@@ -172,41 +203,47 @@ namespace Capstone.Game.CreatureSystem
                 var group = new EligibleSpecies { source = entry };
                 if (!CreatureSpawnRules.TryLevelRange(baseLevel, levelVariance, PetStatCalculator.MaxLevel,
                     minimumLevel, maximumLevel, regionMinimumLevel, regionMaximumLevel, entry.minimumLevel, entry.maximumLevel,
-                    out group.minimumLevel, out group.maximumLevel)) {
+                    out group.minimumLevel, out group.maximumLevel))
+                {
                     reason = id + ": giao khoang cap Zone/khu vuc/Species rong.";
                     configurationIssues.Add(reason);
                     if (!allowPartialConfiguration) { eligible.Clear(); return false; }
                     continue;
                 }
                 var formIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                if (entry.forms != null) foreach (var form in entry.forms) {
-                    if (form == null || !form.enabled || form.weight == 0) continue;
-                    reason = id + "/" + form.formId + ": Form ID trung hoac weight sai.";
-                    bool valid = formIds.Add(form.formId?.Trim() ?? "") && CreatureSpawnRules.ValidWeight(form.weight)
-                        && ValidatePrefab(id, form, catalog, out reason);
-                    if (valid && requireSupportedTypes) {
-                        var typing = form.prefab.GetComponent<PetCollectionMetadata>();
-                        valid = Elements.ElementCatalog.IsValidCreatureTypes(typing.Element, typing.SecondaryElement);
-                        if (!valid) reason = id + "/" + form.formId + ": typing chua hop le theo 9 he hien co.";
-                        else valid = ValidateRuntimeData(form.prefab, out reason);
+                if (entry.forms != null) foreach (var form in entry.forms)
+                    {
+                        if (form == null || !form.enabled || form.weight == 0) continue;
+                        reason = id + "/" + form.formId + ": Form ID trung hoac weight sai.";
+                        bool valid = formIds.Add(form.formId?.Trim() ?? "") && CreatureSpawnRules.ValidWeight(form.weight)
+                            && ValidatePrefab(id, form, catalog, out reason);
+                        if (valid && requireSupportedTypes)
+                        {
+                            var typing = form.prefab.GetComponent<PetCollectionMetadata>();
+                            valid = Elements.ElementCatalog.IsValidCreatureTypes(typing.Element, typing.SecondaryElement);
+                            if (!valid) reason = id + "/" + form.formId + ": typing chua hop le theo 9 he hien co.";
+                            else valid = ValidateRuntimeData(form.prefab, out reason);
+                        }
+                        if (!valid)
+                        {
+                            configurationIssues.Add(reason);
+                            if (!allowPartialConfiguration) { eligible.Clear(); return false; }
+                            continue;
+                        }
+                        var metadata = form.prefab.GetComponent<PetCollectionMetadata>();
+                        int minimum = form.minimumZoneLevel > 0 ? form.minimumZoneLevel : CreatureSpawnRules.MinimumFormLevel(metadata.EvolutionStage);
+                        foreach (var rule in formLevelOverrides)
+                            if (rule != null && Same(rule.definitionId, id) && Same(rule.formId, form.formId)) minimum = Mathf.Max(1, rule.minimumZoneLevel);
+                        int availableLevel = CreatureSpawnRules.FormReferenceLevel(formEligibilityUsesIndividualLevel, baseLevel, group.maximumLevel);
+                        if (availableLevel < minimum) continue;
+                        group.forms.Add(form);
+                        group.weights.Add(form.weight);
+                        group.formMinimumLevels.Add(minimum);
                     }
-                    if (!valid) {
-                        configurationIssues.Add(reason);
-                        if (!allowPartialConfiguration) { eligible.Clear(); return false; }
-                        continue;
-                    }
-                    var metadata = form.prefab.GetComponent<PetCollectionMetadata>();
-                    int minimum = form.minimumZoneLevel > 0 ? form.minimumZoneLevel : CreatureSpawnRules.MinimumFormLevel(metadata.EvolutionStage);
-                    foreach (var rule in formLevelOverrides)
-                        if (rule != null && Same(rule.definitionId, id) && Same(rule.formId, form.formId)) minimum = Mathf.Max(1, rule.minimumZoneLevel);
-                    int availableLevel = CreatureSpawnRules.FormReferenceLevel(formEligibilityUsesIndividualLevel, baseLevel, group.maximumLevel);
-                    if (availableLevel < minimum) continue;
-                    group.forms.Add(form);
-                    group.weights.Add(form.weight);
-                    group.formMinimumLevels.Add(minimum);
-                }
-                if (group.forms.Count > 0) {
-                    if (formEligibilityUsesIndividualLevel) {
+                if (group.forms.Count > 0)
+                {
+                    if (formEligibilityUsesIndividualLevel)
+                    {
                         int lowestFormLevel = int.MaxValue;
                         foreach (int value in group.formMinimumLevels) lowestFormLevel = Math.Min(lowestFormLevel, value);
                         group.minimumLevel = Math.Max(group.minimumLevel, lowestFormLevel);
@@ -219,13 +256,15 @@ namespace Capstone.Game.CreatureSystem
             return eligible.Count > 0;
         }
 
-        static bool ValidateRuntimeData(GameObject prefab, out string reason) {
+        static bool ValidateRuntimeData(GameObject prefab, out string reason)
+        {
             reason = prefab.name + ": thieu Combat/Presentation/Catalog/loadout hoac capture rate.";
             var metadata = prefab.GetComponent<PetCollectionMetadata>();
             if (!PetStatCalculator.TryGetProfile(metadata, out var profile) || profile.BaseCatchRate < 1 || profile.BaseCatchRate > 255) return false;
             var set = prefab.GetComponent<PetHudRuntimeStats>().SpeciesSkillSet;
             if (set.catalog == null || set.learnset == null || set.defaultLoadout == null || set.defaultLoadout.Count == 0 || set.defaultLoadout.Count > 4) return false;
-            foreach (var learned in set.learnset) {
+            foreach (var learned in set.learnset)
+            {
                 if (learned?.skill == null || string.IsNullOrWhiteSpace(learned.skill.Id)
                     || !set.catalog.TryGet(learned.skill.Id, out var registered) || registered != learned.skill
                     || learned.skill.combat == null || learned.Presentation == null) return false;
@@ -237,33 +276,39 @@ namespace Capstone.Game.CreatureSystem
         }
 
         // Chi do coverage; khong bake, khong doi Surface hay tao actor.
-        public string ProbeNavMeshCoverage() {
+        public string ProbeNavMeshCoverage()
+        {
             if (zoneBounds == null) zoneBounds = GetComponent<BoxCollider>();
             var box = zoneBounds;
             if (box == null || !box.enabled || !box.gameObject.activeInHierarchy) return "Khong do duoc: Box/Zone dang tat hoac chua gan.";
             var types = new HashSet<int>();
             var entries = spawnTable != null ? spawnTable.species : species;
             if (entries != null) foreach (var entry in entries) if (entry?.forms != null)
-                foreach (var form in entry.forms) {
-                    var agent = form?.prefab != null ? form.prefab.GetComponent<NavMeshAgent>() : null;
-                    if (agent != null) types.Add(agent.agentTypeID);
-                }
+                        foreach (var form in entry.forms)
+                        {
+                            var agent = form?.prefab != null ? form.prefab.GetComponent<NavMeshAgent>() : null;
+                            if (agent != null) types.Add(agent.agentTypeID);
+                        }
             bool generic = types.Count == 0;
             if (generic && NavMesh.GetSettingsCount() > 0) types.Add(NavMesh.GetSettingsByIndex(0).agentTypeID);
             if (types.Count == 0) return "Khong co Agent Type/NavMesh settings.";
             var reports = new List<string>();
-            foreach (int type in types) {
+            foreach (int type in types)
+            {
                 var filter = new NavMeshQueryFilter { agentTypeID = type, areaMask = NavMesh.AllAreas };
                 int covered = 0, height = 0, outside = 0;
-                for (int x = 0; x < 3; x++) for (int z = 0; z < 3; z++) {
-                    Vector3 local = box.center + new Vector3((x - 1) * box.size.x / 3, 0, (z - 1) * box.size.z / 3);
-                    Vector3 point = box.transform.TransformPoint(local);
-                    if (NavMesh.SamplePosition(point, out var hit, navMeshSampleDistance, filter)) {
-                        if (Contains(hit.position)) covered++; else outside++;
-                    } else if (NavMesh.SamplePosition(point, out var wide, Mathf.Max(navMeshSampleDistance, box.bounds.size.y + 4), filter)
-                        && HorizontalSquared(wide.position - point) <= navMeshSampleDistance * navMeshSampleDistance
-                        && Mathf.Abs(wide.position.y - point.y) > navMeshSampleDistance) height++;
-                }
+                for (int x = 0; x < 3; x++) for (int z = 0; z < 3; z++)
+                    {
+                        Vector3 local = box.center + new Vector3((x - 1) * box.size.x / 3, 0, (z - 1) * box.size.z / 3);
+                        Vector3 point = box.transform.TransformPoint(local);
+                        if (NavMesh.SamplePosition(point, out var hit, navMeshSampleDistance, filter))
+                        {
+                            if (Contains(hit.position)) covered++; else outside++;
+                        }
+                        else if (NavMesh.SamplePosition(point, out var wide, Mathf.Max(navMeshSampleDistance, box.bounds.size.y + 4), filter)
+                            && HorizontalSquared(wide.position - point) <= navMeshSampleDistance * navMeshSampleDistance
+                            && Mathf.Abs(wide.position.y - point.y) > navMeshSampleDistance) height++;
+                    }
                 reports.Add("AgentType " + type + ": " + covered + "/9 mau trong Box; sai do cao=" + height + "; ngoai Box=" + outside);
             }
             return string.Join("\n", reports) + (generic ? "\nChua co prefab san sang: chi do hinh hoc, chua kiem actor." : "")
@@ -272,14 +317,17 @@ namespace Capstone.Game.CreatureSystem
 
         static bool Same(string a, string b) => string.Equals(a?.Trim(), b?.Trim(), StringComparison.OrdinalIgnoreCase);
 
-        static bool ValidatePrefab(string id, CreatureSpawnForm form, PetPrefabCatalog catalog, out string reason) {
+        static bool ValidatePrefab(string id, CreatureSpawnForm form, PetPrefabCatalog catalog, out string reason)
+        {
             string formKey = id + "/" + form.formId;
-            if (form.prefab == null) {
+            if (form.prefab == null)
+            {
                 reason = formKey + ": Spawn Table khong co tham chieu prefab Wild hop le.";
                 if (!string.IsNullOrWhiteSpace(form.configurationBlocker)) reason += " " + form.configurationBlocker;
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(form.formId)) {
+            if (string.IsNullOrWhiteSpace(form.formId))
+            {
                 reason = formKey + ": FormId trong.";
                 return false;
             }
@@ -318,7 +366,8 @@ namespace Capstone.Game.CreatureSystem
             else if (!PetStatCalculator.TryGetProfile(metadata, out var profile)) issue = "Khong tim thay StatProfile cua Wild";
             else if (!profile.IsCatchable) issue = "StatProfile.IsCatchable=false";
             else if (!catalog.TryGetPrefab(id, form.formId, out var owned)) issue = "Catalog khong resolve duoc OwnedPet";
-            else {
+            else
+            {
                 var ownedMetadata = owned.GetComponent<PetCollectionMetadata>();
                 var ownedStats = owned.GetComponent<PetHudRuntimeStats>();
                 if (owned.IsWildEncounter || ownedMetadata == null || !Same(ownedMetadata.DefinitionId, id)
@@ -332,15 +381,18 @@ namespace Capstone.Game.CreatureSystem
             return false;
         }
 
-        internal bool TryCreateActor(EncounterSpawnPoint owner, out DummyEnemy actor) {
+        internal bool TryCreateActor(EncounterSpawnPoint owner, out DummyEnemy actor)
+        {
             actor = null;
             if (!initialized || !isActiveAndEnabled || !spawningEnabled || zoneBounds == null || !zoneBounds.enabled || !zoneBounds.isTrigger
                 || !zoneBounds.gameObject.activeInHierarchy || !slots.Contains(owner) || OccupiedSlots >= TargetPopulation) return false;
             speciesWeights.Clear(); represented.Clear();
-            foreach (var group in eligible) {
+            foreach (var group in eligible)
+            {
                 speciesWeights.Add(group.source.weight);
                 bool present = false;
-                foreach (var slot in slots) {
+                foreach (var slot in slots)
+                {
                     var current = slot != null ? slot.CurrentActor : null;
                     var metadata = current != null ? current.GetComponent<PetCollectionMetadata>() : null;
                     if (metadata != null && Same(metadata.DefinitionId, group.source.definitionId)) { present = true; break; }
@@ -353,7 +405,8 @@ namespace Capstone.Game.CreatureSystem
             int rolled = 0;
             if (formEligibilityUsesIndividualLevel) rolled = random.Next(selected.minimumLevel, selected.maximumLevel + 1);
             formWeights.Clear();
-            for (int i = 0; i < selected.forms.Count; i++) {
+            for (int i = 0; i < selected.forms.Count; i++)
+            {
                 int reference = CreatureSpawnRules.FormReferenceLevel(formEligibilityUsesIndividualLevel, baseLevel, rolled);
                 formWeights.Add(reference >= selected.formMinimumLevels[i] ? selected.weights[i] : 0);
             }
@@ -363,7 +416,8 @@ namespace Capstone.Game.CreatureSystem
             if (form.prefab == null) { LastStatus = "Prefab da mat; dung Play va kiem tra Spawn Table."; return false; }
             if (!FindPosition(form.prefab, out var position, out bool nearPlayer)) return false;
             GameObject instance = null;
-            try {
+            try
+            {
                 // Inactive parent cho phep gan ID/cap truoc Awake va truoc cooldown dau tien.
                 instance = Instantiate(form.prefab, position, Quaternion.Euler(0, (float)random.NextDouble() * 360, 0), staging.transform);
                 var metadata = instance.GetComponent<PetCollectionMetadata>();
@@ -390,7 +444,9 @@ namespace Capstone.Game.CreatureSystem
                 TotalSpawned++;
                 LastStatus = selected.source.definitionId + "/" + form.formId + " Lv" + rolled + (nearPlayer ? " (vi tri gan player duoc phep du phong)" : "");
                 return true;
-            } catch (Exception error) {
+            }
+            catch (Exception error)
+            {
                 if (instance != null) Destroy(instance);
                 actor = null;
                 LastStatus = "Spawn bi huy: " + error.Message;
@@ -399,7 +455,8 @@ namespace Capstone.Game.CreatureSystem
             }
         }
 
-        bool FindPosition(GameObject prefab, out Vector3 position, out bool nearPlayer) {
+        bool FindPosition(GameObject prefab, out Vector3 position, out bool nearPlayer)
+        {
             position = default; nearPlayer = false;
             var capsule = prefab.GetComponent<CapsuleCollider>();
             var agent = prefab.GetComponent<NavMeshAgent>();
@@ -409,7 +466,8 @@ namespace Capstone.Game.CreatureSystem
             float height = Mathf.Max(radius * 2, capsule.height * Mathf.Abs(scale.y));
             int noNav = 0, wrongHeight = 0, outside = 0, edges = 0, players = 0, separation = 0, obstacles = 0;
             string blocker = "";
-            for (int attempt = 0; attempt < positionAttempts; attempt++) {
+            for (int attempt = 0; attempt < positionAttempts; attempt++)
+            {
                 var local = center + new Vector3(((float)random.NextDouble() - .5f) * size.x, 0, ((float)random.NextDouble() - .5f) * size.z);
                 var candidate = zoneBounds.transform.TransformPoint(local);
                 if (!NavMesh.SamplePosition(candidate, out var nav, navMeshSampleDistance, filter)) { noNav++; continue; }
@@ -422,7 +480,7 @@ namespace Capstone.Game.CreatureSystem
                 foreach (var other in DummyEnemy.ActiveEnemies)
                     if (other != null && other.gameObject.activeInHierarchy && HorizontalSquared(nav.position - other.transform.position) < minimumSpawnSeparation * minimumSpawnSeparation) { separated = false; break; }
                 if (separated) foreach (var other in CreatureCombatant.Active)
-                    if (other != null && !other.IsEnemy && other.CanBeAttacked && HorizontalSquared(nav.position - other.transform.position) < minimumSpawnSeparation * minimumSpawnSeparation) { separated = false; break; }
+                        if (other != null && !other.IsEnemy && other.CanBeAttacked && HorizontalSquared(nav.position - other.transform.position) < minimumSpawnSeparation * minimumSpawnSeparation) { separated = false; break; }
                 if (!separated) { separation++; continue; }
                 // Dung radius bao capsule cho moi yaw; khong phu thuoc huong xoay ngau nhien.
                 Vector3 bodyCenter = nav.position + Vector3.up * (capsule.center.y * scale.y);
@@ -433,7 +491,8 @@ namespace Capstone.Game.CreatureSystem
                 int count = Physics.OverlapCapsuleNonAlloc(bodyCenter - halfSegment + Vector3.up * .03f, bodyCenter + halfSegment + Vector3.up * .03f,
                     clearance, overlaps, obstacleMask, QueryTriggerInteraction.Collide);
                 bool blocked = count == overlaps.Length;
-                for (int i = 0; i < count && !blocked; i++) {
+                for (int i = 0; i < count && !blocked; i++)
+                {
                     var other = overlaps[i];
                     // Bo trigger Zone/sensor, nhung van tranh hurtbox trigger cua pet/enemy.
                     if (other != null && (!other.isTrigger || other.GetComponentInParent<CreatureCombatant>() != null)) { blocked = true; blocker = other.name; }
@@ -450,21 +509,25 @@ namespace Capstone.Game.CreatureSystem
         }
 
         static float HorizontalSquared(Vector3 value) => value.x * value.x + value.z * value.z;
-        bool ContainsBody(Vector3 center, float radius, float halfHeight) {
+        bool ContainsBody(Vector3 center, float radius, float halfHeight)
+        {
             Vector3 local = zoneBounds.transform.InverseTransformPoint(center) - zoneBounds.center;
             Vector3 half = zoneBounds.size * .5f, scale = zoneBounds.transform.lossyScale;
             return Mathf.Abs(local.x) + radius / Mathf.Abs(scale.x) <= half.x
                 && Mathf.Abs(local.y) + halfHeight / Mathf.Abs(scale.y) <= half.y
                 && Mathf.Abs(local.z) + radius / Mathf.Abs(scale.z) <= half.z;
         }
-        bool Contains(Vector3 point) {
+        bool Contains(Vector3 point)
+        {
             Vector3 local = zoneBounds.transform.InverseTransformPoint(point) - zoneBounds.center;
             Vector3 half = zoneBounds.size * .5f;
             return Mathf.Abs(local.x) <= half.x && Mathf.Abs(local.y) <= half.y && Mathf.Abs(local.z) <= half.z;
         }
 
-        void OnDestroy() {
-            foreach (var slot in slots) {
+        void OnDestroy()
+        {
+            foreach (var slot in slots)
+            {
                 var actor = slot != null ? slot.CurrentActor : null;
                 var capture = actor != null ? actor.GetComponent<WildPetCaptureTarget>() : null;
                 if (capture == null || !capture.IsWild) continue;
@@ -474,7 +537,8 @@ namespace Capstone.Game.CreatureSystem
             if (lifecycleRoot != null) Destroy(lifecycleRoot);
         }
 
-        void OnDrawGizmosSelected() {
+        void OnDrawGizmosSelected()
+        {
             if (!drawGizmos) return;
             var box = zoneBounds != null ? zoneBounds : GetComponent<BoxCollider>();
             if (box == null) return;
@@ -485,10 +549,11 @@ namespace Capstone.Game.CreatureSystem
             Gizmos.color = new Color(.3f, .8f, .65f, 1);
             Gizmos.DrawWireCube(box.center, box.size);
             Gizmos.matrix = previous;
-            foreach (var slot in slots) if (slot != null && slot.CurrentActor != null) {
-                Gizmos.DrawWireSphere(slot.CurrentActor.transform.position, .35f);
-                Gizmos.DrawLine(slot.transform.position, slot.CurrentActor.transform.position);
-            }
+            foreach (var slot in slots) if (slot != null && slot.CurrentActor != null)
+                {
+                    Gizmos.DrawWireSphere(slot.CurrentActor.transform.position, .35f);
+                    Gizmos.DrawLine(slot.transform.position, slot.CurrentActor.transform.position);
+                }
         }
     }
 }

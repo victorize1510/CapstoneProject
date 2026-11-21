@@ -3,7 +3,8 @@ using UnityEngine;
 public partial class PetController
 {
     internal bool CanSuspendOwnedRuntime => !wildEncounter && !IsSummoned
-        && state == PetState.Dormant && !defeatPresentation && !recallLocked && !summonRevealPending;
+        && state == PetState.Dormant && !defeatPresentation && !recallLocked && !summonRevealPending
+        && !Capstone.Game.HudSystem.PetEvolutionPresentationController.IsPresenting(this);
 
     void QueueOwnedRuntimeStorage()
     {

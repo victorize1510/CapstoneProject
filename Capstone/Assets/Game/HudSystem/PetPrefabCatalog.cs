@@ -29,6 +29,35 @@ namespace Capstone.Game.HudSystem {
             return pet != null;
         }
 
+        public bool TryInstantiateSaved(string definitionId, string formId, int evolutionStage, Transform parent, out PetController pet) {
+            pet = null;
+            if (!TryGetSavedPrefab(definitionId, formId, evolutionStage, out var prefab)) return false;
+            pet = Instantiate(prefab, parent);
+            return pet != null;
+        }
+
+        public bool TryGetSavedPrefab(string definitionId, string formId, int evolutionStage, out PetController pet) {
+            // Old saves can contain the default "base" alongside a committed evolutionStage.
+            // Resolve from authored stage metadata, never from the pet's level.
+            if (evolutionStage > 0 && (string.IsNullOrWhiteSpace(formId)
+                || string.Equals(formId, "base", StringComparison.OrdinalIgnoreCase))) {
+                string resolvedForm = null;
+                foreach (var entry in entries) {
+                    if (entry?.Prefab == null || !string.Equals(CanonicalDefinitionId(entry.DefinitionId),
+                        CanonicalDefinitionId(definitionId ?? string.Empty), StringComparison.OrdinalIgnoreCase)) continue;
+                    var metadata = entry.Prefab.GetComponentInChildren<PetCollectionMetadata>(true);
+                    if (metadata == null || metadata.EvolutionStage != evolutionStage) continue;
+                    if (resolvedForm != null && !string.Equals(resolvedForm, entry.FormId, StringComparison.OrdinalIgnoreCase)) {
+                        pet = null; return false;
+                    }
+                    resolvedForm = entry.FormId;
+                }
+                if (resolvedForm == null) { pet = null; return false; }
+                formId = resolvedForm;
+            }
+            return TryGetPrefab(definitionId, formId, out pet);
+        }
+
         public bool TryGetPrefab(string definitionId, out PetController pet) {
             return TryGetPrefab(definitionId, string.Empty, out pet);
         }
@@ -71,7 +100,7 @@ namespace Capstone.Game.HudSystem {
             return value;
         }
 
-        static string CanonicalFormId(string value) {
+        internal static string CanonicalFormId(string value) {
             if (string.Equals(value, "base", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(value, "dragon-dusk-base", StringComparison.OrdinalIgnoreCase)) return "01";
             if (string.Equals(value, "dragon-dusk-winged", StringComparison.OrdinalIgnoreCase)) return "02";

@@ -15,11 +15,11 @@ MonoBehaviour:
   definitionId: dragon-fire
   formId: "02"
   hp: 75
-  attack: 85
+  attack: 80
   magicAttack: 100
   defense: 60
   magicDefense: 60
-  speed: 60
+  speed: 55
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

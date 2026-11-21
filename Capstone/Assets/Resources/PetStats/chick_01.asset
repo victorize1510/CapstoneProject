@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetStatProfile
   definitionId: chick
   formId: "01"
-  hp: 40
-  attack: 55
-  magicAttack: 30
+  hp: 45
+  attack: 60
+  magicAttack: 40
   defense: 35
   magicDefense: 35
-  speed: 85
+  speed: 80
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

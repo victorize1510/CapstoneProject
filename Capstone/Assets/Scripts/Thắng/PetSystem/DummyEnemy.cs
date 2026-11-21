@@ -234,13 +234,14 @@ public class DummyEnemy : MonoBehaviour
         }
 
         var combat = GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>();
+        float effectiveness;
         if (combat != null)
         {
-            damage = combat.ResolveDamage(hit);
+            damage = combat.ResolveDamage(hit, out effectiveness);
         }
         else
         {
-            damage = Capstone.Game.CreatureSystem.CreatureCombatant.ResolveElementalDamage(damage, hit, GetComponent<Capstone.Game.HudSystem.PetCollectionMetadata>());
+            damage = Capstone.Game.CreatureSystem.CreatureCombatant.ResolveElementalDamage(damage, hit, GetComponent<Capstone.Game.HudSystem.PetCollectionMetadata>(), out effectiveness);
         }
 
         float previousHealth = health;
@@ -258,7 +259,7 @@ public class DummyEnemy : MonoBehaviour
             GetComponent<Capstone.Game.CreatureSystem.CombatBleed>()?.ClearWounds();
         }
 
-        var result = new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, previousHealth - health, health <= 0f && !shouldDown);
+        var result = new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, previousHealth - health, health <= 0f && !shouldDown, effectiveness);
         if (health <= 0f)
         {
             // Phat HP mat va dong gop truoc giao dich thuong ket lieu duy nhat.

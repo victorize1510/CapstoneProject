@@ -15,10 +15,10 @@ MonoBehaviour:
   definitionId: wolf
   formId: "03"
   hp: 90
-  attack: 130
+  attack: 125
   magicAttack: 55
   defense: 90
-  magicDefense: 65
+  magicDefense: 70
   speed: 105
   criticalRate: 6.25
   criticalDamage: 50

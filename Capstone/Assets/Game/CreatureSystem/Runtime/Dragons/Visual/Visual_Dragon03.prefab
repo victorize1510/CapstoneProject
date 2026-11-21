@@ -1172,7 +1172,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8270352270244547014}
@@ -1226,6 +1226,9 @@ MonoBehaviour:
     anchor: {fileID: 1129523713104137612}
   - key: Ground
     anchor: {fileID: 8594424676593769349}
+  actorRadius: 0
+  actorHeight: 0
+  actorCenter: {x: 0, y: 0, z: 0}
 --- !u!1 &8731911879540460209
 GameObject:
   m_ObjectHideFlags: 0

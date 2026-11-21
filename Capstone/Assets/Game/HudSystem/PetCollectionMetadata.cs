@@ -408,6 +408,8 @@ namespace Capstone.Game.HudSystem {
                 // Khoi phuc ca dang goc. Khi tat Scene Reload, phien Play truoc
                 // co the de lai mesh Dusk bi an.
                 if (EvolutionStage == 0) visualController?.RestoreForm(0);
+                else if (visualController != null) throw new InvalidOperationException("Không tìm thấy visual rule cho Form đã lưu: "
+                    + DefinitionId + "/" + CurrentFormId + " stage=" + EvolutionStage + ". Save gốc được giữ nguyên.");
                 return;
             }
             if (string.Equals(DefinitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)) codexNumber = FormCode;
@@ -422,7 +424,8 @@ namespace Capstone.Game.HudSystem {
             }
 
             if (visualController != null && applied.TargetVisualPrefab != null) {
-                visualController.TryApply(applied.TargetVisualPrefab, out _);
+                if (!visualController.TryApply(applied.TargetVisualPrefab, out string error))
+                    throw new InvalidOperationException("Không khôi phục được Form đã lưu: " + error);
             }
         }
 
@@ -497,6 +500,7 @@ namespace Capstone.Game.HudSystem {
             nextEvolutionDiscovered = saveData.nextEvolutionDiscovered;
             currentFormId = string.IsNullOrWhiteSpace(saveData.currentFormId) ? "base" : saveData.currentFormId.Trim();
             evolutionStage = Mathf.Max(0, saveData.evolutionStage);
+            NormalizeRestoredForm();
             secondaryElement = saveData.secondaryElement != PetElement.Unknown
                 ? saveData.secondaryElement : secondaryElement;
             ApplyFormTyping();
@@ -506,6 +510,28 @@ namespace Capstone.Game.HudSystem {
                 : new List<string>();
 
             Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this,"metadata",()=>Changed?.Invoke());
+        }
+
+        void NormalizeRestoredForm() {
+            currentFormId = PetPrefabCatalog.CanonicalFormId(currentFormId);
+            bool missingForm = string.Equals(currentFormId, "base", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(currentFormId, "01", StringComparison.OrdinalIgnoreCase);
+            if (evolutionRules != null) {
+                foreach (var rule in evolutionRules) {
+                    if (rule == null) continue;
+                    string target = PetPrefabCatalog.CanonicalFormId(rule.TargetFormId);
+                    if (string.Equals(currentFormId, target, StringComparison.OrdinalIgnoreCase)) {
+                        currentFormId = rule.TargetFormId;
+                        evolutionStage = rule.TargetStage;
+                        return;
+                    }
+                }
+                if (missingForm && evolutionStage > 0)
+                    foreach (var rule in evolutionRules)
+                        if (rule != null && rule.TargetStage == evolutionStage) { currentFormId = rule.TargetFormId; return; }
+            }
+            // A high level alone is never proof that the player accepted an evolution.
+            if (evolutionStage == 0 && missingForm) currentFormId = "01";
         }
 
         void OnValidate() {

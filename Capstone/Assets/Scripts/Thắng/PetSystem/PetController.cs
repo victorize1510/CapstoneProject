@@ -41,8 +41,9 @@ public partial class PetController : MonoBehaviour
             if (animator == null)
                 return true;
             var info = animator.GetCurrentAnimatorStateInfo(0);
-            bool inCast = info.shortNameHash == Animator.StringToHash("Cast Spell");
-            return !animator.IsInTransition(0) && (inCast && info.normalizedTime >= .98f || !inCast && Time.time - summonStartedAt >= summonAnimationDuration);
+            bool inSpawn = info.fullPathHash == summonAnimationHash;
+            return !animator.IsInTransition(0) && (inSpawn && info.normalizedTime >= .98f
+                || !inSpawn && Time.time - summonStartedAt >= summonAnimationDuration);
         }
     }
 
@@ -71,6 +72,9 @@ public partial class PetController : MonoBehaviour
     public float followResumeDistance = 7f;
     public float leashDistance = 10f;
     public float teleportDistance = 24f;
+    [Range(1.5f, 1.8f)] public float fastReturnSpeedMultiplier = 1.65f;
+    [Range(1.5f, 2.5f)] public float closeFollowDistance = 2f;
+    [Range(1f, 1.8f)] public float meleeChaseSpeedMultiplier = 1.5f;
     [Header("Di chuyen")]
     public float followSpeed = 4.2f;
     public float commandSpeed = 5.3f;
@@ -154,6 +158,12 @@ public partial class PetController : MonoBehaviour
     private readonly RaycastHit[] groundHits = new RaycastHit[16];
     private readonly RaycastHit[] directObstacleHits = new RaycastHit[24];
     private PetState state = PetState.Dormant;
+    private const float CommandedReturnTimeout = 2f;
+    private float commandedReturnAt = -1f;
+    private bool closeFollowRequested, returnAfterBasic;
+    private Vector3 returnProgressPosition;
+    internal float MeleeApproachSpeed(float distance) => Mathf.Lerp(commandSpeed, commandSpeed * meleeChaseSpeedMultiplier,
+        Mathf.InverseLerp(2f, 6f, distance));
     private DummyEnemy target;
     private MapMarker mapMarker;
     private PetLevelUpService levelUpService;
@@ -165,6 +175,7 @@ public partial class PetController : MonoBehaviour
     private float attackStartedAt;
     private float summonStartedAt;
     private float summonAnimationDuration;
+    private int summonAnimationHash;
     private float summonAnimatorSpeedBefore;
     private bool summonAnimatorSpeedOverridden;
     private float nextRoamAt;
@@ -173,6 +184,7 @@ public partial class PetController : MonoBehaviour
     private float nextAttackRepathAt;
     private float pendingHitAt;
     private float directMoveSpeed;
+    private int directMoveFrame = -1;
     private float skillAnimationUntil;
     private float pendingSkillStartAt;
     private float pendingSkillFade;
@@ -188,7 +200,6 @@ public partial class PetController : MonoBehaviour
     private bool summonRevealPending;
     private bool summonCastActive;
     private bool summonPresentationAnimationStarted;
-    private bool warnedMissingCastSpell;
     private bool navDestinationInitialized;
     private readonly Dictionary<Renderer, bool> rendererEnabledStates = new Dictionary<Renderer, bool>();
     private readonly Dictionary<Collider, bool> colliderEnabledStates = new Dictionary<Collider, bool>();
@@ -228,6 +239,8 @@ public partial class PetController : MonoBehaviour
     internal float BasicSkillDelay => state == PetState.AttackTarget && (hasPendingHit || Time.time < pendingHitAt + .08f) ? Mathf.Max(0, pendingHitAt + .08f - Time.time) : 0;
     internal void HoldCoordinatedSkill()
     {
+        commandedReturnAt = -1f;
+        closeFollowRequested = returnAfterBasic = false;
         hasPendingHit = false;
         hasPendingSkillAnimation = false;
         pendingSkillCandidates = null;
@@ -441,6 +454,12 @@ public partial class PetController : MonoBehaviour
             return;
         }
 
+        if (returnAfterBasic && state != PetState.AttackTarget)
+        {
+            returnAfterBasic = false;
+            RequestReturnNearOwner();
+        }
+
         switch (state)
         {
             case PetState.FollowOwner:
@@ -463,6 +482,7 @@ public partial class PetController : MonoBehaviour
 
     public void AssignOwner(Transform newOwner)
     {
+        if (owner != newOwner) commandedReturnAt = -1f;
         owner = newOwner;
         if (!IsSummoned) QueueOwnedRuntimeStorage();
         if (state == PetState.FollowOwner)
@@ -483,6 +503,8 @@ public partial class PetController : MonoBehaviour
             return;
         }
 
+        commandedReturnAt = -1f;
+        closeFollowRequested = returnAfterBasic = false;
         target = null;
         hasRoamDestination = false;
         commandedPoint = worldPoint;
@@ -508,6 +530,8 @@ public partial class PetController : MonoBehaviour
             return;
         }
 
+        commandedReturnAt = -1f;
+        closeFollowRequested = returnAfterBasic = false;
         target = enemy;
         hasRoamDestination = false;
         directStuckSince = 0f;
@@ -523,6 +547,7 @@ public partial class PetController : MonoBehaviour
 
     public void ReturnToOwner()
     {
+        commandedReturnAt = -1f;
         if (!CanReceiveCommands)
         {
             return;
@@ -535,6 +560,21 @@ public partial class PetController : MonoBehaviour
         directStuckSince = 0f;
         state = PetState.FollowOwner;
         MoveToFollowSpot();
+    }
+
+    internal void RequestReturnNearOwner()
+    {
+        if (!CanReceiveCommands || owner == null || wildEncounter) return;
+        if (Time.time < hitReactionUntil || (state == PetState.AttackTarget && target != null && target.IsAlive
+            && Time.time < attackStartedAt + attackStateTime))
+        {
+            returnAfterBasic = true;
+            return;
+        }
+        ReturnToOwner();
+        closeFollowRequested = true;
+        returnProgressPosition = transform.position;
+        commandedReturnAt = Time.time + CommandedReturnTimeout;
     }
 
     private float FindAnimationDuration(string clipName, float fallback)
@@ -598,6 +638,8 @@ public partial class PetController : MonoBehaviour
             return false;
         }
 
+        commandedReturnAt = -1f;
+        closeFollowRequested = returnAfterBasic = false;
         duration = Mathf.Max(0.05f, duration);
         fade = Mathf.Max(0f, fade);
         windupSeconds = Mathf.Max(0f, windupSeconds);
@@ -654,6 +696,7 @@ public partial class PetController : MonoBehaviour
 
     private void OnDisable()
     {
+        commandedReturnAt = -1f;
         RestoreSummonAnimatorSpeed();
         if (defeatPresentation)
             EnterDormant();
@@ -661,6 +704,11 @@ public partial class PetController : MonoBehaviour
 
     private void UpdateFollow()
     {
+        if (closeFollowRequested)
+        {
+            UpdateCloseFollow();
+            return;
+        }
         float ownerDistance = FlatDistance(transform.position, owner.position);
         if (ownerDistance > teleportDistance || Mathf.Abs(transform.position.y - owner.position.y) > 3f)
         {
@@ -840,7 +888,12 @@ public partial class PetController : MonoBehaviour
         if (target == null || !target.IsAlive)
         {
             SetAnimatorBool(attackingParameter, false);
-            ReturnToOwner();
+            if (returnAfterBasic)
+            {
+                returnAfterBasic = false;
+                RequestReturnNearOwner();
+            }
+            else ReturnToOwner();
             return;
         }
 
@@ -858,6 +911,12 @@ public partial class PetController : MonoBehaviour
 
         if (Time.time - attackStartedAt >= attackStateTime)
         {
+            if (returnAfterBasic)
+            {
+                returnAfterBasic = false;
+                RequestReturnNearOwner();
+                return;
+            }
             SetAnimatorBool(attackingParameter, false);
             if (!target.IsAlive)
             {
@@ -908,7 +967,7 @@ public partial class PetController : MonoBehaviour
     {
         attackDestination = GetAttackDestination();
         nextAttackRepathAt = Time.time + Mathf.Max(0.03f, attackRepathInterval);
-        MoveTo(attackDestination, commandSpeed, Mathf.Min(pointStoppingDistance, attackApproachDistance));
+        MoveTo(attackDestination, MeleeApproachSpeed(FlatDistance(transform.position, attackDestination)), Mathf.Min(pointStoppingDistance, attackApproachDistance));
     }
 
     private void MoveToFollowSpot()
@@ -1103,10 +1162,14 @@ public partial class PetController : MonoBehaviour
             return;
         }
 
-        bool moving = speed > 0.08f || (agent != null && agent.enabled && agent.isOnNavMesh && agent.hasPath && !agent.isStopped);
+        var driver = GetComponent<CreatureAnimationDriver>();
+        var action = driver != null ? driver.ResolveLocomotion(speed) : speed > .08f ? CreatureAction.Move : CreatureAction.Idle;
+        bool moving = action != CreatureAction.Idle;
         SetAnimatorFloat(speedParameter, speed);
         SetAnimatorBool(movingParameter, moving);
-        PlayAnimatorState(moving ? moveStates : idleStates, locomotionFade, false);
+        if (driver != null && driver.Profile != null && driver.TryGetStates(action, out var mapped))
+            PlayAnimatorState(mapped, locomotionFade, false);
+        else PlayAnimatorState(moving ? moveStates : idleStates, locomotionFade, false);
     }
 
     private bool PlayAnimatorState(string[] candidates, float fade, bool restart)
@@ -1123,16 +1186,14 @@ public partial class PetController : MonoBehaviour
                 continue;
             }
 
-            if (!restart && currentAnimatorState == candidate)
-            {
-                return true;
-            }
-
             int hash;
             if (!TryGetStateHash(candidate, out hash))
             {
                 continue;
             }
+
+            if (!restart && (animator.IsInTransition(0) ? animator.GetNextAnimatorStateInfo(0).fullPathHash == hash
+                : animator.GetCurrentAnimatorStateInfo(0).fullPathHash == hash)) return true;
 
             currentAnimatorState = candidate;
             animator.CrossFadeInFixedTime(hash, fade, 0, restart ? 0f : float.NegativeInfinity);

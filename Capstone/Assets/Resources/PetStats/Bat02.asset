@@ -15,11 +15,11 @@ MonoBehaviour:
   definitionId: bat
   formId: 02
   hp: 60
-  attack: 80
+  attack: 70
   defense: 50
-  magicAttack: 50
+  magicAttack: 70
   magicDefense: 55
-  speed: 115
+  speed: 105
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

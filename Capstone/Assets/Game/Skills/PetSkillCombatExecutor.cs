@@ -13,7 +13,7 @@ namespace Capstone.Game.Skills
     {
         sealed class Shot
         {
-            public int token, emission;
+            public int token, emission, emissionCount;
             public string id;
             public CreatureCombatTarget target;
             public PetSkillCombatProfile profile;
@@ -230,7 +230,7 @@ namespace Capstone.Game.Skills
                     Remove(0);
                 }
 
-                shots.Add(new Shot{token = token, emission = emission, id = id, target = preparedTarget, profile = preparedProfile, elements = elements, direction = preparedDirection, damage = new CombatOffenseRoll(rolled.RawDamage / count, rolled.Critical), bleed = preparedProfile.bleedPower > 0 ? combat.NonCriticalOffense(CreatureDamageKind.Physical, preparedProfile.bleedPower) : 0, expires = Time.time + 10});
+                shots.Add(new Shot{token = token, emission = emission, emissionCount = count, id = id, target = preparedTarget, profile = preparedProfile, elements = elements, direction = preparedDirection, damage = new CombatOffenseRoll(rolled.RawDamage / count, rolled.Critical), bleed = preparedProfile.bleedPower > 0 ? combat.NonCriticalOffense(CreatureDamageKind.Physical, preparedProfile.bleedPower) : 0, expires = Time.time + 10});
             }
 
             preparedProfile = null;
@@ -512,7 +512,7 @@ namespace Capstone.Game.Skills
                 return;
             }
 
-            var hit = new CombatHit(gameObject, shot.id, shot.token, shot.damage.RawDamage, shot.profile.damageKind, shot.damage.Critical, false, point, shot.emission, shot.elements);
+            var hit = new CombatHit(gameObject, shot.id, shot.token, shot.damage.RawDamage, shot.profile.damageKind, shot.damage.Critical, false, point, shot.emission, shot.elements, shot.emissionCount);
             var result = victim.Apply(hit);
             if (result.HpLost > 0)
             {

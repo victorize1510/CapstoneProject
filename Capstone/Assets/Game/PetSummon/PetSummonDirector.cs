@@ -56,6 +56,7 @@ namespace Capstone.Game.PetSummon
         [SerializeField, Range(0.05f, 0.95f)] float recallEffectNormalizedTime = 0.28f;
         [SerializeField, Min(0.25f)] float pickupStartTimeout = 3f;
         [SerializeField, Min(0.25f)] float pickupCompletionTimeout = 3f;
+        [SerializeField, Range(2f, 20f)] float summonPresentationTimeout = 12f;
 
         readonly RaycastHit[] groundHits = new RaycastHit[12];
         readonly RaycastHit[] obstacleHits = new RaycastHit[16];
@@ -68,7 +69,9 @@ namespace Capstone.Game.PetSummon
         GameObject travellingBall;
         int pendingSlotIndex = -1;
         PetController recallingPet;
+        PetController summoningPet;
         bool playerLockedBySequence;
+        string presentationFailure;
 
         public SequenceState State { get; private set; } = SequenceState.Idle;
         public bool IsSequenceRunning => sequenceRunning;
@@ -112,6 +115,8 @@ namespace Capstone.Game.PetSummon
             ClearSequenceBalls();
 
             releaseEffect?.Cancel();
+            if (summoningPet != null && summoningPet.IsSummonPresentationPending) summoningPet.Withdraw();
+            summoningPet = null;
             recallingPet?.SetRecallLocked(false);
 
             recallingPet = null;
@@ -195,6 +200,7 @@ namespace Capstone.Game.PetSummon
 
             LastFailureReason = string.Empty;
             pendingSlotIndex = slotIndex;
+            summoningPet = selectedPet;
             sequenceRunning = true;
             sequenceRoutine = StartCoroutine(PlayThrowSequence(selectedPet, landing));
             return true;
@@ -446,6 +452,7 @@ namespace Capstone.Game.PetSummon
             string failureReason = string.Empty;
             Vector3 actualGroundPoint = default;
             Vector3 actualDirection = landing.Direction;
+            presentationFailure = string.Empty;
             LockPlayer();
             yield return null;
 
@@ -511,7 +518,8 @@ namespace Capstone.Game.PetSummon
                     yield break;
                 }
 
-                while (movement.IsScriptedActionPlaying
+                deadline = Capstone.Game.UISystem.GameplayPause.PlayTime + throwStartTimeout;
+                while (Capstone.Game.UISystem.GameplayPause.PlayTime < deadline && movement.IsScriptedActionPlaying
                     && movement.ActiveScriptedAction == BasicPlayerMovement.ScriptedAction.Throw
                     && (!TryGetThrowPlaybackTime(out float throwProgress)
                         || throwProgress < releaseNormalizedTime))
@@ -520,6 +528,7 @@ namespace Capstone.Game.PetSummon
                 }
 
                 if (!movement.IsGroundedForPetThrow
+                    || Capstone.Game.UISystem.GameplayPause.PlayTime >= deadline
                     || movement.ActiveScriptedAction != BasicPlayerMovement.ScriptedAction.Throw
                     || !TryGetThrowPlaybackTime(out float releaseProgress)
                     || releaseProgress < releaseNormalizedTime)
@@ -604,20 +613,24 @@ namespace Capstone.Game.PetSummon
                 State = SequenceState.Release;
                 ReleaseReached?.Invoke(pendingSlotIndex, LastHoverPosition);
 
+                bool releaseAttempted = false;
                 Action releasePet = () =>
                 {
+                    if (releaseAttempted) return;
+                    releaseAttempted = true;
                     petReleased = ReleasePet(selectedPet, petSpawnPoint, actualDirection);
                 };
 
                 if (releaseEffect != null)
                 {
-                    yield return releaseEffect.PlaySummon(
+                    yield return GuardSummonPresentation(releaseEffect.PlaySummon(
                         selectedPet,
                         petSpawnPoint,
                         travellingBall.transform,
                         releasePet,
-                        actualGroundPoint);
+                        actualGroundPoint, true));
                 }
+
                 else
                 {
                     releasePet();
@@ -627,10 +640,21 @@ namespace Capstone.Game.PetSummon
                     }
                 }
 
+                if (petReleased && selectedPet != null && (selectedPet.IsSummonPresentationPending
+                    || !string.IsNullOrEmpty(presentationFailure)))
+                {
+                    releaseEffect?.Cancel();
+                    string reason = string.IsNullOrEmpty(presentationFailure)
+                        ? "Hiệu ứng trả về nhưng chưa hoàn tất reveal." : presentationFailure;
+                    bool recovered = selectedPet.TryRecoverSummonPresentation(petSpawnPoint);
+                    Debug.LogWarning($"Pet summon presentation: {reason} Recovery={(recovered ? "Idle/Follow" : "failed: no safe landing")}", selectedPet);
+                    petReleased = recovered;
+                }
+
                 if (!petReleased || selectedPet == null || !selectedPet.IsSummoned
                     || selectedPet.IsSummonPresentationPending)
                 {
-                    failureReason = "Pet không chuyển sang trạng thái summoned sau hiệu ứng thả.";
+                    failureReason = "Pet không chuyển sang trạng thái summoned sau hiệu ứng thả. " + presentationFailure;
                     yield break;
                 }
 
@@ -655,6 +679,7 @@ namespace Capstone.Game.PetSummon
 
                 int completedSlot = pendingSlotIndex;
                 pendingSlotIndex = -1;
+                summoningPet = null;
                 UnlockPlayer();
                 sequenceRunning = false;
                 sequenceRoutine = null;
@@ -667,6 +692,47 @@ namespace Capstone.Game.PetSummon
                     Debug.LogWarning("Pet summon failed: " + LastFailureReason, this);
                 }
                 SequenceFinished?.Invoke(completedSlot, succeeded);
+            }
+        }
+
+        // Run nested effect enumerators here so exceptions cannot strand the parent sequence/ball/input lock.
+        IEnumerator GuardSummonPresentation(IEnumerator routine)
+        {
+            presentationFailure = string.Empty;
+            float deadline = Capstone.Game.UISystem.GameplayPause.PlayTime + summonPresentationTimeout;
+            var stack = new System.Collections.Generic.Stack<IEnumerator>();
+            stack.Push(routine);
+            try
+            {
+                while (stack.Count > 0)
+                {
+                    if (Capstone.Game.UISystem.GameplayPause.PlayTime >= deadline)
+                    {
+                        presentationFailure = "Quá thời gian hiệu ứng triệu hồi (" + summonPresentationTimeout + "s).";
+                        break;
+                    }
+                    bool more = false;
+                    object value = null;
+                    try { more = stack.Peek().MoveNext(); if (more) value = stack.Peek().Current; }
+                    catch (Exception error) { presentationFailure = error.GetType().Name + ": " + error.Message; }
+                    if (!string.IsNullOrEmpty(presentationFailure)) break;
+                    if (!more) {
+                        try { (stack.Pop() as IDisposable)?.Dispose(); }
+                        catch (Exception error) { presentationFailure = error.GetType().Name + ": " + error.Message; }
+                        if (!string.IsNullOrEmpty(presentationFailure)) break;
+                        continue;
+                    }
+                    if (value is IEnumerator nested) stack.Push(nested);
+                    else yield return value;
+                }
+            }
+            finally
+            {
+                while (stack.Count > 0)
+                {
+                    try { (stack.Pop() as IDisposable)?.Dispose(); }
+                    catch (Exception error) { presentationFailure = error.GetType().Name + ": " + error.Message; }
+                }
             }
         }
 

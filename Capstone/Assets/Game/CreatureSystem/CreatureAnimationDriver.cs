@@ -10,6 +10,8 @@ namespace Capstone.Game.CreatureSystem {
         readonly Dictionary<CreatureAction, Resolved> actions = new Dictionary<CreatureAction, Resolved>();
         readonly Dictionary<string, CreatureAction> skills = new Dictionary<string, CreatureAction>(StringComparer.OrdinalIgnoreCase);
         Animator animator;
+        CreatureAction locomotion = CreatureAction.Idle, pendingLocomotion = CreatureAction.Idle;
+        float pendingLocomotionAt;
         public Animator BoundAnimator => animator;
         public CreatureAnimationProfile Profile { get; private set; }
         public string LastError { get; private set; }
@@ -19,6 +21,8 @@ namespace Capstone.Game.CreatureSystem {
             var binding = next != null ? next.GetComponent<CreatureVisualBinding>() : null;
             Profile = binding != null ? binding.animationProfile : null;
             actions.Clear(); skills.Clear(); LastError = string.Empty; BindingRevision++;
+            locomotion = pendingLocomotion = CreatureAction.Idle;
+            pendingLocomotionAt = Time.time;
             if (Profile == null || animator == null) return;
             var duplicateActions = new HashSet<CreatureAction>();
             foreach (var item in Profile.actions) {
@@ -56,6 +60,27 @@ namespace Capstone.Game.CreatureSystem {
             if (!TryGetStates(action, out _)) return false;
             animator.CrossFadeInFixedTime(actions[action].hash, Mathf.Max(0, fade), 0, 0);
             return true;
+        }
+        public bool IsPlaying(CreatureAction action) {
+            if (animator == null || !actions.TryGetValue(action, out var resolved)) return false;
+            return animator.IsInTransition(0) ? animator.GetNextAnimatorStateInfo(0).fullPathHash == resolved.hash
+                : animator.GetCurrentAnimatorStateInfo(0).fullPathHash == resolved.hash;
+        }
+
+        public CreatureAction ResolveLocomotion(float actualSpeed) {
+            bool wasMoving = locomotion != CreatureAction.Idle;
+            bool moving = actualSpeed > (wasMoving ? .06f : .12f);
+            CreatureAction desired = CreatureAction.Idle;
+            if (moving) {
+                desired = CreatureAction.Move;
+                if (actions.ContainsKey(CreatureAction.Walk) && actions.ContainsKey(CreatureAction.Run))
+                    desired = actualSpeed >= (locomotion == CreatureAction.Run ? 2.8f : 3.2f) ? CreatureAction.Run : CreatureAction.Walk;
+                else if (!actions.ContainsKey(desired) && actions.ContainsKey(CreatureAction.Fly))
+                    desired = CreatureAction.Fly;
+            }
+            if (desired != pendingLocomotion) { pendingLocomotion = desired; pendingLocomotionAt = Time.time; }
+            if (Time.time - pendingLocomotionAt >= .10f) locomotion = pendingLocomotion;
+            return locomotion;
         }
     }
 }

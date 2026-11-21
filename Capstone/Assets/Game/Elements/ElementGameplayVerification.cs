@@ -70,6 +70,11 @@ namespace Capstone.Game.Elements
                 Check(ElementDamageMath.Effectiveness(table, PetElement.Fire, PetElement.Nature, PetElement.Dark) == 4, "dual weakness x4");
                 Check(ElementDamageMath.Effectiveness(table, PetElement.Fire, PetElement.Water, PetElement.Dragon) == .25f, "dual resistance x0.25");
                 Check(ElementDamageMath.Effectiveness(table, PetElement.Fire, PetElement.Nature, PetElement.Water) == 1, "mixed dual x1");
+                Check(FloatingCombatText.FormatEffectiveness(1) == string.Empty
+                    && FloatingCombatText.FormatEffectiveness(2) == "↑ ×2"
+                    && FloatingCombatText.FormatEffectiveness(4) == "↑ ×4"
+                    && FloatingCombatText.FormatEffectiveness(.5f) == "↓ ×½"
+                    && FloatingCombatText.FormatEffectiveness(.25f) == "↓ ×¼", "damage labels show defensive matchup only");
                 foreach (var first in ElementCatalog.Entries)
                     foreach (var second in ElementCatalog.Entries)
                         Check(ElementDamageMath.Effectiveness(table, PetElement.Fire, first.Element, second.Element) == ElementDamageMath.Effectiveness(table, PetElement.Fire, second.Element, first.Element), "dual order " + first.Element + "/" + second.Element);
@@ -244,21 +249,27 @@ namespace Capstone.Game.Elements
             {
                 float expected = target.Mitigate(10, kind);
                 var result = target.ApplyCombatHit(Hit(kind));
-                check(Near(result.HpLost, expected * 6) && result.Hit.RawDamage == 10 && result.Hit.Critical, "enemy receiver mitigation then x6 once " + kind);
-                check(Near(target.ApplyCombatHit(Hit(kind, legacy: true)).HpLost, expected), "legacy receiver neutral " + kind);
-                check(Near(target.ApplyCombatHit(Hit(kind, dot: true)).HpLost, expected), "bleed bypasses STAB and matchup " + kind);
+                check(Near(result.HpLost, expected * 6) && result.Effectiveness == 4 && result.Hit.RawDamage == 10 && result.Hit.Critical,
+                    "enemy receiver applies x6 but reports defensive x4 " + kind);
+                var legacy = target.ApplyCombatHit(Hit(kind, legacy: true));
+                check(Near(legacy.HpLost, expected) && legacy.Effectiveness == 1, "legacy receiver neutral " + kind);
+                var bleed = target.ApplyCombatHit(Hit(kind, dot: true));
+                check(Near(bleed.HpLost, expected) && bleed.Effectiveness == 1, "bleed bypasses STAB and matchup " + kind);
             }
             Types(owned, PetElement.Water, PetElement.Unknown);
             check(Near(target.ApplyCombatHit(Hit(CreatureDamageKind.Physical)).HpLost, target.Mitigate(10, CreatureDamageKind.Physical) * 6), "in-flight source snapshot survives source form type change");
             Types(foe, PetElement.Water, PetElement.Dragon);
-            check(Near(target.ApplyCombatHit(Hit(CreatureDamageKind.Physical)).HpLost, target.Mitigate(10, CreatureDamageKind.Physical) * .375f), "defender types read at valid impact");
+            var resisted = target.ApplyCombatHit(Hit(CreatureDamageKind.Physical));
+            check(Near(resisted.HpLost, target.Mitigate(10, CreatureDamageKind.Physical) * .375f) && resisted.Effectiveness == .25f,
+                "defender types read at valid impact and report x0.25 separately from STAB");
             Types(foe, PetElement.Nature, PetElement.Dark);
             float lost = 0;
             for (int i = 0; i < 5; i++) lost += target.ApplyCombatHit(Hit(CreatureDamageKind.Physical, raw: 20, emission: i)).HpLost;
             check(Near(lost, target.Mitigate(20, CreatureDamageKind.Physical) * 6 * 5), "five emission raw budget split keeps one multiplier per hit");
             Types(owned, PetElement.Nature, PetElement.Dark);
             var received = source.ApplyCombatHit(new CombatHit(foe, "orb.dark", 3, 10, CreatureDamageKind.Magical, false, false, source.Center, 0, snapshot));
-            check(Near(received.HpLost, source.Mitigate(10, CreatureDamageKind.Magical) * 6), "owned pet uses same elemental receiver");
+            check(Near(received.HpLost, source.Mitigate(10, CreatureDamageKind.Magical) * 6) && received.Effectiveness == 4,
+                "owned pet uses the same elemental receiver and matchup metadata");
 
             var events = new List<CombatDamageResult>();
             void Record(CombatDamageResult result) { if (result.Hit.Source == owned) events.Add(result); }
@@ -287,7 +298,9 @@ namespace Capstone.Game.Elements
                         var expectedType = slot == 0 ? PetElement.Normal : slot == 2 ? PetElement.Fire : PetElement.Flying;
                         check(actual.Length > 0 && actual.All(e => e.Hit.Elements.Enabled && e.Hit.Elements.Attack == expectedType), "real skill emissions carry canonical element " + id);
                         check(actual.GroupBy(e => e.Hit.CastId + ":" + e.Hit.EmissionIndex).All(g => g.Count() == 1), "no duplicate skill damage " + id);
-                        if (slot == 3) check(executor.LastVolleyCount >= 2 && actual.All(e => Near(e.Hit.RawDamage, executor.LastCastRawBudget / executor.LastVolleyCount)), "real wind volley keeps raw budget and per-cast snapshot");
+                        if (slot == 3) check(executor.LastVolleyCount >= 2 && actual.All(e => e.Hit.EmissionCount == executor.LastVolleyCount
+                            && Near(e.Hit.RawDamage, executor.LastCastRawBudget / executor.LastVolleyCount)),
+                            "real wind volley reports emission count and keeps raw damage budget");
                     }
                 }
                 check(stats.MaxEnergy == 0 && stats.Energy == 0 && stats.GetSkills().All(s => s.manaCost == 0), "MP retirement remains intact");

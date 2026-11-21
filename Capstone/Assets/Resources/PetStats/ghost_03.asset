@@ -15,11 +15,11 @@ MonoBehaviour:
   definitionId: ghost
   formId: "03"
   hp: 70
-  attack: 50
-  magicAttack: 130
+  attack: 55
+  magicAttack: 125
   defense: 60
   magicDefense: 105
-  speed: 130
+  speed: 125
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

@@ -21,16 +21,22 @@ namespace Capstone.Game.HudSystem {
             CacheBaseVisual();
         }
 
-        void CacheBaseVisual() {
-            if (baseRenderers != null) return;
+        void CacheBaseVisual(bool refresh = false) {
+            if (baseRenderers != null && !refresh) return;
             GameObject source = baseVisual != null ? baseVisual : gameObject;
             var renderers = new System.Collections.Generic.List<Renderer>();
             foreach (Renderer renderer in source.GetComponentsInChildren<Renderer>(true))
-                if (renderer != null && renderer.GetComponentInParent<AAMAP.MapIcon>(true) == null)
+                if (renderer != null && renderer.GetComponentInParent<AAMAP.MapIcon>(true) == null
+                    && (runtimeVisual == null || !renderer.transform.IsChildOf(runtimeVisual.transform)))
                     renderers.Add(renderer);
             baseRenderers = renderers.ToArray();
             baseAnimator = source.GetComponent<Animator>();
-            if (baseAnimator == null) baseAnimator = source.GetComponentInChildren<Animator>(true);
+            if (baseAnimator == null)
+                foreach (var candidate in source.GetComponentsInChildren<Animator>(true))
+                    if (runtimeVisual == null || !candidate.transform.IsChildOf(runtimeVisual.transform)) {
+                        baseAnimator = candidate;
+                        break;
+                    }
         }
 
         public bool IsCurrentVisualRenderer(Renderer renderer) {
@@ -46,7 +52,17 @@ namespace Capstone.Game.HudSystem {
                 return true;
             }
 
-            if (runtimeVisual != null && runtimePrefab == modelOnlyPrefab) { error = string.Empty; return true; }
+            // Nested scene/prefab visuals may not have been present in the first
+            // Awake cache. Refresh only at form/reveal boundaries, never per frame.
+            CacheBaseVisual(true);
+
+            if (runtimeVisual != null && runtimePrefab == modelOnlyPrefab) {
+                // A dormant scene actor can finish Awake after the save was applied.
+                // Repair bindings/presence as well as the mesh on the next reveal.
+                ActivateRuntimeVisual();
+                error = string.Empty;
+                return true;
+            }
             if (baseVisualPrefab != null && baseVisualPrefab == modelOnlyPrefab) { RestoreBaseVisual(); error = string.Empty; return true; }
 
             if (visualRoot == null) visualRoot = transform;
@@ -80,6 +96,13 @@ namespace Capstone.Game.HudSystem {
             }
             runtimeVisual = nextVisual;
             runtimePrefab = modelOnlyPrefab;
+            ActivateRuntimeVisual();
+            error = string.Empty;
+            return true;
+        }
+
+        void ActivateRuntimeVisual() {
+            CacheBaseVisual();
             PetController pet = GetComponentInParent<PetController>();
             foreach (Renderer renderer in baseRenderers) {
                 if (renderer == null) continue;
@@ -87,10 +110,11 @@ namespace Capstone.Game.HudSystem {
                 else renderer.enabled = false;
             }
             if (baseAnimator != null) baseAnimator.enabled = false;
+            var nextAnimator = runtimeVisual.GetComponentInChildren<Animator>(true);
+            // Presence may have disabled this Animator during save hydration.
+            if (nextAnimator != null) nextAnimator.enabled = true;
             BindAnimator(nextAnimator);
             pet?.RefreshVisualPresence();
-            error = string.Empty;
-            return true;
         }
 
         public void RestoreForm(int evolutionStage) {
@@ -114,13 +138,13 @@ namespace Capstone.Game.HudSystem {
 
         void RestoreBaseVisual() {
             GetComponentInParent<PetHudRuntimeStats>()?.GetComponent<Capstone.Game.Skills.PetSkillPresentationPlayer>()?.CancelPresentation();
+            CacheBaseVisual(true);
             if (runtimeVisual != null) {
                 runtimeVisual.SetActive(false);
                 Destroy(runtimeVisual);
             }
             runtimeVisual = null;
             runtimePrefab = null;
-            CacheBaseVisual();
             PetController pet = GetComponentInParent<PetController>();
             foreach (Renderer renderer in baseRenderers) {
                 if (renderer == null) continue;

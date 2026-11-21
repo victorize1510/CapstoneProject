@@ -87,6 +87,7 @@ namespace Capstone.Game.HudSystem {
         GameObject activeRingVfx;
         static PetEvolutionPresentationController active;
         public static bool AnyPlaying => active != null && active.IsPlaying;
+        internal static bool IsPresenting(PetController pet) => AnyPlaying && active.currentPet == pet;
         EvolutionPresentationScope scope;
         PetController currentPet;
         public static void CancelFor(PetController pet){if(active!=null&&active.currentPet==pet)active.Cancel();}
@@ -334,8 +335,16 @@ namespace Capstone.Game.HudSystem {
 
         /// <summary>Ép Animator (nếu có) chuyển ngay về state Idle và đứng yên ở đó.</summary>
         void ForceIdle(Animator anim) {
-            if (anim == null || string.IsNullOrEmpty(idleStateName)) return;
-            anim.Play(idleStateName, 0, 0f);
+            if (anim == null) return;
+            string state=idleStateName;
+            var binding=anim.GetComponent<Capstone.Game.CreatureSystem.CreatureVisualBinding>();
+            if(binding?.animationProfile!=null)
+                foreach(var entry in binding.animationProfile.actions)
+                    if(entry!=null&&entry.action==Capstone.Game.CreatureSystem.CreatureAction.Idle){state=entry.state;break;}
+            if(string.IsNullOrEmpty(state))return;
+            int hash=Animator.StringToHash(state.Contains(".")?state:"Base Layer."+state);
+            if(!anim.HasState(0,hash)){Debug.LogWarning("Evolution: missing Idle state "+state,anim);return;}
+            anim.Play(hash, 0, 0f);
             anim.Update(0f);
         }
 

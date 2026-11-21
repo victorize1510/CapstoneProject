@@ -23,7 +23,7 @@ namespace Capstone.Game.WorldFeedback {
         readonly Stack<Scope> scopes = new Stack<Scope>(4);
         BasicCameraFollow source; Camera cameraSource; PetCommandInput party; PlayerVisualSwitcher visuals;
         Shader shader, simpleShader, unlitShader; float pollAt, resolveAt;
-        Vector4 focusA, focusB;
+        Vector4 focusA;
         CameraNearPlayerVisibility nearPlayer;
         readonly Dictionary<CameraActorOccluder,CameraNearPlayerVisibility> actors=new Dictionary<CameraActorOccluder,CameraNearPlayerVisibility>();
         readonly List<CameraActorOccluder> staleActors=new List<CameraActorOccluder>();
@@ -107,19 +107,23 @@ namespace Capstone.Game.WorldFeedback {
             foreach(var key in staleActors){actors[key].Dispose();actors.Remove(key);}
             foreach(var actor in CameraActorOccluder.Active){
                 if(actor==null||actor.GetComponent<PetCommandInput>()!=null)continue;
+                var pet = actor.GetComponentInParent<PetController>();
+                if (pet != null && !pet.IsWildEncounter) {
+                    if (actors.TryGetValue(actor, out var previousFade)) {
+                        previousFade.Dispose();
+                        actors.Remove(actor);
+                    }
+                    continue;
+                }
                 if(!actors.TryGetValue(actor,out var fade)){fade=new CameraNearPlayerVisibility(shader,simpleShader,unlitShader,true);actors.Add(actor,fade);}
                 fade.Update(actor.Root,cameraSource,Time.unscaledDeltaTime,playerPoint);
             }
-            var pet = party != null ? party.activePet : null;
-            bool hasPet = pet != null && pet.CanReceiveCommands;
-            Vector3 petPoint = hasPet ? pet.transform.position + Vector3.up * .8f : playerPoint;
             focusA = new Vector4(playerPoint.x, playerPoint.y, playerPoint.z, .65f);
-            focusB = new Vector4(petPoint.x, petPoint.y, petPoint.z, hasPet ? .8f : 0);
             if (Time.unscaledTime >= pollAt) {
                 using (ScanMarker.Auto()) {
                 pollAt = Time.unscaledTime + .05f;
                 foreach (var entry in entries.Values) entry.Desired = Time.unscaledTime - entry.Touched < .14f ? 1 : 0;
-                CastTo(playerPoint); if (hasPet) CastTo(petPoint);
+                CastTo(playerPoint);
                 }
             }
             FadedRendererCount = 0; remove.Clear();
@@ -217,7 +221,7 @@ namespace Capstone.Game.WorldFeedback {
             nearPlayer?.Restore();
             foreach(var actor in actors.Values)actor.Restore();
             bool main = camera == cameraSource && source != null && source.enabled && !PetEvolutionPresentationController.AnyPlaying;
-            SetGlobals(focusA, focusB, main ? 1 : 0);
+            SetGlobals(focusA, Vector4.zero, main ? 1 : 0);
             if (main) { Apply(); nearPlayer?.Apply(); foreach(var actor in actors.Values)actor.Apply(); }
             }
         }

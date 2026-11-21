@@ -19,7 +19,7 @@ MonoBehaviour:
   magicAttack: 65
   defense: 105
   magicDefense: 80
-  speed: 30
+  speed: 40
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

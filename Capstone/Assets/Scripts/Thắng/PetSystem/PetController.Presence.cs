@@ -74,7 +74,7 @@ public partial class PetController
     {
         if (combatant != null && (combatStats == null || combatStats.Health <= 0))
             return false;
-        PrepareOwnedRuntime();
+        if (!PrepareSummonVisual()) return false;
         if (!TryPlaceForSummon(worldPosition))
         {
             QueueOwnedRuntimeStorage();
@@ -106,7 +106,9 @@ public partial class PetController
 
     public bool CompleteSummonPresentation(Vector3 groundPosition)
     {
-        if (!IsSummoned || !summonRevealPending || !TryPlaceForSummon(groundPosition))
+        if (!IsSummoned) return false;
+        if (!summonRevealPending) return true;
+        if (!TryPlaceForSummon(groundPosition))
         {
             return false;
         }
@@ -119,7 +121,7 @@ public partial class PetController
 
     public void StartSummonPresentationAnimation(float presentationSpeed = 1f)
     {
-        if (!IsSummoned || !summonRevealPending || summonPresentationAnimationStarted)
+        if (!IsSummoned || state != PetState.Summoning || summonPresentationAnimationStarted)
         {
             return;
         }
@@ -134,24 +136,39 @@ public partial class PetController
             animator.speed = speed;
         }
 
-        string[] castState = {"Cast Spell"};
-        if (HasAnimatorState(castState) && PlayAnimatorState(castState, attackFade, true))
+        // Spawn is a lifecycle action. Cast Spell belongs exclusively to gameplay skills.
+        var driver = GetComponent<CreatureAnimationDriver>();
+        string[] states = spawnStates;
+        if (driver != null && driver.Profile != null && !driver.TryGetStates(CreatureAction.Spawn, out states))
+            states = null;
+        summonAnimationHash = 0;
+        if (states != null && PlayAnimatorState(states, attackFade, true))
         {
-            summonAnimationDuration = FindAnimationDuration("Cast Spell", spawnDuration) / speed;
+            foreach (string candidate in states)
+                if (TryGetStateHash(candidate, out summonAnimationHash)) break;
+            string name = states[0];
+            int separator = name.LastIndexOf('.');
+            if (separator >= 0) name = name.Substring(separator + 1);
+            summonAnimationDuration = Mathf.Clamp(FindAnimationDuration(name, spawnDuration) / speed, .05f, 5f);
             summonCastActive = true;
         }
         else
         {
-            if (!warnedMissingCastSpell)
-            {
-                Debug.LogWarning("Pet has no Cast Spell animation; using its spawn animation.", this);
-                warnedMissingCastSpell = true;
-            }
-
-            PlayAnimatorState(spawnStates, attackFade, true);
-            summonAnimationDuration = spawnDuration / speed;
+            if (driver != null && driver.TryGetStates(CreatureAction.Idle, out var idle))
+                PlayAnimatorState(idle, locomotionFade, true);
+            else PlayAnimatorState(idleStates, locomotionFade, true);
+            summonAnimationDuration = 0f;
             summonCastActive = false;
         }
+    }
+
+    public bool TryRecoverSummonPresentation(Vector3 groundPosition)
+    {
+        if (!IsSummoned || recallLocked || (combatStats != null && combatStats.Health <= 0)
+            || !CompleteSummonPresentation(groundPosition)) return false;
+        SetWorldPresence(true);
+        FinishSummoning();
+        return true;
     }
 
     public void SetRecallPresentation(bool active)
@@ -177,7 +194,8 @@ public partial class PetController
 
     public bool TryRestoreSummonedNearOwner()
     {
-        PrepareOwnedRuntime();
+        if (combatStats != null && combatStats.Health <= 0) return false;
+        if (!PrepareSummonVisual()) return false;
         if (!TryFindSafeSpotNearOwner(out Vector3 spot, 2.5f, true) || !TryPlaceForSummon(spot))
         {
             EnterDormant();
@@ -194,6 +212,25 @@ public partial class PetController
         ScheduleNextRoam(0.5f);
         PlayAnimatorState(idleStates, locomotionFade, true);
         return true;
+    }
+
+    // Both saved-summoned restoration and a ball release must bind the saved form
+    // after waking the retained actor (Awake can otherwise rebind its base Animator).
+    bool PrepareSummonVisual()
+    {
+        PrepareOwnedRuntime();
+        if (wildEncounter) return true;
+        try
+        {
+            GetComponent<PetCollectionMetadata>()?.RestoreEvolutionPresentation(combatStats);
+            return true;
+        }
+        catch (System.Exception error)
+        {
+            Debug.LogWarning("Pet summon rejected: cannot restore saved form. " + error.Message, this);
+            QueueOwnedRuntimeStorage();
+            return false;
+        }
     }
 
     public void Withdraw()
@@ -229,6 +266,7 @@ public partial class PetController
             recallWasInCombat = HasCombatTarget;
             recallFacingEnemy = recallWasInCombat ? target : null;
             recallLocked = true;
+            commandedReturnAt = -1f;
             target = null;
             hasRoamDestination = false;
             hasPendingHit = false;
@@ -253,6 +291,8 @@ public partial class PetController
 
     private void EnterDormant()
     {
+        closeFollowRequested = returnAfterBasic = false;
+        commandedReturnAt = -1f;
         defeatPresentation = false;
         RestoreSummonAnimatorSpeed();
         summonRevealPending = false;
@@ -353,7 +393,7 @@ public partial class PetController
         SetAnimatorBool(movingParameter, false);
         if (!deferSpawnAnimation)
         {
-            PlayAnimatorState(spawnStates, attackFade, true);
+            StartSummonPresentationAnimation();
         }
     }
 
@@ -367,17 +407,14 @@ public partial class PetController
 
         if (summonCastActive)
         {
-            AnimatorStateInfo castState = animator != null ? animator.GetCurrentAnimatorStateInfo(0) : default;
-            bool castFinished = animator != null && !animator.IsInTransition(0) && castState.shortNameHash == Animator.StringToHash("Cast Spell") && castState.normalizedTime >= 0.98f;
-            bool castExitedAfterDuration = animator != null && !animator.IsInTransition(0) && castState.shortNameHash != Animator.StringToHash("Cast Spell") && Time.time - summonStartedAt >= summonAnimationDuration;
-            if (!castFinished && !castExitedAfterDuration && Time.time - summonStartedAt < Mathf.Max(3f, summonAnimationDuration + 0.5f))
+            if (!HasSummonPresentationAnimationFinished && Time.time - summonStartedAt < Mathf.Max(3f, summonAnimationDuration + 0.5f))
             {
                 return;
             }
 
-            if (!castFinished && !castExitedAfterDuration)
+            if (!HasSummonPresentationAnimationFinished)
             {
-                Debug.LogWarning("Cast Spell did not finish before the summon animation timeout.", this);
+                Debug.LogWarning("Spawn animation did not finish before its timeout; returning to locomotion.", this);
             }
         }
         else if (Time.time - summonStartedAt < summonAnimationDuration)
@@ -385,6 +422,11 @@ public partial class PetController
             return;
         }
 
+        FinishSummoning();
+    }
+
+    private void FinishSummoning()
+    {
         summonCastActive = false;
         RestoreSummonAnimatorSpeed();
         state = roamAroundOwner ? PetState.RoamAroundOwner : PetState.FollowOwner;
@@ -394,6 +436,25 @@ public partial class PetController
         {
             MoveToFollowSpot();
         }
+    }
+
+    internal void ResumeAfterEvolution()
+    {
+        combatActions?.Cancel();
+        hasPendingHit = hasPendingSkillAnimation = false;
+        pendingSkillCandidates = null;
+        skillAnimationUntil = 0;
+        target = null;
+        currentAnimatorState = null;
+        RestoreSummonAnimatorSpeed();
+        if (!IsSummoned) return;
+        summonRevealPending = summonCastActive = false;
+        state = PetState.FollowOwner;
+        StopMovement(false);
+        var driver = GetComponent<CreatureAnimationDriver>();
+        if (driver != null && driver.TryGetStates(CreatureAction.Idle, out var idle))
+            PlayAnimatorState(idle, locomotionFade, true);
+        else PlayAnimatorState(idleStates, locomotionFade, true);
     }
 
     private void RestoreSummonAnimatorSpeed()

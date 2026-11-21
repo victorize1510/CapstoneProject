@@ -716,6 +716,7 @@ namespace Capstone.Game.CreatureSystem
 
             if (result == EnemyNavigationResult.HoldState)
             {
+                SetState(state, animationDriver.ResolveLocomotion(ActualSpeed()));
                 return;
             }
 
@@ -738,7 +739,7 @@ namespace Capstone.Game.CreatureSystem
                 }
             }
 
-            SetState(state, result == EnemyNavigationResult.Moving ? CreatureAction.Move : CreatureAction.Idle);
+            SetState(state, animationDriver.ResolveLocomotion(ActualSpeed()));
         }
 
         public bool TryRetreatStep(Vector3 direction, float distance)
@@ -758,6 +759,8 @@ namespace Capstone.Game.CreatureSystem
         }
 
         void Stop() => navigation?.Stop();
+        float ActualSpeed() => agent != null && agent.enabled && agent.isOnNavMesh && !agent.isStopped
+            ? Vector3.ProjectOnPlane(agent.velocity, Vector3.up).magnitude : 0f;
         void Face(Vector3 direction)
         {
             direction.y = 0;
@@ -769,7 +772,10 @@ namespace Capstone.Game.CreatureSystem
 
         void SetState(EnemyAiState state, CreatureAction action = CreatureAction.None)
         {
-            if (CurrentState == state && (action == CreatureAction.None || lastAction == action))
+            bool locomotion = action == CreatureAction.Idle || action == CreatureAction.Walk || action == CreatureAction.Run
+                || action == CreatureAction.Move || action == CreatureAction.Fly;
+            if (CurrentState == state && (action == CreatureAction.None || lastAction == action
+                && (!locomotion || animationDriver.IsPlaying(action))))
             {
                 return;
             }

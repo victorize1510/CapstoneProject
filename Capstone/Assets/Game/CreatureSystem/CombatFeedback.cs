@@ -17,6 +17,7 @@ namespace Capstone.Game.CreatureSystem {
         CombatFeelSettings settings;
         CinemachineImpulseSource impulse;
         PlayerFreeLookRig cameraRig;
+        bool listenersBound;
         float nextImpulse;
         int nextAudio;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void ResetStatic() { live = null; }
@@ -40,7 +41,8 @@ namespace Capstone.Game.CreatureSystem {
         }
         void BindCamera() {
             cameraRig = FindFirstObjectByType<PlayerFreeLookRig>();
-            if (cameraRig == null || !cameraRig.IsReady) return;
+            listenersBound = cameraRig != null && cameraRig.IsReady;
+            if (!listenersBound) return;
             BindListener(cameraRig.freeCamera); BindListener(cameraRig.lockCamera);
         }
         static void BindListener(CinemachineCamera camera) {
@@ -91,13 +93,44 @@ namespace Capstone.Game.CreatureSystem {
                     voice.pitch = CombatAudioVoices.PitchVariation(); CombatAudioVoices.Play(voice);
                 }
             }
-            if (!result.Hit.DamageOverTime && (result.Hit.Critical || result.Hit.SkillId == "wing strike") && Time.unscaledTime >= nextImpulse
-                && cameraRig != null && cameraRig.IsReady && cameraRig.source != null
-                && (cameraRig.source.transform.position - result.Hit.Point).sqrMagnitude < 625) {
-                nextImpulse = Time.unscaledTime + .2f;
-                float amplitude = settings != null ? settings.cameraAmplitude : .03f;
-                impulse.GenerateImpulseAtPositionWithVelocity(result.Hit.Point, new Vector3(.5f, 1, 0).normalized * amplitude * (result.Hit.Critical ? 1 : .6f));
-            }
+            TryShakeCamera(result);
+        }
+
+        void TryShakeCamera(CombatDamageResult result) {
+            var hit = result.Hit;
+            if (hit.Source == null || hit.DamageOverTime || hit.EmissionIndex < hit.EmissionCount - 1
+                || Time.unscaledTime < nextImpulse) return;
+
+            bool hitsPlayerSide = IsPlayerSide(result.Target);
+            if (!hitsPlayerSide && !IsPlayerSide(hit.Source)) return;
+
+            var attacker = hit.Source.GetComponentInParent<DummyEnemy>();
+            bool strong = hit.Critical || (hitsPlayerSide && attacker != null && attacker.IsBoss);
+            if (!strong && hit.SkillId != "wing strike" && hit.SkillId != "cyclone.flying"
+                && hit.SkillId != "breath.dragon" && hit.SkillId != "laser.electric") return;
+
+            if (!listenersBound || cameraRig == null || !cameraRig.IsReady) BindCamera();
+            if (!listenersBound) return;
+            Transform camera = cameraRig.source.transform;
+            if ((camera.position - hit.Point).sqrMagnitude >= 625) return;
+
+            float maxAmplitude = Mathf.Clamp(settings != null ? settings.cameraAmplitude : .03f, 0, .03f);
+            if (maxAmplitude == 0) return;
+            float duration = settings != null ? settings.cameraDuration : .1f;
+            impulse.ImpulseDefinition.ImpulseDuration = Mathf.Min(.2f, duration + (strong ? .04f : 0));
+            Vector3 travel = hit.Point - hit.Source.transform.position;
+            Vector2 direction = new Vector2(Vector3.Dot(travel, camera.right), Vector3.Dot(travel, camera.up));
+            if (direction.sqrMagnitude < .01f) direction = Vector2.up;
+            nextImpulse = Time.unscaledTime + .2f;
+            impulse.GenerateImpulseAtPositionWithVelocity(hit.Point, (Vector3)direction.normalized * (strong ? maxAmplitude : maxAmplitude * (2f / 3f)));
+        }
+
+        static bool IsPlayerSide(GameObject actor) {
+            if (actor == null) return false;
+            var pet = actor.GetComponentInParent<PetController>();
+            if (pet != null)
+                return !pet.IsWildEncounter && pet.owner != null && pet.owner.GetComponentInParent<PetCommandInput>() != null;
+            return actor.GetComponentInParent<PetCommandInput>() != null;
         }
     }
 }

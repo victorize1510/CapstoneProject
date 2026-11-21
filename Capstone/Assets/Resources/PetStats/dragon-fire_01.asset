@@ -15,8 +15,8 @@ MonoBehaviour:
   definitionId: dragon-fire
   formId: "01"
   hp: 55
-  attack: 65
-  magicAttack: 75
+  attack: 60
+  magicAttack: 70
   defense: 45
   magicDefense: 45
   speed: 45

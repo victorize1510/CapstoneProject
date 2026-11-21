@@ -15,10 +15,10 @@ MonoBehaviour:
   definitionId: egg-shadow
   formId: "03"
   hp: 105
-  attack: 125
-  magicAttack: 45
+  attack: 120
+  magicAttack: 50
   defense: 105
-  magicDefense: 80
+  magicDefense: 85
   speed: 65
   criticalRate: 6.25
   criticalDamage: 50

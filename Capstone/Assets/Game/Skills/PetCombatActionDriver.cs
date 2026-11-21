@@ -36,6 +36,7 @@ namespace Capstone.Game.Skills
         string queuedId;
         float queuedUntil, startedAt, animationStartedAt, normalized, clipDuration, chainRemaining;
         bool animationStarted, released, focused = true;
+        bool returnAfterAction;
         public PetCombatPhase Phase { get; private set; }
 
         public bool IsSkillBusy => Phase != PetCombatPhase.Ready;
@@ -93,7 +94,8 @@ namespace Capstone.Game.Skills
                 if(!StartSkill(positioningSlot,candidate)){if(exec!=null)exec.SkipNextRetreat=false;Finish(false);}
                 return;
             }
-            float step=(retreat?positioningProfile.retreatSpeed:3f)*Time.deltaTime;
+            float advanceSpeed = near && !context.IsEnemy && pet != null ? pet.MeleeApproachSpeed(distance) : 3f;
+            float step=(retreat?positioningProfile.retreatSpeed:advanceSpeed)*Time.deltaTime;
             if(retreat)step=Mathf.Min(step,positioningProfile.retreatDistance-retreatUsed);
             bool moved=context.Retreat(delta.normalized*(retreat?-1:1),step);
             PositioningAnimation(moved);
@@ -407,10 +409,16 @@ namespace Capstone.Game.Skills
             {
                 pet?.ReleaseCoordinatedSkill();
             }
+            if (returnAfterAction)
+            {
+                returnAfterAction = false;
+                pet?.RequestReturnNearOwner();
+            }
         }
 
         public void Cancel()
         {
+            returnAfterAction = false;
             ClearBuffer();
             if (!IsSkillBusy)
             {
@@ -423,9 +431,16 @@ namespace Capstone.Game.Skills
             Finish(false);
         }
 
-        public void ReturnToOwner()
+        public void ReturnToOwner() => RequestReturn();
+
+        public bool RequestReturn()
         {
             ClearBuffer();
+            if (IsSkillBusy && released)
+            {
+                returnAfterAction = true;
+                return true;
+            }
             presentation?.CancelUnreleased();
             execution?.CancelWindup();
             if (IsSkillBusy)
@@ -433,6 +448,7 @@ namespace Capstone.Game.Skills
                 CancelledCount++;
                 Finish(false);
             }
+            return false;
         }
     }
 }

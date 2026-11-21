@@ -39,7 +39,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5471537549562563447}
@@ -205,11 +205,12 @@ MonoBehaviour:
     recoverySeconds: 0.25
     cooldownPercent: 0
     cooldownSeconds: 1.6
+    manaCost: 0
   - skillId: orb.dark
     legacySkillIds: []
     unlocked: 1
     usable: 1
-    displayName: "C\u1EA7u b\xF3ng t\u1ED1i"
+    displayName: "Qu\u1EA3 C\u1EA7u B\xF3ng T\u1ED1i"
     skillLevel: 1
     requiredPetLevel: 1
     element: 9
@@ -219,7 +220,7 @@ MonoBehaviour:
       facts: []
     description: "Ph\xF3ng m\u1ED9t c\u1EA7u n\u0103ng l\u01B0\u1EE3ng b\xF3ng t\u1ED1i
       v\u1EC1 m\u1EE5c ti\xEAu \u0111\xE3 kh\xF3a."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 0a1097c91f0183e48a52bb66bac8468b, type: 3}
     animatorStates:
     - Projectile Attack
     criticalRateBonus: 0
@@ -230,6 +231,7 @@ MonoBehaviour:
     recoverySeconds: 0.25
     cooldownPercent: 0
     cooldownSeconds: 3.6
+    manaCost: 0
   learnedSkills:
   - skillId: bite.normal
     legacySkillIds: []
@@ -255,11 +257,12 @@ MonoBehaviour:
     recoverySeconds: 0.25
     cooldownPercent: 0
     cooldownSeconds: 1.6
+    manaCost: 0
   - skillId: orb.dark
     legacySkillIds: []
     unlocked: 1
     usable: 1
-    displayName: "C\u1EA7u b\xF3ng t\u1ED1i"
+    displayName: "Qu\u1EA3 C\u1EA7u B\xF3ng T\u1ED1i"
     skillLevel: 1
     requiredPetLevel: 1
     element: 9
@@ -269,7 +272,7 @@ MonoBehaviour:
       facts: []
     description: "Ph\xF3ng m\u1ED9t c\u1EA7u n\u0103ng l\u01B0\u1EE3ng b\xF3ng t\u1ED1i
       v\u1EC1 m\u1EE5c ti\xEAu \u0111\xE3 kh\xF3a."
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 0a1097c91f0183e48a52bb66bac8468b, type: 3}
     animatorStates:
     - Projectile Attack
     criticalRateBonus: 0
@@ -280,6 +283,7 @@ MonoBehaviour:
     recoverySeconds: 0.25
     cooldownPercent: 0
     cooldownSeconds: 3.6
+    manaCost: 0
   - skillId: pulse.dark
     legacySkillIds: []
     unlocked: 0
@@ -305,6 +309,7 @@ MonoBehaviour:
     recoverySeconds: 0.25
     cooldownPercent: 0
     cooldownSeconds: 5
+    manaCost: 0
   petController: {fileID: 5519362367139011840}
   animator: {fileID: 2120974092877381884}
   autoFindAnimationReferences: 1
@@ -373,6 +378,7 @@ MonoBehaviour:
     targetIcon: {fileID: 21300000, guid: 7305f2b68cd957c4a85fdf3ba7ab50ba, type: 3}
     targetElement: 9
     targetSecondaryElement: 12
+    replaceSecondaryElement: 0
     targetRarity: 3
     targetVisualPrefab: {fileID: 3965183163660077883, guid: f0cb434726faaff46bc81252e180b1cb, type: 3}
     trigger: 0
@@ -393,6 +399,7 @@ MonoBehaviour:
     targetIcon: {fileID: 21300000, guid: 656f11ffedf653740b96ad4aac0bbef9, type: 3}
     targetElement: 9
     targetSecondaryElement: 12
+    replaceSecondaryElement: 0
     targetRarity: 4
     targetVisualPrefab: {fileID: 2034503012870913961, guid: 8617197064d3575429c775462ef4d059, type: 3}
     trigger: 0
@@ -489,6 +496,7 @@ MonoBehaviour:
   maxHealth: 100
   autoRevive: 0
   reviveDelay: 2.5
+  trainingDummy: 0
   isBoss: 0
   experienceReward: 30
   effortYield:

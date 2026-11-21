@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.HudSystem.PetStatProfile
   definitionId: sun-blossom
   formId: "02"
-  hp: 70
-  attack: 40
-  magicAttack: 90
+  hp: 75
+  attack: 45
+  magicAttack: 95
   defense: 60
   magicDefense: 100
-  speed: 50
+  speed: 55
   criticalRate: 6.25
   criticalDamage: 50
   isCatchable: 1

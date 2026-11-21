@@ -246,14 +246,14 @@ public partial class PetCommandInput : MonoBehaviour
         bool doublePress = now - lastReturnPress <= .3f;
         lastReturnPress = doublePress ? float.NegativeInfinity : now;
         selectedEnemy = null;
-        activePet.GetComponent<Capstone.Game.Skills.PetCombatActionDriver>()?.ReturnToOwner();
+        var actions = activePet.GetComponent<Capstone.Game.Skills.PetCombatActionDriver>();
         if (doublePress)
         {
             WithdrawActivePet();
         }
         else
         {
-            activePet.ReturnToOwner();
+            if (actions == null || !actions.RequestReturn()) activePet.RequestReturnNearOwner();
         }
     }
 
