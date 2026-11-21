@@ -10578,6 +10578,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89c2b733f2fe53343b116a5cdcde7459, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PetCommandInput
+  partyDefeatSpawnPoint: {fileID: 0}
   activePet: {fileID: 2025894836}
   petSlots:
   - {fileID: 0}
@@ -10718,6 +10719,7 @@ MonoBehaviour:
   recallEffectNormalizedTime: 0.28
   pickupStartTimeout: 3
   pickupCompletionTimeout: 3
+  summonPresentationTimeout: 12
 --- !u!114 &343804640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54097,7 +54099,7 @@ MonoBehaviour:
   m_SerializedVersion: 0
   m_AgentTypeID: 0
   m_CollectObjects: 1
-  m_Size: {x: 160, y: 16, z: 160}
+  m_Size: {x: 160, y: 16, z: 544.58}
   m_Center: {x: 0, y: 2, z: 0}
   m_LayerMask:
     serializedVersion: 2
@@ -54123,7 +54125,7 @@ Transform:
   m_GameObject: {fileID: 1697000519}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 39.7, y: -93.9, z: 33.3}
+  m_LocalPosition: {x: 39.7, y: -93.9, z: 35.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
