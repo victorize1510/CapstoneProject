@@ -66,6 +66,9 @@ MonoBehaviour:
   followResumeDistance: 7
   leashDistance: 10
   teleportDistance: 24
+  fastReturnSpeedMultiplier: 1.65
+  closeFollowDistance: 2
+  meleeChaseSpeedMultiplier: 1.5
   followSpeed: 4.2
   commandSpeed: 5.3
   acceleration: 18
@@ -99,7 +102,7 @@ MonoBehaviour:
   attackCooldown: 0.95
   attackHitDelay: 0.28
   attackStateTime: 0.75
-  useSelfInput: 0
+  useSelfInput: 1
   summonKey: 49
   spawnDuration: 1.1
   summonOnCommand: 0
@@ -216,7 +219,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 2
-    manaCost: 0
+    manaCost: 8
   - skillId: blast
     legacySkillIds:
     - blast
@@ -247,7 +250,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 10
-    manaCost: 0
+    manaCost: 15
   - skillId: projectile
     legacySkillIds:
     - projectile
@@ -280,7 +283,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3
-    manaCost: 0
+    manaCost: 12
   - skillId: wing strike
     legacySkillIds:
     - wing strike
@@ -312,7 +315,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 4.2
-    manaCost: 0
+    manaCost: 18
   learnedSkills:
   - skillId: bite
     legacySkillIds:
@@ -349,7 +352,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 2
-    manaCost: 0
+    manaCost: 8
   - skillId: blast
     legacySkillIds:
     - blast
@@ -380,7 +383,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 10
-    manaCost: 0
+    manaCost: 15
   - skillId: projectile
     legacySkillIds:
     - projectile
@@ -413,7 +416,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3
-    manaCost: 0
+    manaCost: 12
   - skillId: wing strike
     legacySkillIds:
     - wing strike
@@ -445,7 +448,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 4.2
-    manaCost: 0
+    manaCost: 18
   petController: {fileID: 5068841961315403088}
   animator: {fileID: 7011978841259086528}
   autoFindAnimationReferences: 1
