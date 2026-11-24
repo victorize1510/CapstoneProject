@@ -859,7 +859,7 @@ namespace Capstone.Game.HudSystem {
                 VisualElement card = skillCards[i];
                 card.EnableInClassList("is-locked", !available);
                 SetText(card, "pet-skill-name", available ? SafeName(Capstone.Game.UISystem.VietnameseUI.Skill(skill.displayName)) : "Chưa mở");
-                SetText(card, "pet-skill-meta", available ? $"Cấp {Mathf.Max(1, skill.skillLevel)}" : "-");
+                SetText(card, "pet-skill-meta", available ? Capstone.Game.UISystem.SkillPresentation.Mana(skill) : "-");
                 VisualElement icon = card.Q<VisualElement>("skill-icon");
                 Label fallback = icon?.Q<Label>(className: "pet-skill-icon-fallback");
                 CompanionArt.SetSkillImage(icon, fallback, available ? skill.icon : null, !available);
@@ -1148,7 +1148,7 @@ namespace Capstone.Game.HudSystem {
         static string BuildSkillTooltip(SkillHudData skill) {
             string description = string.IsNullOrWhiteSpace(skill.description) ? "Chưa có mô tả." : skill.description.Trim();
             string cooldown = skill.cooldownSeconds > 0f ? $"Hồi chiêu: {skill.cooldownSeconds:0.#} giây" : "Hồi chiêu: —";
-            return $"{description}\nCấp kỹ năng: {Mathf.Max(1, skill.skillLevel)}\n{cooldown}";
+            return $"{description}\nSức mạnh: {Capstone.Game.UISystem.SkillPresentation.Power(skill)} · Mana: {Capstone.Game.UISystem.SkillPresentation.Mana(skill)}\n{cooldown}";
         }
 
         static void SetText(VisualElement rootElement, string className, string value) {

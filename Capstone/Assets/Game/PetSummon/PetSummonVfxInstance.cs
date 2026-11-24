@@ -194,7 +194,8 @@ namespace Capstone.Game.PetSummon
         }
 
         public void UpdatePresentation(float time, Vector3 center, Vector3 ball,
-            Vector3 halfExtents, Vector3 haloExtents, Quaternion rotation, Vector3 sourceCenter,Vector3 sourceExtents)
+            Vector3 halfExtents, Vector3 haloExtents, Quaternion rotation, Vector3 sourceCenter, Vector3 sourceExtents,
+            Vector3[] recallPoints = null, int recallContactCount = 0)
         {
             transform.position = center;
             bodyRotation = rotation;
@@ -204,7 +205,8 @@ namespace Capstone.Game.PetSummon
             // remains a mathematical anchor for Recall; it no longer draws a shell or orbit lines.
             shell.enabled = false;
             for (int i = 0; i < orbits.Length; i++) orbits[i].enabled = false;
-            if (recall) UpdateRecall(time, center, haloExtents, ball, halfExtents,sourceCenter,sourceExtents);
+            if (recall) UpdateRecall(time,center,haloExtents,ball,halfExtents,sourceCenter,sourceExtents,
+                recallPoints,recallContactCount);
             else UpdateSpawn(time, center,halfExtents,ball,sourceExtents);
             energyLight.enabled = quality != PetVFXQuality.Low && finish > .001f;
             if (energyLight.enabled) {
@@ -257,7 +259,7 @@ namespace Capstone.Game.PetSummon
         }
 
         void UpdateRecall(float time, Vector3 center, Vector3 haloExtents, Vector3 ball,Vector3 halfExtents,
-            Vector3 sourceCenter,Vector3 sourceExtents)
+            Vector3 sourceCenter,Vector3 sourceExtents,Vector3[] recallPoints,int recallContactCount)
         {
             float radius=Mathf.Min(haloExtents.x,Mathf.Min(haloExtents.y,haloExtents.z));
             groundRing.enabled = false;
@@ -266,14 +268,15 @@ namespace Capstone.Game.PetSummon
             SetEllipsoid(core,center,halfExtents*(.12f*burstMargin),bodyRotation,primary,
                 FadeIn(time,.25f,.42f)*FadeOut(time,.56f,.65f)*.65f);
             float reach = FadeIn(time,.08f,.18f);
-            Vector3 endpoint = ResolveEllipsoidContact(ball, center, haloExtents,bodyRotation);
-            // A nearby player can be inside a wide-winged dragon's halo. Still meet the nearest surface.
-            bool visible = radius > .005f && reach > 0 && (endpoint-ball).sqrMagnitude > .000001f;
+            Vector3 endpoint = recallContactCount>0 ? recallPoints[0]
+                : ResolveEllipsoidContact(ball,center,haloExtents,bodyRotation);
+            float beamAlpha = reach*FadeOut(time,.50f,.56f);
+            bool visible = (recallContactCount>0 || radius>.005f) && beamAlpha>.001f
+                && (endpoint-ball).sqrMagnitude > .000001f;
             beam.enabled = visible;
             contact.enabled = visible && reach >= .999f;
             if (visible) {
                 beam.widthMultiplier = Mathf.Max(.002f, particleRadius * .018f);
-                float beamAlpha = reach*FadeOut(time,.50f,.56f);
                 beam.startColor = beam.endColor = new Color(primary.r, primary.g, primary.b, beamAlpha);
                 beam.SetPosition(0,ball);
                 beam.SetPosition(1,Vector3.Lerp(ball,endpoint,reach));
@@ -282,9 +285,14 @@ namespace Capstone.Game.PetSummon
             }
             if (time >= .18f && !emittedBody) {
                 emittedBody = true; Emit(burst,center,particleRadius,count/2,.38f,0);
-                Emit(materialize,center,particleRadius*.65f,count/4,.3f,0);
+                int contacts=Mathf.Min(recallContactCount,quality==PetVFXQuality.Low ? 2 : 3);
+                if (recallPoints==null) Emit(materialize,center,particleRadius*.65f,count/4,.3f,0);
+                else if (contacts==0) Emit(materialize,endpoint,particleRadius*.08f,count/4,.3f,0);
+                for (int i=0;i<contacts;i++)
+                    Emit(materialize,recallPoints[i],particleRadius*.08f,Mathf.Max(1,count/(4*contacts)),.3f,0);
             }
-            UpdateFunnel(time,ball,endpoint,haloExtents,sourceCenter,sourceExtents);
+            if (recallPoints==null) UpdateFunnel(time,ball,endpoint,haloExtents,sourceCenter,sourceExtents);
+            else UpdateRecallStrands(time,ball,recallPoints,recallContactCount);
             float progress=FadeIn(time,.18f,.56f);
             Attract(burst, ball, progress); Attract(materialize, ball, progress);
             if (time >= .56f && !emittedFinish) {
@@ -301,14 +309,48 @@ namespace Capstone.Game.PetSummon
             return center+rotation*(local/Mathf.Max(.000001f,length));
         }
 
+        void UpdateRecallStrands(float time,Vector3 ball,Vector3[] points,int contacts)
+        {
+            if (funnelStrands == null) return;
+            int strands=quality==PetVFXQuality.Low?1:2;
+            for (int arm=0;arm<funnelStrands.Length;arm++) {
+                var line=funnelStrands[arm];
+                float reach=FadeIn(time,.09f+arm*.025f,.18f+arm*.02f);
+                float alpha=reach*FadeOut(time,.49f,.56f)*.82f;
+                bool hasContact=arm<strands && arm+1<contacts;
+                Vector3 start=hasContact ? Vector3.Lerp(ball,points[arm+1],reach) : ball;
+                Vector3 delta=ball-start;
+                float distance=delta.magnitude;
+                line.enabled=hasContact && distance>.004f && alpha>.001f;
+                if (!line.enabled) continue;
+                Vector3 axis=delta/distance;
+                Vector3 side=Vector3.Cross(axis,Mathf.Abs(axis.y)<.9f?Vector3.up:Vector3.right).normalized;
+                float curve=Mathf.Min(particleRadius*.13f,distance*.09f);
+                line.widthMultiplier=Mathf.Max(.002f,particleRadius*.013f);
+                Color colour=arm==0?secondary:primary;
+                colour.a=alpha;
+                line.startColor=colour;
+                colour.a*=.72f;
+                line.endColor=colour;
+                circlePositions[0]=start;
+                circlePositions[segments-1]=ball;
+                for (int i=1;i<segments-1;i++) {
+                    float u=i/(float)(segments-1);
+                    float wave=Mathf.Sin(u*Mathf.PI*3-time*32+arm*Mathf.PI);
+                    circlePositions[i]=Vector3.Lerp(start,ball,u)
+                        +side*(wave*curve*Mathf.Sin(u*Mathf.PI));
+                }
+                line.SetPositions(circlePositions);
+            }
+        }
+
+        // Capture uses a scaled proxy and supplies an envelope instead of animated mesh contacts.
         void UpdateFunnel(float time,Vector3 ball,Vector3 start,Vector3 haloExtents,
             Vector3 sourceCenter,Vector3 sourceExtents)
         {
             if (funnelStrands == null) return;
             var warp=PetRecallWarp.Create(sourceCenter,ball,sourceExtents,bodyRotation,time,profile);
             float alpha=FadeIn(time,.18f,.25f)*FadeOut(time,.50f,.56f)*.8f;
-            // With the ball inside the remaining halo, its forward surface lies beyond the ball.
-            // Suppress the decorative tail rather than drawing a coil back in the opposite direction.
             bool outward=Vector3.Dot(ball-start,warp.axis)>.001f;
             Vector3 delta=ball-start;
             float distance=delta.magnitude;

@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System.Collections.Generic;
 using Capstone.Game.CaptureSystem;
 using Capstone.Game.Inventory;
@@ -51,11 +52,12 @@ namespace Capstone.Game.HudSystem {
         public bool IsPresenting=>coordinator!=null&&coordinator.IsCapturing;
         internal bool OwnsPickerInput=>pickerBlocked;
         public static bool OwnsCaptureKey=>GameplayHudController.Live!=null&&GameplayHudController.Live.isActiveAndEnabled;
-        public static bool ModelSwitchModifier=>Input.GetKey(KeyCode.LeftShift)||Input.GetKey(KeyCode.RightShift)
-            ||Input.GetKeyDown(KeyCode.LeftShift)||Input.GetKeyDown(KeyCode.RightShift)
-            ||Input.GetKeyUp(KeyCode.LeftShift)||Input.GetKeyUp(KeyCode.RightShift);
+        public static bool ModelSwitchModifier=>PhysicalKeys.GetKey(KeyCode.LeftShift)||PhysicalKeys.GetKey(KeyCode.RightShift)
+            ||PhysicalKeys.GetKeyDown(KeyCode.LeftShift)||PhysicalKeys.GetKeyDown(KeyCode.RightShift)
+            ||PhysicalKeys.GetKeyUp(KeyCode.LeftShift)||PhysicalKeys.GetKeyUp(KeyCode.RightShift);
         public int ThrowIntents {get;private set;}
         public KeyCode CaptureKey=>captureKey;
+        internal MonsterItemDefinition SelectedBall => Selected()?.ItemBase as MonsterItemDefinition;
         void Resolve(){if(inventory==null)inventory=FindFirstObjectByType<MonsterInventoryAdapter>(FindObjectsInactive.Include);if(coordinator==null)coordinator=FindFirstObjectByType<PetCaptureCoordinator>(FindObjectsInactive.Include);if(bag==null)bag=FindFirstObjectByType<MonsterInventoryController>(FindObjectsInactive.Include);}
         public void Build(RectTransform root) {
             if(opportunitySource==null){var source=GetComponent<LockedCaptureOpportunitySource>();if(source==null)source=gameObject.AddComponent<LockedCaptureOpportunitySource>();opportunitySource=source;}
@@ -81,11 +83,14 @@ namespace Capstone.Game.HudSystem {
             if(host==null)return;
             if(Time.unscaledTime>=lookupAt){lookupAt=Time.unscaledTime+1;Resolve();}
             if(Time.unscaledTime>=refreshAt){refreshAt=Time.unscaledTime+.15f;Refresh();}
-            bool allowed=host.gameObject.activeInHierarchy&&!InventoryInputController.IsBlockedByOtherThan(this);
+            bool allowed=Application.isFocused&&host.gameObject.activeInHierarchy&&!InventoryInputController.IsBlockedByOtherThan(this);
             if(!allowed){gesture.Cancel();if(IsPickerOpen)ClosePicker();}
             else {
-                ProcessCaptureKey(Input.GetKeyDown(captureKey),Input.GetKey(captureKey),Input.GetKeyUp(captureKey),Time.unscaledTime);
-                if(IsPickerOpen)for(int i=0;i<3;i++)if(Input.GetKeyDown(KeyCode.Alpha1+i)||Input.GetKeyDown(KeyCode.Keypad1+i))SelectChoice(i);
+                ProcessCaptureKey(PhysicalKeys.GetKeyDown(captureKey),PhysicalKeys.GetKey(captureKey),PhysicalKeys.GetKeyUp(captureKey),Time.unscaledTime);
+                if(IsPickerOpen)for(int i=0;i<3;i++)if(PhysicalKeys.GetKeyDown(KeyCode.Alpha1+i)||PhysicalKeys.GetKeyDown(KeyCode.Keypad1+i))SelectChoice(i);
+                if (!IsPickerOpen && coordinator?.CaptureCamera?.IsCaptureAiming == true && Input.GetMouseButtonDown(0)
+                    && (Cursor.lockState == CursorLockMode.Locked || UnityEngine.EventSystems.EventSystem.current?.IsPointerOverGameObject() != true))
+                    TryThrow();
             }
             bool flag=allowed&&!IsPickerOpen&&opportunitySource is ICaptureOpportunitySource source&&source.HasCaptureOpportunity;
             if(opportunity!=null)opportunity.SetActive(flag);
@@ -103,7 +108,8 @@ namespace Capstone.Game.HudSystem {
             lastIntentFrame=Time.frameCount;ThrowIntents++;Refresh();var selected=Selected();
             if(coordinator==null){Feedback("Chưa kết nối dịch vụ thu phục.");return false;}
             if(!(selected?.ItemBase is MonsterItemDefinition ball)||selected.Quantity<1){Feedback("Chưa có bóng thu phục. Giữ G để chọn bóng.");return false;}
-            if(!coordinator.TryCaptureFromBag(ball,inventory,out var result,out var error)){Feedback(error);return false;}
+            bool aim = coordinator.CaptureCamera?.IsCaptureAiming == true;
+            if(!coordinator.TryCaptureFromSelection(ball,inventory,aim,out var result,out var error)){Feedback(error);return false;}
             coordinator.Present(result,bag!=null?bag.GetComponent<UIDocument>():null);Refresh();return true;
         }
         public void OpenPicker(){

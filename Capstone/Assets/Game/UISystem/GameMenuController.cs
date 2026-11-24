@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -137,7 +138,7 @@ namespace Capstone.Game.UISystem {
                 RefreshTrainerSummary();
             }
 
-            bool reverse = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            bool reverse = PhysicalKeys.GetKey(KeyCode.LeftShift) || PhysicalKeys.GetKey(KeyCode.RightShift);
             if (Pressed(closeKey)) HandleShortcut(closeKey, reverse);
             else if (Pressed(menuKey)) HandleShortcut(menuKey, reverse);
             else if (Pressed(inventoryKey)) HandleShortcut(inventoryKey, reverse);
@@ -501,7 +502,8 @@ namespace Capstone.Game.UISystem {
             var camera = FindFirstObjectByType<BasicCameraFollow>();
             if (camera != null) {
                 text.AppendLine("Di chuyển chuột — Xoay camera");
-                if (camera.enableEnemyLock) text.AppendLine("Chuột " + (camera.lockMouseButton + 1) + " — Ghim / bỏ ghim mục tiêu");
+                if (camera.enableEnemyLock) text.AppendLine((camera.lockMouseButton == 2 ? "Bấm nhanh chuột giữa" : "Chuột " + (camera.lockMouseButton + 1)) + " — Ghim / bỏ ghim mục tiêu");
+                if (camera.enableAimCamera) text.AppendLine("Giữ chuột giữa + chuột trái — Ngắm và ném bóng thu phục");
                 if (camera.enableScrollZoom) text.AppendLine("Con lăn — Thu phóng; đổi mục tiêu khi đang ghim");
             }
             var command = FindFirstObjectByType<PetCommandInput>();
@@ -1073,7 +1075,7 @@ namespace Capstone.Game.UISystem {
         }
 
         static bool Pressed(KeyCode key) {
-            return key != KeyCode.None && Input.GetKeyDown(key);
+            return key != KeyCode.None && PhysicalKeys.GetKeyDown(key, key == KeyCode.Escape);
         }
 
         static Font DefaultFont => MenuTypography.Font;

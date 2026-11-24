@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using UnityEngine;
 
 namespace Capstone.Game.QuestSystem {
@@ -47,7 +48,7 @@ namespace Capstone.Game.QuestSystem {
             if (near
                 && !accepted
                 && !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked
-                && Input.GetKeyDown(interactKey)) {
+                && PhysicalKeys.GetKeyDown(interactKey)) {
                 AcceptQuest();
             }
         }

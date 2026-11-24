@@ -22,6 +22,11 @@ namespace Capstone.Game.Inventory {
         [SerializeField, TextArea(1, 3)] string flavorText = string.Empty;
         [SerializeField, Min(0)] int healAmount;
         [SerializeField, Min(0)] int energyRestoreAmount;
+        [SerializeField, Range(0,100)] int revivePercent;
+        [SerializeField] Capstone.Game.CreatureSystem.CombatAilment cleanses;
+        [SerializeField] bool grantsStatBuff;
+        [SerializeField] Capstone.Game.HudSystem.PetCoreStat buffStat;
+        [SerializeField] Capstone.Game.HudSystem.PetElement evolutionStoneElement;
         [SerializeField] bool usableFromInventory = true;
         [SerializeField] bool consumable = true;
         [Header("Capture ball (internal configuration)")]
@@ -49,6 +54,11 @@ namespace Capstone.Game.Inventory {
         public string FlavorText => flavorText;
         public int HealAmount => Mathf.Max(0, healAmount);
         public int EnergyRestoreAmount => Mathf.Max(0, energyRestoreAmount);
+        public int RevivePercent => Mathf.Clamp(revivePercent, 0, 100);
+        public Capstone.Game.CreatureSystem.CombatAilment Cleanses => cleanses;
+        public bool GrantsStatBuff => grantsStatBuff && (int)buffStat >= 1 && (int)buffStat <= 5;
+        public Capstone.Game.HudSystem.PetCoreStat BuffStat => buffStat;
+        public Capstone.Game.HudSystem.PetElement EvolutionStoneElement => evolutionStoneElement;
         public bool UsableFromInventory => usableFromInventory;
         public bool Consumable => consumable;
 

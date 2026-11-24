@@ -45,7 +45,6 @@ namespace Capstone.Game.HudSystem {
         public bool unlocked;
         public bool usable;
         public string displayName;
-        [Min(1)] public int skillLevel;
         [Min(1)] public int requiredPetLevel;
         public PetElement element;
         public Capstone.Game.Skills.SkillUiMetadata uiMetadata;
@@ -62,6 +61,7 @@ namespace Capstone.Game.HudSystem {
         [Min(0f)] public float cooldownSeconds;
         [Min(0f)] public float manaCost;
         [NonSerialized] public float cooldownRemainingSeconds;
+        [NonSerialized] public Capstone.Game.Skills.PetSkillCombatProfile combatProfile;
 
         public float CooldownPercent {
             get {

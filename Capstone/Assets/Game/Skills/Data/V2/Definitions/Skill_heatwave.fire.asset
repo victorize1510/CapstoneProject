@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_heatwave.fire
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: heatwave.fire
+  legacyIds: []
+  displayName: "Đốt Nóng"
+  description: "Phóng luồng khí nóng gây bỏng trong 5 giây khi chạm mục tiêu."
+  element: 2
+  icon: {fileID: 21300000, guid: 56c9b8d96975ad74d9906cb0399b7920, type: 3}
+  cooldownSeconds: 11
+  manaCost: 19
+  animatorStates: 
+  - Cast Spell
+  animationDuration: 0.9
+  animationFade: 0.08
+  presentation: {fileID: 11400000, guid: a685a072ac02f3cc0fde98e2d0dd6b87, type: 2}
+  combat: {fileID: 11400000, guid: fe0e89c1719b5bbf6027422d66f53937, type: 2}

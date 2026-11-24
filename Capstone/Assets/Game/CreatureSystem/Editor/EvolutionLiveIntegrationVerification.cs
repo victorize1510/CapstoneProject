@@ -207,7 +207,9 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 Check(!prompt.IsOpen && petFixture.GetComponent<PetCollectionMetadata>().CurrentFormId == "01", "Later preserves form and releases popup");
                 await Until(() => !InventoryInputController.GameplayInputBlocked, 5, "Input restored after Later");
                 await Awaitable.NextFrameAsync(); prompt.Enqueue(petFixture);
-                Check(Get<HashSet<string>>(prompt, "shown").Contains(PromptKey(petFixture)), "Same pet/level deferred once per session");
+                var deferred = petFixture.GetComponent<PetCollectionMetadata>();
+                Check(PromptKey(petFixture) == null && deferred.TryGetNextEvolutionRule(out var deferredRule)
+                    && deferred.WasEvolutionPrompted(deferredRule.EvolutionId), "Later records the first evolution milestone");
                 // Manual access remains available after Later; use the same real presentation/save pipeline.
                 inventory.OpenPetEvolutionPanel(petFixture);
                 await Until(() => prompt.IsShowing(petFixture), 8, "Manual reopen after Later remains available");

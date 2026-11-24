@@ -81,17 +81,13 @@ namespace Capstone.Game.CreatureSystem.Editor {
             string path=Art+"/Shop.asset";
             var catalog=AssetDatabase.LoadAssetAtPath<ShopCatalog>(path);
             if(catalog==null){catalog=ScriptableObject.CreateInstance<ShopCatalog>();AssetDatabase.CreateAsset(catalog,path);}
-            var data=new SerializedObject(catalog);var offers=data.FindProperty("offers");offers.arraySize=4;
-            string[] paths={"Assets/Game/Inventory/HealingApple.asset","Assets/Game/Inventory/Potion.asset","Assets/Resources/Capture/BasicCaptureBall.asset","Assets/Game/Inventory/DuskStone.asset"};
-            int[] prices={5,20,10,100};ShopCategory[] groups={ShopCategory.Consumables,ShopCategory.Consumables,ShopCategory.Capture,ShopCategory.Evolution};
-            for(int i=0;i<4;i++) {
-                var item=AssetDatabase.LoadAssetAtPath<MonsterItemDefinition>(paths[i]);if(item==null)throw new InvalidOperationException(paths[i]);
-                var offer=offers.GetArrayElementAtIndex(i);offer.FindPropertyRelative("Id").stringValue=item.StableId;
-                offer.FindPropertyRelative("Item").objectReferenceValue=item;offer.FindPropertyRelative("Category").intValue=(int)groups[i];
-                offer.FindPropertyRelative("GoldPrice").intValue=prices[i];offer.FindPropertyRelative("Stock").intValue=-1;offer.FindPropertyRelative("MaxPerPurchase").intValue=99;
-                offer.FindPropertyRelative("Unlocked").boolValue=true;offer.FindPropertyRelative("LockedReason").stringValue=string.Empty;
-            }
-            data.ApplyModifiedPropertiesWithoutUndo();AssetDatabase.SaveAssetIfDirty(catalog);return catalog;
+            var defaults = Resources.Load<ShopCatalog>("Shop/DefaultShopCatalog");
+            if (defaults == null) throw new InvalidOperationException("Thiếu danh mục cửa hàng mặc định.");
+            catalog.sharedCatalog = defaults;
+            catalog.name = Path.GetFileNameWithoutExtension(path);
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssetIfDirty(catalog);
+            return catalog;
         }
         static GameObject BuildSmoke() {
             string path=Art+"/DeathSmoke.prefab";

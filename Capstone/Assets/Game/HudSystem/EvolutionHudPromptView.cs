@@ -75,9 +75,9 @@ namespace Capstone.Game.HudSystem {
             V.Stretch(label.rectTransform, 3);
             return button;
         }
-        public void Display(string petName, bool canConfirm, string disabledReason) {
+        public void Display(string petName, string targetName, bool canConfirm, string disabledReason) {
             Build();
-            message.text = canConfirm ? petName + " đã đủ điều kiện tiến hóa." : "Tiến hóa " + petName;
+            message.text = canConfirm ? petName + " có thể tiến hóa thành " + targetName + "." : "Tiến hóa " + petName;
             reason.text = canConfirm ? "Y: Tiến hóa  ·  N: Để sau" : disabledReason;
             Confirm.interactable = canConfirm;
         }

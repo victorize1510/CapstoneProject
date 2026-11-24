@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using Capstone.Game.Inventory;
 using UnityEngine;
 using UnityEngine.AI;
@@ -48,7 +49,7 @@ namespace Capstone.Game.UISystem {
             SetPromptVisible(canInteract);
             FacePromptToCamera();
 
-            if (canInteract && Input.GetKeyDown(interactKey)) {
+            if (canInteract && PhysicalKeys.GetKeyDown(interactKey)) {
                 OpenTargetPanel();
             }
         }

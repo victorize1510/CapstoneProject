@@ -33,10 +33,20 @@ MonoBehaviour:
     state: Cast Spell
   - action: 11
     state: Projectile Attack
-  skills: 
-  - skillId: "strike.normal"
-    action: 7
+  skills:
   - skillId: "orb.dark"
     action: 11
-  - skillId: "strike.fighting"
-    action: 7
+  - skillId: orb.dark
+    action: 9
+  - skillId: spirit.dark
+    action: 9
+  - skillId: flock.dark
+    action: 9
+  - skillId: blackhole.dark
+    action: 9
+  - skillId: curl.normal
+    action: 9
+  - skillId: protect.normal
+    action: 9
+  - skillId: roar.power
+    action: 9

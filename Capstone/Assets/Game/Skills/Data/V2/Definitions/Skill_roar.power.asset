@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_roar.power
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: roar.power
+  legacyIds: []
+  displayName: "Gầm Uy Lực"
+  description: "Gầm lên và tự tăng 15% sát thương vật lý và phép trong 8 giây."
+  element: 13
+  icon: {fileID: 21300000, guid: 06d2beed4a8d01547ab931c3e52b260e, type: 3}
+  cooldownSeconds: 16
+  manaCost: 20
+  animatorStates: 
+  - Cast Spell
+  animationDuration: 0.9
+  animationFade: 0.08
+  presentation: {fileID: 11400000, guid: 1d581b54af4acb5f7f4afa60e222f19b, type: 2}
+  combat: {fileID: 11400000, guid: 43078bd5ac3664927dadd0c0e6f2a716, type: 2}

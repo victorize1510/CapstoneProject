@@ -359,7 +359,7 @@ namespace Capstone.Game.SaveSystem.Editor {
             Equal(data.items[0].itemId, adapter.CreateSaveData().items[0].itemId, "Prototype ID");
             Equal(400, adapter.CreateSaveData().items[0].healAmount, "Prototype metadata");
         }
-        static SkillHudData Skill(string id) => new SkillHudData { skillId = id, displayName = id, unlocked = true, usable = true, skillLevel = 1, requiredPetLevel = 1 };
+        static SkillHudData Skill(string id) => new SkillHudData { skillId = id, displayName = id, unlocked = true, usable = true, requiredPetLevel = 1 };
         static PetHudRuntimeStats Stats() {
             var stats = Component<PetHudRuntimeStats>(); Set(stats, "usePrototypeSkillsWhenEmpty", false);
             stats.SetIdentity("Test", 12); stats.SetStatus(70, 100, 15, 20); stats.SetSkills(new[] { Skill("a"), Skill("b") }); return stats;

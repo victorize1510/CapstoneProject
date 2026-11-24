@@ -8,18 +8,25 @@ using System.Threading.Tasks;
 using Capstone.Game.HudSystem;
 using Capstone.Game.Inventory;
 using Capstone.Game.PetSummon;
+using Capstone.Game.ProfileSystem;
 using Capstone.Game.SaveSystem;
+using Capstone.Game.ShopSystem;
+using Capstone.Game.UISystem;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
 namespace Capstone.Game.CreatureSystem.Editor {
     // Only armed by the explicit menu; one empty temporary scene and a bounded 180s session.
     public static class DragonEvolutionPlayVerification {
         const string Key = "Capstone.DragonEvolution.Play.20261121";
-        static string Root => DragonEvolutionVerification.Root;
+        static bool MilestoneRun => SessionState.GetBool(Key + ".milestones", false);
+        static bool ItemRun => SessionState.GetBool(Key + ".items", false);
+        static string Root => ItemRun ? Path.Combine(QaArtifactPaths.Root, "ShopProgression")
+            : MilestoneRun ? Path.Combine(QaArtifactPaths.Root, "EvolutionPromptMilestones") : DragonEvolutionVerification.Root;
         static string Report => Path.Combine(Root, "play-checks.txt");
         static readonly List<string> lines = new();
         static double deadline;
@@ -40,7 +47,21 @@ namespace Capstone.Game.CreatureSystem.Editor {
         [MenuItem("Tools/Capstone/Creatures/Play verify dragon evolution (isolated, 180s)")]
         static void Begin() {
             SessionState.EraseString(Key + ".reload");
+            SessionState.EraseBool(Key + ".milestones");
             BeginScene();
+        }
+        [MenuItem("Tools/Capstone/Creatures/Verify evolution milestones and camera (isolated)")]
+        static void BeginMilestones() {
+            SessionState.EraseString(Key + ".reload");
+            SessionState.SetBool(Key + ".milestones", true);
+            BeginScene();
+        }
+        [MenuItem("Tools/Capstone/Creatures/Verify expanded item use (isolated)")]
+        static void BeginItems() {
+            SessionState.EraseString(Key + ".reload");
+            SessionState.SetBool(Key + ".items", true);
+            try { BeginScene(); }
+            catch { SessionState.EraseBool(Key + ".items"); throw; }
         }
         static void BeginScene() {
             var scene = SceneManager.GetActiveScene();
@@ -57,6 +78,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
         }
         [MenuItem("Tools/Capstone/Creatures/Play verify persisted forms (isolated, 30s)")]
         static void BeginReload() {
+            SessionState.EraseBool(Key + ".milestones");
             string folder = Path.Combine(Root, "play-saves");
             string path = Directory.Exists(folder) ? Directory.GetFiles(folder, "player_qa-evo-*.json")
                 .OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault() : null;
@@ -79,6 +101,8 @@ namespace Capstone.Game.CreatureSystem.Editor {
             if (state != PlayModeStateChange.EnteredEditMode) return;
             SessionState.EraseString(Key);
             SessionState.EraseString(Key + ".reload");
+            SessionState.EraseBool(Key + ".milestones");
+            SessionState.EraseBool(Key + ".items");
             EditorApplication.delayCall += () => EditorSceneManager.OpenScene(previous, OpenSceneMode.Single);
         }
         static IEnumerator FinishRoutine(IEnumerator routine, Action complete) {
@@ -116,8 +140,15 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 Set(save, "saveOnApplicationQuit", false); Set(save, "saveOnDisable", false); Set(save, "saveOnApplicationPause", false);
                 Set(save, "migrateLegacyQuestSave", false); Set(save, "autoSaveDelay", 9999f);
                 Set(save, "petCommandInput", input); Set(save, "petBoxProvider", box); Set(save, "petPrefabCatalog", catalog);
+                MonsterInventoryAdapter bag = null;
+                if (ItemRun) {
+                    bag = owner.AddComponent<MonsterInventoryAdapter>();
+                    bag.SetInventory(new GDS.Core.ListBag { Size = 24 });
+                    Set(save, "inventoryAdapter", bag);
+                }
                 owner.SetActive(true);
                 var service = owner.AddComponent<PetEvolutionService>(); Set(service, "saveController", save);
+                if (ItemRun) service.Bind(bag);
                 var presenter = owner.AddComponent<PetEvolutionPresentationController>();
                 presenter.gameplayCamera = camera;
                 presenter.whiteOverlayMaterial = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GUIDToAssetPath("6aa8d41eaab07fe47b792e7bfad3b5a4"));
@@ -138,6 +169,18 @@ namespace Capstone.Game.CreatureSystem.Editor {
                     pet.GetComponent<PetCollectionMetadata>().SyncRuntimeHealth(stats);
                     stats.SetStatus(stats.MaxHealth, stats.MaxHealth, 0, 0);
                     input.petSlots[slot] = pet; pet.Withdraw(); return pet;
+                }
+                if (ItemRun) {
+                    await VerifyItems(Create("Dragon Dusk", 0, 5), Create("bat", 1, 5), input, save, service, bag);
+                    Check(errors.Count == 0, "No errors during isolated item use");
+                    lines.Add("COMPLETE isolated item use");
+                    return;
+                }
+                if (MilestoneRun) {
+                    await VerifyMilestones(Create("bat", 0, 17), input, save, service, presenter, camera);
+                    Check(errors.Count == 0, "No errors during prompt, save reload, and camera transitions");
+                    lines.Add("COMPLETE isolated evolution milestone and camera test.");
+                    return;
                 }
                 var dragon = Create("Dragon Dusk", 0, 40); input.SetActivePet(dragon);
                 await Awaitable.NextFrameAsync();
@@ -226,6 +269,233 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 if (errors.Count > 0) File.WriteAllLines(Path.Combine(Root, "play-errors.txt"), errors);
                 if (EditorApplication.isPlaying) EditorApplication.ExitPlaymode();
             }
+        }
+        static async Task VerifyItems(PetController pet, PetController reserve, PetCommandInput input,
+            PlayerSaveController save, PetEvolutionService evolution, MonsterInventoryAdapter bag) {
+            var heal = input.gameObject.AddComponent<PetHealService>();
+            heal.Bind(bag);
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            var combat = pet.GetComponent<CreatureCombatant>();
+            var reserveStats = reserve.GetComponent<PetHudRuntimeStats>();
+            MonsterItemDefinition Add(string id) {
+                var item = InventoryDefinitionCatalog.Find(id);
+                Check(item != null && bag.TryAddItemAtomic(item, 1), "Add test item " + id);
+                return item;
+            }
+            async Task Wait(float delay) {
+                float until = Time.unscaledTime + delay;
+                while (Time.unscaledTime < until && EditorApplication.isPlaying) await Awaitable.NextFrameAsync();
+            }
+            input.SetActivePet(pet);
+            Check(pet.TrySummonAt(Vector3.forward * 4, Vector3.forward), "Summon living pet");
+            await Until(() => pet.CanReceiveCommands, 8, "Summoned pet can act");
+            float maxHp = stats.MaxHealth, maxMp = stats.MaxEnergy;
+            stats.SetStatus(maxHp * .4f, maxHp, 15, maxMp);
+            float oldHp = stats.Health;
+            var potion = Add("hp-potion-small");
+            Check(heal.TryHeal(pet, potion, out var message) && Mathf.Approximately(stats.Health, Mathf.Min(maxHp, oldHp + 25))
+                && bag.GetQuantity(potion) == 0, "Fixed 25 HP and one consumed potion: " + message);
+            await Wait(.2f);
+            var mana = Add("mana-potion");
+            stats.SetStatus(stats.Health, maxHp, 15, maxMp);
+            float oldMp = stats.Energy;
+            Check(heal.TryHeal(pet, mana, out message) && Mathf.Approximately(stats.Energy, oldMp + 25)
+                && bag.GetQuantity(mana) == 0, "Fixed 25 MP and one consumed potion: " + message);
+            await Wait(.2f);
+            var hit = new CombatHit(reserve.gameObject, "qa-bleed", 1, 5, CreatureDamageKind.Physical, false, false, pet.transform.position);
+            CombatBleed.ApplyTarget(new CreatureCombatTarget(combat), hit, 5);
+            var ailments = pet.GetComponent<CombatBleed>();
+            var burnRemedy = Add("fruit-cure-burn");
+            Check((ailments.ActiveAilments & CombatAilment.Bleed) != 0 && !heal.CreatePreview(pet, burnRemedy).CanHeal,
+                "Burn fruit rejects a target with bleed only");
+            var bleedRemedy = Add("remedy-bleed");
+            Check(heal.TryHeal(pet, bleedRemedy, out message) && ailments.ActiveAilments == CombatAilment.None,
+                "Selective medicine clears the matching bleed: " + message);
+            await Wait(.2f);
+            var effectiveStats = typeof(CreatureCombatant).GetProperty("Snapshot", BindingFlags.NonPublic | BindingFlags.Instance);
+            int speed = ((PetStatSnapshot)effectiveStats.GetValue(combat)).Speed;
+            Check(heal.TryHeal(pet, Add("fruit-speed"), out message)
+                && ((PetStatSnapshot)effectiveStats.GetValue(combat)).Speed == Mathf.RoundToInt(speed * 1.15f),
+                "Speed fruit increases the combat stat by 15 percent before the movement cap: " + message);
+            reserveStats.SetStatus(0, reserveStats.MaxHealth, reserveStats.Energy, reserveStats.MaxEnergy);
+            await Wait(.2f);
+            Check(heal.TryHeal(reserve, Add("revive-small"), out message)
+                && Mathf.Approximately(reserveStats.Health, reserveStats.MaxHealth * .25f), "Revive an inactive party pet at 25 percent: " + message);
+
+            stats.SetStatus(maxHp * .45f, maxHp, maxMp, maxMp);
+            typeof(PetHudRuntimeStats).GetMethod("SpendMana", BindingFlags.NonPublic | BindingFlags.Instance)
+                .Invoke(stats, new object[] { 60f });
+            oldHp = stats.Health; oldMp = stats.Energy;
+            await Wait(.45f);
+            Check(stats.Health == oldHp && stats.Energy == oldMp, "Neither passive resource recovers in the first half-second");
+            await Until(() => stats.Health > oldHp && stats.Energy > oldMp, 2, "Living summoned pet passively recovers HP and MP");
+            Check(Mathf.Approximately(stats.Health - oldHp, maxHp * .05f)
+                && Mathf.Approximately(stats.Energy - oldMp, maxMp * .1f), "First recovery tick is 5 percent HP and 10 percent MP");
+            pet.Withdraw();
+            var wrongStone = Add("stone-dragon");
+            var matchingStone = Add("dusk-stone");
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            Check(!evolution.CreatePreview(pet, PetEvolutionMethod.Item, wrongStone.StableId).CanEvolve && bag.GetQuantity(wrongStone) == 1,
+                "Dragon secondary type cannot use a Dragon stone");
+            Check(evolution.TryEvolve(pet, out message, PetEvolutionMethod.Item, matchingStone.StableId)
+                && metadata.CurrentFormId == "02" && bag.GetQuantity(matchingStone) == 0 && stats.Level == 5,
+                "Primary Dark stone advances exactly one form below the level milestone: " + message);
+            var disk = PlayerSaveMigration.Read(File.ReadAllText(save.SavePath), out _);
+            Check(disk.pets.petStates.Single(x => x.petId == metadata.PetId).customization.currentFormId == "02",
+                "Stone evolution persists in the test save");
+            var profile = input.gameObject.AddComponent<PlayerProfileRuntimeProvider>();
+            profile.ResetForNewGame();
+            Set(save, "profileProvider", profile);
+            var wallet = input.gameObject.AddComponent<PlayerCurrencyWallet>();
+            Set(save, "currencyWallet", wallet);
+            var enemyPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/CreatureSystem/Runtime/Bats/Enemy/Enemy_Bat01.prefab");
+            var enemyObject = Object.Instantiate(enemyPrefab, Vector3.right * 8, Quaternion.identity);
+            enemyObject.GetComponent<BasicCreatureEnemy>().enabled = false;
+            var enemy = enemyObject.GetComponent<DummyEnemy>();
+            int trainerExperience = 10 + 2 * enemyObject.GetComponent<PetHudRuntimeStats>().Level;
+            var finisher = new CombatHit(reserve.gameObject, "qa-reward", 2, 100000, CreatureDamageKind.Physical,
+                false, false, enemy.TargetPosition);
+            enemy.ApplyCombatHit(finisher);
+            await Until(() => profile.CreateSaveData().currentExperience == trainerExperience, 20, "Defeating a real enemy grants trainer XP");
+            enemy.ApplyCombatHit(finisher);
+            disk = PlayerSaveMigration.Read(File.ReadAllText(save.SavePath), out _);
+            Check(profile.CreateSaveData().currentExperience == trainerExperience && disk.profile.currentExperience == trainerExperience,
+                "A repeated hit cannot grant trainer XP again, and XP survives in the saved journal");
+            await Until(() => wallet.Gold >= 2 && wallet.Gold <= 5, 8, "The defeated enemy delivers the authored gold range");
+
+            var shopSource = input.gameObject.AddComponent<ShopSource>();
+            var shopScreen = input.gameObject.AddComponent<ShopScreenController>();
+            var shopUi = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/ThangTest/UIThang/Inventory/UI/ShopScreen.uxml").CloneTree();
+            profile.SetLevelProgress(9, 40, 100);
+            shopScreen.Bind(shopUi, bag, wallet);
+            shopScreen.Open(shopSource);
+            var shownOffers = Get<List<ShopOffer>>(shopScreen, "filtered");
+            Check(shownOffers.Count == 3 && shownOffers.All(offer => offer.RequiredPlayerLevel == 0),
+                "Shop grid hides every locked consumable at level nine");
+            var search = shopUi.Q<TextField>("shop-search");
+            search.SetValueWithoutNotify(shopSource.Find("hp-potion-medium").Item.Name);
+            typeof(ShopScreenController).GetMethod("ApplyQuery", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(shopScreen, null);
+            Check(shownOffers.Count == 0, "Shop search cannot reveal a locked potion");
+            var profileCanvas = new GameObject("QA Profile Canvas", typeof(RectTransform), typeof(Canvas));
+            profileCanvas.SetActive(false);
+            var profilePanel = profileCanvas.AddComponent<ProfilePanelController>();
+            profilePanel.Configure(profileCanvas.GetComponent<Canvas>(), profile);
+            profileCanvas.SetActive(true);
+            profilePanel.Open();
+            var debugButton = profileCanvas.GetComponentsInChildren<UnityEngine.UI.Button>(false)
+                .Single(button => button.name == "DebugPlayerLevelUp");
+            debugButton.onClick.Invoke();
+            disk = PlayerSaveMigration.Read(File.ReadAllText(save.SavePath), out _);
+            Check(profile.Level == 10 && disk.profile.level == 10 && disk.profile.currentExperience == 40 && stats.Level == 5,
+                "The real Profile button adds and saves one player level, preserving player XP and pet level");
+            Check(shownOffers.Count == 1 && shownOffers[0].Id == "hp-potion-medium",
+                "An open shop refreshes its search immediately when the Profile button unlocks a tier");
+            profilePanel.Close();
+            shopScreen.Close();
+
+            var petLevels = save.GetComponent<PetLevelUpService>();
+            int required = petLevels.CalculateExperienceRequirement(stats.Level);
+            metadata.SetProgress(required - 1, required);
+            float beforeGrowth = stats.MaxHealth;
+            Check(petLevels.GrantBattleExperience(pet, 2, out _) && stats.Level == 6 && metadata.Experience == 1
+                && stats.MaxHealth > beforeGrowth && profile.Level == 10, "Pet XP levels the pet, grows its stats, and leaves player level unchanged");
+            Check(petLevels.GrantBattleExperience(pet, int.MaxValue, out _) && stats.Level == 100 && metadata.ExperienceToNextLevel == 0
+                && !petLevels.GrantBattleExperience(pet, 1, out _), "Pet progression caps at level 100");
+            Check(save.SaveNow(), "Save both player and pet progression");
+            disk = PlayerSaveMigration.Read(File.ReadAllText(save.SavePath), out _);
+            Check(disk.profile.level == 10 && disk.pets.petStates.Single(x => x.petId == metadata.PetId).runtimeStats.level == 100,
+                "The normal save stores independent player and pet levels");
+            stats.SetStatus(20, stats.MaxHealth, stats.Energy, stats.MaxEnergy);
+            oldHp = stats.Health;
+            potion = Add("hp-potion-small");
+            using (var locked = new FileStream(save.SavePath, FileMode.Open, FileAccess.Read, FileShare.None)) {
+                Check(!heal.TryHeal(pet, potion, out _) && stats.Health == oldHp && bag.GetQuantity(potion) == 1,
+                    "Failed save rolls back potion use and HP");
+            }
+        }
+
+        static async Task VerifyMilestones(PetController pet, PetCommandInput input, PlayerSaveController save,
+            PetEvolutionService service, PetEvolutionPresentationController presenter, Camera gameplayCamera) {
+            var hud = new GameObject("QA evolution HUD", typeof(RectTransform), typeof(Canvas));
+            hud.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+            var prompt = hud.AddComponent<EvolutionHudPromptController>();
+            Set(prompt, "service", service);
+            prompt.Build((RectTransform)hud.transform);
+            var view = hud.GetComponentInChildren<EvolutionHudPromptView>(true);
+            var level = input.gameObject.AddComponent<PetLevelUpService>();
+            int xpTo18 = PetLevelUpService.CalculateDefaultExperienceRequirement(17);
+            pet.GetComponent<PetCollectionMetadata>().SetProgress(0, xpTo18);
+
+            async Task Quiet(string description) {
+                double until = EditorApplication.timeSinceStartup + 1.25;
+                while (EditorApplication.isPlaying && EditorApplication.timeSinceStartup < until && !prompt.IsOpen)
+                    await Awaitable.NextFrameAsync();
+                Check(EditorApplication.isPlaying && !prompt.IsOpen, description);
+            }
+            async Task ReloadDeferred() {
+                string id = pet.GetComponent<PetCollectionMetadata>().PetId;
+                Object.Destroy(pet.gameObject);
+                input.petSlots[0] = null;
+                input.activePet = null;
+                await Awaitable.NextFrameAsync();
+                Check(save.LoadNow(), "Reload succeeds from isolated disk save");
+                pet = input.petSlots[0];
+                Check(pet != null && pet.GetComponent<PetCollectionMetadata>().PetId == id, "Reload keeps the same individual pet");
+            }
+            void SetLevel(int value) {
+                var stats = pet.GetComponent<PetHudRuntimeStats>();
+                stats.SetIdentity(stats.DisplayName, value, stats.Icon);
+                prompt.Enqueue(pet);
+            }
+            async Task ConfirmNextForm(string form) {
+                bool sawStage = false;
+                await Awaitable.NextFrameAsync();
+                view.Confirm.onClick.Invoke();
+                Check(presenter.IsPlaying && gameplayCamera.isActiveAndEnabled,
+                    "Gameplay camera remains enabled while the evolution scene starts loading");
+                await Until(() => {
+                    var stage = SceneManager.GetSceneByName(presenter.evolutionSceneName);
+                    bool stageRenders = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).Any(output =>
+                        output.gameObject.scene == stage && output.isActiveAndEnabled && output.targetTexture == null
+                        && output.targetDisplay == gameplayCamera.targetDisplay);
+                    if (!gameplayCamera.isActiveAndEnabled && stageRenders) sawStage = true;
+                    if (!gameplayCamera.isActiveAndEnabled && !stageRenders)
+                        throw new InvalidOperationException("Display has no rendering camera during evolution.");
+                    return !presenter.IsPlaying;
+                }, 12, "No frame without gameplay or evolution display camera");
+                Check(sawStage && gameplayCamera.isActiveAndEnabled, "Stage camera takes over and gameplay camera returns");
+                Check(pet.GetComponent<PetCollectionMetadata>().CurrentFormId == form, "Confirmed only the next form " + form);
+                await Until(() => !SceneManager.GetSceneByName(presenter.evolutionSceneName).isLoaded, 4, "Stage scene unloads");
+            }
+
+            await Quiet("Lv17 has no automatic offer");
+            Check(level.GrantBattleExperience(pet, xpTo18, out var gained)
+                && gained.CurrentLevel == 18, "Actual battle XP reaches Lv18");
+            await Until(() => prompt.IsShowing(pet) && view.Confirm.interactable, 5, "Lv18 offers Form01 to Form02");
+            await Awaitable.NextFrameAsync();
+            view.Later.onClick.Invoke();
+            await ReloadDeferred();
+            await Quiet("Lv18 Later stays dismissed after a disk reload");
+            SetLevel(35);
+            await Quiet("No new offer between Lv18 and Lv36");
+            SetLevel(36);
+            await Until(() => prompt.IsShowing(pet) && view.Confirm.interactable, 5, "Lv36 asks again while the pet is still Form01");
+            var offer = Get<PetEvolutionPreview>(prompt, "offeredPreview");
+            Check(offer.Rule.SourceStage == 0 && offer.Rule.TargetStage == 1, "Lv36 Form01 offer targets Form02");
+            await Awaitable.NextFrameAsync();
+            view.Later.onClick.Invoke();
+            await ReloadDeferred();
+            await Quiet("Lv36 Later also stays dismissed after disk reload");
+
+            presenter.glowStartDelay = 0;
+            presenter.spinUpDuration = presenter.spinDownDuration = .35f;
+            presenter.whiteoutFadeInDuration = presenter.whiteoutFadeOutDuration = .35f;
+            prompt.RequestManual(pet);
+            await Until(() => prompt.IsShowing(pet) && view.Confirm.interactable, 5, "Manual evolution remains available after Later");
+            await ConfirmNextForm("02");
+            await Until(() => prompt.IsShowing(pet) && view.Confirm.interactable, 5, "Lv36 Form02 gets its own offer for Form03");
+            await ConfirmNextForm("03");
+            await Quiet("Final form has no further automatic offer");
         }
         static async void RunReload(string path) {
             string report = Path.Combine(Root, "play-reload-checks.txt");

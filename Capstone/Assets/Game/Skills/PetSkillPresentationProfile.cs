@@ -14,6 +14,10 @@ namespace Capstone.Game.Skills {
         public bool followSocket;
         [Tooltip("Vi tri theo socket; goc xoay va offset theo truc actor, phu hop VFX tai mieng.")]
         public bool actorSpace;
+        [Tooltip("Aim a following channel effect along the combat direction.")]
+        public bool followChannelAim;
+        [Tooltip("Center and stretch a following effect over the visible actor bounds.")]
+        public bool fitActorBounds;
         public Vector3 localOffset;
         public Vector3 localEulerAngles;
         [Min(0.01f)] public float scale = 1;

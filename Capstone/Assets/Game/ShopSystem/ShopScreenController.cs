@@ -25,6 +25,7 @@ namespace Capstone.Game.ShopSystem {
         ShopSource source, defaultSource;
         MonsterInventoryAdapter inventory;
         PlayerCurrencyWallet wallet;
+        Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider profile;
         ShopPurchaseService service;
         ShopSortPopup sortPopup;
         VisualTreeAsset cardTemplate;
@@ -104,7 +105,11 @@ namespace Capstone.Game.ShopSystem {
             }
             Show(root, true); PanelFocusUtility.Open(root); Refresh();
         }
-        bool HasCategory(ShopCategory value) { foreach (var offer in source.Offers) if (ShopPresentation.Category(offer) == value) return true; return false; }
+        bool HasCategory(ShopCategory value) {
+            foreach (var offer in source.Offers)
+                if (service.IsVisible(offer) && ShopPresentation.Category(offer) == value) return true;
+            return false;
+        }
         public void Close() { open = false; Unsubscribe(); sortPopup?.Close(false); ShopASkin.Suspend(root); Show(root, false); PanelFocusUtility.Close(root); }
         void OnDisable() => Close();
         void OnDestroy() { Close(); Unbind(); }
@@ -113,6 +118,8 @@ namespace Capstone.Game.ShopSystem {
             if (source != null) source.Changed += OnChanged;
             if (inventory != null) inventory.InventoryChanged += OnChanged;
             if (wallet != null) wallet.GoldChanged += OnGoldChanged;
+            profile = FindFirstObjectByType<Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider>();
+            if (profile != null) profile.ProfileChanged += OnChanged;
             subscribed = true;
         }
         void Unsubscribe() {
@@ -120,6 +127,8 @@ namespace Capstone.Game.ShopSystem {
             if (source != null) source.Changed -= OnChanged;
             if (inventory != null) inventory.InventoryChanged -= OnChanged;
             if (wallet != null) wallet.GoldChanged -= OnGoldChanged;
+            if (profile != null) profile.ProfileChanged -= OnChanged;
+            profile = null;
             subscribed = false;
         }
         void OnChanged() { if (open && !buying) Refresh(); }
@@ -142,7 +151,8 @@ namespace Capstone.Game.ShopSystem {
             searchNames.Clear();
             for (int i = 0; i < categories.Count; i++) {
                 int count = 0;
-                if (source != null) foreach (var offer in source.Offers) if (ShopPresentation.Category(offer) == (ShopCategory)i) count++;
+                if (source != null) foreach (var offer in source.Offers)
+                    if (service.IsVisible(offer) && ShopPresentation.Category(offer) == (ShopCategory)i) count++;
                 categories[i].Q<Label>(className: "shop-category-count").text = count.ToString();
             }
             ApplyQuery();
@@ -152,7 +162,7 @@ namespace Capstone.Game.ShopSystem {
             filtered.Clear(); string key = VietnameseUI.SearchKey(search.value);
             Show(clear, !string.IsNullOrEmpty(search.value));
             if (source != null) foreach (var offer in source.Offers) {
-                if (ShopPresentation.Category(offer) != category) continue;
+                if (!service.IsVisible(offer) || ShopPresentation.Category(offer) != category) continue;
                 if (!searchNames.TryGetValue(offer.Id, out string name)) { name = VietnameseUI.SearchKey(offer.Item.Name); searchNames[offer.Id] = name; }
                 if (key.Length == 0 || name.Contains(key)) filtered.Add(offer);
             }
@@ -162,7 +172,10 @@ namespace Capstone.Game.ShopSystem {
             for (int i = 0; i < categories.Count; i++) { categories[i].EnableInClassList("is-selected", (int)category == i); ShopASkin.Refresh(categories[i]); }
             if (cardTemplate == null) { empty.text = "Không tìm thấy mẫu ô vật phẩm."; Show(empty, true); return; }
             while (cards.Count < filtered.Count) { var card = new ShopProductCardView(cardTemplate, Select); cards.Add(card); grid.Add(card.Root); }
-            for (int i = 0; i < cards.Count; i++) cards[i].Render(i < filtered.Count ? filtered[i] : null, selected?.Id);
+            for (int i = 0; i < cards.Count; i++) {
+                var offer = i < filtered.Count ? filtered[i] : null;
+                cards[i].Render(offer, selected?.Id, service.LockReason(offer));
+            }
             SizeCards(productScroll.contentViewport.contentRect.width);
             Show(empty, filtered.Count == 0);
             empty.text = key.Length > 0 ? "Không tìm thấy vật phẩm phù hợp trong danh mục này." : "Hiện chưa có vật phẩm.";

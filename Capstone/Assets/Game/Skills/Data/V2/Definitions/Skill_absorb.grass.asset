@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_absorb.grass
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: absorb.grass
+  legacyIds: []
+  displayName: "Hấp Thụ"
+  description: "Tự hồi 2% HP tối đa mỗi giây trong 10 giây."
+  element: 1
+  icon: {fileID: 21300000, guid: 645c94aa54b73c143bd78ba97bdf7d84, type: 3}
+  cooldownSeconds: 23
+  manaCost: 29
+  animatorStates: 
+  - Cast Spell
+  animationDuration: 0.9
+  animationFade: 0.08
+  presentation: {fileID: 11400000, guid: 8fd31a7e34244877b8cc169f49b676cc, type: 2}
+  combat: {fileID: 11400000, guid: acbcede46a1fb0afc32cf4409207894f, type: 2}

@@ -167,6 +167,7 @@ public partial class PetController
 
     private void MoveTo(Vector3 destination, float speed, float stopDistance)
     {
+        if (combatant != null && combatant.MovementLocked) { StopMovement(false); return; }
         if (combatant != null)
             speed *= combatant.MovementScale;
         if (TryMoveWithAgent(destination, speed, stopDistance))
@@ -454,7 +455,8 @@ public partial class PetController
         for (int i = 0; i < count; i++)
         {
             var hit = directObstacleHits[i];
-            if (hit.collider == null || hit.transform.IsChildOf(transform))
+            if (hit.collider == null || hit.transform.IsChildOf(transform) ||
+                (owner != null && hit.transform.IsChildOf(owner)))
                 continue;
             if (hit.normal.y >= directMinGroundNormal && hit.point.y <= current.y + directMaxStepHeight)
                 continue;

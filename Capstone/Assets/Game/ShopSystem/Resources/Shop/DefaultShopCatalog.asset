@@ -13,19 +13,219 @@ MonoBehaviour:
   m_Name: DefaultShopCatalog
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.ShopSystem.ShopCatalog
   offers:
-  - Id: potion
-    Item: {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
-    Category: -1
-    GoldPrice: -1
+  - Id: capture-ball-basic-01
+    Item: {fileID: 11400000, guid: bdc7f483287b90743989d1ea22a4c5e2, type: 2}
+    Category: 1
+    GoldPrice: 5
     Stock: -1
     MaxPerPurchase: 99
     Unlocked: 1
+    RequiredPlayerLevel: 0
     LockedReason: ''
-  - Id: dusk-stone
-    Item: {fileID: 11400000, guid: 5bd730739fc04e47a6f9f66bc2a2bf4d, type: 2}
-    Category: 4
-    GoldPrice: -1
+  - Id: hp-potion-small
+    Item: {fileID: 11400000, guid: e5ef69256de4941b50b91da525110c7b, type: 2}
+    Category: 0
+    GoldPrice: 7
     Stock: -1
     MaxPerPurchase: 99
     Unlocked: 1
+    RequiredPlayerLevel: 0
+    LockedReason: ''
+  - Id: mana-potion
+    Item: {fileID: 11400000, guid: 2515b74e7584dda42bec74dc04cb3b88, type: 2}
+    Category: 0
+    GoldPrice: 15
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 0
+    LockedReason: ''
+  - Id: revive-small
+    Item: {fileID: 11400000, guid: 3acb16b5c83c92c7602f2ae2f7e0f22f, type: 2}
+    Category: 0
+    GoldPrice: 35
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 0
+    LockedReason: ''
+  - Id: capture-ball-rare-01
+    Item: {fileID: 11400000, guid: 68e5008379b447889a6092e084129da4, type: 2}
+    Category: 1
+    GoldPrice: 30
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: hp-potion-medium
+    Item: {fileID: 11400000, guid: 1cb7f66293eb0fdfbe630166077b247a, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: mp-potion-medium
+    Item: {fileID: 11400000, guid: 5bf4d8fccc135216819a6227eb01bd54, type: 2}
+    Category: 0
+    GoldPrice: 25
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: revive-medium
+    Item: {fileID: 11400000, guid: 28c6442fcff2f6371cce36098c950835, type: 2}
+    Category: 0
+    GoldPrice: 60
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-bleed
+    Item: {fileID: 11400000, guid: 463114507255812d587f0ff50dc52020, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-burn
+    Item: {fileID: 11400000, guid: d5226f321e42c56c9a04559d20da82b2, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-shock
+    Item: {fileID: 11400000, guid: f70206f34849a2f288111770fccfe80d, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-poison
+    Item: {fileID: 11400000, guid: 5d68e6e13fa65a478edc0e54f0c59104, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-stun
+    Item: {fileID: 11400000, guid: f9d40b1566b85168aee1952228292e1a, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-root
+    Item: {fileID: 11400000, guid: 642dc2e171005e3f814e618b4ed70385, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-slow
+    Item: {fileID: 11400000, guid: 5b7c8cc709285da9808b6860c26ac383, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-defense-down
+    Item: {fileID: 11400000, guid: 76ddee228212504a82181022d5a2f8c4, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-magic-defense-down
+    Item: {fileID: 11400000, guid: d04a470929815df0ac649f857a3eaab7, type: 2}
+    Category: 0
+    GoldPrice: 12
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: remedy-cleanse
+    Item: {fileID: 11400000, guid: e5794b1e348b7bdf830de2fdefb560de, type: 2}
+    Category: 0
+    GoldPrice: 45
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 10
+    LockedReason: ''
+  - Id: capture-ball-ultra-01
+    Item: {fileID: 11400000, guid: 16b93f2ee0744ad7a758abd2700b96e2, type: 2}
+    Category: 1
+    GoldPrice: 60
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 15
+    LockedReason: ''
+  - Id: Potion
+    Item: {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
+    Category: 0
+    GoldPrice: 20
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 15
+    LockedReason: ''
+  - Id: mp-potion-large
+    Item: {fileID: 11400000, guid: 35367cdc7e4d317fb475403af1553dd3, type: 2}
+    Category: 0
+    GoldPrice: 45
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 15
+    LockedReason: ''
+  - Id: revive-full
+    Item: {fileID: 11400000, guid: 8a790a8dd41df6bd702cac2b4ce9b7f6, type: 2}
+    Category: 0
+    GoldPrice: 110
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 15
+    LockedReason: ''
+  - Id: hp-potion-super
+    Item: {fileID: 11400000, guid: 233258ad82667dc2d7ce2082b366321a, type: 2}
+    Category: 0
+    GoldPrice: 40
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 20
+    LockedReason: ''
+  - Id: revive-purifying
+    Item: {fileID: 11400000, guid: f80bec1c10131af9d9893baff0bb5939, type: 2}
+    Category: 0
+    GoldPrice: 160
+    Stock: -1
+    MaxPerPurchase: 99
+    Unlocked: 1
+    RequiredPlayerLevel: 20
     LockedReason: ''

@@ -64,9 +64,6 @@ MonoBehaviour:
   followResumeDistance: 7
   leashDistance: 10
   teleportDistance: 24
-  fastReturnSpeedMultiplier: 1.65
-  closeFollowDistance: 2
-  meleeChaseSpeedMultiplier: 1.5
   followSpeed: 4.2
   commandSpeed: 5.3
   acceleration: 18
@@ -181,136 +178,8 @@ MonoBehaviour:
   autoResolveSpeciesSkillSet: 1
   equippedSkillSlotCount: 4
   usePrototypeSkillsWhenEmpty: 0
-  skills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.9
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.25
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 10
-  - skillId: orb.dark
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "Qu\u1EA3 C\u1EA7u B\xF3ng T\u1ED1i"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 9
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "Ph\xF3ng m\u1ED9t c\u1EA7u n\u0103ng l\u01B0\u1EE3ng b\xF3ng t\u1ED1i
-      v\u1EC1 m\u1EE5c ti\xEAu \u0111\xE3 kh\xF3a."
-    icon: {fileID: 21300000, guid: 0a1097c91f0183e48a52bb66bac8468b, type: 3}
-    animatorStates:
-    - Projectile Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.9
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.25
-    cooldownPercent: 0
-    cooldownSeconds: 3.6
-    manaCost: 10
-  learnedSkills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.9
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.25
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 10
-  - skillId: orb.dark
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "Qu\u1EA3 C\u1EA7u B\xF3ng T\u1ED1i"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 9
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "Ph\xF3ng m\u1ED9t c\u1EA7u n\u0103ng l\u01B0\u1EE3ng b\xF3ng t\u1ED1i
-      v\u1EC1 m\u1EE5c ti\xEAu \u0111\xE3 kh\xF3a."
-    icon: {fileID: 21300000, guid: 0a1097c91f0183e48a52bb66bac8468b, type: 3}
-    animatorStates:
-    - Projectile Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.9
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.25
-    cooldownPercent: 0
-    cooldownSeconds: 3.6
-    manaCost: 10
-  - skillId: pulse.dark
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "Xung b\xF3ng t\u1ED1i"
-    skillLevel: 1
-    requiredPetLevel: 12
-    element: 9
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "Gi\u1EA3i ph\xF3ng n\u0103ng l\u01B0\u1EE3ng b\xF3ng t\u1ED1i l\xEAn
-      m\u1EE5c ti\xEAu trong t\u1EA7m nh\xECn."
-    icon: {fileID: 0}
-    animatorStates:
-    - Cast Spell
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.9
-    animationFade: 0.08
-    windupSeconds: 0.1
-    recoverySeconds: 0.25
-    cooldownPercent: 0
-    cooldownSeconds: 5
-    manaCost: 10
+  skills: []
+  learnedSkills: []
   petController: {fileID: 1744809762475418130}
   animator: {fileID: 2036189518244183282}
   autoFindAnimationReferences: 1
@@ -335,7 +204,7 @@ MonoBehaviour:
   gender: Unknown
   element: 9
   secondaryElement: 12
-  rarity: 1
+  rarity: 3
   nickname: 
   favorite: 0
   released: 0

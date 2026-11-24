@@ -79,9 +79,32 @@ namespace Capstone.Game.HudSystem {
             if (item == null || !item.IsRecoveryItem
                 || !item.UsableFromInventory || !item.Consumable || healService == null || overlay == null) return false;
             Open(null, item.ItemBase);
-            bagPresentation = new Capstone.Game.Inventory.Bag.BagHealPresentation(overlay, RequestClose, ConfirmHeal);
+            bagPresentation = new Capstone.Game.Inventory.Bag.BagHealPresentation(overlay, RequestClose, ConfirmHeal,
+                item.HasSpecialPetEffect ? CreatePetSelector() : null);
             Refresh();
             return true;
+        }
+
+        DropdownField CreatePetSelector() {
+            var pets = new System.Collections.Generic.List<PetController>();
+            var names = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < 6; i++) {
+                var pet = CommandProvider?.GetPetControllerAt(i);
+                if (pet == null) continue;
+                var stats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+                if (stats == null) continue;
+                var meta = pet.GetComponentInChildren<PetCollectionMetadata>(true);
+                pets.Add(pet);
+                names.Add($"{i + 1}. {meta?.ResolveDisplayName(stats.DisplayName) ?? stats.DisplayName}");
+            }
+            if (pets.Count == 0) return null;
+            int index = Mathf.Max(0, pets.IndexOf(targetPet));
+            targetPet = pets[index];
+            var selector = new DropdownField(names, index) { tooltip = "Chọn thú dùng vật phẩm." };
+            selector.RegisterValueChangedCallback(_ => {
+                if (selector.index >= 0) { targetPet = pets[selector.index]; Refresh(); }
+            });
+            return selector;
         }
 
         public void Open(PetController pet = null, ItemBase healingItem = null) {
@@ -122,7 +145,7 @@ namespace Capstone.Game.HudSystem {
             RefreshItem(preview);
 
             if (confirmButton != null) {
-                confirmButton.text = "HỒI PHỤC";
+                confirmButton.text = preview.IsSpecial ? "DÙNG VẬT PHẨM" : "HỒI PHỤC";
                 confirmButton.SetEnabled(!confirmationRunning && (preview.CanHeal));
             }
             if (feedback != null) {
@@ -280,7 +303,8 @@ namespace Capstone.Game.HudSystem {
 
         void RefreshItem(PetHealPreview preview) {
             if (itemName != null) itemName.text = DisplayOrDash(Capstone.Game.UISystem.VietnameseUI.ItemName(preview.ItemName));
-            if (itemEffect != null) itemEffect.text = $"Hồi {preview.RestoreAmount:N0} {preview.ResourceName}";
+            if (itemEffect != null) itemEffect.text = preview.IsSpecial ? preview.Item.Effect
+                : $"Hồi {preview.RestoreAmount:N0} {preview.ResourceName}";
             if (itemCount != null) {
                 itemCount.text = $"{preview.OwnedQuantity:N0} / {preview.RequiredQuantity:N0}";
                 itemCount.EnableInClassList("is-missing", preview.OwnedQuantity < preview.RequiredQuantity);

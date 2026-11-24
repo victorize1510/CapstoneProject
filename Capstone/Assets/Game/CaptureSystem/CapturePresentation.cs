@@ -174,7 +174,7 @@ namespace Capstone.Game.CaptureSystem
                     }
                 }
                 var sound = result.Success ? CaptureAssets.Settings?.successSound : CaptureAssets.Settings?.escapeSound;
-                if (sound != null) AudioSource.PlayClipAtPoint(sound, resting);
+                if (sound != null) SettingsSystem.GameAudioRouting.PlayWorldSound(sound, resting);
                 Phase = MotionPhase.Complete;
                 yield return GameplayPause.WaitForSeconds(.16f);
             }
@@ -237,7 +237,7 @@ namespace Capstone.Game.CaptureSystem
                 energy = go.AddComponent<PetSummonVfxInstance>();
                 energy.BuildLayout(true);
             }
-            energy.Begin(true, profile, PetVFXQuality.Medium, proxy.Center, proxy.HalfExtents);
+            energy.Begin(true, profile, SettingsSystem.GameSettingsService.EffectsQuality, proxy.Center, proxy.HalfExtents);
             energy.SetGroundPoint(ground);
         }
         void ResetEnergy()

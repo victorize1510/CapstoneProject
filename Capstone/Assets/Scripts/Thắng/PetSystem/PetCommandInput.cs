@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Capstone.Game.PetSummon;
@@ -102,7 +103,8 @@ public partial class PetCommandInput : MonoBehaviour
             return;
         }
 
-        if (!Input.GetMouseButtonDown(commandMouseButton) || !CanUsePetSkills)
+        if (!Input.GetMouseButtonDown(commandMouseButton) || !CanUsePetSkills
+            || commandMouseButton == 0 && cameraLock != null && cameraLock.CaptureAimOwnsLeftClick)
         {
             return;
         }
@@ -165,8 +167,8 @@ public partial class PetCommandInput : MonoBehaviour
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     private void HandleDevelopmentLevelKeys()
     {
-        int delta = Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus) ? 1
-            : Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus) ? -1 : 0;
+        int delta = PhysicalKeys.GetKeyDown(KeyCode.Equals) || PhysicalKeys.GetKeyDown(KeyCode.KeypadPlus) ? 1
+            : PhysicalKeys.GetKeyDown(KeyCode.Minus) || PhysicalKeys.GetKeyDown(KeyCode.KeypadMinus) ? -1 : 0;
         if (delta == 0 || (summonDirector != null && summonDirector.IsSequenceRunning)) return;
         foreach (UIDocument document in FindObjectsByType<UIDocument>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
         {
@@ -223,7 +225,7 @@ public partial class PetCommandInput : MonoBehaviour
         EnsureSlots();
         for (int i = 0; i < petSlots.Length && i < NumberKeys.Length; i++)
         {
-            if (Input.GetKeyDown(NumberKeys[i]) || Input.GetKeyDown(KeypadKeys[i]))
+            if (PhysicalKeys.GetKeyDown(NumberKeys[i]) || PhysicalKeys.GetKeyDown(KeypadKeys[i]))
             {
                 GameplayHudController.Live?.ShowSlotRequest(i);
                 SummonSlot(i);
@@ -231,7 +233,7 @@ public partial class PetCommandInput : MonoBehaviour
             }
         }
 
-        if (withdrawKey != KeyCode.None && Input.GetKeyDown(withdrawKey))
+        if (withdrawKey != KeyCode.None && PhysicalKeys.GetKeyDown(withdrawKey))
         {
             ProcessReturnPress(Time.unscaledTime);
         }
@@ -300,6 +302,10 @@ public partial class PetCommandInput : MonoBehaviour
         {
             return;
         }
+
+        if (activePet != null && activePet.IsDefeatPresentation
+            || selectedPet.GetComponentInChildren<PetHudRuntimeStats>(true)?.Health <= 0f)
+            return;
 
         if (activePet != null && activePet != selectedPet)
         {

@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using UnityEngine;
 using System;
 using Capstone.Game.MapSystem;
@@ -75,7 +76,7 @@ public class PlayerVisualSwitcher : MonoBehaviour
             return;
         }
 
-        if (switchKey != KeyCode.None && Input.GetKeyDown(switchKey) && !IsGameplayInputBlocked())
+        if (switchKey != KeyCode.None && PhysicalKeys.GetKeyDown(switchKey) && !IsGameplayInputBlocked())
         {
             SwitchToNext();
         }

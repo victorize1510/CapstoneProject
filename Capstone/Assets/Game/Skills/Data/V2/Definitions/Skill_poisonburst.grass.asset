@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_poisonburst.grass
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: poisonburst.grass
+  legacyIds: []
+  displayName: "Độc Nổ"
+  description: "Gây nhiễm độc trong 5 giây, sát thương độc giảm với boss."
+  element: 1
+  icon: {fileID: 21300000, guid: dbd39e4765893634d9ac07bb45d1155b, type: 3}
+  cooldownSeconds: 14
+  manaCost: 23
+  animatorStates: 
+  - Cast Spell
+  animationDuration: 0.9
+  animationFade: 0.08
+  presentation: {fileID: 11400000, guid: 28a98324bebde22f95fdafd073547eae, type: 2}
+  combat: {fileID: 11400000, guid: 9bcc63a21f4a7842c949ac17f327db0a, type: 2}

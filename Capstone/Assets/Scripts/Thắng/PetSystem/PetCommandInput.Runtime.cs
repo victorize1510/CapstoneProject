@@ -61,7 +61,8 @@ public partial class PetCommandInput
 
     IEnumerator RecoverAfterPetDefeat(PetController defeated)
     {
-        yield return new WaitForSeconds(.35f);
+        // Recall has already restored the body and released the defeated actor.
+        yield return null;
         try
         {
             var movement = GetComponent<BasicPlayerMovement>();
@@ -82,7 +83,7 @@ public partial class PetCommandInput
                         else if (summonDirector == null && TryGetPetInSlot(next, out var replacement))
                         {
                             replacement.AssignOwner(transform);
-                            if (replacement.TryRestoreSummonedNearOwner()) SetActivePet(replacement);
+                            if (replacement.TryRestoreSummonedNearOwner(true)) SetActivePet(replacement);
                         }
                         if (summonDirector != null && summonDirector.IsSequenceRunning)
                             while (summonDirector.IsSequenceRunning && activePet == defeated) yield return null;

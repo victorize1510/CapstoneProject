@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using Capstone.Game.Inventory;
 using Capstone.Game.UISystem;
+using Capstone.Game.PetSummon;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Capstone.Game.SettingsSystem {
     public struct SettingsCapabilities {
-        public bool Camera, Minimap, QuestTracker, SaveIndicator, Display, MainMenu;
+        public bool Camera, Minimap, QuestTracker, SaveIndicator, Display, MainMenu, Ambient;
     }
 
     [DisallowMultipleComponent]
@@ -20,7 +21,7 @@ namespace Capstone.Game.SettingsSystem {
         VisualElement root, modal;
         Label modalTitle, modalText, modalError;
         Button confirm, cancel;
-        DropdownField resolution, language;
+        DropdownField resolution, language, vfx;
         SettingsState model;
         GameSettingsService service;
         Action flush;
@@ -47,6 +48,12 @@ namespace Capstone.Game.SettingsSystem {
             modalText = root.Q<Label>("settings-modal-text"); modalError = root.Q<Label>("settings-modal-error");
             confirm = root.Q<Button>("settings-modal-confirm"); cancel = root.Q<Button>("settings-modal-cancel");
             BindSlider("settings-master-row", "Tổng âm lượng", SettingsArea.Audio, d => d.masterVolume, (d, v) => d.masterVolume = v);
+            BindSlider("settings-music-row", "Nhạc nền", SettingsArea.Audio, d => d.musicVolume, (d, v) => d.musicVolume = v);
+            BindSlider("settings-sfx-row", "Hiệu ứng âm thanh", SettingsArea.Audio, d => d.sfxVolume, (d, v) => d.sfxVolume = v);
+            BindSlider("settings-skill-sfx-row", "Âm thanh kỹ năng", SettingsArea.Audio, d => d.skillSfxVolume, (d, v) => d.skillSfxVolume = v);
+            BindSlider("settings-pet-cry-row", "Tiếng kêu Pet", SettingsArea.Audio, d => d.petCryVolume, (d, v) => d.petCryVolume = v);
+            BindSlider("settings-ui-volume-row", "Âm thanh giao diện", SettingsArea.Audio, d => d.uiVolume, (d, v) => d.uiVolume = v);
+            BindSlider("settings-ambient-row", "Âm thanh môi trường", SettingsArea.Audio, d => d.ambientVolume, (d, v) => d.ambientVolume = v);
             BindSlider("settings-mouse-row", "Độ nhạy chuột", SettingsArea.Camera, d => d.mouseSensitivity, (d, v) => d.mouseSensitivity = v);
             BindToggle("settings-mute-row", "Tắt tất cả âm thanh", SettingsArea.Audio, d => d.muteAll, (d, v) => d.muteAll = v);
             BindToggle("settings-invert-row", "Đảo ngược trục Y (camera)", SettingsArea.Camera, d => d.invertY, (d, v) => d.invertY = v);
@@ -71,6 +78,14 @@ namespace Capstone.Game.SettingsSystem {
                 model.Change(SettingsArea.Display, d => { d.resolutionWidth = sizes[index].x; d.resolutionHeight = sizes[index].y; });
             };
             resolution.RegisterValueChangedCallback(changeResolution); unbind.Add(() => resolution.UnregisterValueChangedCallback(changeResolution));
+            vfx = Dropdown("settings-vfx-row", "Chất lượng hiệu ứng");
+            vfx.choices = new List<string> { "Thấp", "Trung bình", "Cao" };
+            EventCallback<ChangeEvent<string>> changeEffects = _ => {
+                if (model != null && vfx.index >= 0)
+                    model.Change(SettingsArea.VisualEffects, d => d.vfxQuality = (PetVFXQuality)vfx.index);
+            };
+            vfx.RegisterValueChangedCallback(changeEffects);
+            unbind.Add(() => vfx.UnregisterValueChangedCallback(changeEffects));
             BindButton("settings-guide-row", "Hướng dẫn phím điều khiển", "Hướng dẫn phím", () => OpenModal(Modal.Guide));
             BindButton("settings-reset-row", "Đặt lại cài đặt mặc định", "Đặt lại mặc định", () => OpenModal(Modal.Reset));
             BindButton("settings-quit-row", "Thoát về màn hình chính", "Về màn hình chính", () => OpenModal(Modal.Quit));
@@ -87,7 +102,7 @@ namespace Capstone.Game.SettingsSystem {
             service.ResolveScene();
             var caps = new SettingsCapabilities { Camera = service.HasCamera, Minimap = service.HasMinimap,
                 QuestTracker = service.HasQuestTracker, SaveIndicator = service.HasSaveIndicator,
-                Display = !Application.isEditor, MainMenu = service.CanReturnToMainMenu };
+                Display = !Application.isEditor, MainMenu = service.CanReturnToMainMenu, Ambient = GameAudioRouting.HasAmbient };
             Open(service.Model, caps, service.Flush, guide, () => service.TryReturnToMainMenu(out string error) ? "" : error);
         }
         // Editor and tests supply an isolated model; no production preferences are touched.
@@ -97,6 +112,7 @@ namespace Capstone.Game.SettingsSystem {
         }
         void SetCapabilities(SettingsCapabilities caps) {
             capabilities = caps;
+            root.Q("settings-ambient-row").SetEnabled(caps.Ambient);
             foreach (string name in new[] { "settings-mouse-row", "settings-invert-row", "settings-smoothing-row" }) Show(root.Q(name), caps.Camera);
             Show(root.Q("settings-camera-unavailable"), !caps.Camera);
             Show(root.Q("settings-minimap-row"), caps.Minimap); Show(root.Q("settings-quest-row"), caps.QuestTracker);
@@ -135,6 +151,7 @@ namespace Capstone.Game.SettingsSystem {
             int selected = sizes.IndexOf(wanted);
             if (selected < 0) selected = sizes.IndexOf(new Vector2Int(Screen.currentResolution.width, Screen.currentResolution.height));
             resolution.SetValueWithoutNotify(resolution.choices[Mathf.Clamp(selected, 0, resolution.choices.Count - 1)]);
+            vfx.SetValueWithoutNotify(vfx.choices[(int)model.Data.vfxQuality]);
             presentation?.Refresh();
         }
         void BindSlider(string name, string label, SettingsArea area, Func<GameSettingsData, float> read, Action<GameSettingsData, float> write) {

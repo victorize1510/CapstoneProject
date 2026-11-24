@@ -23,12 +23,14 @@ NPC Shop có `ShopSource` trỏ riêng tới `Assets/Game/CreatureSystem/Runtime
 |---|---|---:|
 | healing-apple | Hồi tối đa 30 HP | 5 |
 | Potion | Hồi tối đa 100 HP | 20 |
+| mana-potion | Hồi tối đa 30 MP cho thú dùng MP | 15 |
+| leaf-berry | 50 EXP mỗi quả khi tăng cấp từ tab Phát triển | 8 |
 | capture-ball-basic-01 | Bóng bắt cơ bản x1 | 10 |
+| capture-ball-rare-01 | Bóng hiếm, hệ số x1,5 | 30 |
+| capture-ball-ultra-01 | Bóng cao cấp, hệ số x2 | 60 |
 | dusk-stone | Tiến hóa theo rule hiện có | 100 |
 
-Cả bốn có Stock = -1 (không giới hạn) và MaxPerPurchase = 99. Không cấp vàng. Mua qua `ShopPurchaseService` hiện có, giữ kiểm ví/túi, gate nhấn lặp và cập nhật owned. Thuốc HP thường không hồi sinh thú gục.
-
-Catalog item vẫn bảo toàn ManaPotion cũ để đọc save/ID cũ; nó không được thêm vào Shop này. Chưa thêm item hồi sinh, giải trạng thái, buff hoặc bóng hiếm không có gameplay tương ứng.
+Cả tám món có Stock = -1 (không giới hạn) và MaxPerPurchase = 99. Mua qua `ShopPurchaseService` hiện có, giữ kiểm ví/túi, chống nhấn lặp và cập nhật số lượng sở hữu. Bóng hiếm và cao cấp dùng cùng công thức thu phục thời gian thực với bóng cơ bản. Thuốc HP thường dùng cho thú còn sống.
 
 Tiến hóa là `LevelOrItem`: đường cấp yêu cầu 18/36; Dusk Stone được phép tiến hóa sớm. Không đổi rule, ID hay avatar theo dạng.
 

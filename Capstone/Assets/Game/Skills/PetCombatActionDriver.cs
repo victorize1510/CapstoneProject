@@ -51,8 +51,19 @@ namespace Capstone.Game.Skills
 
         public float Normalized => normalized;
         public string LastRejection { get; private set; }
+        public float LastRejectionAt { get; private set; } = float.NegativeInfinity;
+
+        internal bool Reject(string reason)
+        {
+            LastRejection = reason;
+            LastRejectionAt = Time.unscaledTime;
+            return false;
+        }
 
         public int CastToken => token;
+        internal void InterruptWindup() {
+            if (Phase == PetCombatPhase.Windup && !released) Cancel();
+        }
         int positioningSlot;
         CreatureCombatTarget positioningTarget;
         PetSkillCombatProfile positioningProfile;
@@ -64,13 +75,20 @@ namespace Capstone.Game.Skills
             binding?.TryPlay(moving?CreatureAction.Move:CreatureAction.Idle);
         }
         bool BeginPositioned(int slot, SkillHudData candidate) {
-            if(stats.SpeciesSkillSet==null||!stats.SpeciesSkillSet.TryGet(candidate.skillId,out var entry)||entry.skill.combat==null)return false;
-            var data=entry.skill.combat;
+            if (stats.SpeciesSkillSet == null || !stats.SpeciesSkillSet.TryGet(candidate.skillId, out var entry) || entry.skill.combat == null)
+                return Reject("Kỹ năng thiếu cấu hình cho dạng pet hiện tại.");
+            var data = entry.skill.combat;
+            if (!GetComponent<CreatureCombatant>().MayUseSkill(data))
+                return Reject("Pet chưa thể tấn công trong trạng thái hiện tại.");
             var input=pet!=null&&pet.owner!=null?pet.owner.GetComponent<PetCommandInput>():null;
             var executor=GetComponent<PetSkillCombatExecutor>()??gameObject.AddComponent<PetSkillCombatExecutor>();
             var victim=executor.ResolveIntentTarget(data);
-            if(data.delivery==PetSkillDelivery.SelfBuff||!victim.Alive)return StartSkill(slot,candidate);
-            if(!context.CanHit(victim))return false;
+            if (data.delivery == PetSkillDelivery.SelfBuff) return StartSkill(slot, candidate);
+            if (!context.CanHit(victim))
+            {
+                if (!data.RequiresTarget) return StartSkill(slot, candidate);
+                return Reject("Cần mục tiêu trong tầm kỹ năng.");
+            }
             animator=stats.VisualAnimator;revision=binding!=null?binding.BindingRevision:0;
             positioningSlot=slot;skill=candidate;positioningTarget=victim;positioningProfile=data;
             positioningStarted=positioningProgressAt=Time.time;positioningLast=transform.position;retreatUsed=0;
@@ -79,19 +97,21 @@ namespace Capstone.Game.Skills
             return true;
         }
         void PositionSkill() {
-            if(!positioningTarget.Alive||!context.CanHit(positioningTarget)||Time.time-positioningStarted>3){LastRejection="Mục tiêu hết hiệu lực hoặc quá thời gian vào tầm.";Cancel();return;}
+            if (!context.CanHit(positioningTarget) || Time.time - positioningStarted > 3f)
+            {
+                FinishPositioningOrReject("Mục tiêu hết hiệu lực hoặc quá thời gian vào tầm.");
+                return;
+            }
             Vector3 delta=positioningTarget.Center-transform.position;delta.y=0;
             context.Face(delta);
-            float distance=Vector3.Distance(context.GetComponent<CreatureCombatant>().Center,positioningTarget.Center);
-            bool near=positioningProfile.delivery==PetSkillDelivery.Melee;
-            float desired=near?Mathf.Max(.2f,positioningProfile.range*.8f):Mathf.Min(positioningProfile.preferredDistance,positioningProfile.range*.85f);
-            bool advance=distance>(near?desired:positioningProfile.range*.9f);
-            bool retreat=!near&&delta.magnitude<desired-.5f&&retreatUsed<positioningProfile.retreatDistance;
+            var executor = GetComponent<PetSkillCombatExecutor>();
+            float distance = delta.magnitude;
+            bool near = positioningProfile.delivery == PetSkillDelivery.Melee;
+            float desired = Mathf.Min(positioningProfile.preferredDistance, positioningProfile.CastRange * .85f);
+            bool advance = !executor.InReach(positioningTarget, positioningProfile);
+            bool retreat = !advance && !near && distance < desired - .5f && retreatUsed < positioningProfile.retreatDistance;
             if(!advance&&!retreat){
-                if(!stats.PrepareCoordinatedSkill(positioningSlot,out var candidate)||candidate.skillId!=skill.skillId){Cancel();return;}
-                var exec=GetComponent<PetSkillCombatExecutor>()??gameObject.AddComponent<PetSkillCombatExecutor>();exec.SkipNextRetreat=true;exec.StageTarget(positioningTarget);
-                Phase=PetCombatPhase.Ready;
-                if(!StartSkill(positioningSlot,candidate)){if(exec!=null)exec.SkipNextRetreat=false;Finish(false);}
+                StartPositionedSkill(executor, positioningTarget);
                 return;
             }
             float advanceSpeed = near && !context.IsEnemy && pet != null ? pet.MeleeApproachSpeed(distance) : 3f;
@@ -102,8 +122,39 @@ namespace Capstone.Game.Skills
             if(retreat&&moved)retreatUsed+=step;
             if(Vector3.Distance(positioningLast,transform.position)>.03f){positioningProgressAt=Time.time;positioningLast=transform.position;}
             if(!moved&&retreat){retreatUsed=positioningProfile.retreatDistance;return;}
-            if(Time.time-positioningProgressAt>1){LastRejection="Không tìm được bước di chuyển an toàn.";Cancel();}
+            if (Time.time - positioningProgressAt > 1f)
+                FinishPositioningOrReject("Không tìm được đường vào tầm kỹ năng.");
         }
+
+        void FinishPositioningOrReject(string reason)
+        {
+            if (!context.IsEnemy && !positioningProfile.RequiresTarget)
+                StartPositionedSkill(GetComponent<PetSkillCombatExecutor>(), default);
+            else
+            {
+                Reject(reason);
+                Cancel();
+            }
+        }
+
+        void StartPositionedSkill(PetSkillCombatExecutor executor, CreatureCombatTarget target)
+        {
+            if (!stats.PrepareCoordinatedSkill(positioningSlot, out var candidate) || candidate.skillId != skill.skillId)
+            {
+                Reject(string.IsNullOrEmpty(stats.LastSkillRejection) ? "Kỹ năng vừa thay đổi." : stats.LastSkillRejection);
+                Cancel();
+                return;
+            }
+            executor.SkipNextRetreat = true;
+            executor.StageTarget(target);
+            Phase = PetCombatPhase.Ready;
+            if (!StartSkill(positioningSlot, candidate))
+            {
+                executor.SkipNextRetreat = false;
+                Finish(false);
+            }
+        }
+
         void OnEnable()
         {
             pet = GetComponent<PetController>();
@@ -138,18 +189,13 @@ namespace Capstone.Game.Skills
             LastRejection = "";
             if (!InputReady() || !stats.PrepareCoordinatedSkill(slot, out var candidate))
             {
-                LastRejection = !string.IsNullOrEmpty(stats?.LastSkillRejection) ? stats.LastSkillRejection : "Kỹ năng chưa sẵn sàng.";
-                return false;
+                return Reject(!string.IsNullOrEmpty(stats?.LastSkillRejection) ? stats.LastSkillRejection : "Kỹ năng chưa sẵn sàng.");
             }
 
-            float remaining = IsSkillBusy ? chainRemaining : pet != null && !context.IsEnemy ? pet.BasicSkillDelay : 0;
-            if (IsSkillBusy || remaining > 0)
+            if (IsSkillBusy)
             {
-                if (remaining > BufferSeconds || (IsSkillBusy && !released))
-                {
-                    LastRejection = "Đang thực hiện động tác.";
-                    return false;
-                }
+                if (chainRemaining > BufferSeconds || !released)
+                    return Reject("Pet đang thực hiện kỹ năng khác.");
 
                 queued = slot;
                 queuedId = candidate.skillId;
@@ -166,9 +212,7 @@ namespace Capstone.Game.Skills
             animator = stats.VisualAnimator;
             profile = stats.GetSkillPresentation(candidate.skillId);
             if (animator == null || profile == null)
-            {
-                return false;
-            }
+                return Reject("Kỹ năng thiếu animation hoặc cấu hình hiệu ứng.");
 
             hash = 0;
             foreach (string name in candidate.animatorStates)
@@ -187,9 +231,7 @@ namespace Capstone.Game.Skills
             }
 
             if (hash == 0)
-            {
-                return false;
-            }
+                return Reject("Dạng pet này thiếu animation kỹ năng.");
 
             revision = binding != null ? binding.BindingRevision : 0;
             skill = candidate;
@@ -207,7 +249,7 @@ namespace Capstone.Game.Skills
             if (!stats.CommitCoordinatedSkill(slot, candidate))
             {
                 Finish(false);
-                return false;
+                return Reject(string.IsNullOrEmpty(stats.LastSkillRejection) ? "Kỹ năng chưa sẵn sàng." : stats.LastSkillRejection);
             }
 
             execution = GetComponent<PetSkillCombatExecutor>();
@@ -251,6 +293,7 @@ namespace Capstone.Game.Skills
             }
 
             animator.CrossFadeInFixedTime(hash, .09f, 0, 0);
+            binding?.Cry?.BeginSkill(binding, hash);
             presentation.StartCoordinatedAnimation(token);
         }
 
@@ -263,7 +306,7 @@ namespace Capstone.Game.Skills
 
             if (!InputReady() || (IsSkillBusy && ((binding != null && binding.BindingRevision != revision) || animator != stats.VisualAnimator)))
             {
-                if(IsSkillBusy)LastRejection="Actor, quyền điều khiển hoặc dạng thú đã thay đổi.";
+                if (IsSkillBusy) Reject("Pet hiện không thể nhận lệnh kỹ năng.");
                 Cancel();
                 return;
             }
@@ -273,7 +316,7 @@ namespace Capstone.Game.Skills
                 if(Phase==PetCombatPhase.Positioning){PositionSkill();return;}
                 if (Time.time - startedAt > 5)
                 {
-                    LastRejection = "Animation không hoàn tất; đã hủy an toàn.";
+                    Reject("Animation kỹ năng không hoàn tất.");
                     Cancel();
                     return;
                 }
@@ -285,7 +328,9 @@ namespace Capstone.Game.Skills
 
                 if (execution != null)
                 {
-                    context.Face(execution.AimDirection);
+                    bool channel = skill.combatProfile != null && (skill.combatProfile.pattern == PetSkillPattern.Cone || skill.combatProfile.pattern == PetSkillPattern.Beam);
+                    if (channel) context.FaceChannel(execution.AimDirection);
+                    else context.Face(execution.AimDirection);
                 }
             }
 
@@ -300,7 +345,7 @@ namespace Capstone.Game.Skills
                 return;
             }
 
-            if (IsSkillBusy || (pet != null && !context.IsEnemy && pet.BasicSkillDelay > 0))
+            if (IsSkillBusy)
             {
                 return;
             }
@@ -340,7 +385,7 @@ namespace Capstone.Game.Skills
             {
                 if (Time.time - animationStartedAt > .4f)
                 {
-                    LastRejection = "Không vào được animation kỹ năng.";
+                    Reject("Không vào được animation kỹ năng.");
                     Cancel();
                 }
 
@@ -349,12 +394,11 @@ namespace Capstone.Game.Skills
 
             normalized = Mathf.Max(normalized, state.normalizedTime);
             chainRemaining = Mathf.Max(0, profile.chainNormalized - normalized) * clipDuration / Mathf.Max(.1f, profile.playbackSpeed);
-            if (!released && normalized >= profile.releaseNormalized)
+            if (!released && normalized >= profile.releaseNormalized && presentation.NotifyRelease(token))
             {
                 released = true;
                 Phase = PetCombatPhase.Released;
                 LastReleaseNormalized = normalized;
-                presentation.NotifyRelease(token);
             }
 
             while (released && nextEmission < emissionCount && normalized >= Mathf.Lerp(profile.releaseNormalized, burstEndNormalized, nextEmission / (float)(emissionCount - 1)))
@@ -368,7 +412,7 @@ namespace Capstone.Game.Skills
                 Phase = PetCombatPhase.Recovery;
             }
 
-            if (released && normalized >= profile.chainNormalized)
+            if (released && normalized >= profile.chainNormalized && nextEmission >= emissionCount && execution?.ChannelActive(token) != true)
             {
                 Finish(true);
             }
@@ -383,6 +427,7 @@ namespace Capstone.Game.Skills
 
         void Finish(bool completed)
         {
+            binding?.Cry?.CancelSkill();
             PositioningAnimation(false);
             if (animator != null)
             {
@@ -435,6 +480,7 @@ namespace Capstone.Game.Skills
 
         public bool RequestReturn()
         {
+            pet?.CancelSkillPursuit();
             ClearBuffer();
             if (IsSkillBusy && released)
             {

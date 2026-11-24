@@ -77,9 +77,6 @@ MonoBehaviour:
   followResumeDistance: 7
   leashDistance: 10
   teleportDistance: 24
-  fastReturnSpeedMultiplier: 1.65
-  closeFollowDistance: 2
-  meleeChaseSpeedMultiplier: 1.5
   followSpeed: 4.2
   commandSpeed: 5.3
   acceleration: 18
@@ -185,138 +182,8 @@ MonoBehaviour:
   autoResolveSpeciesSkillSet: 0
   equippedSkillSlotCount: 4
   usePrototypeSkillsWhenEmpty: 0
-  skills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.66667
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 10
-  learnedSkills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.66667
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 10
-  - skillId: bite.dark
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "Nanh b\xF3ng t\u1ED1i"
-    skillLevel: 1
-    requiredPetLevel: 12
-    element: 9
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "\u0110\xE1nh m\u1ED9t m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 0}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.66667
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 3.2
-    manaCost: 10
-  - skillId: blast
-    legacySkillIds:
-    - blast
-    unlocked: 0
-    usable: 1
-    displayName: "G\u1EA7m c\u01B0\u1EDDng h\xF3a"
-    skillLevel: 1
-    requiredPetLevel: 18
-    element: 13
-    uiMetadata:
-      damageKind: 1
-      effects:
-      - role: 1
-        description: "G\u1EA7m l\xEAn, t\u0103ng 20% ATK v\xE0 SP.ATK trong 6 gi\xE2y.
-          Kh\xF4ng c\u1ED9ng d\u1ED3n. H\u1ED3i chi\xEAu 10 gi\xE2y."
-      facts: []
-    description: "G\u1EA7m l\xEAn, t\u0103ng 20% ATK v\xE0 SP.ATK trong 6 gi\xE2y.
-      Kh\xF4ng c\u1ED9ng d\u1ED3n. H\u1ED3i chi\xEAu 10 gi\xE2y."
-    icon: {fileID: 21300000, guid: 06d2beed4a8d01547ab931c3e52b260e, type: 3}
-    animatorStates:
-    - Cast Spell
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 10
-    manaCost: 15
-  - skillId: strike.fighting
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "Tr\u1ECDng k\xEDch"
-    skillLevel: 1
-    requiredPetLevel: 36
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "\u0110\xE1nh m\u1ED9t m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 0}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.66667
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 5.2
-    manaCost: 10
+  skills: []
+  learnedSkills: []
   petController: {fileID: 3905486807277576643}
   animator: {fileID: 159393009089156829}
   autoFindAnimationReferences: 1
@@ -340,7 +207,7 @@ MonoBehaviour:
   species: "S\xF3i B\xF3ng T\u1ED1i"
   gender: Unknown
   element: 9
-  secondaryElement: 13
+  secondaryElement: 0
   rarity: 3
   nickname: 
   favorite: 0

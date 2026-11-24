@@ -106,8 +106,12 @@
         <ui:Label name="skills-tooltip-element" text="-" class="skills-tooltip-value" />
       </ui:VisualElement>
       <ui:VisualElement class="skills-tooltip-row">
-        <ui:Label text="Cấp" class="skills-tooltip-key" />
-        <ui:Label name="skills-tooltip-level" text="-" class="skills-tooltip-value" />
+        <ui:Label text="Sức mạnh" class="skills-tooltip-key" />
+        <ui:Label name="skills-tooltip-power" text="—" class="skills-tooltip-value" />
+      </ui:VisualElement>
+      <ui:VisualElement class="skills-tooltip-row">
+        <ui:Label text="Mana" class="skills-tooltip-key" />
+        <ui:Label name="skills-tooltip-mana" text="—" class="skills-tooltip-value" />
       </ui:VisualElement>
       <ui:VisualElement class="skills-tooltip-row">
         <ui:Label text="Hồi chiêu" class="skills-tooltip-key" />

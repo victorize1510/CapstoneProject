@@ -72,7 +72,7 @@ public partial class PetController
 
     public bool TrySummonAt(Vector3 worldPosition, Vector3 facingDirection, bool deferSpawnAnimation)
     {
-        if (combatant != null && (combatStats == null || combatStats.Health <= 0))
+        if (defeatPresentation || combatant != null && (combatStats == null || combatStats.Health <= 0))
             return false;
         if (!PrepareSummonVisual()) return false;
         if (!TryPlaceForSummon(worldPosition))
@@ -136,8 +136,17 @@ public partial class PetController
             animator.speed = speed;
         }
 
-        // Spawn is a lifecycle action. Cast Spell belongs exclusively to gameplay skills.
-        var driver = GetComponent<CreatureAnimationDriver>();
+        var driver = creatureAnimation;
+        var cry = driver != null ? driver.Cry : null;
+        if (cry != null && cry.TryGetSummonState(driver, out summonAnimationHash))
+        {
+            animator.CrossFadeInFixedTime(summonAnimationHash, .06f, 0, 0);
+            cry.BeginSummon(summonAnimationHash);
+            summonAnimationDuration = cry.SummonHoldLimit;
+            summonCastActive = true;
+            return;
+        }
+
         string[] states = spawnStates;
         if (driver != null && driver.Profile != null && !driver.TryGetStates(CreatureAction.Spawn, out states))
             states = null;
@@ -190,9 +199,12 @@ public partial class PetController
                 entry.Key.enabled = visible && entry.Value;
             }
         }
+        if (visible) Capstone.Game.CreatureSystem.CreatureCombatant.RefreshPlayerPassThrough(gameObject);
     }
 
-    public bool TryRestoreSummonedNearOwner()
+    public bool TryRestoreSummonedNearOwner() => TryRestoreSummonedNearOwner(false);
+
+    internal bool TryRestoreSummonedNearOwner(bool playGreeting)
     {
         if (combatStats != null && combatStats.Health <= 0) return false;
         if (!PrepareSummonVisual()) return false;
@@ -209,8 +221,13 @@ public partial class PetController
         hasRoamDestination = false;
         directStuckSince = 0f;
         state = roamAroundOwner ? PetState.RoamAroundOwner : PetState.FollowOwner;
-        ScheduleNextRoam(0.5f);
-        PlayAnimatorState(idleStates, locomotionFade, true);
+        if (playGreeting)
+            BeginSummon(false);
+        else
+        {
+            ScheduleNextRoam(0.5f);
+            PlayAnimatorState(idleStates, locomotionFade, true);
+        }
         return true;
     }
 
@@ -235,6 +252,8 @@ public partial class PetController
 
     public void Withdraw()
     {
+        if (defeatPresentation)
+            return;
         if (!IsSummoned && state == PetState.Dormant)
         {
             QueueOwnedRuntimeStorage();
@@ -261,6 +280,8 @@ public partial class PetController
 
         if (locked)
         {
+            CancelSkillPursuit();
+            creatureAnimation?.Cry?.ResetPresence();
             hasRecallVisualCenter = false;
             recallFacingTargetLost = false;
             recallWasInCombat = HasCombatTarget;
@@ -291,6 +312,9 @@ public partial class PetController
 
     private void EnterDormant()
     {
+        combatant?.ClearTransientEffects();
+        CancelSkillPursuit();
+        creatureAnimation?.Cry?.ResetPresence();
         closeFollowRequested = returnAfterBasic = false;
         commandedReturnAt = -1f;
         defeatPresentation = false;
@@ -344,13 +368,7 @@ public partial class PetController
             }
         }
 
-        foreach (KeyValuePair<Collider, bool> entry in colliderEnabledStates)
-        {
-            if (entry.Key != null)
-            {
-                entry.Key.enabled = visible && entry.Value;
-            }
-        }
+        SetPresentationColliders(visible);
 
         if (animator != null)
         {
@@ -400,33 +418,15 @@ public partial class PetController
     private void UpdateSummoning()
     {
         StopMovement(false);
-        if (summonRevealPending)
-        {
+        if (summonRevealPending || !HasSummonPresentationAnimationFinished)
             return;
-        }
-
-        if (summonCastActive)
-        {
-            if (!HasSummonPresentationAnimationFinished && Time.time - summonStartedAt < Mathf.Max(3f, summonAnimationDuration + 0.5f))
-            {
-                return;
-            }
-
-            if (!HasSummonPresentationAnimationFinished)
-            {
-                Debug.LogWarning("Spawn animation did not finish before its timeout; returning to locomotion.", this);
-            }
-        }
-        else if (Time.time - summonStartedAt < summonAnimationDuration)
-        {
-            return;
-        }
 
         FinishSummoning();
     }
 
     private void FinishSummoning()
     {
+        creatureAnimation?.Cry?.EndSummon();
         summonCastActive = false;
         RestoreSummonAnimatorSpeed();
         state = roamAroundOwner ? PetState.RoamAroundOwner : PetState.FollowOwner;
@@ -440,6 +440,7 @@ public partial class PetController
 
     internal void ResumeAfterEvolution()
     {
+        creatureAnimation?.Cry?.ResetPresence();
         combatActions?.Cancel();
         hasPendingHit = hasPendingSkillAnimation = false;
         pendingSkillCandidates = null;

@@ -48,7 +48,7 @@ namespace Capstone.Game.SettingsSystem.Editor {
         }
         static readonly List<string> results = new List<string>();
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
-        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "settings-ui/";
+        const string Output = Capstone.Game.UISystem.QaArtifactPaths.Root + "CaptureInputSettings/";
         static bool running;
         static double nextPoll;
         static void Check(bool condition, string label) { if (!condition) throw new InvalidOperationException(label); results.Add("PASS " + label); }
@@ -71,6 +71,8 @@ namespace Capstone.Game.SettingsSystem.Editor {
                 storage.Json = "{\"masterVolume\":0.37}";
                 var loaded = repository.Load(defaults, out _);
                 Check(Mathf.Approximately(loaded.masterVolume, .37f) && loaded.cameraSmoothing && loaded.showMinimap, "partial JSON preserves missing defaults");
+                Check(loaded.musicVolume == 1 && loaded.sfxVolume == 1 && loaded.petCryVolume == 1
+                    && loaded.vfxQuality == PetSummon.PetVFXQuality.Medium, "old Settings keep full bus volumes and Medium VFX");
                 storage.Json = "{\"version\":99}";
                 Check(repository.Load(defaults, out string warning).version == 1 && warning.Length > 0, "unknown preference version falls back safely");
                 storage.Json = "broken json";
@@ -93,6 +95,20 @@ namespace Capstone.Game.SettingsSystem.Editor {
                 int changes = 0; model.Changed += _ => changes++;
                 var master = Slider(root, "settings-master-row"); master.value = 37;
                 Check(Mathf.Approximately(model.Data.masterVolume,.37f) && root.Q("settings-master-row").Q<Label>("setting-value").text == "37%", "slider applies instantly and displays percent");
+                Slider(root, "settings-music-row").value = 43;
+                Slider(root, "settings-sfx-row").value = 55;
+                Slider(root, "settings-skill-sfx-row").value = 0;
+                Slider(root, "settings-pet-cry-row").value = 62;
+                Slider(root, "settings-ui-volume-row").value = 72;
+                var effects = root.Q("settings-vfx-row").Q<DropdownField>("setting-dropdown");
+                effects.value = "Cao";
+                repository.Save(model.Data);
+                var audioReload = repository.Load(defaults, out warning);
+                Check(Mathf.Approximately(audioReload.musicVolume,.43f) && Mathf.Approximately(audioReload.sfxVolume,.55f)
+                    && audioReload.skillSfxVolume == 0 && Mathf.Approximately(audioReload.petCryVolume,.62f)
+                    && Mathf.Approximately(audioReload.uiVolume,.72f) && audioReload.vfxQuality == PetSummon.PetVFXQuality.High,
+                    "all connected audio sliders and Graphics quality survive repository reload");
+                Check(!Slider(root,"settings-ambient-row").enabledInHierarchy, "unconnected ambient row explains its disabled state");
                 Toggle(root, "settings-mute-row").value = true;
                 Check(model.Data.muteAll && Mathf.Approximately(master.value,37), "mute preserves slider value");
                 Toggle(root, "settings-mute-row").value = false;
@@ -111,6 +127,8 @@ namespace Capstone.Game.SettingsSystem.Editor {
                     Check(root.Q("settings-tab-audio") != null && root.Q("settings-tab-controls") != null && root.Q("settings-tab-interface") != null && root.Q("settings-tab-system") != null, "four R3 category tabs " + size);
                     Check(root.Q<Button>("settings-back").worldBound.xMax <= root.worldBound.xMax + 1 && root.Q<Label>(className: "screen-title").resolvedStyle.fontSize == UnifiedPanelHeader.TitleFont, "shared title and Back geometry " + size);
                     Check(master.worldBound.xMax <= root.Q("settings-master-row").Q<Label>("setting-value").worldBound.xMin + 1, "slider and percent do not overlap " + size);
+                    Check(audio.localBound.height <= 401 && audio.Q<ScrollView>().contentContainer.layout.height > audio.layout.height,
+                        "expanded audio rows stay in the bounded scroll panel " + size);
                     Check(Toggle(root,"settings-mute-row").Q("settings-switch-thumb") == null && Toggle(root,"settings-mute-row").Q(className:"unity-toggle__input").resolvedStyle.backgroundImage.texture == SettingsFinalArt.Texture("Components/checkbox-face-off"), "native checkbox uses FINAL face without pill thumb " + size);
                     Check(master.Q<SettingsSliderFace>() != null && master.Q(className:"unity-base-slider__dragger").resolvedStyle.opacity == 0, "R4 face replaces native slider artwork only " + size);
                     Check(Mathf.Abs(root.Q("settings-quit-row").layout.y-806) < 1.5f, "exit action belongs to fixed footer " + size);
@@ -125,6 +143,8 @@ namespace Capstone.Game.SettingsSystem.Editor {
                 Check(controller.TryCloseModal() && Mathf.Approximately(model.Data.masterVolume,.37f), "Esc cancels reset without changing settings");
                 await Task.Delay(180); Submit(Button(root,"settings-reset-row")); await Task.Delay(180); Submit(root.Q<Button>("settings-modal-confirm")); await Task.Delay(180);
                 Check(model.Data.masterVolume == 1 && !model.Data.muteAll && model.Data.cameraSmoothing && !model.Data.showQuestTracker, "confirmed reset restores project defaults");
+                Check(model.Data.skillSfxVolume == 1 && model.Data.petCryVolume == 1
+                    && effects.value == "Trung bình", "confirmed reset restores bus volumes and graphics quality");
                 Submit(Button(root,"settings-guide-row")); await Task.Delay(180);
                 Check(root.Q<Label>("settings-modal-text").text.Contains("WASD") && root.Q<Button>("settings-modal-confirm").resolvedStyle.display == DisplayStyle.None, "controls guide is read-only");
                 controller.TryCloseModal(); await Task.Delay(180);

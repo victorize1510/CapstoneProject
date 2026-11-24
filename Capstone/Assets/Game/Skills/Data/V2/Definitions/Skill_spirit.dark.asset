@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: spirit.dark
   legacyIds: []
-  displayName: "Linh H\u1ED3n Ma Qu\u00E1i"
-  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  displayName: "Linh Hồn Ma Quái"
+  description: "Giảm 15% phòng thủ vật lý và kháng phép của địch trong 10 giây."
   element: 9
   icon: {fileID: 21300000, guid: e2f4db975412c7f4fbfa540821e6e193, type: 3}
-  cooldownSeconds: 4.1
+  cooldownSeconds: 15
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 32a86aed31489e44e6dcfde549c72305, type: 2}
   combat: {fileID: 11400000, guid: 6f3661028842fac6c1f58cc2b6610785, type: 2}
+  manaCost: 19

@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System.Collections.Generic;
 using Capstone.Game.HudSystem;
 using Capstone.Game.MapSystem;
@@ -38,12 +39,13 @@ public partial class PetController : MonoBehaviour
                 return false;
             if (!summonCastActive)
                 return Time.time - summonStartedAt >= summonAnimationDuration;
+            if (Time.time - summonStartedAt >= summonAnimationDuration)
+                return true;
             if (animator == null)
                 return true;
             var info = animator.GetCurrentAnimatorStateInfo(0);
             bool inSpawn = info.fullPathHash == summonAnimationHash;
-            return !animator.IsInTransition(0) && (inSpawn && info.normalizedTime >= .98f
-                || !inSpawn && Time.time - summonStartedAt >= summonAnimationDuration);
+            return !animator.IsInTransition(0) && inSpawn && info.normalizedTime >= .98f;
         }
     }
 
@@ -222,9 +224,12 @@ public partial class PetController : MonoBehaviour
     private Capstone.Game.CreatureSystem.CreatureCombatant combatant;
     private PetHudRuntimeStats combatStats;
     private PetCombatActionDriver combatActions;
+    private CreatureAnimationDriver creatureAnimation;
     private CombatOffenseRoll basicRoll;
     private Capstone.Game.Elements.CombatElementSnapshot basicElements;
     private int basicToken;
+    private DummyEnemy skillHitEnemy;
+    internal int SkillPursuitRevision { get; private set; }
     internal void BindCombatant(Capstone.Game.CreatureSystem.CreatureCombatant value)
     {
         combatant = value;
@@ -239,6 +244,7 @@ public partial class PetController : MonoBehaviour
     internal float BasicSkillDelay => state == PetState.AttackTarget && (hasPendingHit || Time.time < pendingHitAt + .08f) ? Mathf.Max(0, pendingHitAt + .08f - Time.time) : 0;
     internal void HoldCoordinatedSkill()
     {
+        creatureAnimation?.Cry?.CancelAmbient();
         commandedReturnAt = -1f;
         closeFollowRequested = returnAfterBasic = false;
         hasPendingHit = false;
@@ -267,7 +273,8 @@ public partial class PetController : MonoBehaviour
     {
         get
         {
-            return IsSummoned && state != PetState.Summoning && !recallLocked && (combatant == null || (combatStats != null && combatStats.Health > 0));
+            return IsSummoned && state != PetState.Summoning && !defeatPresentation && !recallLocked
+                && (combatant == null || (combatStats != null && combatStats.Health > 0));
         }
     }
 
@@ -281,7 +288,7 @@ public partial class PetController : MonoBehaviour
 
     public DummyEnemy CombatTarget => target != null && target.IsAlive ? target : null;
     private bool defeatPresentation;
-    private float defeatDeadline;
+    public bool IsDefeatPresentation => defeatPresentation;
     private float hitReactionUntil;
     internal void HoldHitReaction(float seconds)
     {
@@ -296,25 +303,29 @@ public partial class PetController : MonoBehaviour
 
     internal void HandleCombatDefeat()
     {
-        if (defeatPresentation)
+        if (defeatPresentation || !IsSummoned || wildEncounter)
             return;
-        bool visible = IsSummoned;
-        combatActions?.Cancel();
-        EnterDormant();
-        if (visible && owner != null) owner.GetComponent<PetCommandInput>()?.HandleActivePetDefeat(this);
-        if (!visible || animator == null)
-            return;
-        CacheWorldPresence();
-        foreach (KeyValuePair<Renderer, bool> entry in rendererEnabledStates)
-            if (entry.Key != null)
-                entry.Key.enabled = entry.Value;
-        animator.enabled = animatorInitiallyEnabled;
         defeatPresentation = true;
-        defeatDeadline = Time.time + .3f;
-        Capstone.Game.CreatureSystem.PetDefeatRecall.Play(this);
+        combatActions?.Cancel();
+        hasPendingHit = hasPendingSkillAnimation = false;
+        pendingSkillCandidates = null;
+        RestoreSummonAnimatorSpeed();
+        StopMovement(false);
+        SetAnimatorBool(attackingParameter, false);
+        SetPresentationColliders(false);
+        if (creatureAnimation == null || !creatureAnimation.TryPlay(CreatureAction.Death))
+            creatureAnimation?.Cry?.BeginDeath(0);
+        PetDefeatRecall.Play(this, creatureAnimation);
     }
 
-    internal void FinishDefeatRecall() { EnterDormant(); }
+    internal void FinishDefeatRecall()
+    {
+        if (!defeatPresentation)
+            return;
+        EnterDormant();
+        if (owner != null)
+            owner.GetComponent<PetCommandInput>()?.HandleActivePetDefeat(this);
+    }
 
     internal void AwardCombatDefeat(DummyEnemy enemy)
     {
@@ -392,14 +403,24 @@ public partial class PetController : MonoBehaviour
         if (wildEncounter)
             return;
         if (defeatPresentation)
+            return;
+
+        var cry = creatureAnimation != null ? creatureAnimation.Cry : null;
+        if (cry != null)
         {
-            if (animator == null || !animator.enabled || Time.time >= defeatDeadline)
+            bool peaceful = CanReceiveCommands
+                && state != PetState.ChaseTarget && state != PetState.AttackTarget && !HasCombatTarget
+                && !IsSkillAnimationActive() && Time.time >= hitReactionUntil
+                && !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && !PetEvolutionPresentationController.IsPresenting(this)
+                && (owner == null || owner.GetComponent<CombatEngagement>()?.HudTarget == null);
+            if (!peaceful)
+                cry.CancelAmbient();
+            else if (cry.TickAmbient(creatureAnimation))
             {
-                EnterDormant();
+                StopMovement(false);
+                currentAnimatorState = null;
                 return;
             }
-
-            return;
         }
 
         if (Time.time < hitReactionUntil)
@@ -408,7 +429,7 @@ public partial class PetController : MonoBehaviour
             return;
         }
 
-        if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && useSelfInput && summonKey != KeyCode.None && Input.GetKeyDown(summonKey))
+        if (!Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && useSelfInput && summonKey != KeyCode.None && PhysicalKeys.GetKeyDown(summonKey))
         {
             ToggleSummonOrRecall();
             return;
@@ -416,6 +437,11 @@ public partial class PetController : MonoBehaviour
 
         if (!IsSummoned)
         {
+            return;
+        }
+        if (combatant != null && combatant.Stunned) {
+            hasPendingHit = false;
+            StopMovement(false);
             return;
         }
 
@@ -453,6 +479,20 @@ public partial class PetController : MonoBehaviour
             }
 
             return;
+        }
+
+        if (skillHitEnemy != null && !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked)
+        {
+            var enemy = skillHitEnemy;
+            skillHitEnemy = null;
+            if (CanReceiveCommands && enemy.isActiveAndEnabled && enemy.IsAlive && !enemy.CaptureLocked)
+            {
+                var input = owner != null ? owner.GetComponent<PetCommandInput>() : null;
+                if (input != null && input.activePet == this)
+                    CombatEngagement.Select(input, enemy);
+                if (target != enemy || (state != PetState.ChaseTarget && state != PetState.AttackTarget))
+                    StartChasing(enemy);
+            }
         }
 
         if (returnAfterBasic && state != PetState.AttackTarget)
@@ -504,6 +544,7 @@ public partial class PetController : MonoBehaviour
             return;
         }
 
+        CancelSkillPursuit();
         commandedReturnAt = -1f;
         closeFollowRequested = returnAfterBasic = false;
         target = null;
@@ -536,8 +577,32 @@ public partial class PetController : MonoBehaviour
 
         if (!CanAcceptAttackCommand(enemy)) return;
 
+        CancelSkillPursuit();
+        StartChasing(enemy);
+    }
+
+    internal bool QueueSkillPursuit(DummyEnemy enemy, int revision)
+    {
+        if (revision != SkillPursuitRevision || wildEncounter || !CanReceiveCommands
+            || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsAlive || enemy.CaptureLocked)
+            return false;
+
+        skillHitEnemy = enemy;
+        return true;
+    }
+
+    internal void CancelSkillPursuit()
+    {
+        skillHitEnemy = null;
+        SkillPursuitRevision++;
+    }
+
+    private void StartChasing(DummyEnemy enemy)
+    {
         commandedReturnAt = -1f;
         closeFollowRequested = returnAfterBasic = false;
+        hasPendingHit = false;
+        SetAnimatorBool(attackingParameter, false);
         target = enemy;
         hasRoamDestination = false;
         directStuckSince = 0f;
@@ -891,6 +956,7 @@ public partial class PetController : MonoBehaviour
     private void UpdateAttackTarget()
     {
         StopMovement();
+        if (combatant != null && combatant.AttackLocked) { hasPendingHit = false; return; }
         if (target == null || !target.IsAlive)
         {
             SetAnimatorBool(attackingParameter, false);
@@ -946,6 +1012,7 @@ public partial class PetController : MonoBehaviour
 
     private void BeginAttack()
     {
+        if (combatant != null && combatant.AttackLocked) return;
         if (target == null || !target.IsAlive)
         {
             ReturnToOwner();
@@ -1127,7 +1194,7 @@ public partial class PetController : MonoBehaviour
         }
 
         animator.applyRootMotion = false;
-        var actionDriver = GetComponent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>();
+        var actionDriver = creatureAnimation = GetComponent<CreatureAnimationDriver>();
         if (actionDriver != null)
         {
             actionDriver.Bind(animator);

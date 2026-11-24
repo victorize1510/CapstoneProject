@@ -4,10 +4,15 @@ using System.IO;
 using System.Reflection;
 using System.Linq;
 using System.Threading.Tasks;
+using Capstone.Game.CaptureSystem;
+using Capstone.Game.CreatureSystem;
 using Capstone.Game.Inventory;
+using Capstone.Game.SaveSystem;
 using Capstone.Game.UISystem;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 using Cursor = UnityEngine.Cursor;
@@ -21,11 +26,228 @@ namespace Capstone.Game.HudSystem.Editor {
         static void RequestCapture()=>Queue("after");
         [MenuItem("Tools/Capstone/Advanced/Companion UI/Validate interactions")]
         static void RequestValidation()=>Queue("test");
+
+        const string VerifySwitch = "Tools/Capstone/Advanced/Companion UI/Verify switching pets in Skills (isolated)";
+        static string SwitchReportFolder => Path.Combine(QaArtifactPaths.Root, "CompanionItems");
+        [MenuItem(VerifySwitch, true)]
+        static bool CanVerifyViewedPetSwitch() => !EditorApplication.isPlayingOrWillChangePlaymode && !running
+            && SceneManager.GetActiveScene().name == DemoSceneOneSaveIsolation.CreatureQaSceneName
+            && !SceneManager.GetActiveScene().isDirty && PrefabStageUtility.GetCurrentPrefabStage() == null;
+
+        [MenuItem(VerifySwitch)]
+        static void StartViewedPetSwitch() {
+            var isolation = Object.FindFirstObjectByType<DemoSceneOneSaveIsolation>();
+            if (isolation == null) throw new InvalidOperationException("Missing Creature QA save isolation.");
+            string profile = Path.Combine(SwitchReportFolder, "profile-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(profile);
+            string slot = DemoSceneOneSaveIsolation.CreatureQaSlot;
+            string original = new PlayerJsonFileSaveStore(isolation.developmentProfile).GetPath(slot);
+            string copy = new PlayerJsonFileSaveStore(profile).GetPath(slot);
+            foreach (string suffix in new[] { "", ".bak" })
+                if (File.Exists(original + suffix)) File.Copy(original + suffix, copy + suffix);
+            File.WriteAllText(Path.Combine(SwitchReportFolder, "companion-playmode.txt"), "Entering isolated companion verification.");
+            SessionState.SetString(DemoSceneOneSaveIsolation.CompanionVerificationProfileKey, profile);
+            EditorApplication.EnterPlaymode();
+        }
+
+        static void ViewedPetSwitchPlayMode(PlayModeStateChange state) {
+            const string key = DemoSceneOneSaveIsolation.CompanionVerificationProfileKey;
+            string profile = SessionState.GetString(key, string.Empty);
+            if (string.IsNullOrEmpty(profile)) return;
+            if (state == PlayModeStateChange.EnteredPlayMode) VerifyViewedPetSwitch();
+            if (state != PlayModeStateChange.EnteredEditMode) return;
+            SessionState.EraseString(key);
+            foreach (string file in Directory.GetFiles(profile)) File.Delete(file);
+            Directory.Delete(profile);
+        }
+
+        static async void VerifyViewedPetSwitch() {
+            running = true;
+            checks.Clear();
+            var inventory = Object.FindFirstObjectByType<MonsterInventoryController>();
+            var menu = Object.FindFirstObjectByType<GameMenuController>();
+            var provider = Object.FindFirstObjectByType<PetCommandHudProvider>();
+            bool openedHere = false;
+            try {
+                var save = Object.FindFirstObjectByType<PlayerSaveController>();
+                for (int i = 0; i < 50 && save != null && !save.IsCurrentSlotLoaded; i++) await Task.Delay(100);
+                string activeProfile = SessionState.GetString(DemoSceneOneSaveIsolation.CompanionVerificationProfileKey, string.Empty);
+                Check(save != null && string.Equals(Path.GetDirectoryName(save.SavePath), Path.GetFullPath(activeProfile),
+                    StringComparison.OrdinalIgnoreCase) && save.IsCurrentSlotLoaded
+                    && !save.IsSaveBlocked, "isolated QA profile loaded");
+                Check(inventory != null && menu != null && provider != null, "scene has live companion UI");
+                var party = inventory.GetComponent<PetPartyPanelController>();
+                var skills = inventory.GetComponent<PetSkillsPanelController>();
+                var root = inventory.GetComponent<UIDocument>().rootVisualElement;
+                var candidates = Enumerable.Range(0, 6).Select(index => (index, pet: provider.GetPetControllerAt(index)))
+                    .Where(entry => entry.pet != null)
+                    .Select(entry => (entry.index, stats: entry.pet.GetComponentInChildren<PetHudRuntimeStats>(true)))
+                    .Where(entry => entry.stats != null && entry.stats.GetSkills().Any(skill => skill.unlocked)).ToList();
+                Check(candidates.Count >= 2, "party has two pets with usable skills");
+                var first = candidates[0];
+                var second = candidates.FirstOrDefault(entry => !entry.stats.GetSkills().Where(skill => skill.unlocked)
+                    .Select(skill => skill.skillId).SequenceEqual(first.stats.GetSkills().Where(skill => skill.unlocked).Select(skill => skill.skillId)));
+                Check(second.stats != null, "party has two different sets of equipped skills");
+                var combatPet = provider.GetSelectedPetController();
+                openedHere = !inventory.IsPetsSectionOpen;
+                if (openedHere) menu.OpenPetsDirect();
+                await Task.Delay(200);
+                var cards = root.Q("pets-panel").Query<Button>(className: "pet-party-card").ToList();
+                void View(int index) {
+                    using var evt = ClickEvent.GetPooled();
+                    evt.target = cards[index];
+                    cards[index].SendEvent(evt);
+                }
+                void VerifySkills(PetHudRuntimeStats stats) {
+                    var equipped = stats.GetSkills();
+                    for (int i = 0; i < stats.EquippedSkillSlotCount; i++) {
+                        string expected = i < equipped.Count && equipped[i].unlocked ? VietnameseUI.Skill(equipped[i].displayName) : "Trống";
+                        Check(root.Q<Button>("skills-equipped-slot-" + (i + 1)).Q<Label>(className: "skills-equipped-name").text == expected,
+                            stats.DisplayName + " equipped slot " + (i + 1));
+                    }
+                    var learned = stats.GetLearnedSkills().Where(skill => skill.unlocked).Select(skill => VietnameseUI.Skill(skill.displayName));
+                    var rows = root.Query<SkillListRow>().ToList().Where(row => row.style.display.value != DisplayStyle.None);
+                    Check(rows.Select(row => row.NameLabel.tooltip).SequenceEqual(learned), stats.DisplayName + " learned skills and order");
+                }
+                View(first.index);
+                party.ShowCompanionTab(1);
+                await Task.Delay(220);
+                Check(skills.IsEmbedded, "Kỹ năng uses the embedded dialog");
+                VerifySkills(first.stats);
+                var edit = root.Q<Button>("skills-change-mode");
+                var caption = edit.Q<Label>(className: "angular-button-caption");
+                Click(edit);
+                Click(root.Q<Button>("skills-equipped-slot-1"));
+                Check(caption.text == "Hủy đổi", "first pet has a pending edit");
+                View(second.index);
+                VerifySkills(second.stats);
+                Check(caption.text == "Đổi kỹ năng"
+                    && root.Q<Label>("skills-tooltip-name").text == "Chi tiết kỹ năng",
+                    "switch resets the previous pet's edit and inspector");
+                View(first.index);
+                VerifySkills(first.stats);
+                Check(provider.GetSelectedPetController() == combatPet && party.CompanionTab == 1,
+                    "switching viewed pets leaves combat selection and open tab intact");
+                await Task.Delay(170);
+                var displayed = first.stats.GetSkills()[0];
+                Click(root.Q<Button>("skills-equipped-slot-1"));
+                Check(root.Q("skills-tooltip-level") == null
+                    && root.Q<Label>("skills-tooltip-power").text == SkillPresentation.Power(displayed)
+                    && root.Q<Label>("skills-tooltip-mana").text == SkillPresentation.Mana(displayed)
+                    && root.Q<Label>("skills-tooltip-cooldown").text == (displayed.cooldownSeconds > 0f ? $"{displayed.cooldownSeconds:0.#} giây" : "-")
+                    && root.Q<Label>("skills-tooltip-description").text == VietnameseUI.SkillDescription(displayed.description),
+                    "skill tooltip shows authored power, MP, cooldown and description without a skill level");
+                party.ShowCompanionTab(2);
+                await Task.Delay(220);
+                string before = root.Q<Label>("pets-growth-level-summary").text;
+                View(second.index);
+                var preview = inventory.GetComponent<PetLevelUpService>()?.CreatePreview(provider.GetPetControllerAt(second.index));
+                Check(preview != null && root.Q<Label>("pets-growth-level-summary").text.Contains("Cấp " + preview.CurrentLevel + " → "),
+                    "growth panel refreshes for the newly viewed pet");
+                if (first.stats.Level != second.stats.Level)
+                    Check(root.Q<Label>("pets-growth-level-summary").text != before, "growth preview no longer shows the previous level");
+                var levelService = inventory.GetComponent<PetLevelUpService>();
+                var pet = provider.GetPetControllerAt(first.index);
+                var growth = levelService.CreatePreview(pet);
+                var beforeLevelUp = first.stats.CreateSaveData();
+                Check(levelService.GrantBattleExperience(pet, growth.ExperienceNeeded, out var gained)
+                    && gained.CurrentLevel == growth.CurrentLevel + 1
+                    && first.stats.CreateSaveData().equippedSkillIds.SequenceEqual(beforeLevelUp.equippedSkillIds),
+                    "existing Pet EXP advances the pet level and preserves equipped skill IDs");
+                inventory.Close();
+                await VerifySkillStorageAndEvolution(save, inventory);
+            } catch (Exception error) {
+                checks.Add(error.ToString());
+                Debug.LogException(error);
+            } finally {
+                if (openedHere) inventory.Close();
+                File.WriteAllLines(Path.Combine(SwitchReportFolder, "companion-playmode.txt"), checks);
+                running = false;
+                EditorApplication.ExitPlaymode();
+            }
+        }
+
+        static async Task VerifySkillStorageAndEvolution(PlayerSaveController save, MonsterInventoryController inventory) {
+            var library = AssetDatabase.LoadAssetAtPath<CreatureLibrary>("Assets/Game/CreatureSystem/Data/CreatureLibrary.asset");
+            var bats = library.families.Single(family => family.definitionId == "bat");
+            var roster = Object.FindFirstObjectByType<PetBoxRuntimeProvider>();
+            var coordinator = Object.FindFirstObjectByType<PetCaptureCoordinator>();
+            var bag = (MonsterInventoryAdapter)typeof(PlayerSaveController).GetField("inventoryAdapter", Any).GetValue(save);
+            var ball = CaptureAssets.LoadBall();
+            Check(roster != null && coordinator != null && roster.FindFirstEmptyBoxSlot() >= 0
+                && ball != null && bag != null && bag.TryAddItemAtomic(ball, 1), "isolated capture and BOX fixtures are ready");
+            int boxIndex = roster.FindFirstEmptyBoxSlot();
+            var fixture = Object.Instantiate(bats.forms[0].wildPrefab, roster.PartyInput.transform.position + Vector3.forward * 20, Quaternion.identity);
+            if (fixture.TryGetComponent<BasicCreatureEnemy>(out var brain)) brain.enabled = false;
+            var target = fixture.GetComponent<WildPetCaptureTarget>();
+            await Task.Delay(120);
+            var stats = target.Stats;
+            stats.SetIdentity(stats.DisplayName, 12);
+            stats.UnlockSkillsUpToLevel(stats.Level, out _);
+            string id = target.Metadata.PersistentId;
+            var previous = stats.CreateSaveData();
+            Check(previous.learnedSkillProgress.Any(skill => skill.skillId == "pulse.dark" && skill.unlocked),
+                "Dơi Nhỏ learns Xung bóng tối at Pet level 12 before capture");
+            var random = typeof(PetCaptureCoordinator).GetField("RandomSource", Any);
+            var oldRandom = random.GetValue(coordinator);
+            var parameters = new object[] { ball, bag, target, null, null };
+            try {
+                random.SetValue(coordinator, new AuditCaptureRandom());
+                bool executed = (bool)typeof(PetCaptureCoordinator).GetMethod("TryCaptureTarget", Any).Invoke(coordinator, parameters);
+                Check(executed && roster.Contains(target.Pet) && !target.IsWild, "captured the same Wild individual through the real transaction: " + parameters[4]);
+            } finally {
+                if (coordinator != null) random.SetValue(coordinator, oldRandom);
+            }
+            int partyIndex = Enumerable.Range(0, 6).Where(index => roster.GetPartyPet(index) == target.Pet).DefaultIfEmpty(-1).First();
+            if (partyIndex >= 0) {
+                bool moved = roster.TryMovePartyToBox(partyIndex, out string error);
+                Check(moved, "captured pet moves from Party to BOX: " + error);
+            }
+            Check(roster.GetStoredPet(boxIndex) == target.Pet && save.SaveNow(), "same captured individual is saved in BOX");
+            Check(save.LoadNow(), "reload isolated save containing the captured BOX pet");
+            var stored = roster.GetStoredPet(boxIndex);
+            var metadata = stored?.GetComponentInChildren<PetCollectionMetadata>(true);
+            var storedStats = stored?.GetComponentInChildren<PetHudRuntimeStats>(true);
+            var reloaded = storedStats?.CreateSaveData();
+            Check(metadata != null && metadata.PersistentId == id && reloaded != null
+                && previous.equippedSkillIds.SequenceEqual(reloaded.equippedSkillIds)
+                && previous.learnedSkillProgress.Where(skill => skill.unlocked).All(old =>
+                    reloaded.learnedSkillProgress.Any(skill => skill.skillId == old.skillId && skill.unlocked)),
+                "Capture, BOX and reload preserve learned and equipped IDs");
+
+            var evolution = Object.FindFirstObjectByType<PetEvolutionService>() ?? inventory.gameObject.AddComponent<PetEvolutionService>();
+            evolution.Bind(bag);
+            var preview = evolution.CreatePreview(stored);
+            storedStats.SetIdentity(storedStats.DisplayName, Mathf.Max(storedStats.Level, preview.RequiredLevel));
+            var beforeEvolution = storedStats.CreateSaveData();
+            bool evolved = evolution.TryEvolve(stored, out string evolutionError);
+            Check(evolved && metadata.CurrentFormId == bats.forms[1].formId, "captured pet evolves through current gameplay service: " + evolutionError);
+            var evolvedSkills = storedStats.CreateSaveData();
+            Check(beforeEvolution.equippedSkillIds.SequenceEqual(evolvedSkills.equippedSkillIds)
+                && beforeEvolution.learnedSkillProgress.Where(skill => skill.unlocked).All(old =>
+                    evolvedSkills.learnedSkillProgress.Any(skill => skill.skillId == old.skillId && skill.unlocked)),
+                "evolution keeps each learned skill and equipped slot");
+            var disk = PlayerSaveMigration.Read(File.ReadAllText(save.SavePath), out _);
+            var saved = disk.pets.petStates.Single(state => state.petId == id);
+            Check(saved.customization.currentFormId == bats.forms[1].formId
+                && saved.runtimeStats.equippedSkillIds.SequenceEqual(evolvedSkills.equippedSkillIds)
+                && saved.runtimeStats.learnedSkillProgress.Any(skill => skill.skillId == "pulse.dark" && skill.unlocked),
+                "evolved form and learned/equipped skill IDs persist to the isolated save");
+        }
+
+        sealed class AuditCaptureRandom : ICaptureRandom {
+            public double NextFloat01() => 0;
+        }
+
         static void Queue(string command){
             if(running||File.Exists(Request)||File.Exists("Temp/ProfileCompanion.request")){Debug.LogWarning("Companion QA is already queued or running.");return;}
             Directory.CreateDirectory("Temp");File.WriteAllText(Request,command);
         }
-        [InitializeOnLoadMethod] static void Init(){EditorApplication.update-=Poll;EditorApplication.update+=Poll;}
+        [InitializeOnLoadMethod] static void Init(){
+            EditorApplication.update-=Poll;EditorApplication.update+=Poll;
+            EditorApplication.playModeStateChanged-=ViewedPetSwitchPlayMode;
+            EditorApplication.playModeStateChanged+=ViewedPetSwitchPlayMode;
+        }
         static void Poll(){
             if(running||EditorApplication.isCompiling||EditorApplication.isUpdating||!File.Exists(Request))return;
             if(!EditorApplication.isPlaying){if(EditorApplication.isPlayingOrWillChangePlaymode)return;running=true;try{EnsureAssets();SessionState.SetBool(OwnPlay,true);EditorApplication.EnterPlaymode();}finally{running=false;}return;}

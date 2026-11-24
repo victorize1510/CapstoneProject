@@ -53,6 +53,7 @@ namespace Capstone.Game.ProfileSystem {
             if(changed)NotifyChanged();return true;
         }
         public event Action ProfileChanged;
+        public int Level => Mathf.Max(1, level);
 
         public bool CanChangeAvatar => avatarOptions != null && avatarOptions.Any(sprite => sprite != null);
         public IReadOnlyList<Sprite> AvatarOptions => avatarOptions ?? Array.Empty<Sprite>();
@@ -178,25 +179,57 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         public void SetLevelProgress(int nextLevel, int experience, int required) {
-            level = Mathf.Max(0, nextLevel);
+            level = Mathf.Max(1, nextLevel);
             currentExperience = Mathf.Max(0, experience);
-            requiredExperience = Mathf.Max(0, required);
+            requiredExperience = required > 0 ? required : 100;
             NotifyChanged();
         }
 
         public void AddExperience(int amount) {
             if (amount <= 0) return;
 
+            EnsureLevelProgress();
             long nextExperience = (long)currentExperience + amount;
-            if (requiredExperience > 0) {
-                while (nextExperience >= requiredExperience && level < int.MaxValue) {
-                    nextExperience -= requiredExperience;
-                    level++;
-                }
-            }
+            long gained = Math.Min(int.MaxValue - (long)level, nextExperience / requiredExperience);
+            level += (int)gained;
+            nextExperience -= gained * requiredExperience;
 
             currentExperience = (int)Math.Min(int.MaxValue, Math.Max(0L, nextExperience));
             NotifyChanged();
+        }
+
+        internal bool TryDebugLevelUp(out string message) {
+            message = string.Empty;
+            if (!Debug.isDebugBuild || !Application.isPlaying) return false;
+            if (Capstone.Game.CaptureSystem.CaptureEventBatch.IsActive) {
+                message = "Đợi giao dịch hiện tại hoàn tất.";
+                return false;
+            }
+            if (saveController == null || !saveController.UsesProfile(this)) {
+                saveController = FindObjectsByType<PlayerSaveController>(FindObjectsSortMode.None)
+                    .FirstOrDefault(controller => controller.UsesProfile(this) && controller.HasCompletedStartup);
+            }
+            if (saveController == null || !saveController.HasCompletedStartup || saveController.IsApplyingSave
+                || saveController.IsSaveBlocked || (saveController.HasSave && !saveController.IsCurrentSlotLoaded)) {
+                message = "Chưa thể lưu hồ sơ đang chơi.";
+                return false;
+            }
+            if (Level == int.MaxValue) {
+                message = "Đã đạt giới hạn cấp.";
+                return false;
+            }
+
+            int previous = level;
+            using var batch = new Capstone.Game.CaptureSystem.CaptureEventBatch();
+            level = Level + 1;
+            if (!saveController.SaveNow()) {
+                level = previous;
+                message = "Lưu thất bại. Cấp nhân vật đã được khôi phục.";
+                return false;
+            }
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
+            batch.Commit();
+            return true;
         }
 
         public void SetCodexEntries(int count) {
@@ -317,9 +350,9 @@ namespace Capstone.Game.ProfileSystem {
             playerId = string.Empty;
             dateStarted = string.Empty;
             avatarIndex = 0;
-            level = 0;
+            level = 1;
             currentExperience = 0;
-            requiredExperience = 0;
+            requiredExperience = 100;
             storedPlayTimeSeconds = 0d;
             creaturesSeen = -1;
             speciesCaptured = -1;
@@ -438,6 +471,7 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void EnsureIdentity() {
+            EnsureLevelProgress();
             if (string.IsNullOrWhiteSpace(playerId)) {
                 playerId = Guid.NewGuid().ToString("N").Substring(0, 12).ToUpperInvariant();
             }
@@ -445,6 +479,11 @@ namespace Capstone.Game.ProfileSystem {
             if (string.IsNullOrWhiteSpace(dateStarted)) {
                 dateStarted = DateTime.Now.ToString("yyyy-MM-dd");
             }
+        }
+
+        void EnsureLevelProgress() {
+            level = Mathf.Max(1, level);
+            if (requiredExperience <= 0) requiredExperience = 100;
         }
 
         void RequestSave() {

@@ -24,6 +24,7 @@ namespace Capstone.Game.HudSystem {
         PetController manualRequest;
         bool manual;
         string currentKey;
+        PetEvolutionPreview offeredPreview;
         GameObject previousSelection;
         CursorLockMode previousCursorLock;
         bool previousCursorVisible, ownsInput, restoreCursorLater, presenting;
@@ -99,9 +100,9 @@ namespace Capstone.Game.HudSystem {
         internal static string PromptKey(PetController pet) {
             var metadata = pet != null ? pet.GetComponent<PetCollectionMetadata>() : null;
             var stats = pet != null ? pet.GetComponent<PetHudRuntimeStats>() : null;
-            if (metadata == null || metadata.IsReleased || stats == null || !metadata.TryGetNextEvolutionRule(out var rule)
-                || rule.Trigger == PetEvolutionTrigger.Item || stats.Level < rule.RequiredLevel) return null;
-            return metadata.PetId + "|" + metadata.CurrentFormId + "|" + rule.EvolutionId + "|" + stats.Level;
+            if (metadata == null || metadata.IsReleased || stats == null || !metadata.TryGetNextEvolutionRule(out var rule)) return null;
+            string promptId = PetEvolutionService.PendingLevelPromptId(metadata, rule, stats.Level);
+            return promptId == null ? null : metadata.PetId + "|" + metadata.CurrentFormId + "|" + promptId;
         }
         public void Enqueue(PetController pet) {
             if (pet == null || pet.IsWildEncounter) return;
@@ -180,18 +181,20 @@ namespace Capstone.Game.HudSystem {
                 string key = PromptKey(pet);
                 if (key == null || shown.Contains(key)) continue;
                 if (PetBlocked(pet)) { Enqueue(pet); continue; }
-                manual = false; Show(pet, key); break;
+                var preview = service.CreatePreview(pet);
+                if (!preview.ShouldAutoPrompt || !string.IsNullOrEmpty(PresentationBlockReason(pet))) continue;
+                manual = false; Show(pet, key, preview); break;
             }
         }
-        void Show(PetController pet, string key) {
+        void Show(PetController pet, string key, PetEvolutionPreview preview = null) {
             current = pet; currentKey = key; openedFrame = Time.frameCount;
             previousSelection = EventSystem.current != null ? EventSystem.current.currentSelectedGameObject : null;
             previousCursorLock = Cursor.lockState; previousCursorVisible = Cursor.visible;
             ownsInput = true;
             InventoryInputController.SetExternalGameplayInputBlocked(this, true);
             Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
-            var preview = service.CreatePreview(pet);
-            Display(preview);
+            offeredPreview = preview ?? service.CreatePreview(pet);
+            Display(offeredPreview);
             view.gameObject.SetActive(true);
             if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(view.Later.gameObject);
         }
@@ -199,17 +202,17 @@ namespace Capstone.Game.HudSystem {
             if (!IsOpen || Time.frameCount == openedFrame) return;
             dismissedFrame = Time.frameCount;
             shown.Add(currentKey);
-            string automaticKey = PromptKey(current);
-            if (automaticKey != null) shown.Add(automaticKey);
+            var offer = offeredPreview;
             Hide(true);
+            service.DeferLevelPrompt(offer);
         }
         void Confirm() {
             if (!IsOpen || Time.frameCount == openedFrame || GloballyBlocked() || PetBlocked(current)) return;
             if (failures.ContainsKey(currentKey)) return;
             var preview = service.CreatePreview(current);
-            if (!preview.CanEvolve) { view.Display(preview.CurrentName, false, preview.DisabledReason); return; }
+            if (!preview.CanEvolve) { view.Display(preview.CurrentName, preview.TargetName, false, preview.DisabledReason); return; }
             string presentationReason = PresentationBlockReason(current);
-            if (!string.IsNullOrEmpty(presentationReason)) { view.Display(preview.CurrentName, false, presentationReason); return; }
+            if (!string.IsNullOrEmpty(presentationReason)) { view.Display(preview.CurrentName, preview.TargetName, false, presentationReason); return; }
             var pet = current; string key = currentKey;
             shown.Add(key); Hide(true); presenting = true;
             var scene = pet.owner != null ? pet.owner.gameObject.scene : gameObject.scene;
@@ -223,7 +226,7 @@ namespace Capstone.Game.HudSystem {
         void Display(PetEvolutionPreview preview) {
             bool failed = currentKey != null && failures.TryGetValue(currentKey, out _);
             string reason = failed ? failures[currentKey] : !preview.CanEvolve ? preview.DisabledReason : PresentationBlockReason(current);
-            view.Display(preview.CurrentName, preview.CanEvolve && !failed && string.IsNullOrEmpty(reason), reason);
+            view.Display(preview.CurrentName, preview.TargetName, preview.CanEvolve && !failed && string.IsNullOrEmpty(reason), reason);
         }
         string PresentationBlockReason(PetController pet) {
             var scene = pet != null && pet.owner != null ? pet.owner.gameObject.scene : gameObject.scene;
@@ -236,7 +239,7 @@ namespace Capstone.Game.HudSystem {
             return string.Empty;
         }
         void Hide(bool restoreFocus) {
-            current = null; currentKey = null; manual = false;
+            current = null; currentKey = null; offeredPreview = null; manual = false;
             if (view != null) view.gameObject.SetActive(false);
             if (!ownsInput) return;
             ownsInput = false;

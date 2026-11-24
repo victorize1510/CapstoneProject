@@ -16,19 +16,10 @@ MonoBehaviour:
   startingMana: 0
   catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
   initializeFreshWildLoadout: 1
-  learnset: 
-  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
-    learnAtLevel: 1
-    overrideAnimation: 1
-    animatorStates:
-    - Bite Attack
-    animationDuration: 0.8333333333333334
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    presentationOverride: {fileID: 11400000, guid: ebcc8c50a97646a74dfdd7de732381c5, type: 2}
+  enforceLearnset: 1
+  learnset:
   - skill: {fileID: 11400000, guid: 8a74da36cc1789b00ab037cf39bed032, type: 2}
-    learnAtLevel: 5
+    learnAtLevel: 1
     overrideAnimation: 1
     animatorStates:
     - Cast Spell
@@ -37,16 +28,6 @@ MonoBehaviour:
     windupSeconds: 0
     recoverySeconds: 0
     presentationOverride: {fileID: 11400000, guid: 11025ea221a53c14f7e0ede6e62a73bc, type: 2}
-  - skill: {fileID: 11400000, guid: 3b15b43d2ce910b6b53cbb6e4d127bac, type: 2}
-    learnAtLevel: 12
-    overrideAnimation: 1
-    animatorStates:
-    - Projectile Attack
-    animationDuration: 0.8333333333333334
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    presentationOverride: {fileID: 11400000, guid: 0443001ef3a5596b5ec5b81d3cf6739b, type: 2}
   - skill: {fileID: 11400000, guid: cf102f878a9b667127ed4e3e654030d4, type: 2}
     learnAtLevel: 30
     overrideAnimation: 1
@@ -57,6 +38,16 @@ MonoBehaviour:
     windupSeconds: 0
     recoverySeconds: 0
     presentationOverride: {fileID: 11400000, guid: fe83b5cdc9beb8ea0e6fc79ff2551988, type: 2}
+  - skill: {fileID: 11400000, guid: 3b15b43d2ce910b6b53cbb6e4d127bac, type: 2}
+    learnAtLevel: 12
+    overrideAnimation: 1
+    animatorStates:
+    - Projectile Attack
+    animationDuration: 0.8333333333333334
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 11400000, guid: 0443001ef3a5596b5ec5b81d3cf6739b, type: 2}
   - skill: {fileID: 11400000, guid: 64460269199456f188a5c596924e28a3, type: 2}
     learnAtLevel: 36
     overrideAnimation: 1
@@ -67,8 +58,27 @@ MonoBehaviour:
     windupSeconds: 0
     recoverySeconds: 0
     presentationOverride: {fileID: 0}
-  defaultLoadout: 
-  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - skill: {fileID: 11400000, guid: 7d8ee3181623614ed637709ce5516fab, type: 2}
+    learnAtLevel: 28
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: 6c9649586479788fd83c2cb839306f6a, type: 2}
+    learnAtLevel: 20
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  defaultLoadout:
   - {fileID: 11400000, guid: 8a74da36cc1789b00ab037cf39bed032, type: 2}
-  - {fileID: 11400000, guid: 3b15b43d2ce910b6b53cbb6e4d127bac, type: 2}
   - {fileID: 11400000, guid: cf102f878a9b667127ed4e3e654030d4, type: 2}
+  - {fileID: 11400000, guid: 3b15b43d2ce910b6b53cbb6e4d127bac, type: 2}
+  - {fileID: 11400000, guid: 64460269199456f188a5c596924e28a3, type: 2}
+  - {fileID: 11400000, guid: 7d8ee3181623614ed637709ce5516fab, type: 2}

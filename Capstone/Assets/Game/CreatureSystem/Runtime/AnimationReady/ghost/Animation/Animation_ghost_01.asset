@@ -29,8 +29,16 @@ MonoBehaviour:
     state: Fly Forward In Place
   - action: 6
     state: Spawn
+  - action: 9
+    state: Cast Spell
   skills: 
-  - skillId: "strike.normal"
-    action: 7
-  - skillId: "touch.dark"
-    action: 7
+  - skillId: "blackhole.dark"
+    action: 9
+  - skillId: "orb.dark"
+    action: 9
+  - skillId: "flock.dark"
+    action: 9
+  - skillId: "spirit.dark"
+    action: 9
+  - skillId: "roar.power"
+    action: 9

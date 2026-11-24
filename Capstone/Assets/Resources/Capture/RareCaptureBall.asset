@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
+  m_Name: RareCaptureBall
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
+  Name: Bóng thu phục hiếm
+  Icon: {fileID: 21300000, guid: fd0dfe24385145a47bbcc2f2de22eeb4, type: 3}
+  Stackable: 1
+  MaxStackSize: 99
+  Tags: []
+  stableId: capture-ball-rare-01
+  legacyIds:
+  - Oak Great Ball
+  category: 1
+  rarity: 2
+  description: Bóng tăng cường dùng để thu phục thú hoang.
+  effect: Cơ hội thu phục cao hơn bóng cơ bản.
+  source: Cửa hàng
+  flavorText:
+  healAmount: 0
+  energyRestoreAmount: 0
+  usableFromInventory: 1
+  consumable: 1
+  isCaptureBall: 1
+  captureMultiplier: 1.5
+  guaranteedCapture: 0
+  captureCondition: 0

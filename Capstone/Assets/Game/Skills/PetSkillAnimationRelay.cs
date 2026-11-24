@@ -6,9 +6,13 @@ namespace Capstone.Game.Skills {
     public sealed class PetSkillAnimationRelay : MonoBehaviour {
         PetSkillPresentationPlayer owner;
         Animator animator;
-        public void Bind(PetSkillPresentationPlayer player, Animator source) { owner = player; animator = source; }
+        PetCryEventReceiver cry;
+        public void Bind(PetSkillPresentationPlayer player, Animator source) {
+            owner = player; animator = source; cry = GetComponent<PetCryEventReceiver>();
+        }
         public void OnPetSkillRelease(AnimationEvent animationEvent) {
-            if (owner != null && animationEvent != null) owner.NotifyAnimationRelease(animator, animationEvent.animatorStateInfo);
+            if (owner != null && animationEvent != null && (cry == null || !cry.IsCosmetic))
+                owner.NotifyAnimationRelease(animator, animationEvent.animatorStateInfo);
         }
     }
 }

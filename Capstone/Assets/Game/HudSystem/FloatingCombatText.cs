@@ -1,6 +1,5 @@
 using System.Globalization;
 using Capstone.Game.CreatureSystem;
-using Capstone.Game.Elements;
 using Capstone.Game.Inventory;
 using Capstone.Game.UISystem;
 using UnityEngine;
@@ -10,12 +9,15 @@ using Unity.Profiling;
 
 namespace Capstone.Game.HudSystem {
     /// <summary>Thirty-two reusable labels; cosmetic scatter never consumes combat RNG.</summary>
+    [DefaultExecutionOrder(90)]
     public sealed class FloatingCombatText : MonoBehaviour {
         const int Capacity = 32;
         const float Duration = .9f;
+        static readonly Color CriticalDamageColor = new Color32(255, 77, 77, 255);
         static FloatingCombatText live;
         sealed class Entry {
             public Text label, matchup; public CombatDamageMark mark; public Vector3 world; public float born;
+            public Transform anchor;
             public Vector2 control, end, start; public Color color, matchupColor; public bool active, critical, dot;
         }
         readonly Entry[] entries = new Entry[Capacity];
@@ -35,22 +37,18 @@ namespace Capstone.Game.HudSystem {
         public static void ShowDamage(Vector3 point, float amount, CreatureDamageKind kind) {
             ShowDamage(new CombatDamageResult(new CombatHit(null, "legacy", 0, amount, kind, false, false, point), null, amount, false));
         }
-        public static void ShowDamage(CombatDamageResult result) {
-            var recipient = result.Target != null ? result.Target.GetComponent<CreatureCombatant>() : null;
-            Color? tint = null;
-            var element = ElementCatalog.Find(result.Hit.Elements.Attack);
-            if (element != null && ColorUtility.TryParseHtmlString(element.ColorHex, out var color)) tint = color;
-            ShowNumber(result.Hit.Point, result.HpLost, result.Hit.Critical, result.Hit.DamageOverTime,
-                recipient != null && !recipient.IsEnemy, false, result.Effectiveness, tint);
-        }
+        public static void ShowDamage(CombatDamageResult result) =>
+            ShowNumber(result.Hit.Point, result.HpLost, result.Hit.Critical, result.Hit.DamageOverTime, false, result.Effectiveness,
+                anchor: result.VisualAnchor);
         /// <summary>Only call after an actual successful HP transaction, never from a preview or HP refresh.</summary>
-        public static void ShowHealing(Vector3 point, float hpGained) => ShowNumber(point, hpGained, false, false, false, true, 1f);
-        public static void ShowDodge(Vector3 point) => ShowNumber(point, 0f, false, false, false, false, 1f, dodge: true);
-        static void ShowNumber(Vector3 hitPoint, float amount, bool critical, bool dot, bool ally, bool healing, float effectiveness, Color? tint = null, bool dodge = false) {
+        public static void ShowHealing(Vector3 point, float hpGained) => ShowNumber(point, hpGained, false, false, true, 1f);
+        public static void ShowDodge(Vector3 point) => ShowNumber(point, 0f, false, false, false, 1f, dodge: true);
+        static void ShowNumber(Vector3 hitPoint, float amount, bool critical, bool dot, bool healing, float effectiveness,
+            bool dodge = false, Transform anchor = null) {
             if (!Application.isPlaying || (!dodge && amount <= 0) || float.IsNaN(amount) || float.IsInfinity(amount)
                 || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying) return;
             var camera = Camera.main;
-            Vector3 point = hitPoint + Vector3.up * .35f;
+            Vector3 point = anchor != null ? anchor.position : hitPoint + Vector3.up * .35f;
             if (camera == null) return;
             Vector3 viewport = camera.WorldToViewportPoint(point);
             if (viewport.z <= 0 || viewport.x < -.05f || viewport.x > 1.05f || viewport.y < -.05f || viewport.y > 1.05f) return;
@@ -58,7 +56,7 @@ namespace Capstone.Game.HudSystem {
                 var go = new GameObject("Floating Combat Damage", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler));
                 live = go.AddComponent<FloatingCombatText>(); DontDestroyOnLoad(go);
             }
-            live.worldCamera = camera; live.Push(point, amount, critical, dot, ally, healing, effectiveness, tint, dodge);
+            live.worldCamera = camera; live.Push(point, amount, critical, dot, healing, effectiveness, dodge, anchor);
         }
         void Awake() {
             live = this; surface = (RectTransform)transform;
@@ -103,12 +101,13 @@ namespace Capstone.Game.HudSystem {
             return (value > 1 ? "↑ ×" : "↓ ×") + value.ToString("0.##", CultureInfo.InvariantCulture);
         }
 
-        void Push(Vector3 point, float amount, bool critical, bool dot, bool damageToAlly, bool healing, float effectiveness, Color? tint = null, bool dodge = false) {
+        void Push(Vector3 point, float amount, bool critical, bool dot, bool healing, float effectiveness, bool dodge, Transform anchor) {
             using (SpawnMarker.Auto()) {
             var e = entries[next]; next = (next + 1) % Capacity; serial++;
             float variation = ((serial * 73) % 101) / 100f;
             float sign = serial % 2 == 0 ? 1 : -1;
             e.world = point; e.born = Time.unscaledTime; e.critical = critical; e.dot = dot;
+            e.anchor = anchor;
             e.start = new Vector2(sign * (26 + variation * 18), (serial % 3) * 9);
             // Test a few fixed alternatives once at birth, not a moving layout every frame.
             Vector3 screen = worldCamera.WorldToScreenPoint(point);
@@ -126,11 +125,9 @@ namespace Capstone.Game.HudSystem {
             }
             e.end = new Vector2(sign * (48 + variation * 55), e.dot ? 44 : 52 + variation * 40);
             e.control = new Vector2(sign * (30 + variation * 36), e.end.y + 24);
-            e.color=damageToAlly?new Color(1,.48f,.43f):new Color(.72f,.96f,1);
-            if (tint.HasValue) e.color = Color.Lerp(tint.Value, Color.white, .30f);
+            e.color = critical ? CriticalDamageColor : Color.white;
             if (dodge) e.color = new Color(.82f,.93f,1f);
             if (healing) e.color = new Color(.65f, 1, .79f);
-            if(e.dot)e.color=Color.Lerp(e.color,new Color(.88f,.66f,.72f),.3f);
             e.label.fontSize = e.dot ? 23 : e.critical ? 38 : 30;
             e.label.text = dodge ? "Né" : (healing ? "+" : "") + amount.ToString(amount < 1 ? "0.##" : "0.#", CultureInfo.InvariantCulture);
             e.mark.Dot = e.dot; e.mark.gameObject.SetActive(e.dot || e.critical);
@@ -152,7 +149,9 @@ namespace Capstone.Game.HudSystem {
             foreach (var e in entries) {
                 if (!e.active) continue;
                 float t = (Time.unscaledTime - e.born) / Duration;
-                if (t >= 1 || worldCamera == null) { e.active = false; e.label.gameObject.SetActive(false); continue; }
+                if (t >= 1 || worldCamera == null) { e.active = false; e.anchor = null; e.label.gameObject.SetActive(false); continue; }
+                if (e.anchor != null && e.anchor.gameObject.activeInHierarchy) e.world = e.anchor.position;
+                else e.anchor = null;
                 Vector3 screen = worldCamera.WorldToScreenPoint(e.world);
                 e.label.enabled = e.mark.enabled = e.matchup.enabled = screen.z > 0;
                 if (screen.z <= 0) continue;
@@ -175,6 +174,6 @@ namespace Capstone.Game.HudSystem {
             }
             }
         }
-        void Clear() { foreach (var e in entries) if (e != null) { e.active = false; e.label.gameObject.SetActive(false); } }
+        void Clear() { foreach (var e in entries) if (e != null) { e.active = false; e.anchor = null; e.label.gameObject.SetActive(false); } }
     }
 }

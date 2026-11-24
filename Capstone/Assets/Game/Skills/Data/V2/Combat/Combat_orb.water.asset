@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Combat_orb.water
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
   damageKind: 1
-  delivery: 1
+  delivery: 2
   power: 1.3
   range: 9
   projectileSpeed: 9
@@ -27,3 +27,20 @@ MonoBehaviour:
   retreatDistance: 0
   retreatSpeed: 12
   preferredDistance: 5
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 1
+  minimumHits: 2
+  maximumHits: 3
+  targetedImpactRadius: 1.2
+  effectSeconds: 1.2
+  splashFraction: 0
+  displacement: 0
+  weightedWindVolley: 0
+  bleedPower: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  trackTargetUntilRelease: 0
+  statusCues: []
+  authoredReleaseSound: {fileID: 8300000, guid: c22e76c578fded64fbf064d5988ce842, type: 3}

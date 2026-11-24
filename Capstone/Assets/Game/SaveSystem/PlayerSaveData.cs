@@ -31,6 +31,7 @@ namespace Capstone.Game.SaveSystem {
         public long createdUtcTicks;
         public int gold;
         public bool experienceCommitted;
+        public int trainerExperience;
         public List<PveItemRewardSaveData> items=new List<PveItemRewardSaveData>();
         public List<PvePetRewardSaveData> pets=new List<PvePetRewardSaveData>();
     }
@@ -198,8 +199,8 @@ namespace Capstone.Game.SaveSystem {
 
     [Serializable]
     public sealed class PetSkillProgressSaveData {
+        // Legacy JSON may contain a skill level or XP. Only identity and unlock flags are read.
         public string skillId = string.Empty;
-        public int level = 1;
         public bool unlocked;
         public bool usable;
     }

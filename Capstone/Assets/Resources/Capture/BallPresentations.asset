@@ -18,10 +18,10 @@ MonoBehaviour:
     icon: {fileID: 21300000, guid: 7bda1c568ee3f3a4e8118f0d32c1e86d, type: 3}
     item: {fileID: 11400000, guid: bdc7f483287b90743989d1ea22a4c5e2, type: 2}
   - key: BallRare
-    displayName: Rare
+    displayName: Hiếm
     icon: {fileID: 21300000, guid: fd0dfe24385145a47bbcc2f2de22eeb4, type: 3}
-    item: {fileID: 0}
+    item: {fileID: 11400000, guid: 68e5008379b447889a6092e084129da4, type: 2}
   - key: BallUltra
-    displayName: Ultra
+    displayName: Cao cấp
     icon: {fileID: 21300000, guid: 9a19d635dc9445a40a0010d3a83fca96, type: 3}
-    item: {fileID: 0}
+    item: {fileID: 11400000, guid: 16b93f2ee0744ad7a758abd2700b96e2, type: 2}

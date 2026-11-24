@@ -33,3 +33,17 @@ MonoBehaviour:
   preferredDistance: 5
   weightedWindVolley: 0
   burstEndNormalized: 0.78
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 0
+  minimumHits: 1
+  maximumHits: 1
+  targetedImpactRadius: 0.85
+  effectSeconds: 0
+  splashFraction: 0
+  displacement: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  statusCues: []
+  authoredReleaseSound: {fileID: 8300000, guid: 1cdadb5f4da003941ad57241296e144f, type: 3}

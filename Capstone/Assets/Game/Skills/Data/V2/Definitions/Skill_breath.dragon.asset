@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: breath.dragon
   legacyIds: []
-  displayName: "H\u01A1i Th\u1EDF R\u1ED3ng"
-  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  displayName: "Hơi Thở Rồng"
+  description: "Phun theo hình nón 6 nhịp. Có 25% cơ hội gây bỏng trong 5 giây."
   element: 10
   icon: {fileID: 21300000, guid: c4f87bf08b60722479597b2fa4c01b21, type: 3}
-  cooldownSeconds: 5
+  cooldownSeconds: 10
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: c23b38635ba3d80b92f6b04ecb8abb76, type: 2}
   combat: {fileID: 11400000, guid: a393201a87005058a18cc0e2f50a83d7, type: 2}
+  manaCost: 28

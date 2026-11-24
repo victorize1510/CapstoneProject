@@ -5,7 +5,8 @@ namespace Capstone.Game.CaptureSystem {
     public enum CaptureBallCondition { None, Quick, Timer }
     public enum CaptureFailure {
         None, InvalidData, NotWild, ProtectedTarget, Defeated, NoTarget, NoBall, MissingConfiguration,
-        NoRoom, Busy, SaveFailed, MissingServices, TurnUnavailable, DexUnavailable, AlreadyOwned
+        NoRoom, Busy, SaveFailed, MissingServices, TurnUnavailable, DexUnavailable, AlreadyOwned,
+        OutOfRange, OutOfView, Obstructed
     }
     public interface ICaptureRandom { double NextFloat01(); }
     public sealed class SeededCaptureRandom : ICaptureRandom {
@@ -99,6 +100,9 @@ namespace Capstone.Game.CaptureSystem {
         public static string For(CaptureFailure reason) => reason switch {
             CaptureFailure.None => "Sẵn sàng bắt thú.",
             CaptureFailure.NoTarget => "Chọn một thú hoang trong tầm nhìn để bắt.",
+            CaptureFailure.OutOfRange => "Mục tiêu ngoài tầm ném.",
+            CaptureFailure.OutOfView => "Đưa mục tiêu vào tầm nhìn.",
+            CaptureFailure.Obstructed => "Mục tiêu bị che khuất.",
             CaptureFailure.NoBall => "Bạn không còn bóng thu phục này.",
             CaptureFailure.NoRoom => "Đội thú và Kho thú đều đã đầy.",
             CaptureFailure.Busy => "Đang thực hiện một lần bắt thú.",

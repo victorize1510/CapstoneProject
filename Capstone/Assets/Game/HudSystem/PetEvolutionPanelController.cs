@@ -57,6 +57,7 @@ namespace Capstone.Game.HudSystem {
         }
         public bool IsEvolutionItem(InventoryItemSnapshot item) {
             if (item == null) return false;
+            if (item.Definition != null && Capstone.Game.Elements.ElementCatalog.IsSupported(item.Definition.EvolutionStoneElement)) return true;
             ResolveReferences();
             for (int i = 0; i < 6; i++) {
                 var pet = CommandProvider?.GetPetControllerAt(i);
@@ -73,9 +74,7 @@ namespace Capstone.Game.HudSystem {
             ResolveReferences();
             var service = GetComponent<PetEvolutionService>();
             var preview = service?.CreatePreview(CommandProvider?.GetSelectedPetController(), PetEvolutionMethod.Item, item.ItemId);
-            return preview?.Rule != null && preview.Rule.Trigger != PetEvolutionTrigger.Level
-                && (string.Equals(item.ItemId, preview.RequiredItemId, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(item.Name, preview.RequiredItemId, StringComparison.OrdinalIgnoreCase));
+            return preview?.CanEvolve == true;
         }
     }
 }

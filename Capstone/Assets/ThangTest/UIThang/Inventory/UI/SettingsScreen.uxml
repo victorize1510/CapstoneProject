@@ -22,6 +22,12 @@
                     <ui:VisualElement class="settings-section-heading"><ui:Label text="ÂM THANH" class="settings-section-title" /><ui:VisualElement class="settings-heading-line" /></ui:VisualElement>
                     <ui:ScrollView class="settings-section-scroll" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Auto">
                         <ui:Instance name="settings-master-row" template="SettingsSliderRow" />
+                        <ui:Instance name="settings-music-row" template="SettingsSliderRow" />
+                        <ui:Instance name="settings-sfx-row" template="SettingsSliderRow" />
+                        <ui:Instance name="settings-skill-sfx-row" template="SettingsSliderRow" />
+                        <ui:Instance name="settings-pet-cry-row" template="SettingsSliderRow" />
+                        <ui:Instance name="settings-ui-volume-row" template="SettingsSliderRow" />
+                        <ui:Instance name="settings-ambient-row" template="SettingsSliderRow" />
                         <ui:VisualElement class="settings-divider" />
                         <ui:Instance name="settings-mute-row" template="SettingsToggleRow" />
                         <ui:Label text="Tổng âm lượng áp dụng cho toàn bộ âm thanh. Tắt âm thanh giữ nguyên mức âm lượng đã chọn." class="settings-note" />
@@ -54,6 +60,7 @@
                         <ui:Instance name="settings-language-row" template="SettingsDropdownRow" />
                         <ui:Instance name="settings-fullscreen-row" template="SettingsToggleRow" />
                         <ui:Instance name="settings-resolution-row" template="SettingsDropdownRow" />
+                        <ui:Instance name="settings-vfx-row" template="SettingsDropdownRow" />
                         <ui:Label name="settings-display-note" class="settings-note" />
                         <ui:VisualElement class="settings-divider" />
                         <ui:Instance name="settings-guide-row" template="SettingsButtonRow" />

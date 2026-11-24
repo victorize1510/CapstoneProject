@@ -9,6 +9,7 @@ namespace Capstone.Game.HudSystem {
 
     [DisallowMultipleComponent]
     public sealed class PetEvolutionService : MonoBehaviour {
+        const int FinalEvolutionMilestone = 36;
         MonsterInventoryAdapter inventory;
         PlayerSaveController saveController;
 
@@ -57,9 +58,18 @@ namespace Capstone.Game.HudSystem {
             preview.RequiredItemQuantity = rule.RequiredItemQuantity;
 
             bool levelAllowed = rule.Trigger != PetEvolutionTrigger.Item;
-            bool itemAllowed = rule.Trigger != PetEvolutionTrigger.Level;
-            if (method == PetEvolutionMethod.Item && itemAllowed) {
-                preview.Item = FindItem(rule.RequiredItemId);
+            bool itemAllowed = false;
+            if (method == PetEvolutionMethod.Item) {
+                preview.Item = FindItem(requestedItemId);
+                var definition = preview.Item?.Definition ?? InventoryDefinitionCatalog.Find(requestedItemId);
+                if (definition != null && Capstone.Game.Elements.ElementCatalog.IsSupported(definition.EvolutionStoneElement)) {
+                    preview.RequiredItemId = definition.StableId;
+                    preview.RequiredItemQuantity = 1;
+                    itemAllowed = definition.EvolutionStoneElement == preview.Metadata.Element;
+                } else {
+                    itemAllowed = rule.Trigger != PetEvolutionTrigger.Level && !string.IsNullOrWhiteSpace(rule.RequiredItemId)
+                        && string.Equals(requestedItemId, rule.RequiredItemId, StringComparison.OrdinalIgnoreCase);
+                }
                 preview.OwnedItemQuantity = preview.Item?.Quantity ?? 0;
             }
             preview.UsesItem = method == PetEvolutionMethod.Item;
@@ -67,15 +77,14 @@ namespace Capstone.Game.HudSystem {
                 preview.RequirementMet = levelAllowed && preview.CurrentLevel >= rule.RequiredLevel;
                 if (!levelAllowed) preview.DisabledReason = "Dạng này chỉ tiến hóa bằng vật phẩm trong Túi đồ.";
                 else if (!preview.RequirementMet) preview.DisabledReason = $"Cần đạt Lv. {rule.RequiredLevel}.";
-            } else if (!itemAllowed || string.IsNullOrWhiteSpace(rule.RequiredItemId)
-                || !string.Equals(requestedItemId, rule.RequiredItemId, StringComparison.OrdinalIgnoreCase)) {
-                preview.DisabledReason = "Vật phẩm không phù hợp với dạng tiến hóa này.";
+            } else if (!itemAllowed) {
+                preview.DisabledReason = "Đá tiến hóa phải khớp với hệ chính của thú.";
             } else {
                 preview.RequirementMet = preview.Item != null
-                    && preview.OwnedItemQuantity >= rule.RequiredItemQuantity;
-                if (preview.Item == null) preview.DisabledReason = $"Chưa có {rule.RequiredItemId} trong Bag.";
+                    && preview.OwnedItemQuantity >= preview.RequiredItemQuantity;
+                if (preview.Item == null) preview.DisabledReason = $"Chưa có {preview.RequiredItemId} trong Túi đồ.";
                 else if (!preview.RequirementMet)
-                    preview.DisabledReason = $"Cần thêm {rule.RequiredItemQuantity - preview.OwnedItemQuantity} {rule.RequiredItemId}.";
+                    preview.DisabledReason = $"Cần thêm {preview.RequiredItemQuantity - preview.OwnedItemQuantity} {preview.RequiredItemId}.";
             }
 
             Capstone.Game.PetSummon.PetSummonDirector director =
@@ -104,7 +113,7 @@ namespace Capstone.Game.HudSystem {
             }
             preview.CanEvolve = preview.RequirementMet && saveController != null;
             preview.ShouldAutoPrompt = method == PetEvolutionMethod.Level && preview.CanEvolve
-                && !preview.Metadata.WasEvolutionPrompted(rule.EvolutionId);
+                && PendingLevelPromptId(preview.Metadata, rule, preview.CurrentLevel) != null;
             return preview;
         }
 
@@ -167,18 +176,18 @@ namespace Capstone.Game.HudSystem {
             }
 
             if (consumedEvolutionItem) {
-                Result removeResult = inventory.RemoveItem(preview.Item.ItemBase, preview.Rule.RequiredItemQuantity);
+                Result removeResult = inventory.RemoveItem(preview.Item.ItemBase, preview.RequiredItemQuantity);
                 if (removeResult is Fail) {
                     preview.Metadata.RestoreFromSaveData(metadataSnapshot);
-                    stats.RestoreFromSaveData(statsSnapshot);
                     visualController.RestoreForm(metadataSnapshot.evolutionStage);
+                    stats.RestoreFromSaveData(statsSnapshot);
                     stats.RestoreCooldowns(cooldownSnapshot);
-                if(profileSnapshot!=null)profile.RestoreFromSaveData(profileSnapshot);
+                    if(profileSnapshot!=null)profile.RestoreFromSaveData(profileSnapshot);
                     message = $"Không thể dùng {preview.Rule.RequiredItemId}. Hãy kiểm tra lại Túi đồ.";
                     return false;
                 }
                 preview.Metadata.RecordResourceInvestment(preview.Item.ItemBase, preview.Item.ItemId,
-                    preview.Item.Name, preview.Rule.RequiredItemQuantity);
+                    preview.Item.Name, preview.RequiredItemQuantity);
             }
 
             if(profile!=null) {
@@ -188,12 +197,12 @@ namespace Capstone.Game.HudSystem {
             if (saveController == null || !saveController.SaveNow()) {
 
                 preview.Metadata.RestoreFromSaveData(metadataSnapshot);
-                stats.RestoreFromSaveData(statsSnapshot);
                 visualController.RestoreForm(metadataSnapshot.evolutionStage);
+                stats.RestoreFromSaveData(statsSnapshot);
                 stats.RestoreCooldowns(cooldownSnapshot);
                 if(profileSnapshot!=null)profile.RestoreFromSaveData(profileSnapshot);
                 if (consumedEvolutionItem) {
-                    inventory.AddItem(preview.Item.ItemBase, preview.Rule.RequiredItemQuantity);
+                    inventory.AddItem(preview.Item.ItemBase, preview.RequiredItemQuantity);
                 }
                 message = "Không thể lưu lần tiến hóa. Mọi thay đổi đã được hoàn tác.";
                 return false;
@@ -204,11 +213,27 @@ namespace Capstone.Game.HudSystem {
             return true;
         }
 
-        public void MarkAutoPromptShown(PetEvolutionPreview preview) {
-            if (preview?.Metadata == null || preview.Rule == null) return;
-            preview.Metadata.MarkEvolutionPrompted(preview.Rule.EvolutionId);
+        internal static string PendingLevelPromptId(PetCollectionMetadata metadata, PetEvolutionRule rule, int level) {
+            if (metadata == null || rule == null || rule.Trigger == PetEvolutionTrigger.Item || level < rule.RequiredLevel)
+                return null;
+
+            string ruleId = rule.EvolutionId;
+            if (rule.SourceStage == 0 && rule.RequiredLevel < FinalEvolutionMilestone) {
+                // A pet still in its first form gets one more offer at the final level milestone.
+                string milestoneId = $"{ruleId}@{FinalEvolutionMilestone}";
+                if (metadata.WasEvolutionPrompted(milestoneId)) return null;
+                if (level >= FinalEvolutionMilestone) return milestoneId;
+            }
+            return metadata.WasEvolutionPrompted(ruleId) ? null : ruleId;
+        }
+
+        internal void DeferLevelPrompt(PetEvolutionPreview preview) {
+            if (preview == null) return;
+            string promptId = PendingLevelPromptId(preview.Metadata, preview.Rule, preview.CurrentLevel);
+            if (promptId == null) return;
+            preview.Metadata.MarkEvolutionPrompted(promptId);
             ResolveSaveController();
-            saveController?.RequestSave();
+            saveController?.SaveNow();
         }
 
         void ResolveInventory() {
@@ -227,7 +252,7 @@ namespace Capstone.Game.HudSystem {
             for (int i = 0; i < items.Count; i++) {
                 InventoryItemSnapshot item = items[i];
                 if (item == null) continue;
-                if (string.Equals(item.ItemId, itemId, StringComparison.OrdinalIgnoreCase)
+                if (item.Definition?.MatchesId(itemId) == true || string.Equals(item.ItemId, itemId, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(item.Name, itemId, StringComparison.OrdinalIgnoreCase)) {
                     return item;
                 }

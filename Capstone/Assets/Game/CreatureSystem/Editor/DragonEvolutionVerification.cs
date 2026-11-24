@@ -118,7 +118,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 if (prompt != null) {
                     var instance = (EvolutionHudPromptView)UnityEngine.Object.Instantiate(prompt);
                     UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(instance.gameObject, preview);
-                    instance.Build(); instance.Display("Rồng Chạng Vạng tên dài để thử", true, "");
+                    instance.Build(); instance.Display("Rồng Chạng Vạng tên dài để thử", "Rồng Hắc Ám", true, "");
                     Check(instance.Confirm != null && instance.Later != null, "Both prompt buttons");
                     Check(instance.GetComponentsInChildren<UnityEngine.UI.Text>(true).All(t => t.font != null), "HUD font references");
                     Check(instance.Confirm.navigation.selectOnRight == instance.Later, "Keyboard/gamepad navigation targets");

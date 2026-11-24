@@ -11,7 +11,7 @@ namespace Capstone.Game.HudSystem {
         public const int DefaultExperienceRequirementPerLevel = 50;
         public const int DefaultQuadraticExperienceRequirement = 10;
 
-        [Header("Temporary Level Item")]
+        [Header("Level Item")]
         [SerializeField] string levelUpItemId = "Leaf Berry";
         [SerializeField] string levelUpItemDisplayName = "Leaf Berry";
         [SerializeField, Min(1)] int experiencePerItem = 50;
@@ -67,7 +67,7 @@ namespace Capstone.Game.HudSystem {
             preview.RequiredItemQuantity = itemRequirement;
             preview.Item = FindLevelUpItem();
             preview.OwnedItemQuantity = preview.Item != null ? preview.Item.Quantity : 0;
-            preview.ItemIcon = preview.Item?.Icon;
+            preview.ItemIcon = preview.Item?.Icon ?? InventoryDefinitionCatalog.Find(levelUpItemId)?.Icon;
 
             PetStatSnapshot currentScores = preview.Metadata.GetStatsAtLevel(currentLevel);
             PetStatSnapshot nextScores = preview.Metadata.GetStatsAtLevel(preview.NextLevel);
@@ -276,7 +276,8 @@ namespace Capstone.Game.HudSystem {
             for (int i = 0; i < items.Count; i++) {
                 InventoryItemSnapshot item = items[i];
                 if (item == null) continue;
-                if (string.Equals(item.ItemId, levelUpItemId, StringComparison.OrdinalIgnoreCase)
+                if (item.ItemBase is MonsterItemDefinition definition && definition.MatchesId(levelUpItemId)
+                    || string.Equals(item.ItemId, levelUpItemId, StringComparison.OrdinalIgnoreCase)
                     || string.Equals(item.Name, levelUpItemId, StringComparison.OrdinalIgnoreCase)) {
                     return item;
                 }

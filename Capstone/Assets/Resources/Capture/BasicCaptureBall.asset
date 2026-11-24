@@ -18,7 +18,8 @@ MonoBehaviour:
   MaxStackSize: 99
   Tags: []
   stableId: capture-ball-basic-01
-  legacyIds: []
+  legacyIds:
+  - Verdant Capture Ball
   category: 1
   rarity: 0
   description: "D\u1EE5ng c\u1EE5 thu ph\u1EE5c th\xFA hoang khi \u0111ang chi\u1EBFn

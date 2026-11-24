@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -103,6 +104,7 @@ public class DialogueBoxUI : MonoBehaviour
     {
         if (typeSound == null || audioSource != null) return;
         audioSource = gameObject.AddComponent<AudioSource>();
+        Capstone.Game.SettingsSystem.GameAudioRouting.Route(audioSource, Capstone.Game.SettingsSystem.GameAudioBus.UI);
         audioSource.playOnAwake = false;
         audioSource.spatialBlend = 0f;
     }
@@ -300,11 +302,11 @@ public class DialogueBoxUI : MonoBehaviour
         while (true)
         {
             time += Time.unscaledDeltaTime;
-            if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)
-                || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
+            if (PhysicalKeys.GetKeyDown(KeyCode.W) || PhysicalKeys.GetKeyDown(KeyCode.UpArrow)
+                || PhysicalKeys.GetKeyDown(KeyCode.A) || PhysicalKeys.GetKeyDown(KeyCode.LeftArrow))
                 index = (index - 1 + options.Length) % options.Length;
-            if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)
-                || Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
+            if (PhysicalKeys.GetKeyDown(KeyCode.S) || PhysicalKeys.GetKeyDown(KeyCode.DownArrow)
+                || PhysicalKeys.GetKeyDown(KeyCode.D) || PhysicalKeys.GetKeyDown(KeyCode.RightArrow))
                 index = (index + 1) % options.Length;
 
             int hovered = -1;
@@ -313,9 +315,9 @@ public class DialogueBoxUI : MonoBehaviour
                     hovered = i;
             if (hovered >= 0) index = hovered;
 
-            if (Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)
-                || Input.GetKeyDown(KeyCode.Space) || (Input.GetMouseButtonDown(0) && hovered >= 0)) { result = index; break; }
-            if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace)) { result = -1; break; }
+            if (PhysicalKeys.GetKeyDown(KeyCode.F) || PhysicalKeys.GetKeyDown(KeyCode.Return) || PhysicalKeys.GetKeyDown(KeyCode.KeypadEnter)
+                || PhysicalKeys.GetKeyDown(KeyCode.Space) || (Input.GetMouseButtonDown(0) && hovered >= 0)) { result = index; break; }
+            if (PhysicalKeys.GetKeyDown(KeyCode.Escape) || PhysicalKeys.GetKeyDown(KeyCode.Backspace)) { result = -1; break; }
 
             RefreshChoices(index, time);
             yield return null;
@@ -393,8 +395,8 @@ public class DialogueBoxUI : MonoBehaviour
     }
 
     public static bool AdvancePressed() =>
-        Input.GetKeyDown(KeyCode.F) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)
-        || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetMouseButtonDown(0);
+        PhysicalKeys.GetKeyDown(KeyCode.F) || PhysicalKeys.GetKeyDown(KeyCode.Space) || PhysicalKeys.GetKeyDown(KeyCode.Return)
+        || PhysicalKeys.GetKeyDown(KeyCode.KeypadEnter) || Input.GetMouseButtonDown(0);
 
     // ---------- Dựng UI ----------
 

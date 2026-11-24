@@ -7,7 +7,8 @@
 .settings-design .settings-section-scroll .unity-scroll-view__content-container {padding:0;}
 .settings-design .settings-section-scroll TemplateContainer {margin:0;flex-shrink:0;}
 .settings-design .final-setting-row {position:relative;min-height:108px;height:auto;flex-shrink:0;align-items:center;margin:0;padding:16px 8px 16px 42px;border-bottom-width:1px;border-bottom-color:rgba(137,150,176,.4);background-color:transparent;}
-.settings-design #settings-audio-group .final-setting-row {min-height:114px;}
+.settings-design #settings-audio-group .final-setting-row {min-height:78px;padding-top:8px;padding-bottom:8px;}
+.settings-design #settings-audio-group .settings-row-label {margin-bottom:4px;}
 .settings-design .settings-row-copy {flex-grow:1;flex-shrink:1;min-width:0;}
 .settings-design .settings-row-label {width:auto;margin:0 12px 8px 0;font-size:21px;-unity-font-style:bold;color:#202B45;white-space:normal;}
 .settings-design #setting-description {font-size:17px;color:#39455E;white-space:normal;margin-right:16px;}

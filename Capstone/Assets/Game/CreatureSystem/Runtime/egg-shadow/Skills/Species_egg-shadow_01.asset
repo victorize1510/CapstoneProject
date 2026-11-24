@@ -16,19 +16,10 @@ MonoBehaviour:
   startingMana: 0
   catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
   initializeFreshWildLoadout: 1
-  learnset: 
-  - skill: {fileID: 11400000, guid: 5b0e82b396058cb30b7f4737b94daf03, type: 2}
-    learnAtLevel: 1
-    overrideAnimation: 1
-    animatorStates:
-    - "Head Attack"
-    animationDuration: 0.83333
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    presentationOverride: {fileID: 11400000, guid: 4b70add6e2caeffde2bec1efd4c924cf, type: 2}
+  enforceLearnset: 1
+  learnset:
   - skill: {fileID: 11400000, guid: 7665f54394d722b4d949aa9e076e6189, type: 2}
-    learnAtLevel: 12
+    learnAtLevel: 1
     overrideAnimation: 1
     animatorStates:
     - "Cast Spell"
@@ -37,17 +28,44 @@ MonoBehaviour:
     windupSeconds: 0
     recoverySeconds: 0
     presentationOverride: {fileID: 11400000, guid: 7e34b5a610ed3f7b49b052dc8faf49a7, type: 2}
-  - skill: {fileID: 11400000, guid: ebd9df2772d78802f3de386797990a8b, type: 2}
-    learnAtLevel: 36
-    overrideAnimation: 1
-    animatorStates:
-    - "Head Attack"
-    animationDuration: 0.83333
+  - skill: {fileID: 11400000, guid: 994204bfbd14932fa29746f86d4e0476, type: 2}
+    learnAtLevel: 8
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
     animationFade: 0.08
     windupSeconds: 0
     recoverySeconds: 0
-    presentationOverride: {fileID: 11400000, guid: f99578c48fe97daaa789bd2db1969492, type: 2}
-  defaultLoadout: 
-  - {fileID: 11400000, guid: 5b0e82b396058cb30b7f4737b94daf03, type: 2}
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: 2f83be87e81ead265fc0fbca14ff33e0, type: 2}
+    learnAtLevel: 14
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: 8de748e55a1f8190116c6bf88550dccd, type: 2}
+    learnAtLevel: 20
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: 6c9649586479788fd83c2cb839306f6a, type: 2}
+    learnAtLevel: 20
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  defaultLoadout:
   - {fileID: 11400000, guid: 7665f54394d722b4d949aa9e076e6189, type: 2}
-  - {fileID: 11400000, guid: ebd9df2772d78802f3de386797990a8b, type: 2}
+  - {fileID: 11400000, guid: 2f83be87e81ead265fc0fbca14ff33e0, type: 2}
+  - {fileID: 11400000, guid: 8de748e55a1f8190116c6bf88550dccd, type: 2}
+  - {fileID: 11400000, guid: 994204bfbd14932fa29746f86d4e0476, type: 2}

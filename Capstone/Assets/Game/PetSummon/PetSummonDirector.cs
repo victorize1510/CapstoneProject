@@ -50,6 +50,9 @@ namespace Capstone.Game.PetSummon
         [SerializeField, Min(0.25f)] float throwStartTimeout = 3f;
         [SerializeField, Min(0.1f)] float throwApexHeight = 1.2f;
         [SerializeField, Min(0.1f)] float ballMotionSpeed = 1f;
+        [SerializeField, Range(1f, 3f)] float summonBallSpeedMultiplier = 1.7f;
+        [SerializeField, Range(1f, 3f)] float throwPlaybackSpeed = 1.65f;
+        [SerializeField, Range(1f, 3f)] float recallPickupPlaybackSpeed = 1.8f;
         [SerializeField, Min(0.05f)] float bounceDuration = 1.1f;
         [SerializeField, Min(0f)] float bounceHeight = 1.1f;
         [SerializeField, Range(0f, 1f)] float bounceHorizontalDamping = 0.35f;
@@ -57,6 +60,7 @@ namespace Capstone.Game.PetSummon
         [SerializeField, Min(0.25f)] float pickupStartTimeout = 3f;
         [SerializeField, Min(0.25f)] float pickupCompletionTimeout = 3f;
         [SerializeField, Range(2f, 20f)] float summonPresentationTimeout = 12f;
+        float SummonBallSpeed => ballMotionSpeed * summonBallSpeedMultiplier;
 
         readonly RaycastHit[] groundHits = new RaycastHit[12];
         readonly RaycastHit[] obstacleHits = new RaycastHit[16];
@@ -229,7 +233,8 @@ namespace Capstone.Game.PetSummon
                     recallAttempts = 0;
                     nextLandingCheck = 0;
                 }
-                if (!TryGetPetInSlot(queuedSlotIndex, out PetController target))
+                if (!TryGetPetInSlot(queuedSlotIndex, out PetController target)
+                    || target.GetComponentInChildren<Capstone.Game.HudSystem.PetHudRuntimeStats>(true)?.Health <= 0)
                 {
                     queuedSlotIndex = -1;
                     break;
@@ -242,6 +247,7 @@ namespace Capstone.Game.PetSummon
                 }
 
                 PetController current = commandInput != null ? commandInput.activePet : null;
+                if (current != null && current.IsDefeatPresentation) { yield return null; continue; }
                 if (current != null && current.IsSummoned)
                 {
                     if (recallAttempts >= 2)
@@ -296,6 +302,7 @@ namespace Capstone.Game.PetSummon
 
             if (commandInput != null && commandInput.activePet != null && commandInput.activePet.IsSummoned)
             {
+                if (commandInput.activePet.IsDefeatPresentation) return false;
                 LastFailureReason = string.Empty;
                 recallingPet = commandInput.activePet;
                 pendingSlotIndex = commandInput.petSlots != null
@@ -341,7 +348,7 @@ namespace Capstone.Game.PetSummon
                 bool pickupStarted = false;
                 while (!pickupStarted && Capstone.Game.UISystem.GameplayPause.PlayTime < deadline)
                 {
-                    pickupStarted = movement.TryPlayScriptedPickup();
+                    pickupStarted = movement.TryPlayScriptedPickup(recallPickupPlaybackSpeed);
                     if (!pickupStarted)
                     {
                         yield return null;
@@ -478,7 +485,7 @@ namespace Capstone.Game.PetSummon
                 bool throwStarted = false;
                 while (!throwStarted && Capstone.Game.UISystem.GameplayPause.PlayTime < deadline)
                 {
-                    throwStarted = movement.TryPlayScriptedThrow();
+                    throwStarted = movement.TryPlayScriptedThrow(throwPlaybackSpeed);
                     if (!throwStarted)
                     {
                         yield return null;
@@ -561,7 +568,7 @@ namespace Capstone.Game.PetSummon
                 float ballRadius = GetBallRadius(travellingBall);
                 if (!projectile.Launch(landing.GroundPoint, ballRadius, throwApexHeight,
                     bounceHeight, bounceHorizontalDamping, bounceDuration, groundLayers,
-                    landing.GroundCollider, transform, ballMotionSpeed))
+                    landing.GroundCollider, transform, SummonBallSpeed))
                 {
                     failureReason = projectile.FailureReason;
                     yield break;
@@ -1041,7 +1048,7 @@ namespace Capstone.Game.PetSummon
             float radius = handSocket.HeldBall != null ? GetBallRadius(handSocket.HeldBall) : handSocket.BallRadius;
             Vector3 target = groundPoint + Vector3.up * radius;
             if (!PetSummonBallProjectile.TryCalculateArc(start, target, throwApexHeight,
-                out Vector3 velocity, out float duration, ballMotionSpeed))
+                out Vector3 velocity, out float duration, SummonBallSpeed))
             {
                 return true;
             }
@@ -1050,7 +1057,7 @@ namespace Capstone.Game.PetSummon
             for (int segment = 1; segment <= segments; segment++)
             {
                 float time = duration * segment / segments;
-                float speed = Mathf.Max(0.1f, ballMotionSpeed);
+                float speed = Mathf.Max(0.1f, SummonBallSpeed);
                 Vector3 next = start + velocity * time
                     + Physics.gravity * (0.5f * speed * speed * time * time);
                 Vector3 delta = next - previous;

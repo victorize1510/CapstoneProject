@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -45,8 +46,9 @@ namespace Capstone.Game.Inventory {
 
         static readonly HashSet<object> ExternalGameplayInputBlockers = new HashSet<object>();
 
-        public static bool GameplayInputBlocked => ExternalGameplayInputBlockers.Count > 0;
+        public static bool GameplayInputBlocked => ExternalGameplayInputBlockers.Count > 0 || PhysicalKeys.IsEditingText;
         internal static bool IsBlockedByOtherThan(object owner) {
+            if (PhysicalKeys.IsEditingText) return true;
             foreach(var blocker in ExternalGameplayInputBlockers)if(!ReferenceEquals(blocker,owner))return true;
             return false;
         }
@@ -194,6 +196,7 @@ namespace Capstone.Game.Inventory {
             if (document == null || document.rootVisualElement == null) return;
 
             registeredRoot = document.rootVisualElement;
+            PhysicalKeys.Track(registeredRoot);
             questPanelElement = registeredRoot.Q<VisualElement>("quest-panel");
             inventoryPanelElement = registeredRoot.Q<VisualElement>("inventory-panel");
             registeredRoot.RegisterCallback<KeyDownEvent>(HandleUiKeyDown, TrickleDown.TrickleDown);
@@ -206,6 +209,7 @@ namespace Capstone.Game.Inventory {
             registeredPanelRoot?.UnregisterCallback<NavigationCancelEvent>(HandleNativeDropdownCancel, TrickleDown.TrickleDown);
             registeredPanelRoot = null;
             if (registeredRoot == null) return;
+            PhysicalKeys.Untrack(registeredRoot);
 
             registeredRoot.UnregisterCallback<KeyDownEvent>(HandleUiKeyDown, TrickleDown.TrickleDown);
             registeredRoot.UnregisterCallback<AttachToPanelEvent>(HandleUiAttached);
@@ -267,7 +271,7 @@ namespace Capstone.Game.Inventory {
             // Escape continues through the existing native-dropdown cancellation path.
             if(key!=closeKey && Capstone.Game.Inventory.Bag.BagChoicePopup.OwnsKey(document?.rootVisualElement))return false;
             if (key != closeKey && IsEditingUiText()) return false;
-            if (shortcutRouter != null && shortcutRouter.HandleShortcut(key, Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))) {
+            if (shortcutRouter != null && shortcutRouter.HandleShortcut(key, PhysicalKeys.GetKey(KeyCode.LeftShift) || PhysicalKeys.GetKey(KeyCode.RightShift))) {
                 MarkHandled(); return true;
             }
 
@@ -492,6 +496,7 @@ namespace Capstone.Game.Inventory {
         }
 
         void RestoreGameplayState() {
+            Capstone.Game.UISystem.PanelFocusUtility.ReleaseFocusWithin(inventoryPanelElement);
             playerControlLock?.UnlockControls(this);
             SetExternalGameplayInputBlocked(this, false);
             keyboardNavigationMode = false;
@@ -505,7 +510,7 @@ namespace Capstone.Game.Inventory {
         }
 
         static bool Pressed(KeyCode key) {
-            return key != KeyCode.None && Input.GetKeyDown(key);
+            return key != KeyCode.None && PhysicalKeys.GetKeyDown(key, key == KeyCode.Escape);
         }
 
         bool IsOpenCloseToggleKey(KeyCode key) {

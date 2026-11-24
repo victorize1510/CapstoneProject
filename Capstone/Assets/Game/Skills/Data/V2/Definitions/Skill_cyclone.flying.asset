@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: cyclone.flying
   legacyIds: []
-  displayName: "L\u1ED1c Xo\u00E1y"
-  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  displayName: "Lốc Xoáy"
+  description: "Tạo lốc 4 nhịp, giảm tốc 25% trong 5 giây và có thể làm choáng."
   element: 12
   icon: {fileID: 21300000, guid: fdddebb1cd70919479143894a989a82a, type: 3}
-  cooldownSeconds: 4.9
+  cooldownSeconds: 14
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 172c0014c954cbc63461b7ac1237980b, type: 2}
   combat: {fileID: 11400000, guid: 05a0134e24d9cc488370d04658ececc1, type: 2}
+  manaCost: 27

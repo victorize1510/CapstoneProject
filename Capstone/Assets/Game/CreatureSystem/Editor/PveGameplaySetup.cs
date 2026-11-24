@@ -112,8 +112,9 @@ namespace Capstone.Game.CreatureSystem.Editor {
             var catalog=AssetDatabase.LoadAssetAtPath<CaptureBallPresentationCatalog>(catalogPath);
             if(catalog==null){catalog=ScriptableObject.CreateInstance<CaptureBallPresentationCatalog>();AssetDatabase.CreateAsset(catalog,catalogPath);}
             var old=catalog.choices;catalog.choices=new CaptureBallPresentation[3];
-            string[] ids={"BallCommon","BallRare","BallUltra"},labels={"Thường","Rare","Ultra"};
-            for(int i=0;i<3;i++)catalog.choices[i]=new CaptureBallPresentation{key=ids[i],displayName=labels[i],icon=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Game/WorldFeedback/Art/"+ids[i]+"/"+ids[i]+"_Icon.png"),item=i==0?CaptureAssets.LoadBall():old!=null&&i<old.Length?old[i]?.item:null};
+            string[] ids={"BallCommon","BallRare","BallUltra"},labels={"Thường","Hiếm","Cao cấp"};
+            string[] itemPaths={"BasicCaptureBall","RareCaptureBall","UltraCaptureBall"};
+            for(int i=0;i<3;i++)catalog.choices[i]=new CaptureBallPresentation{key=ids[i],displayName=labels[i],icon=AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Game/WorldFeedback/Art/"+ids[i]+"/"+ids[i]+"_Icon.png"),item=(old!=null&&i<old.Length?old[i]?.item:null)??Resources.Load<Capstone.Game.Inventory.MonsterItemDefinition>("Capture/"+itemPaths[i])};
             Save(catalog);
             ConfigureLoot();
             foreach(var player in UnityEngine.Object.FindObjectsByType<PlayerVisualSwitcher>(FindObjectsInactive.Include,FindObjectsSortMode.None)){

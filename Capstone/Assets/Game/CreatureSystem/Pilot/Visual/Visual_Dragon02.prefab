@@ -610,6 +610,8 @@ GameObject:
   - component: {fileID: 8496471900634787911}
   - component: {fileID: 8202809336092907086}
   - component: {fileID: 5116671100937334638}
+  - component: {fileID: 6128451689616636219}
+  - component: {fileID: 1495237358660007079}
   m_Layer: 0
   m_Name: Visual_Dragon02
   m_TagString: Untagged
@@ -674,6 +676,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
   animationProfile: {fileID: 11400000, guid: eb5ad70e3dabd6e4ab31c7eec7d294f9, type: 2}
   skillSet: {fileID: 11400000, guid: 6bc01a0d401bc3c458b2452ee9b5ce47, type: 2}
+  presentationScale: 1
   sockets:
   - key: Mouth
     anchor: {fileID: 5833979249136149003}
@@ -681,6 +684,153 @@ MonoBehaviour:
     anchor: {fileID: 2853950663660390948}
   - key: Ground
     anchor: {fileID: 8496471900634787911}
+  actorRadius: 0
+  actorHeight: 0
+  actorCenter: {x: 0, y: 0, z: 0}
+--- !u!82 &6128451689616636219
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3622403656948730236}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: b35b65ed852ec68489d3f16e0e8df8a7, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 2
+  MaxDistance: 20
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &1495237358660007079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3622403656948730236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c660efd1aa94c14a94a74d615e92f57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetCryEventReceiver
+  crySource: {fileID: 6128451689616636219}
+  ambientAction: 9
+  ambient:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  ambientInterval: {x: 12, y: 25}
+  ambientHoldLimit: 4
+  summonAction: 9
+  summon:
+    enabled: 1
+    mode: 0
+    normalized: 0.17
+    clipSeconds: 0
+  summonHoldLimit: 0.45
+  skill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  projectileSkill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  skillActions: 090000000b000000
+  death:
+    enabled: 1
+    mode: 0
+    normalized: 0.12
+    clipSeconds: 0
+  deathPose: 0.72
+  deathHoldLimit: 1.5
+  minimumCryInterval: 0.12
 --- !u!1 &3710018977597931282
 GameObject:
   m_ObjectHideFlags: 0

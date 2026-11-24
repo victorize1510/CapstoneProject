@@ -17,6 +17,7 @@ MonoBehaviour:
   criticalVisualPause: 0.035
   basicImpact: {fileID: 455658096764472626, guid: a6a0a25a42f567d44a227c3010b53321, type: 3}
   bleedImpact: {fileID: 2480320714726115140, guid: db1018516ba4b584a90349496cb71db1, type: 3}
+  directImpact: {fileID: 8339715132773200232, guid: 0f20d38d48f2c474d833c9256f9e44cc, type: 3}
+  deathSmoke: {fileID: 1053215512877636524, guid: b6d9ef730bcfb5c40aee5d3abc75cf57, type: 3}
   basicSound: {fileID: 8300000, guid: 70a2d051802ebc5449f30d822f6a3c16, type: 3}
   bleedSound: {fileID: 8300000, guid: 016ee34c47b629342bad1bdda8628cd1, type: 3}
-  deathSmoke: {fileID: 1053215512877636524, guid: b6d9ef730bcfb5c40aee5d3abc75cf57, type: 3}

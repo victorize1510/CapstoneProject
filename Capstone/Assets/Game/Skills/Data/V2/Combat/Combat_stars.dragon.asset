@@ -15,7 +15,7 @@ MonoBehaviour:
   damageKind: 1
   delivery: 2
   power: 1.8
-  range: 11
+  range: 10
   projectileSpeed: 9
   projectileRadius: 0.18
   lifetime: 3
@@ -27,3 +27,20 @@ MonoBehaviour:
   retreatDistance: 0
   retreatSpeed: 12
   preferredDistance: 5
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 1
+  minimumHits: 2
+  maximumHits: 5
+  targetedImpactRadius: 2.3
+  effectSeconds: 2.5
+  splashFraction: 0.45
+  displacement: 0
+  weightedWindVolley: 0
+  bleedPower: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  trackTargetUntilRelease: 0
+  statusCues: []
+  authoredReleaseSound: {fileID: 8300000, guid: 0cf59644fbab20243a8965e87fc11a9b, type: 3}

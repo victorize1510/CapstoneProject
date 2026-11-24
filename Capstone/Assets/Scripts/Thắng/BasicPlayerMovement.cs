@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -267,7 +268,11 @@ public partial class BasicPlayerMovement : MonoBehaviour
         if (enabledBefore) controller.enabled = false;
         verticalVelocity = 0f;
         transform.SetPositionAndRotation(point, rotation);
-        if (enabledBefore) controller.enabled = true;
+        if (enabledBefore)
+        {
+            controller.enabled = true;
+            Capstone.Game.CreatureSystem.CreatureCombatant.RegisterPlayerBody(controller);
+        }
         Physics.SyncTransforms();
     }
     private float jumpHorizontalSpeed;
@@ -289,6 +294,9 @@ public partial class BasicPlayerMovement : MonoBehaviour
     private float standingControllerHeight;
     private float standingControllerRadius;
     private bool activeOneShot;
+    private float pendingPetActionSpeed = 1;
+    private float previousPetActionAnimatorSpeed;
+    private Animator petActionAnimator;
     private bool gameplayInputLocked;
     private bool grounded;
     private bool hasMoveInput;
@@ -433,8 +441,15 @@ public partial class BasicPlayerMovement : MonoBehaviour
         SanitizeRigidbody();
     }
 
+    private void OnEnable()
+    {
+        Capstone.Game.CreatureSystem.CreatureCombatant.RegisterPlayerBody(characterController);
+    }
+
     private void OnDisable()
     {
+        Capstone.Game.CreatureSystem.CreatureCombatant.UnregisterPlayerBody(characterController);
+        RestorePetActionSpeed();
         RestoreStandingControllerShape();
         if (pickupPrompt != null)
             pickupPrompt.gameObject.SetActive(false);
@@ -522,13 +537,16 @@ public partial class BasicPlayerMovement : MonoBehaviour
         aimHeld = false;
     }
 
-    public bool TryPlayScriptedThrow()
+    public bool TryPlayScriptedThrow() => TryPlayScriptedThrow(1f);
+
+    public bool TryPlayScriptedThrow(float playbackSpeed)
     {
         if (!CanStartScriptedAction())
         {
             return false;
         }
 
+        pendingPetActionSpeed = Mathf.Max(.1f, playbackSpeed);
         if (isCrouching)
         {
             crouchWanted = false;
@@ -545,13 +563,16 @@ public partial class BasicPlayerMovement : MonoBehaviour
 
     public bool CanStartPetThrow => CanStartScriptedAction() && !IsJumpState(currentState);
     public bool IsGroundedForPetThrow => grounded && !IsJumpState(currentState);
-    public bool TryPlayScriptedPickup()
+    public bool TryPlayScriptedPickup() => TryPlayScriptedPickup(1f);
+
+    public bool TryPlayScriptedPickup(float playbackSpeed)
     {
         if (!CanStartScriptedAction())
         {
             return false;
         }
 
+        pendingPetActionSpeed = Mathf.Max(.1f, playbackSpeed);
         if (isCrouching)
         {
             crouchWanted = false;
@@ -654,11 +675,11 @@ public partial class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        moveInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        moveInput = PhysicalKeys.Movement;
         moveInput = Vector2.ClampMagnitude(moveInput, 1f);
         moveDirection = GetMoveDirection(moveInput);
         hasMoveInput = moveInput.sqrMagnitude > InputDeadZone * InputDeadZone && moveDirection.sqrMagnitude > 0.001f;
-        sprintHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+        sprintHeld = PhysicalKeys.GetKey(KeyCode.LeftShift) || PhysicalKeys.GetKey(KeyCode.RightShift);
         aimHeld = enableAimMode && Input.GetMouseButton(aimMouseButton);
         if (hasMoveInput)
         {
@@ -677,7 +698,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && enableRoll && rollKey != KeyCode.None && rollKey != KeyCode.Q && Input.GetKeyDown(rollKey) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "roll"))
+        if (!inputBlocked && enableRoll && rollKey != KeyCode.None && rollKey != KeyCode.Q && PhysicalKeys.GetKeyDown(rollKey) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "roll"))
         {
             if (isCrouching)
             {
@@ -722,7 +743,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && Input.GetKeyDown(pickUpKey) && CanPickUp && Capstone.Game.UISystem.WorldInteractionView.TryConsumePress())
+        if (!inputBlocked && PhysicalKeys.GetKeyDown(pickUpKey) && CanPickUp && Capstone.Game.UISystem.WorldInteractionView.TryConsumePress())
         {
             if (isCrouching)
             {
@@ -737,7 +758,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
             return;
         }
 
-        if (!inputBlocked && enableCrouch && (Input.GetKeyDown(crouchKey) || Input.GetKeyDown(alternateCrouchKey)) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "crouch"))
+        if (!inputBlocked && enableCrouch && (PhysicalKeys.GetKeyDown(crouchKey) || PhysicalKeys.GetKeyDown(alternateCrouchKey)) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "crouch"))
         {
             ToggleCrouch();
             return;
@@ -840,6 +861,18 @@ public partial class BasicPlayerMovement : MonoBehaviour
 
     private void StartOneShot(PlayerState state, float fallbackDuration)
     {
+        if (state == PlayerState.Throw || state == PlayerState.PickingUp)
+        {
+            float speed = pendingPetActionSpeed;
+            pendingPetActionSpeed = 1;
+            if (animator != null && !Mathf.Approximately(speed, 1))
+            {
+                petActionAnimator = animator;
+                previousPetActionAnimatorSpeed = animator.speed;
+                animator.speed *= speed;
+                fallbackDuration /= speed;
+            }
+        }
         activeOneShot = true;
         currentState = state;
         stateTimer = 0f;
@@ -951,6 +984,8 @@ public partial class BasicPlayerMovement : MonoBehaviour
     {
         PlayerState completedState = currentState;
         activeOneShot = false;
+        if (completedState == PlayerState.Throw || completedState == PlayerState.PickingUp)
+            RestorePetActionSpeed();
         ScriptedAction completedScriptedAction = ToScriptedAction(completedState);
         if (completedScriptedAction != ScriptedAction.None)
         {
@@ -995,6 +1030,14 @@ public partial class BasicPlayerMovement : MonoBehaviour
         }
 
         EvaluateLocomotionState();
+    }
+
+    private void RestorePetActionSpeed()
+    {
+        pendingPetActionSpeed = 1;
+        if (petActionAnimator != null)
+            petActionAnimator.speed = previousPetActionAnimatorSpeed;
+        petActionAnimator = null;
     }
 
     private static ScriptedAction ToScriptedAction(PlayerState state)
@@ -1595,7 +1638,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
             return false;
         }
 
-        return jumpKey != KeyCode.None && Input.GetKeyDown(jumpKey) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "jump");
+        return jumpKey != KeyCode.None && PhysicalKeys.GetKeyDown(jumpKey) && Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "jump");
     }
 
     private bool IsJumpKeyHeld()
@@ -1605,7 +1648,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
             return false;
         }
 
-        return jumpKey != KeyCode.None && Input.GetKey(jumpKey);
+        return jumpKey != KeyCode.None && PhysicalKeys.GetKey(jumpKey);
     }
 
     private bool WantsToThrow()
@@ -1615,7 +1658,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
             return false;
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && (cameraFollow == null || !cameraFollow.CaptureAimOwnsLeftClick))
         {
             return Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "throw");
         }
@@ -1625,7 +1668,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
 
     private bool IsGameplayInputBlocked()
     {
-        return gameplayInputLocked || Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
+        return !Application.isFocused || gameplayInputLocked || Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
     }
 
     private Vector3 GetMoveDirection(Vector2 input)

@@ -8,6 +8,9 @@ namespace Capstone.Game.Skills
     public sealed class PetSkillCatalog : ScriptableObject
     {
         public List<PetSkillDefinition> skills = new List<PetSkillDefinition>();
+        [Tooltip("Old definitions used to recognize IDs in existing saves.")]
+        public List<PetSkillDefinition> retiredSkills = new List<PetSkillDefinition>();
+        public GameObject buffAura, debuffAura, hpPotionAura, mpPotionAura, shockAura, burnAura;
         [Tooltip("Tu bind pet trong scene theo PetCollectionMetadata.Species khi du lieu phu hop.")]
         public List<PetSpeciesSkillSet> speciesSets = new List<PetSpeciesSkillSet>();
         public PetSpeciesSkillSet FindSpecies(string speciesId)
@@ -45,6 +48,21 @@ namespace Capstone.Game.Skills
             EnsureCache();
             skill = null;
             return !string.IsNullOrWhiteSpace(id) && byId.TryGetValue(id.Trim(), out skill) && skill != null;
+        }
+
+        public PetSkillDefinition FindRetired(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) || retiredSkills == null) return null;
+            id = id.Trim();
+            foreach (var skill in retiredSkills)
+            {
+                if (skill == null) continue;
+                if (string.Equals(skill.Id, id, StringComparison.OrdinalIgnoreCase)) return skill;
+                if (skill.legacyIds == null) continue;
+                foreach (string alias in skill.legacyIds)
+                    if (string.Equals(alias?.Trim(), id, StringComparison.OrdinalIgnoreCase)) return skill;
+            }
+            return null;
         }
 
         public IReadOnlyList<string> ValidateCatalog()

@@ -27,3 +27,32 @@ MonoBehaviour:
   retreatDistance: 0
   retreatSpeed: 12
   preferredDistance: 5
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 1
+  minimumHits: 1
+  maximumHits: 1
+  targetedImpactRadius: 1.7
+  effectSeconds: 0
+  splashFraction: 0
+  displacement: 0
+  weightedWindVolley: 0
+  bleedPower: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  trackTargetUntilRelease: 0
+  statusCues:
+  - kind: 1
+    chance: 1
+    duration: 5
+    magnitude: 0.1
+    valueMode: 1
+    self: 0
+  - kind: 64
+    chance: 1
+    duration: 10
+    magnitude: 0.2
+    valueMode: 0
+    self: 0
+  authoredReleaseSound: {fileID: 8300000, guid: 35a6dcc444cc3da4bb564465cbf91f09, type: 3}

@@ -22,6 +22,8 @@ namespace Capstone.Game.HudSystem {
         readonly bool cursorVisible;
         readonly bool wasActive;
         readonly int defaultLayer;
+        Camera stageCamera;
+        AudioListener stageListener;
         bool disposed;
         public EvolutionPresentationScope(object owner, PetController pet, MonoBehaviour[] extraScripts) {
             this.owner=owner; this.pet=pet; parent=pet.transform.parent; scene=pet.gameObject.scene;
@@ -36,8 +38,6 @@ namespace Capstone.Game.HudSystem {
             if(agent!=null)Remember(agent);
             if(!wasActive)pet.gameObject.SetActive(true);
             if(extraScripts!=null)foreach(var script in extraScripts)if(script!=null&&!ReferenceEquals(script,owner))Remember(script);
-            foreach(var camera in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
-                if(camera.gameObject.scene==scene&&camera.cameraType==CameraType.Game&&camera.targetTexture==null)Remember(camera);
             foreach(var canvas in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
                 if(canvas.gameObject.scene==scene)Remember(canvas);
             foreach(var doc in UnityEngine.Object.FindObjectsByType<UIDocument>(FindObjectsSortMode.None))
@@ -48,9 +48,28 @@ namespace Capstone.Game.HudSystem {
             InventoryInputController.SetExternalGameplayInputBlocked(owner,true);
             Cursor.lockState=CursorLockMode.None; Cursor.visible=true;
         }
+        public void SwitchToStage(Camera camera, Camera gameplayCamera, Scene gameplayScene) {
+            stageCamera = camera;
+            stageListener = camera.GetComponent<AudioListener>();
+            foreach (var output in UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None)) {
+                if (output == stageCamera || output.targetDisplay != camera.targetDisplay
+                    || output.cameraType != CameraType.Game || output.targetTexture != null) continue;
+                if (output == gameplayCamera || output.gameObject.scene == gameplayScene || output.gameObject.scene == scene)
+                    Remember(output);
+            }
+            if (stageListener != null && stageListener.isActiveAndEnabled)
+                foreach (var listener in UnityEngine.Object.FindObjectsByType<AudioListener>(FindObjectsSortMode.None)) {
+                    if (listener == stageListener) continue;
+                    if ((gameplayCamera != null && listener.gameObject == gameplayCamera.gameObject)
+                        || listener.gameObject.scene == gameplayScene || listener.gameObject.scene == scene)
+                        Remember(listener);
+                }
+        }
         void Remember(Behaviour value) { if(behaviours.ContainsKey(value))return; behaviours[value]=value.enabled; value.enabled=false; }
         public void Dispose() {
             if(disposed)return; disposed=true;
+            if(stageCamera!=null)stageCamera.enabled=false;
+            if(stageListener!=null)stageListener.enabled=false;
             if(pet!=null) {
                 pet.transform.SetParent(null,true);
                 var destination=scene.IsValid()&&scene.isLoaded?scene:SceneManager.GetActiveScene();

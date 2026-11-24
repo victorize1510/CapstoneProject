@@ -24,6 +24,11 @@ namespace Capstone.Game.SettingsSystem {
         PlayerSaveController save;
         Label saveIndicator;
         IVisualElementScheduledItem hideIndicator;
+        AudioSource music, uiVoice;
+        int uiClickFrame = -1, uiHoverFrame = -1;
+        float pruneAudioAt;
+        public static PetSummon.PetVFXQuality EffectsQuality
+            => Instance?.Model?.Data.vfxQuality ?? PetSummon.PetVFXQuality.Medium;
         public bool HasCamera => cameraController != null;
         public bool HasMinimap => hud != null && hud.HasMinimap;
         public bool HasQuestTracker => trackers.Length > 0;
@@ -42,11 +47,15 @@ namespace Capstone.Game.SettingsSystem {
             Model = new SettingsState(repository.Load(defaults, out string warning), defaults);
             if (warning.Length > 0) Debug.LogWarning(warning);
             Model.Changed += OnChanged; SceneManager.sceneLoaded += SceneLoaded;
+            SceneManager.activeSceneChanged += ActiveSceneChanged;
             AudioListener.volume = Model.Data.muteAll ? 0 : Model.Data.masterVolume;
         }
         void SceneLoaded(Scene scene, LoadSceneMode mode) => StartCoroutine(BindAfterStartup());
+        void ActiveSceneChanged(Scene previous, Scene next) => PlaySceneMusic(next.name);
+        void Start() => GameAudioRouting.Apply(Model.Data);
         IEnumerator BindAfterStartup() {
             yield return null; ResolveScene();
+            PlaySceneMusic(SceneManager.GetActiveScene().name);
             if (Model.Data.resolutionWidth > 0) Apply(SettingsArea.Display);
         }
         public void ResolveScene() {
@@ -75,7 +84,7 @@ namespace Capstone.Game.SettingsSystem {
         }
         void Apply(SettingsArea area) {
             var data = Model.Data;
-            if ((area & SettingsArea.Audio) != 0) AudioListener.volume = data.muteAll ? 0 : data.masterVolume;
+            if ((area & SettingsArea.Audio) != 0) GameAudioRouting.Apply(data);
             if ((area & SettingsArea.Camera) != 0 && cameraController != null)
                 cameraController.ApplyUserPreferences(data.mouseSensitivity, data.invertY, data.cameraSmoothing);
             if ((area & SettingsArea.Interface) != 0) {
@@ -90,6 +99,47 @@ namespace Capstone.Game.SettingsSystem {
             Apply(area); dirty = true;
             if (pendingSave != null) StopCoroutine(pendingSave);
             pendingSave = StartCoroutine(SaveLater());
+        }
+
+        void PlaySceneMusic(string scene)
+        {
+            var clips = GameAudioRouting.Assets;
+            if (clips == null) return;
+            AudioClip clip = scene == "MainMenu" ? clips.menuMusic : scene == "EvolutionScene" ? clips.evolutionMusic
+                : scene.StartsWith("DemoScene", StringComparison.Ordinal) || scene == "Dwarven Cave A1" || scene == "Map forest"
+                    ? clips.gameplayMusic : null;
+            if (clip == null) { if (music != null) music.Stop(); return; }
+            if (music == null)
+            {
+                music = gameObject.AddComponent<AudioSource>();
+                music.playOnAwake = false;
+                music.loop = true;
+                music.spatialBlend = 0;
+                music.volume = .42f;
+                GameAudioRouting.Route(music, GameAudioBus.Music);
+            }
+            if (music.clip == clip && music.isPlaying) return;
+            music.clip = clip;
+            music.Play();
+        }
+
+        internal static void PlayUiSound(bool hover)
+        {
+            var service = Instance;
+            if (!Application.isPlaying || service == null) return;
+            var clips = GameAudioRouting.Assets;
+            var clip = hover ? clips?.hover : clips?.click;
+            if (clip == null) return;
+            if (hover && service.uiHoverFrame == Time.frameCount || !hover && service.uiClickFrame == Time.frameCount) return;
+            if (hover) service.uiHoverFrame = Time.frameCount;
+            else service.uiClickFrame = Time.frameCount;
+            if (service.uiVoice == null) {
+                service.uiVoice = service.gameObject.AddComponent<AudioSource>();
+                service.uiVoice.playOnAwake = false;
+                service.uiVoice.spatialBlend = 0;
+                GameAudioRouting.Route(service.uiVoice, GameAudioBus.UI);
+            }
+            service.uiVoice.PlayOneShot(clip, hover ? .35f : .65f);
         }
         IEnumerator SaveLater() { yield return new WaitForSecondsRealtime(.6f); pendingSave = null; Flush(); }
         public void Flush() {
@@ -110,11 +160,22 @@ namespace Capstone.Game.SettingsSystem {
             Flush(); SceneManager.LoadSceneAsync("MainMenu"); return true;
         }
         void OnApplicationPause(bool pause) { if (pause) Flush(); }
-        void OnApplicationFocus(bool focus) { if (!focus) Flush(); }
+        void LateUpdate() {
+            Capstone.Game.UISystem.GameplayKeyboard.SyncIme();
+            if (Time.unscaledTime >= pruneAudioAt) {
+                pruneAudioAt = Time.unscaledTime + 5;
+                GameAudioRouting.Prune();
+            }
+        }
+        void OnApplicationFocus(bool focus) {
+            if (!focus) Flush();
+            Capstone.Game.UISystem.GameplayKeyboard.SyncIme();
+        }
         void OnApplicationQuit() => Flush();
         void OnDestroy() {
             if (Instance != this) return;
             Flush(); Model.Changed -= OnChanged; SceneManager.sceneLoaded -= SceneLoaded;
+            SceneManager.activeSceneChanged -= ActiveSceneChanged;
             if (save != null) save.SaveCompleted -= Saved;
             hideIndicator?.Pause(); saveIndicator?.RemoveFromHierarchy(); Instance = null;
         }

@@ -330,6 +330,8 @@ GameObject:
   - component: {fileID: 2000021}
   - component: {fileID: 2000022}
   - component: {fileID: 2000082}
+  - component: {fileID: 6652005456872719744}
+  - component: {fileID: 5308112247329301626}
   m_Layer: 0
   m_Name: Visual_chick_03
   m_TagString: Untagged
@@ -404,6 +406,150 @@ MonoBehaviour:
   actorRadius: 0
   actorHeight: 0
   actorCenter: {x: 0, y: 0, z: 0}
+--- !u!82 &6652005456872719744
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000020}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 99aad9a36fccfd047a6279c23fad6554, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 2
+  MaxDistance: 20
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &5308112247329301626
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c660efd1aa94c14a94a74d615e92f57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetCryEventReceiver
+  crySource: {fileID: 6652005456872719744}
+  ambientAction: 9
+  ambient:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  ambientInterval: {x: 12, y: 25}
+  ambientHoldLimit: 4
+  summonAction: 9
+  summon:
+    enabled: 1
+    mode: 0
+    normalized: 0.17
+    clipSeconds: 0
+  summonHoldLimit: 0.45
+  skill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  projectileSkill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  skillActions: 090000000b000000
+  death:
+    enabled: 1
+    mode: 0
+    normalized: 0.12
+    clipSeconds: 0
+  deathPose: 0.72
+  deathHoldLimit: 1.5
+  minimumCryInterval: 0.12
 --- !u!1 &2000023
 GameObject:
   m_ObjectHideFlags: 0
@@ -1608,141 +1754,8 @@ MonoBehaviour:
   autoResolveSpeciesSkillSet: 0
   equippedSkillSlotCount: 4
   usePrototypeSkillsWhenEmpty: 0
-  skills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 10
-  learnedSkills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 10
-  - skillId: peck.flying
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "M\u1ED5"
-    skillLevel: 1
-    requiredPetLevel: 5
-    element: 12
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "T\u1EA5n c\xF4ng m\u1ED9t m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 18286c71b45cbed458fc6a20f4c692b2, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 2.6
-    manaCost: 10
-  - skillId: gust.flying
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "Gi\xF3 c\u1EAFt"
-    skillLevel: 1
-    requiredPetLevel: 12
-    element: 12
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "Ph\xF3ng m\u1ED9t \u0111\u1EA1n theo h\u01B0\u1EDBng thi tri\u1EC3n;
-      g\xE2y s\xE1t th\u01B0\u01A1ng khi va ch\u1EA1m."
-    icon: {fileID: 21300000, guid: 78ada2cbcb9c9184e9152afa95396351, type: 3}
-    animatorStates:
-    - Projectile Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 3.4
-    manaCost: 10
-  - skillId: wing strike
-    legacySkillIds:
-    - wing strike
-    unlocked: 0
-    usable: 1
-    displayName: "Ch\xE9m gi\xF3"
-    skillLevel: 1
-    requiredPetLevel: 36
-    element: 12
-    uiMetadata:
-      damageKind: 2
-      effects:
-      - role: 0
-        description: "V\u1ED7 c\xE1nh ph\xF3ng l\u01B0\u1EE1i gi\xF3 g\xE2y 180%
-          ATK s\xE1t th\u01B0\u01A1ng v\u1EADt l\xFD. L\xF9i nhanh khi \u0111\u1ECBch
-          \xE1p s\xE1t; m\u1ED9t m\u1EE5c ti\xEAu m\u1ED7i \u0111\xF2n."
-      facts: []
-    description: "Ph\xF3ng 2\u20135 l\u01B0\u1EE1i gi\xF3, t\u1ED5ng s\u1EE9c m\u1EA1nh
-      180% ATK chia theo s\u1ED1 ph\xE1t. \u0110\u1EA1n h\u1EE5t kh\xF4ng chuy\u1EC3n
-      damage sang \u0111\u1EA1n kh\xE1c. T\u1ED1n 18 MP."
-    icon: {fileID: 21300000, guid: 78ada2cbcb9c9184e9152afa95396351, type: 3}
-    animatorStates:
-    - Projectile Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 4.2
-    manaCost: 18
+  skills: []
+  learnedSkills: []
   petController: {fileID: 3905486807277576643}
   animator: {fileID: 2000022}
   autoFindAnimationReferences: 1
@@ -1767,7 +1780,7 @@ MonoBehaviour:
   gender: Unknown
   element: 12
   secondaryElement: 13
-  rarity: 1
+  rarity: 3
   nickname: 
   favorite: 0
   released: 0

@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System;
 using System.Linq;
 using Capstone.Game.Inventory;
@@ -80,12 +81,12 @@ namespace Capstone.Game.HudSystem {
             if (assignmentOverlay != null) {
                 if (bag == null || !bag.IsOpen) CloseAssignment();
                 else {
-                    for (int i = 0; i < 2; i++) if (Input.GetKeyDown(Key(i))) { Assign(i); break; }
+                    for (int i = 0; i < 2; i++) if (PhysicalKeys.GetKeyDown(Key(i))) { Assign(i); break; }
                     return; // R/T belongs to assignment while its modal is open.
                 }
             }
             if (InventoryInputController.GameplayInputBlocked) return;
-            for (int i = 0; i < 2; i++) if (Key(i) != KeyCode.None && Input.GetKeyDown(Key(i))) Use(i);
+            for (int i = 0; i < 2; i++) if (Key(i) != KeyCode.None && PhysicalKeys.GetKeyDown(Key(i))) Use(i);
         }
         KeyCode Key(int index) => index == 0 ? firstItemKey : secondItemKey;
         public KeyCode GetHotkey(int index) => Key(index);

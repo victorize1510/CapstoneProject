@@ -12,11 +12,65 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eed7e48b216021488859d0c767fa969, type: 3}
   m_Name: LootCatalog
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.PveLootCatalog
+  entries:
+  - item: {fileID: 11400000, guid: a206ddcbe109a494ea900aa905b1702c, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 21b684d9a02a4e11bf10ae5422c5a0fb, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: bbd1b3239c049acde1a1cca3791d2817, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: f1de7ec272ed1af486c78a772cf23b17, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: e95bd2a24cf419f61d2a45f70eb47dee, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 3c830ddf18b065409a7cf960a3fc1fc6, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 7405ed834f645b1a943016322ab06f6f, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 239d82192db15622e24f43291a1e1c58, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: dc278e8a227f4855902533225502b044, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 3966a771a3ec70cd573cc015f4ce92e9, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 4962b6e230585711bbe4d0c7defecffd, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 729ad468d707597ca8f607acb426920c, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: e4313141960155b8a1805fe0c5638059, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 847881866a9a57eb8b2d495c37593b0e, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 96901b10dc1e51988583d79dcf10f236, type: 2}
+    weight: 1
+    quantity: 1
+  - item: {fileID: 11400000, guid: 65c4efdf1ae159afa66aaf3f50f12a16, type: 2}
+    weight: 1
+    quantity: 1
   potion: {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
   healingApple: {fileID: 11400000, guid: a206ddcbe109a494ea900aa905b1702c, type: 2}
   manaPotion: {fileID: 11400000, guid: 2515b74e7584dda42bec74dc04cb3b88, type: 2}
   goldIcon: {fileID: 21300000, guid: 45578131b24439545a902ba8f6d0d38f, type: 3}
   glowMaterial: {fileID: 2100000, guid: 6d2cedb3b8e9d544db9e61741e2df64a, type: 2}
-  itemChance: 0.35
+  itemChance: 0.3
   minimumGold: 2
   maximumGold: 5
+  smallHpPotion: {fileID: 11400000, guid: e5ef69256de4941b50b91da525110c7b, type: 2}
+  smallMpPotion: {fileID: 11400000, guid: 2515b74e7584dda42bec74dc04cb3b88, type: 2}
+  smallHpChance: 0.05
+  smallMpChance: 0.03
+  evolutionStoneChance: 0.05

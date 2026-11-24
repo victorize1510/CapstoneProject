@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
+  m_Name: loot-chick-03
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
+  Name: "Lông gà Cấp 3"
+  Icon: {fileID: 21300000, guid: 195e5819c3a88c8849f6150ce1e2dbcc, type: 3}
+  Stackable: 1
+  MaxStackSize: 99
+  Tags: []
+  stableId: loot-chick-03
+  legacyIds: []
+  category: 4
+  rarity: 2
+  description: "Lông gà Cấp 3"
+  effect: "Nguyên liệu nhận khi hạ quái họ tương ứng, Dạng 3."
+  source: "Quái rớt"
+  flavorText: ''
+  healAmount: 0
+  energyRestoreAmount: 0
+  revivePercent: 0
+  cleanses: 0
+  grantsStatBuff: 0
+  buffStat: 0
+  evolutionStoneElement: 0
+  usableFromInventory: 0
+  consumable: 0

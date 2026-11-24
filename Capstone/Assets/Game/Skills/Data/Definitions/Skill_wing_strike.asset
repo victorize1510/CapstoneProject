@@ -15,14 +15,12 @@ MonoBehaviour:
   skillId: wing strike
   legacyIds:
   - wing strike
-  displayName: "Ch\xE9m gi\xF3"
-  description: "Ph\xF3ng 2\u20135 l\u01B0\u1EE1i gi\xF3, t\u1ED5ng s\u1EE9c m\u1EA1nh
-    180% ATK chia theo s\u1ED1 ph\xE1t. \u0110\u1EA1n h\u1EE5t kh\xF4ng chuy\u1EC3n
-    damage sang \u0111\u1EA1n kh\xE1c. T\u1ED1n 18 MP."
+  displayName: "Chém Gió"
+  description: "Phóng 3–5 luồng gió. Có 20% cơ hội gây chảy máu trong 4 giây."
   element: 12
   icon: {fileID: 21300000, guid: 78ada2cbcb9c9184e9152afa95396351, type: 3}
-  cooldownSeconds: 4.2
-  manaCost: 18
+  cooldownSeconds: 10
+  manaCost: 22
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:

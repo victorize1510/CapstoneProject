@@ -43,7 +43,7 @@ public sealed class PlayerFreeLookRig : MonoBehaviour
     }
 
     public void Render(Vector3 position, float yaw, float pitch, float distance,
-        bool locked, Quaternion lockYaw, Vector3 lockOffset, Vector3 focus)
+        bool locked, Quaternion lockYaw, Vector3 lockOffset, Vector3 focus, bool captureAim = false)
     {
         if (!IsReady) return;
 
@@ -59,7 +59,7 @@ public sealed class PlayerFreeLookRig : MonoBehaviour
         orbit.VerticalAxis.Value = Mathf.Lerp(orbit.VerticalAxis.Range.x, orbit.VerticalAxis.Range.y, height);
         float baseDistance = new Vector2(orbit.Orbits.Center.Radius, orbit.Orbits.Center.Height).magnitude;
         orbit.RadialAxis.Value = orbit.RadialAxis.ClampValue(distance / Mathf.Max(0.1f, baseDistance));
-        lockFollow.FollowOffset = lockOffset.normalized * distance;
+        lockFollow.FollowOffset = captureAim ? lockOffset : lockOffset.normalized * distance;
 
         freeCamera.Priority = 10;
         lockCamera.Priority = locked ? 20 : 0;

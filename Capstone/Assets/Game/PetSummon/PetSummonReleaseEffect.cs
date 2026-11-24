@@ -25,6 +25,12 @@ namespace Capstone.Game.PetSummon
             public Material[] materials;
         }
 
+        struct RecallContact
+        {
+            public BodyBinding body;
+            public int vertex;
+        }
+
         static class ShaderIds
         {
             public static readonly int GlowColor = Shader.PropertyToID("_GlowColor");
@@ -51,6 +57,9 @@ namespace Capstone.Game.PetSummon
         readonly Stack<BodyBinding> staticPool = new Stack<BodyBinding>();
         readonly List<Renderer> rendererBuffer = new List<Renderer>();
         readonly List<Renderer> hiddenBallRenderers = new List<Renderer>();
+        readonly RecallContact[] recallContacts = new RecallContact[3];
+        readonly Vector3[] recallPoints = new Vector3[3];
+        int recallContactCount;
         readonly Dictionary<Material, Material> materialCache = new Dictionary<Material, Material>();
         MaterialPropertyBlock properties;
         PetSummonVfxInstance spawnInstance, recallInstance, activeInstance;
@@ -70,7 +79,9 @@ namespace Capstone.Game.PetSummon
         int sequenceVersion;
 
         public PetVFXProfile Profile => vfxProfile;
-        public PetVFXQuality Quality => quality;
+        bool qualityOverride;
+        public PetVFXQuality Quality => qualityOverride || SettingsSystem.GameSettingsService.Instance == null
+            ? quality : SettingsSystem.GameSettingsService.EffectsQuality;
         public Vector3 PresentationCenter => presentationCenter;
         public float PresentationScale => presentationScale;
         public float CaptureProgress => captureProgress;
@@ -78,7 +89,7 @@ namespace Capstone.Game.PetSummon
         public int CachedMaterialCount => materialCache.Count;
 
         public void ConfigureProfile(PetVFXProfile profile) { vfxProfile = profile; }
-        public void ConfigureQuality(PetVFXQuality preset) { quality = preset; }
+        public void ConfigureQuality(PetVFXQuality preset) { quality = preset; qualityOverride = true; }
 
 #if UNITY_EDITOR
         public void PreviewAt(float seconds)
@@ -137,7 +148,6 @@ namespace Capstone.Game.PetSummon
                 releasePet?.Invoke();
                 if (!pet.IsSummoned) yield break;
                 pet.SetSummonPresentationPosition(spawnPoint);
-                pet.StartSummonPresentationAnimation(presentationSpeed);
                 BeginBody(pet);
                 // A newly summoned Animator must evaluate its first real frame before sampling the skin.
                 // Keep both body renderers hidden during that frame so the pet cannot flash at its landing.
@@ -148,7 +158,7 @@ namespace Capstone.Game.PetSummon
                 UpdateBodyBounds();
                 presentationCenter = spawnOrigin; presentationScale = .04f;
                 activeInstance = spawnInstance;
-                activeInstance.Begin(false, vfxProfile, quality, spawnOrigin, bodyHalfExtents, presentationSpeed);
+                activeInstance.Begin(false, vfxProfile, Quality, spawnOrigin, bodyHalfExtents, presentationSpeed);
                 activeInstance.SetGroundPoint(groundPoint ?? spawnPoint);
                 HideBall(ball);
                 float elapsed = 0;
@@ -164,13 +174,7 @@ namespace Capstone.Game.PetSummon
                 }
                 if (version != sequenceVersion || pet == null) yield break;
                 effectTime = .8f; UpdateSpawn(); RestoreBody(); ReturnVfx();
-                // VFX finishes independently; never stretch the flash or accelerate Cast Spell.
-                float animationDeadline = Time.time + Mathf.Max(3,pet.SummonPresentationAnimationDuration + .5f);
-                while (!pet.HasSummonPresentationAnimationFinished && Time.time < animationDeadline
-                    && version == sequenceVersion && pet.IsSummoned) yield return null;
                 if (version != sequenceVersion || !pet.IsSummoned) yield break;
-                if (!pet.HasSummonPresentationAnimationFinished)
-                    Debug.LogWarning("Pet summon animation exceeded its completion timeout.",pet);
                 if (!pet.CompleteSummonPresentation(spawnPoint)) pet.Withdraw();
             }
             finally { if (version == sequenceVersion) RestoreAndReturn(preservePendingOnFailure); }
@@ -186,8 +190,9 @@ namespace Capstone.Game.PetSummon
                 ballCollider = ball.GetComponentInChildren<SphereCollider>(true);
                 pet.SetRecallPresentation(true);
                 BeginBody(pet); UpdateBodyBounds();
+                FindRecallContacts(ResolveBallCenter(ball,ballCollider),pet.transform.rotation);
                 activeInstance = recallInstance;
-                activeInstance.Begin(true,vfxProfile,quality,bodyCenter,bodyHalfExtents,presentationSpeed);
+                activeInstance.Begin(true,vfxProfile,Quality,bodyCenter,bodyHalfExtents,presentationSpeed);
                 float elapsed = 0;
                 effectTime = 0;
                 float duration = durationOverride > 0 ? durationOverride : Mathf.Max(.1f,vfxProfile != null ? vfxProfile.recallDuration : .65f) / Mathf.Max(.1f,presentationSpeed);
@@ -245,9 +250,61 @@ namespace Capstone.Game.PetSummon
             glowOpacity = 1;
             presentationPet?.SetRecallVisualCenter(presentationCenter);
             ApplyBody();
+            for (int i=0;i<recallContactCount;i++) {
+                var contact=recallContacts[i];
+                if (contact.body.source == null || contact.vertex >= contact.body.poseVertices.Count) {
+                    recallContactCount=0;
+                    break;
+                }
+                Vector3 surface=contact.body.source.transform.TransformPoint(contact.body.poseVertices[contact.vertex]);
+                recallPoints[i]=recallWarp.TransformPoint(surface);
+            }
             activeInstance?.UpdatePresentation(effectTime,presentationCenter,ball,
                 bodyHalfExtents*presentationScale,haloHalfExtents*presentationScale,
-                presentationPet.transform.rotation,bodyCenter,bodyHalfExtents);
+                presentationPet.transform.rotation,bodyCenter,bodyHalfExtents,recallPoints,recallContactCount);
+        }
+
+        void FindRecallContacts(Vector3 ball, Quaternion rotation)
+        {
+            // Select separate regions of the current skin once, then follow those same posed vertices.
+            // A vertex on the actual mesh uses the exact same pull as the body glow shader.
+            Vector3 up=rotation*Vector3.up;
+            Vector3 outward=Vector3.ProjectOnPlane(ball-bodyCenter,up).normalized;
+            if (outward.sqrMagnitude < .001f) outward=rotation*Vector3.forward;
+            Vector3 side=Vector3.Cross(up,outward);
+            float reach=Mathf.Max(bodyHalfExtents.x,bodyHalfExtents.z);
+            float spacing=Mathf.Max(.012f,bodyHalfExtents.magnitude*.16f);
+            recallContactCount=0;
+            for (int region=0;region<recallContacts.Length;region++) {
+                float vertical=region==0 ? 0 : region==1 ? .76f : -.68f;
+                Vector3 probe=bodyCenter+outward*reach*.74f+up*(bodyHalfExtents.y*vertical)
+                    +side*(vertical*reach*.52f);
+                float best=float.PositiveInfinity;
+                RecallContact candidate=default;
+                Vector3 selected=default;
+                for (int b=0;b<bodies.Count;b++) {
+                    var body=bodies[b];
+                    Matrix4x4 matrix=body.source.transform.localToWorldMatrix;
+                    for (int v=0;v<body.poseVertices.Count;v++) {
+                        Vector3 point=matrix.MultiplyPoint3x4(body.poseVertices[v]);
+                        float score=(point-probe).sqrMagnitude;
+                        if (score>=best || !IsSeparateRecallContact(point,spacing*spacing)) continue;
+                        best=score;
+                        candidate=new RecallContact { body=body,vertex=v };
+                        selected=point;
+                    }
+                }
+                if (candidate.body==null) continue;
+                recallContacts[recallContactCount]=candidate;
+                recallPoints[recallContactCount++]=selected;
+            }
+        }
+
+        bool IsSeparateRecallContact(Vector3 point,float minimumSquared)
+        {
+            for (int i=0;i<recallContactCount;i++)
+                if ((point-recallPoints[i]).sqrMagnitude<minimumSquared) return false;
+            return true;
         }
 
         void BeginBody(PetController pet)
@@ -521,6 +578,8 @@ namespace Capstone.Game.PetSummon
                 binding.source = null; binding.sources.Clear();
             }
             bodies.Clear(); rendererBuffer.Clear();
+            Array.Clear(recallContacts,0,recallContacts.Length);
+            recallContactCount=0;
             if (presentationAnimator != null) {
                 presentationAnimator.cullingMode = cullingBefore;
             }

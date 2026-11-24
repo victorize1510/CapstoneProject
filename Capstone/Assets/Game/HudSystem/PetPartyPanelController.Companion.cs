@@ -157,6 +157,7 @@ namespace Capstone.Game.HudSystem {
             var swap=panel.Q<Button>("pets-swap-button");if(swap?.Q<Label>("pets-swap-caption")!=null)swap.Q<Label>("pets-swap-caption").text=pendingSwapSourceIndex>=0?"Hủy đổi vị trí":"Đổi vị trí";
             RefreshCompanionPortrait(pet);
             Capstone.Game.UISystem.GreenAngularCompanionSkin.Update(companionDesign,companionTab);
+            companionSkills?.RefreshViewedPet(pet);
             if(companionTab==2)RefreshCompanionGrowth(pet);
         }
         void RefreshCompanionGrowth(PetController pet){
