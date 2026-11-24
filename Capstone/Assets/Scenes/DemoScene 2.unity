@@ -41414,10 +41414,19 @@ MonoBehaviour:
   balls:
   - ball: {fileID: 365422224}
     displayName: "B\xF3ng 1"
+    petPrefab: {fileID: 0}
+    petName: 
+    petImage: {fileID: 0}
   - ball: {fileID: 66072830}
     displayName: "B\xF3ng 2"
+    petPrefab: {fileID: 0}
+    petName: 
+    petImage: {fileID: 0}
   - ball: {fileID: 1777353053}
     displayName: "B\xF3ng 3"
+    petPrefab: {fileID: 0}
+    petName: 
+    petImage: {fileID: 0}
   cameraPoint: {fileID: 1687696692}
   cameraMoveTime: 0.6
   hidePlayerWhileSelecting: 1
@@ -41425,6 +41434,20 @@ MonoBehaviour:
   interactCenter: {fileID: 0}
   interactDistance: 2.5
   enterText: "Ch\u1ECDn b\xF3ng"
+  speakerName: 
+  askText: "B\u1EA1n c\xF3 mu\u1ED1n ch\u1ECDn {pet} l\xE0m th\xFA \u0111\u1ED3ng
+    h\xE0nh \u0111\u1EA7u ti\xEAn kh\xF4ng?"
+  confirmText: "X\xE1c nh\u1EADn"
+  cancelText: "H\u1EE7y"
+  congratsText: "Xin ch\xFAc m\u1EEBng! {name} \u0111\xE3 nh\u1EADn \u0111\u01B0\u1EE3c
+    {pet}!"
+  typingSpeed: 40
+  dialogueBox: {fileID: 0}
+  hideChosenBall: 1
+  disableAfterChoosing: 1
+  onPetGranted:
+    m_PersistentCalls:
+      m_Calls: []
   onBallConfirmed:
     m_PersistentCalls:
       m_Calls: []

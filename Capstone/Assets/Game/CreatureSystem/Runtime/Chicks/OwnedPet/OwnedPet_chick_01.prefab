@@ -809,6 +809,9 @@ MonoBehaviour:
   followResumeDistance: 7
   leashDistance: 10
   teleportDistance: 24
+  fastReturnSpeedMultiplier: 1.65
+  closeFollowDistance: 2
+  meleeChaseSpeedMultiplier: 1.5
   followSpeed: 4.2
   commandSpeed: 5.3
   acceleration: 18
@@ -940,7 +943,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 1.6
-    manaCost: 0
+    manaCost: 10
   learnedSkills:
   - skillId: bite.normal
     legacySkillIds: []
@@ -966,7 +969,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 1.6
-    manaCost: 0
+    manaCost: 10
   - skillId: peck.flying
     legacySkillIds: []
     unlocked: 0
@@ -991,7 +994,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 2.6
-    manaCost: 0
+    manaCost: 10
   - skillId: gust.flying
     legacySkillIds: []
     unlocked: 0
@@ -1017,7 +1020,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3.4
-    manaCost: 0
+    manaCost: 10
   petController: {fileID: 3905486807277576643}
   animator: {fileID: 2000023}
   autoFindAnimationReferences: 1
@@ -1042,7 +1045,7 @@ MonoBehaviour:
   gender: Unknown
   element: 12
   secondaryElement: 13
-  rarity: 3
+  rarity: 1
   nickname: 
   favorite: 0
   released: 0

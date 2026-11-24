@@ -1783,19 +1783,19 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.791764
+      value: -9.59
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -47.58
+      value: -49.69
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1016.72
+      value: -1013.72
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.62094265
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalRotation.x
@@ -1803,7 +1803,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.78385603
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalRotation.z
@@ -1815,7 +1815,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 103.23
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -46143,14 +46143,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
       propertyPath: m_Name
-      value: Peasant Nolant(Free Version)
+      value: "NPc c\u1EEDa h\xE0ng"
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8699652204047898494, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
@@ -70242,8 +70243,8 @@ MonoBehaviour:
   - ball: {fileID: 1777353053}
     displayName: "B\xF3ng 3"
     petPrefab: {fileID: 1679457036408839924, guid: f310c7c3ccef4e38a0e6cc19df087b9b, type: 3}
-    petName: "\u1ED0c Gai"
-    petImage: {fileID: 21300000, guid: 6d187bff9e5a98f42af111987c04cc64, type: 3}
+    petName: "\u1ED0c Nh\xE0"
+    petImage: {fileID: 21300000, guid: 86b4ece01f74cd542b48267e3f58c311, type: 3}
   cameraPoint: {fileID: 1687696692}
   cameraMoveTime: 0.6
   hidePlayerWhileSelecting: 1
@@ -84996,14 +84997,14 @@ MonoBehaviour:
     duration: 14
   revealFadeTime: 2.5
   shotTransitionFade: 0.6
-  logo: {fileID: 0}
-  logoFallbackText: BEAST OF FANTASY
+  logo: {fileID: 21300000, guid: bdd0cb7203251ce4ea5cb7794df241b9, type: 3}
+  logoFallbackText: 
   logoSize: {x: 900, y: 420}
-  logoDelay: 0.8
-  logoFadeIn: 1.8
+  logoDelay: 0.85
+  logoFadeIn: 2.71
   logoHold: 2.5
   logoFadeOut: 1.8
-  playerSpawnPoint: {fileID: 0}
+  playerSpawnPoint: {fileID: 2068829501}
   houseShots:
   - start: {fileID: 282964875}
     end: {fileID: 1322060586}
@@ -85040,7 +85041,7 @@ MonoBehaviour:
   typingSpeed: 40
   malePortrait: {fileID: 0}
   femalePortrait: {fileID: 0}
-  dialogueBox: {fileID: 0}
+  dialogueBox: {fileID: 1494329589}
   fadeBeforeGameplay: 0
   returnFadeOut: 1.5
   returnFadeIn: 1.5
@@ -85091,7 +85092,7 @@ MonoBehaviour:
   nameFontSize: 30
   bodyFontSize: 30
   fontOverride: {fileID: 0}
-  customBoxSprite: {fileID: 21300000, guid: bc5916f3a19510340b6c101744133e15, type: 3}
+  customBoxSprite: {fileID: -1144449632, guid: bc5916f3a19510340b6c101744133e15, type: 3}
   customNameTagSprite: {fileID: 0}
   typeSound: {fileID: 0}
   typeVolume: 0.35

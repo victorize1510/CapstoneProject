@@ -77,6 +77,9 @@ MonoBehaviour:
   followResumeDistance: 7
   leashDistance: 10
   teleportDistance: 24
+  fastReturnSpeedMultiplier: 1.65
+  closeFollowDistance: 2
+  meleeChaseSpeedMultiplier: 1.5
   followSpeed: 4.2
   commandSpeed: 5.3
   acceleration: 18
@@ -207,7 +210,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 1.6
-    manaCost: 0
+    manaCost: 10
   learnedSkills:
   - skillId: bite.normal
     legacySkillIds: []
@@ -233,7 +236,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 1.6
-    manaCost: 0
+    manaCost: 10
   - skillId: bite.dark
     legacySkillIds: []
     unlocked: 0
@@ -258,7 +261,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 3.2
-    manaCost: 0
+    manaCost: 10
   - skillId: blast
     legacySkillIds:
     - blast
@@ -288,7 +291,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 10
-    manaCost: 0
+    manaCost: 15
   - skillId: strike.fighting
     legacySkillIds: []
     unlocked: 0
@@ -313,7 +316,7 @@ MonoBehaviour:
     recoverySeconds: 0
     cooldownPercent: 0
     cooldownSeconds: 5.2
-    manaCost: 0
+    manaCost: 10
   petController: {fileID: 3905486807277576643}
   animator: {fileID: 2839366912911975292}
   autoFindAnimationReferences: 1
@@ -337,7 +340,7 @@ MonoBehaviour:
   species: "S\xF3i T\xED N\u1ECB"
   gender: Unknown
   element: 9
-  secondaryElement: 0
+  secondaryElement: 13
   rarity: 3
   nickname: 
   favorite: 0

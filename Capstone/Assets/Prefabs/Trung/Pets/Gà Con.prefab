@@ -407,7 +407,7 @@ GameObject:
   - component: {fileID: 3696765664796384717}
   - component: {fileID: -3243020453047681596}
   m_Layer: 0
-  m_Name: Chim Con
+  m_Name: "G\xE0 Con"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
