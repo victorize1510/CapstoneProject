@@ -12,6 +12,7 @@ namespace Capstone.Game.Inventory {
         readonly VisualElement itemIcon;
         readonly Label itemName;
         readonly Label ownedQuantity;
+        readonly Label priceSummary;
         readonly Button minusButton;
         readonly IntegerField quantityField;
         readonly Button plusButton;
@@ -29,17 +30,24 @@ namespace Capstone.Game.Inventory {
         bool fixedQuantity;
         bool isUpdating;
         bool dropAction;
+        int unitPrice;
 
         public bool IsOpen => overlay != null && overlay.style.display.value != DisplayStyle.None;
 
-        public ItemQuantityPopup(VisualElement root) {
+        public ItemQuantityPopup(VisualElement root, string popupName = PopupName) {
             if (root == null) throw new ArgumentNullException(nameof(root));
 
-            var oldPopup = root.Q<VisualElement>(PopupName);
+            var oldPopup = root.Q<VisualElement>(popupName);
             if (oldPopup != null) oldPopup.RemoveFromHierarchy();
 
-            overlay = new VisualElement { name = PopupName };
+            overlay = new VisualElement { name = popupName };
             overlay.AddToClassList("quantity-popup-overlay");
+            if (popupName != PopupName) {
+                BagPresentation.Stretch(overlay);
+                overlay.style.backgroundColor = new Color(.06f, .09f, .16f, .72f);
+                var theme = Resources.Load<StyleSheet>("UI/BAG20261022/Bag");
+                if (theme != null) overlay.styleSheets.Add(theme);
+            }
 
             var panel = new VisualElement { name = "quantity-popup-panel" };
             panel.AddToClassList("quantity-popup-panel");
@@ -60,6 +68,9 @@ namespace Capstone.Game.Inventory {
             ownedQuantity = new Label { name = "quantity-owned", text = "Sở hữu: 0" };
             ownedQuantity.AddToClassList("quantity-popup-owned");
             panel.Add(ownedQuantity);
+            priceSummary = new Label { name = "quantity-price", pickingMode = PickingMode.Ignore };
+            priceSummary.AddToClassList("bag-modal-note");
+            panel.Add(priceSummary);
 
             var stepper = new VisualElement { name = "quantity-stepper" };
             stepper.AddToClassList("quantity-stepper");
@@ -105,20 +116,24 @@ namespace Capstone.Game.Inventory {
             Hide();
         }
 
-        public void Show(string title, InventoryItemSnapshot item, Action<int> onConfirm) {
+        public void Show(string title, InventoryItemSnapshot item, Action<int> onConfirm, int salePrice = 0, int saleLimit = int.MaxValue) {
             currentItem = item;
             confirmHandler = onConfirm;
-            maxQuantity = Mathf.Max(1, item != null ? item.Quantity : 1);
-            fixedQuantity = item == null || !item.Stackable || maxQuantity <= 1;
+            unitPrice = salePrice;
+            maxQuantity = Mathf.Max(1, Mathf.Min(saleLimit, item != null ? item.Quantity : 1));
+            fixedQuantity = item == null || (unitPrice == 0 && !item.Stackable) || maxQuantity <= 1;
 
             actionTitle.text = title ?? "Thao tác";
             dropAction = title?.IndexOf("BỎ", StringComparison.OrdinalIgnoreCase) >= 0;
             itemName.text = item != null ? item.Name : "Vật phẩm";
-            ownedQuantity.text = item != null ? $"Sở hữu: {maxQuantity}" : "Sở hữu: 0";
+            ownedQuantity.text = $"Đang có: {item?.Quantity ?? 0:N0}";
+            priceSummary.style.display = unitPrice > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            overlay.Q("quantity-note").style.display = unitPrice > 0 ? DisplayStyle.None : DisplayStyle.Flex;
             SetIcon(item != null ? item.Icon : null);
             ApplyFixedQuantityState();
             SetQuantity(1);
 
+            overlay.BringToFront();
             overlay.style.display = DisplayStyle.Flex;
             Capstone.Game.UISystem.PanelFocusUtility.Open(overlay);
         }
@@ -130,6 +145,7 @@ namespace Capstone.Game.Inventory {
             currentItem = null;
             confirmHandler = null;
         }
+        public void Dispose() { Hide(); overlay.RemoveFromHierarchy(); }
 
         void RegisterCallbacks() {
             minusButton.clicked += Capstone.Game.UISystem.PlayerActionGate.Guard(this, "minusButton", () => SetQuantity(quantity - 1));
@@ -171,7 +187,8 @@ namespace Capstone.Game.Inventory {
             plusButton.SetEnabled(!fixedQuantity && quantity < maxQuantity);
             oneButton.SetEnabled(!fixedQuantity && quantity != 1);
             confirmButton.SetEnabled(currentItem != null && maxQuantity > 0);
-            confirmButton.text = dropAction ? $"Bỏ {quantity:N0}" : "Xác nhận";
+            confirmButton.text = unitPrice > 0 ? $"Bán {quantity:N0}" : dropAction ? $"Bỏ {quantity:N0}" : "Xác nhận";
+            if (unitPrice > 0) priceSummary.text = $"Đơn giá {unitPrice:N0} vàng   ·   Tổng nhận {(long)unitPrice * quantity:N0} vàng";
         }
 
         void ApplyFixedQuantityState() {

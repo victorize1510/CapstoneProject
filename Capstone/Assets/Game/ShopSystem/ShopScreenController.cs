@@ -14,6 +14,8 @@ namespace Capstone.Game.ShopSystem {
         readonly List<ShopOffer> filtered = new List<ShopOffer>();
         readonly List<Button> categories = new List<Button>();
         readonly Dictionary<string, string> searchNames = new Dictionary<string, string>();
+        readonly List<ShopOffer> saleOffers = new List<ShopOffer>();
+        readonly Dictionary<string, InventoryItemSnapshot> saleItems = new Dictionary<string, InventoryItemSnapshot>();
         VisualElement root, grid, detail, purchase;
         ScrollView productScroll;
         Label empty, detailEmpty, gold, feedback, itemName, owned, badge, rarity, description, effect, stock, total, reasonLabel;
@@ -21,18 +23,19 @@ namespace Capstone.Game.ShopSystem {
         TextField search;
         DropdownField sort;
         IntegerField quantity;
-        Button minus, plus, max, buy, clear;
+        Button minus, plus, max, buy, clear, sell, tradeMode;
         ShopSource source, defaultSource;
         MonsterInventoryAdapter inventory;
         PlayerCurrencyWallet wallet;
         Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider profile;
         ShopPurchaseService service;
         ShopSortPopup sortPopup;
+        ItemQuantityPopup salePopup;
         VisualTreeAsset cardTemplate;
         ShopCategory category;
         ShopOffer selected;
         int selectedPrice;
-        bool open, subscribed, buying;
+        bool open, subscribed, buying, sellingMode;
         public bool IsOpen => open;
         public event Action BackRequested;
         static readonly List<string> SortNames = new List<string> {
@@ -61,6 +64,10 @@ namespace Capstone.Game.ShopSystem {
             reasonLabel = root.Q<Label>("shop-reason");
             quantity = root.Q<IntegerField>("shop-quantity"); minus = root.Q<Button>("shop-minus"); plus = root.Q<Button>("shop-plus");
             max = root.Q<Button>("shop-max"); buy = root.Q<Button>("shop-buy");
+            sell = root.Q<Button>("shop-sell"); tradeMode = root.Q<Button>("shop-trade-mode");
+            salePopup = new ItemQuantityPopup(documentRoot, "shop-sale-quantity-popup");
+            Click(sell, OpenSale);
+            Click(tradeMode, ToggleTradeMode);
             sort.choices = SortNames; sort.SetValueWithoutNotify(SortNames[0]); sortPopup = new ShopSortPopup(sort,root);
             categories.AddRange(root.Query<Button>(className: "shop-category").ToList());
             for (int i = 0; i < categories.Count; i++) {
@@ -98,7 +105,7 @@ namespace Capstone.Game.ShopSystem {
                 value = defaultSource;
             }
             SetSource(value); open = true; Subscribe();
-            category = ShopCategory.Consumables; selected = null; feedback.text = "";
+            sellingMode = false; category = ShopCategory.Consumables; selected = null; feedback.text = "";
             search.SetValueWithoutNotify(""); sort.SetValueWithoutNotify(SortNames[0]);
             for (int i = 0; i < 5; i++) {
                 if (source != null && HasCategory((ShopCategory)i)) { category = (ShopCategory)i; break; }
@@ -110,7 +117,12 @@ namespace Capstone.Game.ShopSystem {
                 if (service.IsVisible(offer) && ShopPresentation.Category(offer) == value) return true;
             return false;
         }
-        public void Close() { open = false; Unsubscribe(); sortPopup?.Close(false); ShopASkin.Suspend(root); Show(root, false); PanelFocusUtility.Close(root); }
+        public bool DismissSalePopup() {
+            if (salePopup?.IsOpen != true) return false;
+            salePopup.Hide();
+            return true;
+        }
+        public void Close() { open = false; Unsubscribe(); salePopup?.Hide(); sortPopup?.Close(false); ShopASkin.Suspend(root); Show(root, false); PanelFocusUtility.Close(root); }
         void OnDisable() => Close();
         void OnDestroy() { Close(); Unbind(); }
         void Subscribe() {
@@ -136,9 +148,11 @@ namespace Capstone.Game.ShopSystem {
         void Unbind() {
             foreach (var action in unbind) action(); unbind.Clear();
             sortPopup?.Dispose(); sortPopup = null;
+            salePopup?.Dispose(); salePopup = null;
             foreach (var card in cards) card.Dispose(); cards.Clear(); categories.Clear(); searchNames.Clear();
         }
         void Click(Button button, Action action) {
+            if (button == null) return;
             Action guarded = PlayerActionGate.Guard(this, "shop:" + button.name, action);
             button.clicked += guarded; unbind.Add(() => button.clicked -= guarded);
         }
@@ -148,11 +162,13 @@ namespace Capstone.Game.ShopSystem {
         public void Refresh() {
             if (root == null) return;
             gold.text = wallet != null ? ShopPresentation.Price(wallet.Gold) : "Chưa có ví vàng";
+            if (tradeMode != null) tradeMode.text = sellingMode ? "MUA ĐỒ" : "BÁN ĐỒ";
+            RefreshSaleOffers();
             searchNames.Clear();
             for (int i = 0; i < categories.Count; i++) {
                 int count = 0;
-                if (source != null) foreach (var offer in source.Offers)
-                    if (service.IsVisible(offer) && ShopPresentation.Category(offer) == (ShopCategory)i) count++;
+                foreach (var offer in CurrentOffers())
+                    if ((sellingMode || service.IsVisible(offer)) && ShopPresentation.Category(offer) == (ShopCategory)i) count++;
                 categories[i].Q<Label>(className: "shop-category-count").text = count.ToString();
             }
             ApplyQuery();
@@ -161,20 +177,21 @@ namespace Capstone.Game.ShopSystem {
             if (root == null) return;
             filtered.Clear(); string key = VietnameseUI.SearchKey(search.value);
             Show(clear, !string.IsNullOrEmpty(search.value));
-            if (source != null) foreach (var offer in source.Offers) {
-                if (!service.IsVisible(offer) || ShopPresentation.Category(offer) != category) continue;
+            foreach (var offer in CurrentOffers()) {
+                if ((!sellingMode && !service.IsVisible(offer)) || ShopPresentation.Category(offer) != category) continue;
                 if (!searchNames.TryGetValue(offer.Id, out string name)) { name = VietnameseUI.SearchKey(offer.Item.Name); searchNames[offer.Id] = name; }
                 if (key.Length == 0 || name.Contains(key)) filtered.Add(offer);
             }
             var mode = (ShopSort)Mathf.Max(0, sort.index);
             if (mode != ShopSort.Default) filtered.Sort((a, b) => Compare(a, b, mode));
+            if (sellingMode && selected != null) selected = filtered.Find(offer => offer.Id == selected.Id);
             if (selected == null || !filtered.Contains(selected)) { selected = filtered.Count > 0 ? filtered[0] : null; quantity.SetValueWithoutNotify(1); }
             for (int i = 0; i < categories.Count; i++) { categories[i].EnableInClassList("is-selected", (int)category == i); ShopASkin.Refresh(categories[i]); }
             if (cardTemplate == null) { empty.text = "Không tìm thấy mẫu ô vật phẩm."; Show(empty, true); return; }
             while (cards.Count < filtered.Count) { var card = new ShopProductCardView(cardTemplate, Select); cards.Add(card); grid.Add(card.Root); }
             for (int i = 0; i < cards.Count; i++) {
                 var offer = i < filtered.Count ? filtered[i] : null;
-                cards[i].Render(offer, selected?.Id, service.LockReason(offer));
+                cards[i].Render(offer, selected?.Id, sellingMode ? string.Empty : service.LockReason(offer));
             }
             SizeCards(productScroll.contentViewport.contentRect.width);
             Show(empty, filtered.Count == 0);
@@ -196,7 +213,8 @@ namespace Capstone.Game.ShopSystem {
             selected = offer; quantity.SetValueWithoutNotify(1); feedback.text = ""; ApplyQuery();
         }
         void RenderDetail() {
-            bool hasItem = selected?.Item != null; Show(detail, hasItem); Show(purchase, hasItem); Show(detailEmpty, !hasItem);
+            bool hasItem = selected?.Item != null; Show(detail, hasItem); Show(purchase, hasItem && !sellingMode);
+            Show(sell, hasItem && sellingMode); Show(detailEmpty, !hasItem);
             if (!hasItem) { detailEmpty.text = "Chọn vật phẩm để xem thông tin."; return; }
             var item = selected.Item;
             portrait.sprite = item.Icon; Show(portrait.parent, item.Icon != null);
@@ -205,12 +223,18 @@ namespace Capstone.Game.ShopSystem {
                 portrait.style.width = Mathf.Min(128, item.Icon.rect.width) / 1.2f;
                 portrait.style.height = Mathf.Min(128, item.Icon.rect.height) / 1.2f;
             }
-            itemName.text = item.Name; owned.text = "Đang có: " + service.Owned(selected);
+            var saleItem = SelectedSaleItem();
+            itemName.text = item.Name; owned.text = "Đang có: " + (sellingMode ? saleItem?.Quantity ?? 0 : service.Owned(selected));
             badge.text = ShopPresentation.CategoryNames[(int)category]; rarity.text = VietnameseUI.Rarity(item.Rarity.ToString());
             description.text = VietnameseUI.ItemText(item.Description); Show(description.parent, !string.IsNullOrWhiteSpace(item.Description));
             effect.text = VietnameseUI.ItemText(item.Effect); Show(effect.parent, !string.IsNullOrWhiteSpace(item.Effect));
             stock.text = selected.Stock >= 0 ? "Còn trong cửa hàng: " + selected.Stock : ""; Show(stock, selected.Stock >= 0);
-            selectedPrice = selected.GoldPrice; SetQuantity(quantity.value);
+            selectedPrice = selected.GoldPrice;
+            if (sellingMode) {
+                sell?.SetEnabled(service.MaximumSale(saleItem, selectedPrice) > 0);
+                return;
+            }
+            SetQuantity(quantity.value);
         }
         void SetQuantity(int requested) {
             if (selected == null) return;
@@ -228,6 +252,53 @@ namespace Capstone.Game.ShopSystem {
                 bool success = service.TryBuy(source, selected.Id, quantity.value, selectedPrice, out string message);
                 if (message.Length > 0) { feedback.text = message; feedback.EnableInClassList("is-error", !success); }
             } finally { buying = false; Refresh(); }
+        }
+        IEnumerable<ShopOffer> CurrentOffers() => sellingMode ? saleOffers :
+            source != null ? source.Offers : Array.Empty<ShopOffer>();
+        InventoryItemSnapshot SelectedSaleItem() =>
+            selected != null && saleItems.TryGetValue(selected.Id, out var item) ? item : null;
+
+        void ToggleTradeMode() {
+            sellingMode = !sellingMode;
+            selected = null;
+            feedback.text = "";
+            search.SetValueWithoutNotify("");
+            RefreshSaleOffers();
+            category = ShopCategory.Consumables;
+            foreach (var offer in CurrentOffers()) {
+                if (!sellingMode && !service.IsVisible(offer)) continue;
+                category = ShopPresentation.Category(offer);
+                break;
+            }
+            Refresh();
+        }
+
+        void RefreshSaleOffers() {
+            saleItems.Clear(); saleOffers.Clear();
+            if (!sellingMode || inventory == null) return;
+            foreach (var item in inventory.GetItems()) {
+                int price = service.SalePrice(source, item.Definition);
+                if (price <= 0 || !saleItems.TryAdd(item.ItemId, item)) continue;
+                var offer = new ShopOffer { Id = item.ItemId, Item = item.Definition, GoldPrice = price };
+                if (ShopPresentation.Category(offer) == ShopCategory.Automatic) offer.Category = ShopCategory.Special;
+                saleOffers.Add(offer);
+            }
+        }
+
+        void OpenSale() {
+            var offer = selected;
+            var item = SelectedSaleItem();
+            int limit = service.MaximumSale(item, offer?.GoldPrice ?? 0);
+            if (!sellingMode || limit < 1) return;
+            var shop = source;
+            salePopup.Show("BÁN VẬT PHẨM", item, amount => {
+                if (!open || !sellingMode || source != shop || buying) return;
+                buying = true;
+                try {
+                    bool success = service.TrySell(shop, item, amount, offer.GoldPrice, out var message);
+                    if (message.Length > 0) { feedback.text = message; feedback.EnableInClassList("is-error", !success); }
+                } finally { buying = false; Refresh(); }
+            }, offer.GoldPrice, limit);
         }
         void LayoutGrid(GeometryChangedEvent evt) {
             SizeCards(productScroll.contentViewport.contentRect.width);

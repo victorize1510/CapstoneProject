@@ -42,11 +42,7 @@ MonoBehaviour:
     action: 9
   - skillId: cyclone.flying
     action: 9
-  - skillId: peck.flying
-    action: 8
   - skillId: protect.normal
     action: 9
   - skillId: roar.power
     action: 9
-  - skillId: wing strike
-    action: 8

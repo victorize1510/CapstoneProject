@@ -336,7 +336,7 @@ namespace Capstone.Game.HudSystem {
 
             PetController source = petCommandInput.petSlots[sourceIndex];
             PetController target = petCommandInput.petSlots[targetIndex];
-            if (source == null && target == null) return false;
+            if (source == null || target == null) return false;
             if (saveController == null) return false;
 
             petCommandInput.petSlots[sourceIndex] = target;

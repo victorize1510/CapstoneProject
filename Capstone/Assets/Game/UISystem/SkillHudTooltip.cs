@@ -9,6 +9,7 @@ namespace Capstone.Game.UISystem {
     public sealed class SkillHudTooltip:MonoBehaviour,IPointerEnterHandler,IPointerExitHandler,ISelectHandler,IDeselectHandler {
         Func<SkillHudData> data;
         RectTransform host, view;
+        const float TextWidth = 296, DescriptionHeight = 48;
         Text nameText, descriptionText, costText;
         public void Bind(RectTransform host,Func<SkillHudData> data){this.host=host;this.data=data;}
         public void OnPointerEnter(PointerEventData _)=>Show();public void OnSelect(BaseEventData _)=>Show();
@@ -17,14 +18,14 @@ namespace Capstone.Game.UISystem {
             if (host == null || data == null) return;
             var skill = data();
             if (string.IsNullOrWhiteSpace(skill.skillId)) { Hide(); return; }
-            const float width = 300, height = 108;
+            const float width = 320, height = 116;
             if (view == null) {
                 view = V.Rect(host, "SkillTooltipR2");
                 var face = view.gameObject.AddComponent<GreenAngularGraphic>();
                 face.Shape = "panel"; face.Fill = GreenAngularGeometry.Panel; face.raycastTarget = false;
-                nameText = Label("Name", 10, 20, 19);
-                descriptionText = Label("Description", 34, 40, 15);
-                costText = Label("CostCooldown", 80, 20, 15);
+                nameText = Label("Name", 9, 24, 19);
+                descriptionText = Label("Description", 35, DescriptionHeight, 16);
+                costText = Label("CostCooldown", 89, 20, 16);
             }
             nameText.text = skill.displayName;
             nameText.fontStyle = FontStyle.Bold;
@@ -40,21 +41,21 @@ namespace Capstone.Game.UISystem {
             view.SetAsLastSibling();
         }
         Text Label(string id, float top, float height, int size) {
-            var label = HubR11Art.Label(view, id, "", size, TextAnchor.UpperLeft);
+            var label = V.Text(view, id, "", size, TextAnchor.UpperLeft);
             label.color = GreenAngularGeometry.Ink;
-            V.Top(label.rectTransform, 12, top, 276, height);
+            V.Top(label.rectTransform, 12, top, TextWidth, height);
             return label;
         }
         string FitDescription(string text) {
             var generator = descriptionText.cachedTextGeneratorForLayout;
-            var size = descriptionText.GetGenerationSettings(new Vector2(276, 0));
-            if (generator.GetPreferredHeight(text, size) / descriptionText.pixelsPerUnit <= 40) return text;
+            var size = descriptionText.GetGenerationSettings(new Vector2(TextWidth, 0));
+            if (generator.GetPreferredHeight(text, size) / descriptionText.pixelsPerUnit <= DescriptionHeight) return text;
             int length = text.Length;
             while (length > 0) {
                 int previousWord = text.LastIndexOf(' ', length - 1);
                 length = previousWord >= 0 ? previousWord : length - 1;
                 string candidate = text.Substring(0, length).TrimEnd() + "…";
-                if (generator.GetPreferredHeight(candidate, size) / descriptionText.pixelsPerUnit <= 40) return candidate;
+                if (generator.GetPreferredHeight(candidate, size) / descriptionText.pixelsPerUnit <= DescriptionHeight) return candidate;
             }
             return "";
         }

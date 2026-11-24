@@ -99,7 +99,8 @@ namespace Capstone.Game.Inventory.Bag {
             Place(overlay.Q("quantity-stepper"),24,236,656,52);Place(overlay.Q("quantity-minus"),0,0,52,52);Place(overlay.Q("quantity-field"),80,0,448,52);Place(overlay.Q("quantity-plus"),552,0,104,52);
             var field=new BagSurface{Kind="integer-field"};Place(field,104,236,448,52);card.Insert(3,field);
             Place(overlay.Q("quantity-slider"),24,304,656,34);Place(overlay.Q("quantity-quick-row"),24,350,656,44);Place(overlay.Q("quantity-one"),0,0,208,44);Place(overlay.Q("quantity-half"),224,0,208,44);Place(overlay.Q("quantity-all"),448,0,208,44);
-            var note=new Label("Chỉ thực hiện sau khi xác nhận."){pickingMode=PickingMode.Ignore};note.AddToClassList("bag-modal-note");Place(note,24,414,656,40);card.Add(note);
+            var note=new Label("Chỉ thực hiện sau khi xác nhận."){name="quantity-note",pickingMode=PickingMode.Ignore};note.AddToClassList("bag-modal-note");Place(note,24,414,656,40);card.Add(note);
+            Place(overlay.Q("quantity-price"),24,414,656,40);
             Place(overlay.Q("quantity-action-row"),24,478,656,56);Place(overlay.Q("quantity-cancel"),0,0,320,56);Place(overlay.Q("quantity-confirm"),336,0,320,56);
             var countLabel=new Label("Số lượng"){pickingMode=PickingMode.Ignore};countLabel.AddToClassList("bag-modal-note");Place(countLabel,24,202,656,28);card.Add(countLabel);
             var dismiss=new BagButton(close){text="×",Kind="action-primary",name="quantity-close"};Place(dismiss,644,20,36,36);card.Add(dismiss);

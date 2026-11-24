@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 0d2ca54b18074064a9762765bb237835
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    4300000: FireShieldRings
+  materials:
+    importMaterials: 0
+  meshes:
+    globalScale: 1
+    addColliders: 0
+    useFileUnits: 1
+  importAnimation: 0

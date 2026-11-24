@@ -76,8 +76,8 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 }
                 Check(catalog.TryGet("blackhole.dark", out var blackHole) && blackHole.combat.projectileVisual != null &&
                     blackHole.presentation.impact.effectPrefab != null && blackHole.combat.pattern == PetSkillPattern.ImpactArea &&
-                    blackHole.combat.minimumHits == 6 && blackHole.combat.TravelRange == 13f,
-                    "Hố Đen has flight/impact VFX, six pulses and 13m travel");
+                    blackHole.combat.minimumHits == 6 && blackHole.combat.TravelRange == 16f,
+                    "Hố Đen has flight/impact VFX, six pulses and 16m travel");
                 Check(catalog.TryGet("spirit.dark", out var spirit) && spirit.combat.impactAtTargetFeet &&
                     spirit.combat.trackTargetUntilRelease && spirit.combat.statusCues.Length == 2,
                     "Linh Hồn Ma Quái tracks to release and spawns its VFX at the target's feet");
@@ -92,14 +92,32 @@ namespace Capstone.Game.CreatureSystem.Editor {
                         id + " | channel leaves the mouth socket");
                 Check(catalog.TryGet("shield.fire", out var fireShield) && fireShield.combat.fireContact &&
                     fireShield.presentation.release.fitActorBounds && fireShield.presentation.release.followSocket &&
+                    fireShield.presentation.release.anchorAtActorFeet && fireShield.presentation.release.socket == "Ground" &&
                     fireShield.presentation.release.lifetimeSeconds == 10 &&
-                    Mathf.Approximately(fireShield.presentation.release.localEulerAngles.x, 90f) &&
+                    fireShield.presentation.release.effectPrefab != null &&
+                    Quaternion.Angle(Quaternion.Euler(fireShield.presentation.release.localEulerAngles)
+                        * fireShield.presentation.release.effectPrefab.transform.localRotation, Quaternion.identity) < .1f &&
                     fireShield.combat.statusCues.Any(c => c.kind == CombatAilment.DefenseUp && c.duration == 10),
-                    "Khiên Lửa is fit to the actor and stays visible throughout its active duration");
+                    "Khiên Lửa is upright, fitted and anchored at Ground for its active duration");
+                Check(catalog.TryGet("cyclone.flying", out var cyclone) &&
+                    cyclone.combat.pattern == PetSkillPattern.TravelingArea &&
+                    cyclone.combat.projectileVisual != null &&
+                    cyclone.combat.projectileVisual.GetComponent<MeshFilter>()?.sharedMesh is Mesh vortex &&
+                    vortex.bounds.size.y > .25f && vortex.bounds.size.z > .1f &&
+                    cyclone.combat.projectileVisual.GetComponent<MeshRenderer>()?.sharedMaterial?.shader?.isSupported == true &&
+                    cyclone.presentation.impact.effectPrefab == null,
+                    "Lốc Xoáy uses a 3D mesh in flight and has no stationary billboard impact");
                 Check(catalog.TryGet("heatwave.fire", out var heatwave) && heatwave.combat.statusOnly &&
                     heatwave.combat.ObstacleRadius < heatwave.combat.projectileRadius &&
+                    heatwave.combat.projectileVisual != null &&
+                    heatwave.combat.projectileVisual.GetComponentsInChildren<MonoBehaviour>(true).Length == 0 &&
                     heatwave.combat.statusCues.Any(c => c.kind == CombatAilment.Burn && c.chance == 1),
-                    "Đốt Nóng uses a narrow obstacle check and preserves its wide Burn hitbox");
+                    "Đốt Nóng uses a visual-only prefab, a narrow obstacle core and a wide Burn hitbox");
+                Check(catalog.TryGet("leafstorm.grass", out var leaves) &&
+                    leaves.combat.projectileVisual != null && leaves.presentation.impact.effectPrefab == null &&
+                    leaves.combat.projectileVisual.GetComponentsInChildren<ParticleSystem>(true).All(system =>
+                        system.main.simulationSpace == ParticleSystemSimulationSpace.Local),
+                    "Bão Lá travels with local-space particles and has no stationary duplicate");
                 Check(catalog.skills.Count(s => s?.combat?.authoredReleaseSound != null) == 29,
                     "29 Trung AudioClips loaded");
                 Check(catalog.TryGet("roar.power", out var roar) && roar.combat.delivery == PetSkillDelivery.SelfBuff &&
@@ -172,6 +190,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
             if (catalog != null && forms.FirstOrDefault(f => f.skillSet?.speciesId == "wolf/03") is CreatureFormDefinition wolf)
                 VerifyLegacySave(wolf, ids, Check);
             VerifySavedForm(library, Check);
+            VerifySpecialZonesOnDisk(Check);
 
             lines.Insert(0, $"{lines.Count - failures}/{lines.Count} checks passed");
             string directory = Path.Combine(QaArtifactPaths.Root, "GameplayConsistency");
@@ -179,6 +198,31 @@ namespace Capstone.Game.CreatureSystem.Editor {
             File.WriteAllLines(Path.Combine(directory, "edit-mode.txt"), lines);
             if (failures != 0) Debug.LogError($"{failures} skill/status asset checks failed. {directory}");
             else Debug.Log($"Skill/status asset checks passed. {directory}");
+        }
+
+        static void VerifySpecialZonesOnDisk(Action<bool, string> check)
+        {
+            var scene = EditorSceneManager.OpenPreviewScene("Assets/Scenes/DemoScene 1 - Creature QA.unity");
+            try
+            {
+                var zones = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<CreatureEncounterZone>(true))
+                    .Where(zone => zone.zoneId is "capstone-special-dragon-fire" or "capstone-special-shell" or "capstone-special-sun-blossom")
+                    .ToArray();
+                check(zones.Length == 3, "Three special starter zones are present in the saved QA scene");
+                foreach (var zone in zones)
+                {
+                    bool valid = zone.ValidateConfiguration(out string reason);
+                    var entry = zone.spawnTable?.species.SingleOrDefault();
+                    bool allDay = entry != null && (zone.ignoreSpeciesTimeWindows ||
+                        Mathf.Approximately(entry.spawnFromHour, entry.spawnUntilHour));
+                    check(zone.spawningEnabled && allDay && !zone.requireWaterNearby && valid && zone.EligibleSpeciesCount == 1,
+                        $"{zone.zoneId} | active, all-day QA spawn | {reason}");
+                    check(PrefabUtility.GetCorrespondingObjectFromSource(zone) is CreatureEncounterZone source &&
+                        !source.ignoreSpeciesTimeWindows && (zone.zoneId != "capstone-special-shell" || source.requireWaterNearby),
+                        zone.zoneId + " | shared zone prefab keeps its original eligibility rules");
+                }
+            }
+            finally { EditorSceneManager.ClosePreviewScene(scene); }
         }
 
         static void VerifySavedForm(CreatureLibrary library, Action<bool, string> check) {

@@ -18,6 +18,10 @@ namespace Capstone.Game.HudSystem {
         public void Bind(UIDocument document, MonsterInventoryAdapter targetInventory, VisualTreeAsset unusedTree) {
             inventory = targetInventory != null ? targetInventory : inventory;
             ResolveReferences();
+            if (Application.isPlaying) {
+                var service = GetComponent<PetEvolutionService>() ?? gameObject.AddComponent<PetEvolutionService>();
+                service.Bind(inventory);
+            }
         }
         void ResolveReferences() {
             if (petHudProvider == null) petHudProvider = FindFirstObjectByType<PetCommandHudProvider>();

@@ -48,6 +48,8 @@ namespace Capstone.Game.CreatureSystem
         [Header("Vi tri va hieu ung")]
         public Transform player;
         public DayNightCycle dayNightClock;
+        [Tooltip("Bỏ qua khung giờ của loài cho zone này, dùng khi cần thử spawn cả ngày.")]
+        public bool ignoreSpeciesTimeWindows;
         [Tooltip("Zone ven nuoc: gan trigger BoxCollider phu mat nuoc, dat Zone tren bo.")]
         public bool requireWaterNearby;
         public BoxCollider waterBoundary;
@@ -272,7 +274,8 @@ namespace Capstone.Game.CreatureSystem
             var metadata = prefab.GetComponent<PetCollectionMetadata>();
             if (!PetStatCalculator.TryGetProfile(metadata, out var profile) || profile.BaseCatchRate < 1 || profile.BaseCatchRate > 255) return false;
             var set = prefab.GetComponent<PetHudRuntimeStats>().SpeciesSkillSet;
-            if (set.catalog == null || set.learnset == null || set.defaultLoadout == null || set.defaultLoadout.Count == 0 || set.defaultLoadout.Count > 4) return false;
+            // The ordered defaults are candidates across levels. CreateFreshDefaultLoadout applies the equipped slot limit.
+            if (set.catalog == null || set.learnset == null || set.defaultLoadout == null || set.defaultLoadout.Count == 0) return false;
             foreach (var learned in set.learnset)
             {
                 if (learned?.skill == null || string.IsNullOrWhiteSpace(learned.skill.Id)
@@ -467,7 +470,7 @@ namespace Capstone.Game.CreatureSystem
 
         bool CanSpawnNow(CreatureSpawnSpecies entry)
         {
-            if (!entry.HasTimeWindow) return true;
+            if (ignoreSpeciesTimeWindows || !entry.HasTimeWindow) return true;
             if (dayNightClock == null && Time.time >= findClockAt)
             {
                 findClockAt = Time.time + 1f;

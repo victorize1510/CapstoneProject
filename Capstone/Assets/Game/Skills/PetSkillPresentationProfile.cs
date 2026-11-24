@@ -18,6 +18,8 @@ namespace Capstone.Game.Skills {
         public bool followChannelAim;
         [Tooltip("Center and stretch a following effect over the visible actor bounds.")]
         public bool fitActorBounds;
+        [Tooltip("Đặt gốc hiệu ứng ở chân và giữ toàn bộ vòng bảo vệ ở phía trên mốc này.")]
+        public bool anchorAtActorFeet;
         public Vector3 localOffset;
         public Vector3 localEulerAngles;
         [Min(0.01f)] public float scale = 1;

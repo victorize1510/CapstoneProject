@@ -36,10 +36,6 @@ MonoBehaviour:
     action: 11
   - skillId: "jet.water"
     action: 9
-  - skillId: orb.water
-    action: 9
-  - skillId: jet.water
-    action: 9
   - skillId: bubbleburst.water
     action: 9
   - skillId: waterwhirl.water

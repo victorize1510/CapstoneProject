@@ -26,6 +26,7 @@
             </ui:ScrollView>
             <ui:VisualElement class="shop-products shop-column">
                 <ui:VisualElement class="shop-toolbar">
+                    <s:ShopAButton name="shop-trade-mode" text="BÁN ĐỒ" class="shop-trade-mode" />
                     <ui:VisualElement name="shop-search-group" class="shop-search-group">
                     <ui:VisualElement name="shop-search-glyph" picking-mode="Ignore" />
                     <ui:TextField name="shop-search" placeholder-text="Tìm kiếm vật phẩm..." class="shop-search" />
@@ -54,6 +55,7 @@
                     <ui:VisualElement class="shop-effect-section ui-copy-section"><ui:Label text="HIỆU QUẢ" class="shop-section-title" /><ui:Label name="shop-effect" class="shop-description" /></ui:VisualElement>
                     <ui:Label name="shop-stock" class="shop-owned" />
                 </ui:ScrollView>
+                <s:ShopAButton name="shop-sell" text="BÁN" class="action-button primary-action shop-buy" />
                 <ui:VisualElement name="shop-purchase" class="shop-purchase">
                     <ui:Label text="Số lượng" class="shop-section-title" />
                     <ui:VisualElement class="shop-quantity-row">

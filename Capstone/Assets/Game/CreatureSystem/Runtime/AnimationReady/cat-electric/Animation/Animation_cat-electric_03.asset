@@ -44,15 +44,7 @@ MonoBehaviour:
     action: 9
   - skillId: "laser.electric"
     action: 9
-  - skillId: bolt.electric
-    action: 8
-  - skillId: laser.electric
-    action: 8
-  - skillId: orb.electric
-    action: 8
   - skillId: roar.power
     action: 9
-  - skillId: spark.electric
-    action: 8
   - skillId: thunder.electric
     action: 9

@@ -44,7 +44,8 @@ namespace Capstone.Game.SettingsSystem {
             Label(canvas,"settings-help-current-label","Đang chọn",18,1088,466,210,32);
             helpValue=Label(canvas,"settings-help-value","",20,1300,466,232,32);helpValue.style.unityTextAlign=TextAnchor.MiddleRight;
             helpExtra=Label(canvas,"settings-help-extra","",18,1088,518,444,148);
-            var saved=new FinalButton{ text="Thiết lập được tự lưu"};Place(saved,1088,692,444,64);saved.SetEnabled(false);canvas.Add(saved);saved.style.opacity=1;Icon(saved,"check",18,20,24);
+            var saved=new FinalButton{name="settings-save-game",text="LƯU TIẾN TRÌNH"};
+            Place(saved,1088,692,444,64);canvas.Add(saved);Icon(saved,"check",18,20,24);
             note=Label(canvas,"settings-tab-note","",18,64,674,948,80);note.AddToClassList("settings-group-note");
             noteHeading=Label(canvas,"settings-note-heading","GHI CHÚ",22,100,630,904,36);noteIcon=Icon(canvas,"book",66,634,24);
             string[] tabLabels={"ÂM THANH","ĐIỀU KHIỂN","GIAO DIỆN","HỆ THỐNG"},tabIcons={"audio","controls","interface","settings"};

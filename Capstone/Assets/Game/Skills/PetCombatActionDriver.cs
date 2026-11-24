@@ -314,7 +314,7 @@ namespace Capstone.Game.Skills
             if (IsSkillBusy)
             {
                 if(Phase==PetCombatPhase.Positioning){PositionSkill();return;}
-                if (Time.time - startedAt > 5)
+                if (!released && Time.time - startedAt > 5)
                 {
                     Reject("Animation kỹ năng không hoàn tất.");
                     Cancel();
@@ -381,7 +381,8 @@ namespace Capstone.Game.Skills
                 }
             }
 
-            if (state.fullPathHash != hash)
+            bool inCastState = state.fullPathHash == hash;
+            if (!inCastState && !released)
             {
                 if (Time.time - animationStartedAt > .4f)
                 {
@@ -392,7 +393,9 @@ namespace Capstone.Game.Skills
                 return;
             }
 
-            normalized = Mathf.Max(normalized, state.normalizedTime);
+            // A blend out after release must not cancel the launched projectiles or a channel.
+            float elapsedNormalized = (Time.time - animationStartedAt) * profile.playbackSpeed / Mathf.Max(.05f, clipDuration);
+            normalized = Mathf.Max(normalized, inCastState ? state.normalizedTime : elapsedNormalized);
             chainRemaining = Mathf.Max(0, profile.chainNormalized - normalized) * clipDuration / Mathf.Max(.1f, profile.playbackSpeed);
             if (!released && normalized >= profile.releaseNormalized && presentation.NotifyRelease(token))
             {

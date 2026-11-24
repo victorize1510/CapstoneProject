@@ -79,6 +79,8 @@ namespace Capstone.Game.HudSystem {
             else if (preview.IsFavorite) preview.DisabledReason = "Bỏ Yêu thích trước khi thả thú.";
             else if (IsProtectedSpecies(preview.Species)) preview.DisabledReason = "Thú này được bảo vệ và không thể thả.";
             else if (roster == null || !roster.Contains(pet)) preview.DisabledReason = "Thú không còn nằm trong Party hoặc Kho thú.";
+            else if (roster.PartyCount <= 1 && roster.GetPartyPet(0) == pet)
+                preview.DisabledReason = "Đội hình phải còn ít nhất 1 pet.";
             else if (roster.OwnedCount <= 1) preview.DisabledReason = "Không thể thả thú cuối cùng của bạn.";
             else if (roster.ReleasedToday >= DailyReleaseLimit) preview.DisabledReason = $"Đã đạt giới hạn thả {DailyReleaseLimit} thú hôm nay.";
             else if (currencyWallet == null) preview.DisabledReason = "Không tìm thấy ví Gold của người chơi.";

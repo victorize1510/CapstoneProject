@@ -60,9 +60,10 @@ namespace Capstone.Game.Skills {
             if (shot.profile.pattern == PetSkillPattern.Cone || shot.profile.pattern == PetSkillPattern.Beam)
                 pulse.Direction = ChannelDirection(shot.token, origin);
             if (shot.profile.pattern == PetSkillPattern.TravelingArea) {
-                // Traveling zones skim the ground at combat-body height.
+                // Keep the travel plane level even when the caster looks up/down.
+                var direction = Vector3.ProjectOnPlane(shot.direction, Vector3.up);
+                pulse.Direction = direction.sqrMagnitude > .001f ? direction.normalized : castFacing;
                 pulse.Point = pulse.Origin = pulse.PreviousPoint = combat.Center;
-                pulse.Direction = castFacing;
                 pulse.TravelHits = new Dictionary<GameObject, (int, float)>();
                 pulse.Visual = CombatEffectPool.Rent(shot.profile.projectileVisual, pulse.Point, Quaternion.LookRotation(pulse.Direction));
                 if (pulse.Visual != null) pulse.Visual.transform.localScale *= shot.profile.visualScale * presentation.VisualScale;

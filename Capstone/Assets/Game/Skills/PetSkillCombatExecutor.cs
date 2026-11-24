@@ -357,6 +357,7 @@ namespace Capstone.Game.Skills
                     shot.remaining = shot.profile.TravelRange;
                     float flightSeconds = shot.remaining / Mathf.Max(.1f, shot.profile.projectileSpeed);
                     shot.expires = Time.time + Mathf.Max(shot.profile.lifetime, flightSeconds + .1f);
+                    presentation.KeepImpactOpen(token, shot.expires);
                     // SphereCast khong bao collider da nam trong mieng nong khi phat dan.
                     if (ResolveInitialOverlap(shot))
                     {

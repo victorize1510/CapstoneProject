@@ -922,7 +922,7 @@ namespace Capstone.Game.HudSystem {
             bool fromStorage = selectionSource == SelectionSource.Storage;
             bool fromParty = selectionSource == SelectionSource.Party;
             bool canAdd = hasSelection && fromStorage && provider != null && provider.PartyCount < PartySize;
-            bool canMove = hasSelection && fromParty && provider != null && !provider.IsFull;
+            bool canMove = hasSelection && fromParty && provider != null && provider.PartyCount > 1 && !provider.IsFull;
             SetVisible(addButton, canAdd);
             SetVisible(moveButton, canMove);
             SetVisible(replaceButton, hasSelection);

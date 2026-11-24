@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Capstone.Game.Inventory;
 using Capstone.Game.UISystem;
 using Capstone.Game.PetSummon;
+using Capstone.Game.SaveSystem;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -32,7 +33,7 @@ namespace Capstone.Game.SettingsSystem {
         SettingsCapabilities capabilities;
         bool leavingScene;
         SettingsFinalView presentation;
-        enum Modal { None, Guide, Reset, Quit }
+        enum Modal { None, Guide, Reset, Quit, Save }
         Modal currentModal;
         public bool IsOpen => open;
         public event Action BackRequested;
@@ -89,6 +90,7 @@ namespace Capstone.Game.SettingsSystem {
             BindButton("settings-guide-row", "Hướng dẫn phím điều khiển", "Hướng dẫn phím", () => OpenModal(Modal.Guide));
             BindButton("settings-reset-row", "Đặt lại cài đặt mặc định", "Đặt lại mặc định", () => OpenModal(Modal.Reset));
             BindButton("settings-quit-row", "Thoát về màn hình chính", "Về màn hình chính", () => OpenModal(Modal.Quit));
+            Click(root.Q<Button>("settings-save-game"), SaveProgress);
             Click(root.Q<Button>("settings-back"), () => BackRequested?.Invoke());
             Click(cancel, CloseModal); Click(confirm, ConfirmModal);
             Click(root.Q<Button>("settings-modal-close"),()=>{if(!leavingScene)CloseModal();});
@@ -208,6 +210,7 @@ namespace Capstone.Game.SettingsSystem {
             Action guarded = PlayerActionGate.Guard(this, name, callback); button.clicked += guarded; unbind.Add(() => button.clicked -= guarded);
         }
         void Click(Button button, Action callback) {
+            if (button == null) return;
             Action guarded = PlayerActionGate.Guard(this, "settings:" + button.name, callback);
             button.clicked += guarded; unbind.Add(() => button.clicked -= guarded);
         }
@@ -241,17 +244,31 @@ namespace Capstone.Game.SettingsSystem {
             unbind.Add(() => { inputRoot.UnregisterCallback(submit, TrickleDown.TrickleDown); inputRoot.UnregisterCallback(key, TrickleDown.TrickleDown); });
         }
         void Unbind() { foreach (var action in unbind) action(); unbind.Clear(); sliders.Clear(); toggles.Clear(); }
+        void SaveProgress() {
+            if (leavingScene) return;
+            var save = Application.isPlaying
+                ? GetComponentInParent<PlayerSaveController>() ?? FindFirstObjectByType<PlayerSaveController>()
+                : null;
+            bool saved = save != null && save.SaveNow();
+            OpenModal(Modal.Save);
+            modalText.text = saved ? "Đã lưu tiến trình hiện tại."
+                : save == null ? "Hiện chưa có phiên chơi để lưu."
+                : save.HasSave && !save.IsCurrentSlotLoaded ? "Hãy tải bản lưu hiện có trước khi lưu."
+                : "Chưa lưu được tiến trình. Hãy thử lại sau khi thao tác hiện tại kết thúc.";
+        }
         void OpenModal(Modal type) {
             if (leavingScene) return;
             confirm.SetEnabled(true); cancel.SetEnabled(true);
             currentModal = type; modalError.text = "";
-            presentation?.Modal(type==Modal.Guide);
-            modalTitle.text = type == Modal.Guide ? "PHÍM ĐIỀU KHIỂN" : type == Modal.Reset ? "ĐẶT LẠI CÀI ĐẶT" : "VỀ MÀN HÌNH CHÍNH";
+            bool closeOnly = type == Modal.Guide || type == Modal.Save;
+            presentation?.Modal(type == Modal.Guide);
+            modalTitle.text = type == Modal.Save ? "LƯU TIẾN TRÌNH" : type == Modal.Guide ? "PHÍM ĐIỀU KHIỂN"
+                : type == Modal.Reset ? "ĐẶT LẠI CÀI ĐẶT" : "VỀ MÀN HÌNH CHÍNH";
             modalText.text = type == Modal.Guide ? controlsGuide?.Invoke() ?? "Chưa có thông tin phím điều khiển."
                 : type == Modal.Reset ? "Bạn có muốn đặt lại toàn bộ cài đặt? Tiến trình trò chơi của bạn được giữ nguyên."
                 : "Bạn có muốn trở về màn hình chính? Trò chơi sẽ lưu tiến trình trước khi chuyển màn hình.";
             confirm.text = type == Modal.Reset ? "ĐẶT LẠI" : "VỀ MÀN HÌNH CHÍNH";
-            Show(confirm, type != Modal.Guide); cancel.text = type == Modal.Guide ? "ĐÓNG" : "HỦY";
+            Show(confirm, !closeOnly); cancel.text = closeOnly ? "ĐÓNG" : "HỦY";
             Show(modal, true); PanelFocusUtility.Open(modal);
         }
         void ConfirmModal() {

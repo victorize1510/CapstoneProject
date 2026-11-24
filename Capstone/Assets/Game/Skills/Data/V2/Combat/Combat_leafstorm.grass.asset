@@ -19,7 +19,7 @@ MonoBehaviour:
   projectileSpeed: 5
   projectileRadius: 0.18
   lifetime: 3
-  projectileVisual: {fileID: 3847542690885776817, guid: 32b1d2697b1efe14f810a01475453371, type: 3}
+  projectileVisual: {fileID: 3847542690885776817, guid: acc0aae5580fdcd6f0a77cbbb33a4204, type: 3}
   releaseSocket: Head
   autoAcquireTarget: 1
   meleeHalfAngle: 55

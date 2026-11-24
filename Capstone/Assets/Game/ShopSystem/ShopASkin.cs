@@ -15,6 +15,7 @@ namespace Capstone.Game.ShopSystem {
             Face(root.Q("shop-search-group"),"A-search");Face(root.Q("shop-sort"),"sort-field");Face(root.Q("shop-quantity"),"quantity-face");
             string[] icons={"heal","capture","material","favorite","evolution"};var cats=root.Query<Button>(className:"shop-category").ToList();for(int i=0;i<cats.Count;i++){Face(cats[i],"A-category");var icon=cats[i].Q<Label>(className:"shop-category-icon");icon.text="";Glyph(icon,icons[i]);icon.style.unityBackgroundImageTintColor=GreenAngularGeometry.Ink;}
             Face(root.Q("shop-buy"),"A-buy");Face(root.Q("shop-minus"),"icon-button");Face(root.Q("shop-plus"),"icon-button");Face(root.Q("shop-max"),"max-button");
+            Face(root.Q("shop-sell"),"A-buy");Face(root.Q("shop-trade-mode"),"A-buy");
             Utility(root.Q<Button>("shop-clear"),"close");Utility(root.Q<Button>("shop-plus"),"plus");Utility(root.Q<Button>("shop-minus"),"minus");
             var currency=root.Q(className:"inventory-currency");Face(currency,"quantity-face");if(currency!=null&&faces.TryGetValue(currency,out var currencyFace))currencyFace.fill.FillKind="A-category";
             var back=root.Q<Button>("shop-back");if(back is ShopAButton button)button.Kind="A-buy";

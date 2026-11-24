@@ -1,145 +1,278 @@
+
 using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using Capstone.Game.Inventory;
 using UnityEngine;
 using UnityEngine.AI;
 
-namespace Capstone.Game.UISystem {
+namespace Capstone.Game.UISystem
+{
     [DefaultExecutionOrder(-200)]
     [DisallowMultipleComponent]
-    public sealed class NpcPanelInteractable : MonoBehaviour {
-        public enum PanelTarget {
+    public sealed class NpcPanelInteractable : MonoBehaviour
+    {
+        public enum PanelTarget
+        {
             Box,
             Shop
         }
 
+        [Header("Tuong tac")]
         [SerializeField] PanelTarget targetPanel = PanelTarget.Box;
         [SerializeField] KeyCode interactKey = KeyCode.E;
         [SerializeField, Min(0.1f)] float interactDistance = 2.75f;
-        [SerializeField, Range(1f, 180f)] float viewAngle = WorldInteractionView.DefaultViewAngle;
-        [SerializeField] LayerMask obstructionLayers = Physics.DefaultRaycastLayers;
+
+        [Header("Tham chieu")]
         [SerializeField] Transform player = null;
         [SerializeField] GameMenuController menuController = null;
 
-        [Header("Prompt")]
+        [Header("Hien thi nut tuong tac")]
         [SerializeField] Vector3 promptOffset = new Vector3(0f, 1.65f, 0f);
         [SerializeField] Color promptColor = Color.white;
 
         TextMesh promptLabel;
         Camera mainCamera;
+
         Capstone.Game.ShopSystem.ShopSource shopSource;
+
         public KeyCode InteractKey => interactKey;
 
-        void Awake() {
+        // Khoi tao
+        void Awake()
+        {
             ResolveReferences();
             EnsurePrompt();
             EnsureNavigationObstacle();
             SetPromptVisible(false);
         }
 
-        void OnEnable() { Capstone.Game.WorldFeedback.CameraActorOccluder.Ensure(gameObject); }
+        void OnEnable()
+        {
+            Capstone.Game.WorldFeedback.CameraActorOccluder.Ensure(gameObject);
+        }
 
-        void OnDisable() {
+        void OnDisable()
+        {
             SetPromptVisible(false);
         }
 
-        void Update() {
+        // Cap nhat tuong tac
+        void Update()
+        {
             ResolveReferences();
 
             bool canInteract = CanInteract();
+
             SetPromptVisible(canInteract);
             FacePromptToCamera();
 
-            if (canInteract && PhysicalKeys.GetKeyDown(interactKey)) {
+            if (canInteract && PhysicalKeys.GetKeyDown(interactKey))
+            {
                 OpenTargetPanel();
             }
         }
 
-        void OpenTargetPanel() {
-            if (menuController == null || !CanInteract() || !WorldInteractionView.TryConsumePress()) return;
+        // Kiem tra khoang cach giua Player va NPC
+        bool CanInteract()
+        {
+            if (player == null || menuController == null)
+                return false;
+
+            if (InventoryInputController.GameplayInputBlocked)
+                return false;
+
+            Vector3 offset = player.position - transform.position;
+
+            return offset.sqrMagnitude
+                <= interactDistance * interactDistance;
+        }
+
+        // Mo panel tuong ung
+        void OpenTargetPanel()
+        {
+            if (menuController == null)
+                return;
+
+            if (!CanInteract())
+                return;
+
+            if (!WorldInteractionView.TryConsumePress())
+                return;
 
             SetPromptVisible(false);
-            if (targetPanel == PanelTarget.Box) menuController.OpenBoxFromWorld();
-            else {
-                if (shopSource == null) {
-                    shopSource = GetComponent<Capstone.Game.ShopSystem.ShopSource>();
-                    if (shopSource == null) shopSource = gameObject.AddComponent<Capstone.Game.ShopSystem.ShopSource>();
-                }
-                menuController.OpenShopFromWorld(shopSource);
+
+            switch (targetPanel)
+            {
+                case PanelTarget.Box:
+
+                    menuController.OpenBoxFromWorld();
+                    break;
+
+                case PanelTarget.Shop:
+
+                    if (shopSource == null)
+                    {
+                        shopSource =
+                            GetComponent<Capstone.Game.ShopSystem.ShopSource>();
+
+                        if (shopSource == null)
+                        {
+                            shopSource =
+                                gameObject.AddComponent<
+                                    Capstone.Game.ShopSystem.ShopSource>();
+                        }
+                    }
+
+                    menuController.OpenShopFromWorld(shopSource);
+                    break;
             }
         }
 
-        void ResolveReferences() {
-            if (menuController == null) menuController = FindFirstObjectByType<GameMenuController>();
-            if (player != null) return;
+        // Tu dong tim Player va Menu Controller
+        void ResolveReferences()
+        {
+            if (menuController == null)
+            {
+                menuController =
+                    FindFirstObjectByType<GameMenuController>();
+            }
 
-            var movement = FindFirstObjectByType<BasicPlayerMovement>();
-            if (movement != null) {
+            if (player != null)
+                return;
+
+            var movement =
+                FindFirstObjectByType<BasicPlayerMovement>();
+
+            if (movement != null)
+            {
                 player = movement.transform;
                 return;
             }
 
             GameObject playerObject = GameObject.Find("Player");
-            if (playerObject != null) player = playerObject.transform;
+
+            if (playerObject != null)
+            {
+                player = playerObject.transform;
+            }
         }
 
-        bool CanInteract() => !InventoryInputController.GameplayInputBlocked && menuController != null
-            && WorldInteractionView.CanInteract(player, transform, interactDistance, viewAngle, obstructionLayers);
+        // Tao chu hien thi tren dau NPC
+        void EnsurePrompt()
+        {
+            if (promptLabel != null)
+                return;
 
-        void EnsurePrompt() {
-            if (promptLabel != null) return;
+            GameObject promptObject =
+                new GameObject("Interaction Prompt");
 
-            var promptObject = new GameObject("Interaction Prompt");
             promptObject.transform.SetParent(transform, false);
             promptObject.transform.localPosition = promptOffset;
 
             promptLabel = promptObject.AddComponent<TextMesh>();
-            promptLabel.text = targetPanel == PanelTarget.Box ? "[E] Mở kho thú" : "[E] Mở cửa hàng";
+
+            promptLabel.text = targetPanel == PanelTarget.Box
+                ? $"[{interactKey}] Mở kho thú"
+                : $"[{interactKey}] Mở cửa hàng";
+
             promptLabel.anchor = TextAnchor.MiddleCenter;
             promptLabel.alignment = TextAlignment.Center;
             promptLabel.characterSize = 0.075f;
             promptLabel.fontSize = 64;
             promptLabel.color = promptColor;
 
-            MeshRenderer renderer = promptObject.GetComponent<MeshRenderer>();
-            if (renderer != null) renderer.sortingOrder = 25;
-        }
+            MeshRenderer meshRenderer =
+                promptObject.GetComponent<MeshRenderer>();
 
-        void EnsureNavigationObstacle() {
-            NavMeshObstacle obstacle = GetComponent<NavMeshObstacle>();
-            if (obstacle == null) obstacle = gameObject.AddComponent<NavMeshObstacle>();
-
-            obstacle.carving = true;
-            obstacle.carveOnlyStationary = true;
-
-            if (TryGetComponent(out BoxCollider box)) {
-                obstacle.shape = NavMeshObstacleShape.Box;
-                obstacle.center = box.center;
-                obstacle.size = box.size;
-            }
-            else if (TryGetComponent(out CapsuleCollider capsule)) {
-                obstacle.shape = NavMeshObstacleShape.Capsule;
-                obstacle.center = capsule.center;
-                obstacle.radius = Mathf.Max(0.1f, capsule.radius);
-                obstacle.height = Mathf.Max(capsule.height, obstacle.radius * 2f);
+            if (meshRenderer != null)
+            {
+                meshRenderer.sortingOrder = 25;
             }
         }
 
-        void SetPromptVisible(bool visible) {
-            visible &= Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible;
-            if (promptLabel != null && promptLabel.gameObject.activeSelf != visible) {
+        // Hien hoac an nut tuong tac
+        void SetPromptVisible(bool visible)
+        {
+            visible &=
+                Capstone.Game.SettingsSystem.GameSettingsService
+                    .InteractionPromptsVisible;
+
+            if (promptLabel == null)
+                return;
+
+            if (promptLabel.gameObject.activeSelf != visible)
+            {
                 promptLabel.gameObject.SetActive(visible);
             }
         }
 
-        void FacePromptToCamera() {
-            if (promptLabel == null || !promptLabel.gameObject.activeSelf) return;
-            if (mainCamera == null) mainCamera = Camera.main;
-            if (mainCamera == null) return;
+        // Xoay chu ve phia Camera
+        void FacePromptToCamera()
+        {
+            if (promptLabel == null)
+                return;
+
+            if (!promptLabel.gameObject.activeSelf)
+                return;
+
+            if (mainCamera == null)
+            {
+                mainCamera = Camera.main;
+            }
+
+            if (mainCamera == null)
+                return;
 
             Transform cameraTransform = mainCamera.transform;
-            promptLabel.transform.rotation = Quaternion.LookRotation(
-                promptLabel.transform.position - cameraTransform.position,
-                cameraTransform.up);
+
+            Vector3 direction =
+                promptLabel.transform.position
+                - cameraTransform.position;
+
+            if (direction.sqrMagnitude < 0.0001f)
+                return;
+
+            promptLabel.transform.rotation =
+                Quaternion.LookRotation(
+                    direction,
+                    cameraTransform.up
+                );
+        }
+
+        // Tao vat can cho he thong NavMesh
+        void EnsureNavigationObstacle()
+        {
+            NavMeshObstacle obstacle =
+                GetComponent<NavMeshObstacle>();
+
+            if (obstacle == null)
+            {
+                obstacle =
+                    gameObject.AddComponent<NavMeshObstacle>();
+            }
+
+            obstacle.carving = true;
+            obstacle.carveOnlyStationary = true;
+
+            if (TryGetComponent(out BoxCollider box))
+            {
+                obstacle.shape = NavMeshObstacleShape.Box;
+                obstacle.center = box.center;
+                obstacle.size = box.size;
+            }
+            else if (TryGetComponent(out CapsuleCollider capsule))
+            {
+                obstacle.shape = NavMeshObstacleShape.Capsule;
+                obstacle.center = capsule.center;
+
+                obstacle.radius =
+                    Mathf.Max(0.1f, capsule.radius);
+
+                obstacle.height =
+                    Mathf.Max(
+                        capsule.height,
+                        obstacle.radius * 2f
+                    );
+            }
         }
     }
 }

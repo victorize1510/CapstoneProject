@@ -543,8 +543,20 @@ namespace Capstone.Game.SaveSystem {
                 }
             }
 
+            PetBoxRuntimeProvider.CompactPartySlots(petCommandInput);
+            // Older saves allowed parking the entire team in the box.
+            if (petBoxProvider != null && petCommandInput.petSlots[0] == null && saveData.boxSlots != null) {
+                foreach (var slot in saveData.boxSlots) {
+                    if (slot == null || slot.slotIndex < 0 || slot.slotIndex >= Mathf.Max(1, saveData.boxCapacity)) continue;
+                    var boxedPet = ResolvePet(slot.petId, petsById);
+                    if (boxedPet == null) continue;
+                    petCommandInput.petSlots[0] = boxedPet;
+                    if (boxedPet.owner == null) boxedPet.AssignOwner(petCommandInput.transform);
+                    break;
+                }
+            }
             PetController activePet = ResolvePet(saveData.activePetId, petsById);
-            if (activePet == null) activePet = FindFirstPartyPet();
+            if (activePet == null || System.Array.IndexOf(petCommandInput.petSlots, activePet) < 0) activePet = FindFirstPartyPet();
             petCommandInput.SetActivePet(activePet);
 
             for (int i = 0; i < petCommandInput.petSlots.Length; i++) {

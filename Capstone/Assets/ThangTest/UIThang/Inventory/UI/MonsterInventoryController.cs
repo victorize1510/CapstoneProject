@@ -776,6 +776,7 @@ namespace Capstone.Game.Inventory {
 
         public void RequestClose() {
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "close")) return;
+            if (activeSection == MenuSection.Shop && shopController?.DismissSalePopup() == true) return;
             if (activeSection == MenuSection.Box && petBoxPanelController != null) { petBoxPanelController.RequestBack(); return; }
             Close(); BackRequested?.Invoke();
         }
