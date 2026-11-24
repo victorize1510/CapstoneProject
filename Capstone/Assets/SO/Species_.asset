@@ -16,5 +16,42 @@ MonoBehaviour:
   startingMana: 100
   catalog: {fileID: 0}
   initializeFreshWildLoadout: 0
-  learnset: []
+  learnset:
+  - skill: {fileID: 0}
+    learnAtLevel: 0
+    overrideAnimation: 0
+    animatorStates:
+    - 
+    animationDuration: 0
+    animationFade: 0
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 0}
+    learnAtLevel: 0
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0
+    animationFade: 0
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 0}
+    learnAtLevel: 0
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0
+    animationFade: 0
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 0}
+    learnAtLevel: 0
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0
+    animationFade: 0
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
   defaultLoadout: []
