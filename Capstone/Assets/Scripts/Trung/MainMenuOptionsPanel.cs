@@ -21,11 +21,13 @@ public static class GameOptions
 
     public static readonly int[] FpsChoices = { 30, 60, 120, 144, -1 };   // -1 = không giới hạn
 
-    // AudioMixer để chỉnh riêng Nhạc nền / Hiệu ứng. Tự lấy Resources/GameAudioMixer nếu chưa gán.
+    // AudioMixer để chỉnh riêng Nhạc nền / Hiệu ứng. Tự lấy Resources/CapstoneMixer (mixer chung của nhóm),
+    // không có thì Resources/GameAudioMixer.
     public static AudioMixer Mixer;
     public static string MusicParameter = "MusicVolume";
     public static string SfxParameter = "SfxVolume";
-    public const string MixerResourceName = "GameAudioMixer";
+    public const string MixerResourceName = "CapstoneMixer";
+    public const string FallbackMixerResourceName = "GameAudioMixer";
 
     static SettingsState Shared => GameSettingsService.Instance != null ? GameSettingsService.Instance.Model : null;
 
@@ -147,6 +149,7 @@ public static class GameOptions
     public static AudioMixer LoadMixer()
     {
         if (Mixer == null) Mixer = Resources.Load<AudioMixer>(MixerResourceName);
+        if (Mixer == null) Mixer = Resources.Load<AudioMixer>(FallbackMixerResourceName);
         return Mixer;
     }
 
