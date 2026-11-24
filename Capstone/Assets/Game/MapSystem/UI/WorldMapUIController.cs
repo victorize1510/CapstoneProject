@@ -95,7 +95,7 @@ namespace Capstone.Game.MapSystem.UI {
         }
         public bool IsFilterVisible(MapFilterGroup group) => visibleGroups[(int)group];
         public void SetTrackedQuestTitle(string title) => questBanner?.SetTitle(title);
-        public void UpdateRegion(Vector3 position) {if(mapSystem!=null&&mapSystem.PlayerTarget!=null)region?.SetPosition(mapSystem.PlayerTarget.position);}
+        public void UpdateRegion(Vector3 position) {if(mapSystem!=null&&mapSystem.PlayerTarget!=null)region?.SetPosition(mapSystem.PlayerTarget.position, worldMap?.MapRegionName);}
 
         public MapMarkerView RenderMarker(MapMarkerData data) {
             if (data == null || string.IsNullOrWhiteSpace(data.id)) throw new ArgumentException("Marker requires an id.");

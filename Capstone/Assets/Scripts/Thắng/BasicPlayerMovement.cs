@@ -261,7 +261,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
     private Vector3 landingCarryDirection;
     private float verticalVelocity;
 
-    internal void WarpAfterPartyDefeat(Vector3 point, Quaternion rotation)
+    internal void WarpTo(Vector3 point, Quaternion rotation)
     {
         var controller = characterController != null ? characterController : GetComponent<CharacterController>();
         bool enabledBefore = controller != null && controller.enabled;

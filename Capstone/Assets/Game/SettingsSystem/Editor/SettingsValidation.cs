@@ -215,7 +215,7 @@ namespace Capstone.Game.SettingsSystem.Editor {
                 Toggle(root,"settings-save-row").value=false;
                 Check(root.Q<Label>("game-save-indicator").style.display==DisplayStyle.None, "save indicator can hide without disabling saves");
                 Check(!root.Q("settings-fullscreen-row").enabledSelf && service.CanReturnToMainMenu, "Editor display controls explain limitation and real MainMenu is available");
-                Check(menu.GetControlsGuide().Contains("Đổi nhân vật") && menu.GetControlsGuide().Contains("Ra lệnh thú"), "guide uses actual visual and pet controls");
+                Check(menu.GetControlsGuide().Contains("Đổi nhân vật") && menu.GetControlsGuide().Contains("Xem thông tin quái"), "guide uses actual visual and pet controls");
                 Submit(Button(root,"settings-guide-row")); await Task.Delay(180);
                 Check(inventory.TryCloseTopmostPanel() && inventory.IsSettingsOpen, "Esc closes guide before Settings");
                 await Task.Delay(180); Submit(root.Q<Button>("settings-back")); await Task.Delay(220);

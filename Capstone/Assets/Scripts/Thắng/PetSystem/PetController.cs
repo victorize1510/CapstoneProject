@@ -109,6 +109,8 @@ public partial class PetController : MonoBehaviour
     [Min(0.1f)]
     public float navMeshRetryInterval = 1f;
     [Header("Chien dau")]
+    [SerializeField, Tooltip("Bật các lệnh đánh thường cũ cho pet này khi cần thử lại.")]
+    private bool enableBasicAttacks;
     public float attackRange = 1.45f;
     public float attackApproachDistance = 0.65f;
     public float attackReachPadding = 0.18f;
@@ -411,6 +413,7 @@ public partial class PetController : MonoBehaviour
             bool peaceful = CanReceiveCommands
                 && state != PetState.ChaseTarget && state != PetState.AttackTarget && !HasCombatTarget
                 && !IsSkillAnimationActive() && Time.time >= hitReactionUntil
+                && (enableBasicAttacks || owner == null || FlatDistance(transform.position, owner.position) <= closeFollowDistance + .75f)
                 && !Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked && !PetEvolutionPresentationController.IsPresenting(this)
                 && (owner == null || owner.GetComponent<CombatEngagement>()?.HudTarget == null);
             if (!peaceful)
@@ -554,11 +557,12 @@ public partial class PetController : MonoBehaviour
         MoveTo(commandedPoint, commandSpeed, pointStoppingDistance);
     }
 
-    internal bool CanAcceptAttackCommand(DummyEnemy enemy) => state != PetState.AttackTarget && !IsSkillAnimationActive()
+    internal bool CanAcceptAttackCommand(DummyEnemy enemy) => enableBasicAttacks && state != PetState.AttackTarget && !IsSkillAnimationActive()
         && (target != enemy || state != PetState.ChaseTarget);
 
     public void CommandAttack(DummyEnemy enemy)
     {
+        if (!enableBasicAttacks) return;
         if (!CanReceiveCommands)
         {
             if (summonOnCommand)
@@ -583,7 +587,7 @@ public partial class PetController : MonoBehaviour
 
     internal bool QueueSkillPursuit(DummyEnemy enemy, int revision)
     {
-        if (revision != SkillPursuitRevision || wildEncounter || !CanReceiveCommands
+        if (!enableBasicAttacks || revision != SkillPursuitRevision || wildEncounter || !CanReceiveCommands
             || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsAlive || enemy.CaptureLocked)
             return false;
 
@@ -775,7 +779,7 @@ public partial class PetController : MonoBehaviour
 
     private void UpdateFollow()
     {
-        if (closeFollowRequested)
+        if (!enableBasicAttacks || closeFollowRequested)
         {
             UpdateCloseFollow();
             return;
@@ -811,6 +815,13 @@ public partial class PetController : MonoBehaviour
         if (owner == null)
         {
             StopMovement();
+            return;
+        }
+
+        if (!enableBasicAttacks)
+        {
+            state = PetState.FollowOwner;
+            UpdateFollow();
             return;
         }
 
@@ -1050,6 +1061,11 @@ public partial class PetController : MonoBehaviour
             return;
         }
 
+        if (!enableBasicAttacks)
+        {
+            UpdateCloseFollow();
+            return;
+        }
         Vector3 desired = owner.TransformPoint(followOffset);
         MoveTo(desired, followSpeed, followDistance);
     }

@@ -157,7 +157,10 @@ namespace Capstone.Game.CreatureSystem
         }
 
         Transform disengagedOwner;
-        public void AcceptCombatIntent(Transform owner) { if (disengagedOwner == owner) disengagedOwner = null; }
+        public void AcceptCombatIntent(Transform owner) {
+            if (disengagedOwner == owner) disengagedOwner = null;
+            health?.MarkQuestEncounterStarted();
+        }
         public void DisengageFrom(Transform owner) {
             if (health == null || !health.IsAlive || health.IsBoss) return;
             disengagedOwner = owner;

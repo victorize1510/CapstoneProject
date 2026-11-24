@@ -443,7 +443,7 @@ namespace Capstone.Game.HudSystem {
 
             CompactPartySlots(input);
             EnsureActivePet(input);
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "RosterChanged", () => Changed?.Invoke());
             error = string.Empty;
             return true;
         }
@@ -472,7 +472,7 @@ namespace Capstone.Game.HudSystem {
             if (token.WasSummoned) token.Pet.Summon();
             else token.Pet.Withdraw();
 
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "RosterChanged", () => Changed?.Invoke());
             error = string.Empty;
             return true;
         }

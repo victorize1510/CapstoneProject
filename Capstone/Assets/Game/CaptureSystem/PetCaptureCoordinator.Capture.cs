@@ -158,6 +158,8 @@ namespace Capstone.Game.HudSystem {
                         metadata.RecordCaptureInfo();
                         profileProvider.RecordCreatureSeen();profileProvider.RecordSpeciesCaptured(speciesId);
                         questManager.ReportProgress(QuestProgressEvent.CreatureCaptured(metadata.PersistentId,speciesId));
+                        if (target != null)
+                            ChapterQuestFlow.ReportCapture(questManager, target.Enemy, metadata);
                     }
                     if(!saveController.SaveNow()){error=CaptureMessages.For(CaptureFailure.SaveFailed);return false;}
                     saved=true;

@@ -116,31 +116,31 @@ namespace Capstone.Game.HudSystem {
             if(IsPickerOpen||InventoryInputController.GameplayInputBlocked||coordinator!=null&&coordinator.IsCapturing)return;
             Refresh();GameplayHudController.Live?.Radial?.SetOpen(false);
             bool build=picker==null;
-            if(build){picker=V.Rect(host,"CaptureBallPicker");V.Place(picker,new Vector2(1,0),new Vector2(1,0),new Vector2(-108,278),new Vector2(320,192));}
+            if(build){picker=V.Rect(host,"CaptureBallPicker");V.Place(picker,new Vector2(1,0),new Vector2(1,0),new Vector2(-62,286),new Vector2(320,150));}
             picker.gameObject.SetActive(true);
             presentationCatalog=Resources.Load<CaptureBallPresentationCatalog>("Capture/BallPresentations");
             if(build){
             for(int i=0;i<3;i++){
                 int index=i;var row=V.Button(picker,"BallChoice"+i,HudFrameGraphic.Shape.Chamfered,10);
-                V.Top((RectTransform)row.transform,i*108,i==1?0:34,96,112);choiceButtons[i]=row;
+                V.Top((RectTransform)row.transform,4+i*108,0,96,112);choiceButtons[i]=row;
                 choiceGroups[i]=row.gameObject.AddComponent<CanvasGroup>();
                 var image=V.Image(row.transform,"Icon");image.preserveAspect=true;image.raycastTarget=false;V.Top(image.rectTransform,16,6,64,64);choiceIcons[i]=image;
-                var name=V.Text(row.transform,"Name",Choice(i)?.displayName??new[]{"Thường","Rare","Ultra"}[i],17,TextAnchor.MiddleCenter);name.fontStyle=FontStyle.Bold;name.raycastTarget=false;V.Top(name.rectTransform,4,72,88,24);
-                var qty=V.Text(row.transform,"Quantity","0",16,TextAnchor.MiddleRight);qty.raycastTarget=false;V.Top(qty.rectTransform,62,48,28,22);choiceCounts[i]=qty;
+                var name=V.Text(row.transform,"Name",Choice(i)?.displayName??new[]{"Thường","Hiếm","Cao cấp"}[i],17,TextAnchor.MiddleCenter);name.fontStyle=FontStyle.Bold;name.raycastTarget=false;V.Top(name.rectTransform,4,72,88,24);
+                var qty=V.Text(row.transform,"Quantity","0",15,TextAnchor.UpperRight);qty.raycastTarget=false;V.Top(qty.rectTransform,56,6,33,20);choiceCounts[i]=qty;
                 var key=V.Text(row.transform,"Key",(i+1).ToString(),14,TextAnchor.UpperLeft);key.raycastTarget=false;V.Top(key.rectTransform,7,5,18,18);
                 row.onClick.AddListener(()=>SelectChoice(index));
                 var trigger=row.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
                 var enter=new UnityEngine.EventSystems.EventTrigger.Entry{eventID=UnityEngine.EventSystems.EventTriggerType.PointerEnter};
                 enter.callback.AddListener(_=>{var item=ChoiceItem(index);if(item==null)Feedback("Bóng "+(Choice(index)?.displayName??"này")+" chưa được cấu hình thu phục.");else if(inventory.GetQuantity(item)<1)Feedback("Bạn không còn bóng này.");});trigger.triggers.Add(enter);
             }
-            var hint=HubR11Art.Label(picker,"Hint","1–3 chọn bóng · Thả G để đóng",16);V.Top(hint.rectTransform,0,158,320,28);
+            var hint=HubR11Art.Label(picker,"Hint","1–3 chọn bóng · Thả G để đóng",16);V.Top(hint.rectTransform,0,119,320,28);
             }
             RefreshChoices();
             releaseFrame=-1;pickerBlocked=true;InventoryInputController.SetExternalGameplayInputBlocked(this,true);
         }
         CaptureBallPresentation Choice(int i)=>presentationCatalog!=null&&i<presentationCatalog.choices.Length?presentationCatalog.choices[i]:null;
         MonsterItemDefinition ChoiceItem(int i)=>Choice(i)?.item??(i==0?CaptureAssets.LoadBall():null);
-        void RefreshChoices(){for(int i=0;i<3;i++){if(choiceButtons[i]==null)continue;var item=ChoiceItem(i);int count=item!=null&&inventory!=null?inventory.GetQuantity(item):0;choiceIcons[i].sprite=Choice(i)?.icon??item?.Icon??HubR11Art.Load("capture-glyph");choiceCounts[i].text=count.ToString();choiceGroups[i].alpha=item!=null&&count>0?1:.4f;choiceButtons[i].interactable=item!=null&&count>0;}}
+        void RefreshChoices(){for(int i=0;i<3;i++){if(choiceButtons[i]==null)continue;var item=ChoiceItem(i);int count=item!=null&&inventory!=null?inventory.GetQuantity(item):0;choiceIcons[i].sprite=Choice(i)?.icon??item?.Icon??HubR11Art.Load("capture-glyph");choiceCounts[i].text=count.ToString();choiceGroups[i].alpha=item!=null&&count>0?1:.65f;choiceButtons[i].interactable=item!=null&&count>0;var frame=choiceButtons[i].GetComponent<HudFrameGraphic>();if(frame!=null)frame.color=item!=null&&item.StableId==selectedBallId?new Color(.87f,.91f,1f):Color.white;}}
         bool SelectChoice(int i){var item=ChoiceItem(i);if(item==null){Feedback("Bóng này chưa được cấu hình thu phục.");return false;}if(inventory==null||inventory.GetQuantity(item)<1){Feedback("Bạn không còn bóng này.");return false;}return SelectBall(item.StableId);}
         public bool SelectBall(string id){Refresh();foreach(var ball in balls)if(ball.ItemId==id){selectedBallId=id;Refresh();RefreshChoices();return true;}return false;}
         public void ClosePicker(){if(picker!=null)picker.gameObject.SetActive(false);if(pickerBlocked&&releaseFrame<0)releaseFrame=Time.frameCount+1;gesture.Cancel();}

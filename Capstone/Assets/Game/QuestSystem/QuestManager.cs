@@ -33,6 +33,41 @@ namespace Capstone.Game.QuestSystem {
         bool subscribedToEventBus;
         bool registryBuilt;
         bool requirementProvidersBuilt;
+        public bool ElderIntroductionComplete { get; private set; }
+        public bool StarterChosen { get; private set; }
+        public bool TutorialComplete => ElderIntroductionComplete && StarterChosen;
+        internal ChapterQuestFlow Chapter { get; private set; }
+        public bool IsReadyForTurnIn(QuestRuntimeState state) =>
+            state != null && state.Status == QuestStatus.Active && state.Definition.RequiresTurnIn &&
+            Chapter != null && Chapter.IsReady(state);
+
+        public void MarkTutorialComplete() {
+            if (TutorialComplete) return;
+            ElderIntroductionComplete = StarterChosen = true;
+            PublishTutorialChange();
+        }
+
+        public void MarkElderIntroductionComplete() {
+            if (ElderIntroductionComplete) return;
+            ElderIntroductionComplete = true;
+            PublishTutorialChange();
+        }
+
+        public void MarkStarterChosen() {
+            if (StarterChosen) return;
+            StarterChosen = true;
+            PublishTutorialChange();
+        }
+
+        void PublishTutorialChange() {
+            RefreshQuestAvailability();
+            QuestsChanged?.Invoke();
+        }
+
+        internal void RefreshChapterTracking() {
+            TrackedQuestChanged?.Invoke(GetTrackedQuest());
+            QuestsChanged?.Invoke();
+        }
 
         public event Action QuestsChanged;
         public event Action<QuestRuntimeState> QuestChanged;
@@ -96,6 +131,7 @@ namespace Capstone.Game.QuestSystem {
         public bool TryGetQuestTarget(QuestRuntimeState quest, out QuestTargetInfo target) {
             target = default;
             if (quest == null || quest.Definition == null) return false;
+            if (quest.Definition.RequiresTurnIn && Chapter != null) return Chapter.TryGetTarget(quest, out target);
 
             foreach (var progress in quest.Objectives) {
                 if (progress == null || progress.IsComplete) continue;
@@ -143,6 +179,9 @@ namespace Capstone.Game.QuestSystem {
             }
 
             var definition = registry.Find(questId);
+            if (definition != null && definition.RequiresTutorial && !TutorialComplete) return QuestAvailabilityState.Locked;
+            if (definition != null && definition.RequiresTurnIn && !requirementEvaluator.AreMet(definition, out _))
+                return QuestAvailabilityState.Locked;
             if (definition != null && requirementEvaluator.AreMet(definition, out _)) {
                 unlockedQuestIds.Add(questId);
             }
@@ -176,13 +215,22 @@ namespace Capstone.Game.QuestSystem {
             failedRequirement = null;
             if (definition == null || string.IsNullOrWhiteSpace(definition.QuestId)) return false;
             QuestRuntimeState existing = FindQuest(definition.QuestId);
+            if (definition.RequiresTutorial && !TutorialComplete) return false;
             if (existing != null
                 && (existing.Status != QuestStatus.Abandoned || !definition.CanReacceptAfterAbandon)) return false;
 
-            return unlockedQuestIds.Contains(definition.QuestId) || requirementEvaluator.AreMet(definition, out failedRequirement);
+            return !definition.RequiresTurnIn && unlockedQuestIds.Contains(definition.QuestId) ||
+                requirementEvaluator.AreMet(definition, out failedRequirement);
         }
 
         public bool AcceptQuest(QuestDefinition definition) {
+            if (definition != null && definition.RequiresTurnIn) return false;
+            return AcceptCore(definition);
+        }
+
+        internal bool AcceptChapterQuest(QuestDefinition definition) => AcceptCore(definition);
+
+        bool AcceptCore(QuestDefinition definition) {
             if (definition == null || string.IsNullOrWhiteSpace(definition.QuestId)) return false;
 
             if (!RegisterQuestDefinition(definition)) return false;
@@ -271,9 +319,17 @@ namespace Capstone.Game.QuestSystem {
         }
 
         public bool CompleteQuest(string questId) {
+            if (FindActiveQuest(questId)?.Definition.RequiresTurnIn == true) return false;
+            return CompleteCore(questId);
+        }
+
+        internal bool CompleteChapterQuest(string questId) => CompleteCore(questId);
+
+        bool CompleteCore(string questId) {
             pendingCompletionQuestIds.Remove(questId);
             var state = FindActiveQuest(questId);
             if (state == null) return false;
+            if (state.Definition.RequiresTurnIn && !state.HasRequiredObjectivesComplete()) return false;
 
             state.Complete(Time.time);
             Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestCompleted" + state.QuestId, () => QuestCompleted?.Invoke(state));
@@ -376,6 +432,9 @@ namespace Capstone.Game.QuestSystem {
 
         public QuestSaveData CreateSaveData() {
             var saveData = new QuestSaveData {
+                tutorialComplete = TutorialComplete,
+                elderIntroductionComplete = ElderIntroductionComplete,
+                starterChosen = StarterChosen,
                 trackedQuestId = GetTrackedQuest()?.QuestId
             };
 
@@ -427,6 +486,8 @@ namespace Capstone.Game.QuestSystem {
             pendingCompletionQuestIds.Clear();
             activeQuests.Clear();
             unlockedQuestIds.Clear();
+            ElderIntroductionComplete = saveData?.tutorialComplete == true || saveData?.elderIntroductionComplete == true;
+            StarterChosen = saveData?.tutorialComplete == true || saveData?.starterChosen == true;
 
             if (saveData != null) {
                 if (saveData.unlockedQuestIds != null) {
@@ -460,6 +521,11 @@ namespace Capstone.Game.QuestSystem {
 
         void Awake() {
             EnsureReady();
+        }
+
+        void Start() {
+            if (gameObject.scene.name == ChapterQuestFlow.GameplayScene)
+                Chapter = GetComponent<ChapterQuestFlow>() ?? gameObject.AddComponent<ChapterQuestFlow>();
         }
 
         void OnEnable() {
@@ -512,6 +578,7 @@ namespace Capstone.Game.QuestSystem {
             foreach (var quest in runtimeQuestDefinitions) {
                 yield return quest;
             }
+            foreach (var quest in Resources.LoadAll<QuestDefinition>("Quests/Chapter01")) yield return quest;
         }
 
         void RebuildRequirementProviders() {
@@ -562,13 +629,25 @@ namespace Capstone.Game.QuestSystem {
 
         bool TryApplyProgress(QuestRuntimeState state, QuestProgressEvent progressEvent) {
             if (state == null || state.Status != QuestStatus.Active || state.Definition == null) return false;
+            if (!state.Definition.RequiresTurnIn && !string.IsNullOrEmpty(progressEvent.ReceiptId)) return false;
 
             var changed = false;
             foreach (var definition in state.Definition.Objectives) {
                 if (definition == null || !definition.Matches(progressEvent)) continue;
 
                 var objective = state.GetObjective(definition.ObjectiveId);
-                if (objective == null || objective.IsComplete) continue;
+                if (objective == null) continue;
+                bool trackReplacementCapture = state.Definition.RequiresTurnIn && definition.ObjectiveType == QuestObjectiveType.CaptureCreature
+                    && state.Definition.Objectives.Any(entry => entry.ObjectiveType == QuestObjectiveType.DeliverPet);
+                if (objective.IsComplete && !trackReplacementCapture) continue;
+                if (state.Definition.RequiresTurnIn) {
+                    if (definition.IsHandover || definition.ObjectiveType == QuestObjectiveType.CollectItem) continue;
+                    if (definition.ObjectiveType == QuestObjectiveType.CaptureCreature ||
+                        definition.ObjectiveType == QuestObjectiveType.DefeatCreature ||
+                        definition.ObjectiveType == QuestObjectiveType.DefeatBoss) {
+                        if (!objective.AddReceipt(progressEvent.ReceiptId)) continue;
+                    }
+                }
 
                 ApplyProgress(objective, progressEvent);
                 changed = true;
@@ -601,6 +680,7 @@ namespace Capstone.Game.QuestSystem {
 
         void BeginAutoCompleteQuest(QuestRuntimeState state) {
             if (state == null || string.IsNullOrWhiteSpace(state.QuestId)) return;
+            if (state.Definition.RequiresTurnIn) return;
             if (!pendingCompletionQuestIds.Add(state.QuestId)) return;
 
             if (autoCompleteDelay <= 0f) {
@@ -635,6 +715,7 @@ namespace Capstone.Game.QuestSystem {
 
             foreach (var definition in registry.Quests) {
                 if (definition == null || FindQuest(definition.QuestId) != null) continue;
+                if (definition.RequiresTutorial && !TutorialComplete) continue;
                 if (!requirementEvaluator.AreMet(definition, out _)) continue;
                 if (!unlockedQuestIds.Add(definition.QuestId)) continue;
 
@@ -649,7 +730,8 @@ namespace Capstone.Game.QuestSystem {
 
             foreach (var questId in completedQuest.UnlockQuestIds) {
                 var definition = registry.Find(questId);
-                if (definition == null || FindQuest(questId) != null) continue;
+                if (definition == null || FindQuest(questId) != null ||
+                    definition.RequiresTurnIn && !requirementEvaluator.AreMet(definition, out _)) continue;
                 if (!unlockedQuestIds.Add(questId)) continue;
 
                 if (publishEvents) {
@@ -697,6 +779,13 @@ namespace Capstone.Game.QuestSystem {
         void PublishQuestChanged(QuestRuntimeState state) {
             Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestChanged" + state.QuestId, () => QuestChanged?.Invoke(state));
             Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "QuestsChanged", () => QuestsChanged?.Invoke());
+        }
+
+        internal void RefreshChapterObjective(QuestRuntimeState state, QuestObjectiveDefinition definition, int count) {
+            var progress = state.GetObjective(definition.ObjectiveId);
+            if (progress == null || progress.CurrentAmount == Mathf.Min(count, progress.RequiredAmount)) return;
+            progress.Set(count);
+            PublishQuestChanged(state);
         }
 
         void RestoreQuestStates(QuestSaveData saveData) {
@@ -747,7 +836,8 @@ namespace Capstone.Game.QuestSystem {
                 stateData.objectives.Add(new QuestObjectiveSaveData {
                     objectiveId = objective.ObjectiveId,
                     currentAmount = objective.CurrentAmount,
-                    completed = objective.IsComplete
+                    completed = objective.IsComplete,
+                    receipts = new List<string>(objective.Receipts)
                 });
             }
 

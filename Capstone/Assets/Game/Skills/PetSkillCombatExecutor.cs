@@ -69,6 +69,7 @@ namespace Capstone.Game.Skills
         CreatureCombatTarget coordinatedTarget;
         bool hasCoordinatedTarget;
         internal void StageTarget(CreatureCombatTarget target) { coordinatedTarget=target;hasCoordinatedTarget=true; }
+        internal void ClearTargetIntent() { coordinatedTarget = default; hasCoordinatedTarget = false; SkipNextRetreat = false; }
         internal CreatureCombatTarget ResolveIntentTarget(PetSkillCombatProfile profile) {
             if(profile.delivery==PetSkillDelivery.SelfBuff)return default;
             if(context.IsEnemy)return context.Target;
@@ -196,7 +197,7 @@ namespace Capstone.Game.Skills
                 return false;
             }
 
-            if (!skipRetreat && target.Exists && profile.delivery != PetSkillDelivery.Melee && profile.retreatDistance > 0)
+            if (context.IsEnemy && !skipRetreat && target.Exists && profile.delivery != PetSkillDelivery.Melee && profile.retreatDistance > 0)
             {
                 Vector3 separation = combat.Center - target.Center;
                 separation.y = 0;

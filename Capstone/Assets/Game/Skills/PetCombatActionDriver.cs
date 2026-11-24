@@ -80,10 +80,19 @@ namespace Capstone.Game.Skills
             var data = entry.skill.combat;
             if (!GetComponent<CreatureCombatant>().MayUseSkill(data))
                 return Reject("Pet chưa thể tấn công trong trạng thái hiện tại.");
-            var input=pet!=null&&pet.owner!=null?pet.owner.GetComponent<PetCommandInput>():null;
             var executor=GetComponent<PetSkillCombatExecutor>()??gameObject.AddComponent<PetSkillCombatExecutor>();
             var victim=executor.ResolveIntentTarget(data);
             if (data.delivery == PetSkillDelivery.SelfBuff) return StartSkill(slot, candidate);
+            if (!context.IsEnemy && data.delivery != PetSkillDelivery.Melee)
+            {
+                if (context.CanHit(victim) && !executor.InReach(victim, data))
+                    return Reject("Mục tiêu ngoài tầm hoặc bị che khuất. Hãy đưa pet đến gần hơn.");
+
+                if (!victim.Exists && data.RequiresTarget)
+                    return Reject("Cần mục tiêu trong tầm kỹ năng.");
+
+                return StartSkillWithTarget(slot, candidate, executor, victim);
+            }
             if (!context.CanHit(victim))
             {
                 if (!data.RequiresTarget) return StartSkill(slot, candidate);
@@ -93,7 +102,7 @@ namespace Capstone.Game.Skills
             positioningSlot=slot;skill=candidate;positioningTarget=victim;positioningProfile=data;
             positioningStarted=positioningProgressAt=Time.time;positioningLast=transform.position;retreatUsed=0;
             Phase=PetCombatPhase.Positioning;
-            if(!context.IsEnemy){pet?.HoldCoordinatedSkill();CombatEngagement.Select(input,victim.Enemy);}
+            if (!context.IsEnemy) pet?.HoldCoordinatedSkill();
             return true;
         }
         void PositionSkill() {
@@ -145,14 +154,18 @@ namespace Capstone.Game.Skills
                 Cancel();
                 return;
             }
+            Phase = PetCombatPhase.Ready;
+            if (!StartSkillWithTarget(positioningSlot, candidate, executor, target))
+                Finish(false);
+        }
+
+        bool StartSkillWithTarget(int slot, SkillHudData candidate, PetSkillCombatExecutor executor, CreatureCombatTarget target)
+        {
             executor.SkipNextRetreat = true;
             executor.StageTarget(target);
-            Phase = PetCombatPhase.Ready;
-            if (!StartSkill(positioningSlot, candidate))
-            {
-                executor.SkipNextRetreat = false;
-                Finish(false);
-            }
+            if (StartSkill(slot, candidate)) return true;
+            executor.ClearTargetIntent();
+            return false;
         }
 
         void OnEnable()
@@ -270,6 +283,8 @@ namespace Capstone.Game.Skills
             }
 
             StartedCount++;
+            if (!context.IsEnemy && pet != null && pet.owner != null)
+                CombatEngagement.Select(pet.owner.GetComponent<PetCommandInput>(), execution?.LastCastTarget);
             if (execution == null || !execution.IsRetreating)
             {
                 StartAnimation();
@@ -456,12 +471,10 @@ namespace Capstone.Game.Skills
             if (context == null || !context.IsEnemy)
             {
                 pet?.ReleaseCoordinatedSkill();
+                if (returnAfterAction || skill.combatProfile?.delivery == PetSkillDelivery.Melee)
+                    pet?.RequestReturnNearOwner();
             }
-            if (returnAfterAction)
-            {
-                returnAfterAction = false;
-                pet?.RequestReturnNearOwner();
-            }
+            returnAfterAction = false;
         }
 
         public void Cancel()

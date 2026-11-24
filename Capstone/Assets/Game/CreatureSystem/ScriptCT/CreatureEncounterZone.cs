@@ -444,6 +444,8 @@ namespace Capstone.Game.CreatureSystem
                 if (!formEligibilityUsesIndividualLevel) rolled = random.Next(selected.minimumLevel, selected.maximumLevel + 1);
                 if (!level.InitializeAtLevel(rolled)) throw new InvalidOperationException("Khong khoi tao duoc cap Wild.");
                 actor = instance.GetComponent<DummyEnemy>();
+                actor.QuestZoneId = zoneId;
+                actor.QuestDayNightClock = dayNightClock;
                 actor.autoRevive = false;
                 actor.DeathManagedByEncounter = true;
                 var stars = instance.GetComponent<DownedStatusVisual>() ?? instance.AddComponent<DownedStatusVisual>();

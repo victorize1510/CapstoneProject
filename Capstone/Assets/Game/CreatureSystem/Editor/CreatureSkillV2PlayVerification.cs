@@ -23,9 +23,11 @@ namespace Capstone.Game.CreatureSystem.Editor
         const string SessionKey = "Capstone.SkillV2.Smoke.20261120";
         static bool SkillAuditRun => SessionState.GetBool(SessionKey + ".skillAudit", false);
         static bool FollowUpRun => SessionState.GetBool(SessionKey + ".followUp", false);
+        static bool HitFeedbackRun => SessionState.GetBool(SessionKey + ".hitFeedback", false);
         static bool CastVfxRun => SessionState.GetBool(SessionKey + ".castVfx", false);
         static string Out => Path.Combine(QaArtifactPaths.Root,
-            CastVfxRun ? "SkillUiPartyShopFollowup" : FollowUpRun ? "PetHitFollowUp" : SkillAuditRun ? "SkillAudit-2026-11-23" : "PetCries");
+            CastVfxRun ? "SkillUiPartyShopFollowup" : FollowUpRun ? "PetSkillOnlyCombat" : HitFeedbackRun ? "PetHitFeedback"
+                : SkillAuditRun ? "SkillAudit-2026-11-23" : "PetCries");
         static string Report => Path.Combine(Out, "playmode.txt");
         const string QaSceneName = "DemoScene 1 - Creature QA";
         const string ZoneFixtureKey = SessionKey + ".specialZones";
@@ -53,13 +55,16 @@ namespace Capstone.Game.CreatureSystem.Editor
         [MenuItem("Tools/Capstone/Pet Skills/Verify skill combat (isolated)")]
         static void StartSkillAudit() => Start(true);
 
-        [MenuItem("Tools/Capstone/Pet Skills/Verify hit follow-up (isolated)")]
+        [MenuItem("Tools/Capstone/Pet Skills/Verify skill-only pet combat (isolated)")]
         static void StartFollowUp() => Start(true, true);
+
+        [MenuItem("Tools/Capstone/Pet Skills/Verify hit feedback (isolated)")]
+        static void StartHitFeedback() => Start(true, hitFeedback: true);
 
         [MenuItem("Tools/Capstone/Pet Skills/Verify cast and status VFX (isolated)")]
         static void StartCastVfx() => Start(false, castVfx: true);
 
-        static void Start(bool skillAudit, bool followUp = false, bool castVfx = false)
+        static void Start(bool skillAudit, bool followUp = false, bool castVfx = false, bool hitFeedback = false)
         {
             var scene = SceneManager.GetActiveScene();
             if (EditorApplication.isPlayingOrWillChangePlaymode || SceneManager.sceneCount != 1
@@ -67,6 +72,7 @@ namespace Capstone.Game.CreatureSystem.Editor
                 throw new InvalidOperationException("Mở một scene đã lưu, ở Edit Mode và thoát Prefab Mode trước khi chạy.");
             SessionState.SetBool(SessionKey + ".skillAudit", skillAudit);
             SessionState.SetBool(SessionKey + ".followUp", followUp);
+            SessionState.SetBool(SessionKey + ".hitFeedback", hitFeedback);
             if (castVfx && scene.name == QaSceneName)
                 SessionState.SetString(ZoneFixtureKey, JsonUtility.ToJson(SnapshotSpecialZones(scene)));
             else SessionState.EraseString(ZoneFixtureKey);
@@ -94,6 +100,7 @@ namespace Capstone.Game.CreatureSystem.Editor
             SessionState.EraseString(SessionKey);
             SessionState.EraseBool(SessionKey + ".skillAudit");
             SessionState.EraseBool(SessionKey + ".followUp");
+            SessionState.EraseBool(SessionKey + ".hitFeedback");
             SessionState.EraseBool(SessionKey + ".castVfx");
             SessionState.EraseString(ZoneFixtureKey);
             EditorApplication.delayCall += () =>
@@ -120,6 +127,7 @@ namespace Capstone.Game.CreatureSystem.Editor
             }
 
             bool background = Application.runInBackground;
+            PetSpeciesSkillSet meleeFixture = null;
             Application.runInBackground = true;
             CombatDamageEvents.Applied += Record;
             try
@@ -158,12 +166,16 @@ namespace Capstone.Game.CreatureSystem.Editor
                 var victim = Object.Instantiate(chicks.forms[0].wildPrefab, Vector3.forward * 6, Quaternion.identity);
                 victim.GetComponent<BasicCreatureEnemy>().enabled = false;
                 var enemy = victim.GetComponent<DummyEnemy>();
+                PetCommandInput commands = null;
                 await Task.Delay(120);
                 if (FollowUpRun)
                 {
-                    // Survive a critical skill and the following basic hit in this isolated fixture.
+                    commands = owner.AddComponent<PetCommandInput>();
+                    commands.SetActivePet(pet);
                     enemy.maxHealth = 500;
                     enemy.Revive();
+                    Check(commands.TrySelectEnemy(enemy) && commands.SelectedEnemy == enemy && !pet.HasCombatTarget &&
+                        commands.GetComponent<CombatEngagement>() == null, "Enemy inspection works with a dormant pet and starts no combat");
                 }
                 Check(!voice.isPlaying, "Dormant Owned Pet stays silent");
                 float spawnAt = Time.time;
@@ -186,6 +198,19 @@ namespace Capstone.Game.CreatureSystem.Editor
                 if (!stats.SpeciesSkillSet.TryGet("orb.dark", out var orb))
                     throw new InvalidOperationException("Không resolve được orb.dark từ learnset của Dơi.");
                 string visualName = orb.skill.combat.projectileVisual.name + "(Clone)";
+                if (FollowUpRun)
+                {
+                    Check(!commands.TryCommandAttack(enemy) && !pet.HasCombatTarget, "The legacy basic attack command is disabled by default");
+                    var originalPosition = victim.transform.position;
+                    if (victim.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var targetAgent)) targetAgent.enabled = false;
+                    victim.transform.position = actor.transform.position + Vector3.forward * (orb.skill.combat.CastRange + 5);
+                    Physics.SyncTransforms();
+                    var rangedDriver = actor.GetComponent<PetCombatActionDriver>() ?? actor.AddComponent<PetCombatActionDriver>();
+                    Check(!rangedDriver.Submit(slot) && !rangedDriver.IsSkillBusy && !stats.GetSkills()[slot].IsCoolingDown,
+                        "Selected enemy out of range does not launch a cast or order a chase");
+                    victim.transform.position = originalPosition;
+                    Physics.SyncTransforms();
+                }
                 Camera hitCamera = null;
                 Transform bodySocket = null;
                 Transform groundSocket = null;
@@ -195,7 +220,21 @@ namespace Capstone.Game.CreatureSystem.Editor
                     point.y = Mathf.Lerp(point.y, Mathf.Min(point.y, groundSocket.position.y), .35f);
                     return point;
                 }
+                if (FollowUpRun || HitFeedbackRun)
+                {
+                    var cameraObject = new GameObject("QA enemy inspection camera") { tag = "MainCamera" };
+                    hitCamera = cameraObject.AddComponent<Camera>();
+                    hitCamera.transform.position = enemy.TargetPosition + new Vector3(3, 1.3f, -2.8f);
+                    hitCamera.transform.LookAt(enemy.TargetPosition);
+                }
                 if (FollowUpRun)
+                {
+                    var overhead = Object.FindFirstObjectByType<Capstone.Game.WorldFeedback.EnemyHealthBars>();
+                    Check(overhead != null && await WaitFor(() => overhead.GetComponentsInChildren<UnityEngine.UI.Text>()
+                        .Any(label => label.enabled && label.name == "Selected HP" && label.text == "500/500 HP"), 2),
+                        "Selected enemy shows current and maximum HP above its model");
+                }
+                if (HitFeedbackRun)
                 {
                     var visualBinding = victim.GetComponent<PetHudRuntimeStats>().VisualAnimator.GetComponent<CreatureVisualBinding>();
                     bodySocket = visualBinding.sockets.Single(socket => socket.key == "Body").anchor;
@@ -203,10 +242,6 @@ namespace Capstone.Game.CreatureSystem.Editor
                     Check(bodySocket != null && bodySocket.IsChildOf(visualBinding.transform), "Wild prefab exposes a Body socket on its current model");
                     Check(groundSocket != null && bodySocket.position.y > groundSocket.position.y + .02f,
                         "Model has enough vertical distance to test lowering the hit");
-                    var cameraObject = new GameObject("QA hit placement camera") { tag = "MainCamera" };
-                    hitCamera = cameraObject.AddComponent<Camera>();
-                    hitCamera.transform.position = enemy.TargetPosition + new Vector3(3, 1.3f, -2.8f);
-                    hitCamera.transform.LookAt(enemy.TargetPosition);
                     Vector3 textPoint = enemy.TargetPosition;
                     var fire = new CombatElementSnapshot(PetElement.Fire, PetElement.Fire, PetElement.Unknown);
                     var normal = new CombatHit(actor, "qa", 0, 501, CreatureDamageKind.Magical, false, false, textPoint, 0, fire);
@@ -219,9 +254,14 @@ namespace Capstone.Game.CreatureSystem.Editor
                         "Normal elemental damage text is white and critical damage text is red");
                 }
                 Physics.SyncTransforms();
+                Vector3 rangedOrigin = actor.transform.position;
                 stats.RequestSkill(slot);
                 var driver = actor.GetComponent<PetCombatActionDriver>();
                 Check(driver != null && driver.IsSkillBusy, "Real combat action accepted");
+                if (FollowUpRun)
+                    Check(await WaitFor(() => driver.LastReleaseNormalized > 0, 3) &&
+                        Vector3.Distance(rangedOrigin, actor.transform.position) < .15f,
+                        "In-range projectile casts from the current position");
                 Check(await WaitFor(() => voice.isPlaying, 3), "Accepted Projectile Attack plays a cry");
                 bool visual = await WaitFor(() => executor.ActiveProjectileCount > 0
                     && Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)
@@ -233,7 +273,7 @@ namespace Capstone.Game.CreatureSystem.Editor
                 var result = damage.First(r => r.Hit.Source == actor && r.Hit.SkillId == "orb.dark");
                 Check(enemy.CurrentHealth < startingHealth && result.HpLost > 0 && driver.LastReleaseNormalized > 0,
                     $"Animation release, impact and HP loss ({result.HpLost:0.##})");
-                if (FollowUpRun)
+                if (HitFeedbackRun)
                 {
                     var feel = Resources.Load<CombatFeelSettings>("CombatFeelSettings");
                     Check(feel != null && feel.directImpact != null, "Combined hit prefab is assigned in combat settings");
@@ -265,25 +305,35 @@ namespace Capstone.Game.CreatureSystem.Editor
                         "The lowered hit emitter follows the visual as it moves");
                     victim.transform.position = enemyAtHit;
                     Physics.SyncTransforms();
-                    Object.Destroy(hitCamera.gameObject);
-                    Vector3 beforePursuit = actor.transform.position;
-                    Check(await WaitFor(() => pet.CombatTarget == enemy, 4),
-                        "Skill damage sets the struck enemy as the pet's combat target without a click");
-                    Check(await WaitFor(() => damage.Any(hit => hit.Hit.Source == actor && hit.Hit.SkillId == "basic"
-                        && hit.Target == victim && hit.HpLost > 0), 7)
-                        && Vector3.Distance(beforePursuit, actor.transform.position) > 1,
-                        "Pet runs into range and lands a basic attack on that enemy without a click");
+                }
+                if (hitCamera != null) Object.Destroy(hitCamera.gameObject);
+                if (FollowUpRun)
+                {
+                    await Task.Delay(650);
+                    Check(!pet.HasCombatTarget && damage.All(hit => hit.Hit.Source != actor || hit.Hit.SkillId != "basic"),
+                        "Projectile damage never queues a basic follow-up");
                 }
                 Check(stats.GetSkills()[slot].IsCoolingDown && !driver.Submit(slot), "Cooldown blocks immediate repeat");
                 if (SkillAuditRun)
                 {
                     Check(result.Hit.Kind == CreatureDamageKind.Magical, "projectile uses its authored Special damage kind");
                     Check(await WaitFor(() => !driver.IsSkillBusy, 4), "Special action releases the combat channel");
+                    var activeSet = stats.SpeciesSkillSet;
+                    var melee = activeSet.catalog.FindRetired("bite.dark");
+                    Check(melee != null && melee.combat != null, "Retired bite data is available for the isolated melee fixture");
+                    meleeFixture = Object.Instantiate(activeSet);
+                    meleeFixture.learnset = new List<PetSpeciesSkillEntry> {
+                        new PetSpeciesSkillEntry { skill = melee, overrideAnimation = true, animatorStates = new[] { "Bite Attack" } }
+                    };
+                    meleeFixture.defaultLoadout = new List<PetSkillDefinition> { melee };
+                    meleeFixture.Invalidate();
+                    stats.ConfigureSkillSet(meleeFixture, false);
                     int bite = stats.GetSkills().ToList().FindIndex(skill => skill.combatProfile != null
                         && skill.combatProfile.delivery == PetSkillDelivery.Melee && skill.combatProfile.damageKind == CreatureDamageKind.Physical);
                     if (victim.TryGetComponent<UnityEngine.AI.NavMeshAgent>(out var agent)) agent.enabled = false;
                     Vector3 direction = Vector3.ProjectOnPlane(actor.transform.forward, Vector3.up).normalized;
-                    victim.transform.position = actor.transform.position + direction * 1.35f;
+                    Vector3 meleeOrigin = actor.transform.position;
+                    victim.transform.position = meleeOrigin + direction * (FollowUpRun ? 5.5f : 1.35f);
                     Physics.SyncTransforms();
                     Check(bite >= 0 && enemy.IsAlive, "same pet has an equipped Physical melee skill and a live target");
                     string biteId = stats.GetSkills()[bite].skillId;
@@ -291,6 +341,17 @@ namespace Capstone.Game.CreatureSystem.Editor
                     Check(await WaitFor(() => damage.Any(hit => hit.Hit.Source == actor && hit.Hit.SkillId == biteId
                         && hit.Hit.Kind == CreatureDamageKind.Physical && !hit.Hit.DamageOverTime && hit.HpLost > 0), 4),
                         "Physical melee inflicts HP damage using its authored damage kind");
+                    if (FollowUpRun)
+                    {
+                        Check(Vector3.Distance(meleeOrigin, actor.transform.position) > 1f, "Melee skill runs into range before striking");
+                        Check(await WaitFor(() => !driver.IsSkillBusy && Vector3.Distance(owner.transform.position, actor.transform.position) < 2.9f, 4)
+                            && !pet.HasCombatTarget, "After the melee skill the pet returns to its owner");
+                        owner.transform.position += Vector3.right * 6;
+                        Check(await WaitFor(() => Vector3.Distance(owner.transform.position, actor.transform.position) < 2.9f, 2),
+                            "Owner movement is followed quickly");
+                        owner.transform.position -= Vector3.right * 6;
+                    }
+                    stats.ConfigureSkillSet(activeSet, false);
                 }
                 pet.Withdraw();
                 Check(!pet.IsSummoned && !voice.isPlaying, "Real recall removes the summoned state and silences the visual");
@@ -346,6 +407,7 @@ namespace Capstone.Game.CreatureSystem.Editor
             }
             finally
             {
+                if (meleeFixture != null) Object.Destroy(meleeFixture);
                 CombatDamageEvents.Applied -= Record;
                 Application.runInBackground = background;
                 File.WriteAllLines(Report, lines);

@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69acce52bc0c61b4caec19b67da37309, type: 3}
+  m_Name: MQ08_TiengGoiTuBongToi
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.QuestDefinition
+  questId: main_quest_08
+  title: "Tiếng gọi từ bóng tối"
+  description: "Những sinh vật ma quái xuất hiện ngày càng nhiều. Trưởng làng tin rằng chúng có mối liên hệ trực tiếp với nguồn sức mạnh nằm sâu trong hang động."
+  questType: 0
+  recommendedLevel: 18
+  objectives:
+  - objectiveId: mq08_obj01
+    title: "Đánh bại sinh vật Ma"
+    objectiveType: 9
+    requiredAmount: 10
+    targetId: ""
+    targetTypeId: "ghost"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-cave-mid"
+    - "capstone-cave-deep"
+    allowedForms:
+    - "01"
+    - "02"
+  - objectiveId: mq08_obj02
+    title: "Thu thập mẫu vật của Ma"
+    objectiveType: 3
+    requiredAmount: 10
+    targetId: "loot-ghost-01"
+    targetTypeId: ""
+    markerId: "capstone-cave-mid"
+    nightOnly: 0
+  - objectiveId: mq08_obj03
+    title: "Giao mẫu vật của Ma"
+    objectiveType: 11
+    requiredAmount: 10
+    targetId: "loot-ghost-01"
+    targetTypeId: ""
+    markerId: ""
+    nightOnly: 0
+  locationName: "Khu giữa và tầng sâu hang động"
+  questGiverName: "Trưởng làng"
+  questGiverId: npc_village_elder
+  prerequisiteQuestIds:
+  - "main_quest_07"
+  unlockQuestIds:
+  - "main_quest_09"
+  rewards:
+  - rewardId: "trainer-exp"
+    displayName: "EXP người chơi"
+    rewardType: 0
+    amount: 1000
+    targetId: ""
+  - rewardId: "gold"
+    displayName: "Vàng"
+    rewardType: 1
+    amount: 1200
+    targetId: ""
+  - rewardId: "hp-potion-small"
+    displayName: "Bình hồi máu nhỏ"
+    rewardType: 3
+    amount: 5
+    targetId: "hp-potion-small"
+  canAbandon: 0
+  canReacceptAfterAbandon: 0
+  chapterId: chapter_01
+  requiresTutorial: 0
+  acceptDialogue:
+  - "Những sinh vật ma quái trong hang động đang trở nên bất thường. Chúng dường như bị thu hút bởi một thứ gì đó rất mạnh."
+  - "Ta cần cháu đánh đuổi 10 con và thu thập 10 mẫu vật từ chúng. Có lẽ đây sẽ là manh mối cuối cùng giúp chúng ta xác định nguồn gốc của mọi chuyện."
+  progressDialogue:
+  - "Chúng ta đã tiến rất gần đến sự thật. Hãy giữ an toàn và chuẩn bị thật kỹ trước khi tiếp tục."
+  completeDialogue:
+  - "Cuối cùng ta cũng hiểu rồi! Tất cả những mẫu vật đều mang cùng một dấu hiệu năng lượng."
+  - "Có một sinh vật vô cùng mạnh mẽ đang ẩn náu sâu trong hang động. Chính nó là nguyên nhân khiến các loài thú xung quanh trở nên bất ổn."
+  startItems: []

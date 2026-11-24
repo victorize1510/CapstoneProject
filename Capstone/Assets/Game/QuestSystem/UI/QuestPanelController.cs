@@ -563,7 +563,8 @@ namespace Capstone.Game.QuestSystem.UI {
             meta.AddToClassList("quest-card-meta");
             textGroup.Add(meta);
 
-            var status = new Label(FormatStatus(quest != null ? quest.Status : QuestStatus.Active));
+            var status = new Label(questManager?.IsReadyForTurnIn(quest) == true ? "Có thể trả nhiệm vụ"
+                : FormatStatus(quest != null ? quest.Status : QuestStatus.Active));
             status.AddToClassList("quest-card-status");
             card.Add(status);
             QuestPresentation.AddTrackedPin(card);
@@ -644,8 +645,9 @@ namespace Capstone.Game.QuestSystem.UI {
             }
             if (detailTitle != null) { detailTitle.text = definition.Title; detailTitle.tooltip = definition.Title; }
             QuestSkinArt.Icon(questIcon, definition.Icon, selectedQuest.Status == QuestStatus.Completed ? "check" : "quest");
-            SetVisible(statusRow, selectedQuest.Status != QuestStatus.Active);
-            if (statusValue != null) statusValue.text = FormatStatus(selectedQuest.Status);
+            bool readyToTurnIn = questManager?.IsReadyForTurnIn(selectedQuest) == true;
+            SetVisible(statusRow, selectedQuest.Status != QuestStatus.Active || readyToTurnIn);
+            if (statusValue != null) statusValue.text = readyToTurnIn ? "Có thể trả nhiệm vụ" : FormatStatus(selectedQuest.Status);
             if (typePill != null) typePill.text = FormatType(definition.QuestType);
             if (levelPill != null) levelPill.text = "Cấp " + definition.RecommendedLevel;
 

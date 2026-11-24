@@ -34,6 +34,11 @@ namespace Capstone.Game.QuestSystem {
         [SerializeField] float timeLimit;
         [SerializeField] bool canAbandon = true;
         [SerializeField] bool canReacceptAfterAbandon = true;
+        [SerializeField] string chapterId = string.Empty;
+        [SerializeField] string questGiverId = string.Empty;
+        [SerializeField] bool requiresTutorial;
+        [SerializeField] string[] acceptDialogue, progressDialogue, completeDialogue;
+        [SerializeField] QuestRewardDefinition[] startItems;
 
         public string StableId => questId;
         public string QuestId => questId;
@@ -59,6 +64,14 @@ namespace Capstone.Game.QuestSystem {
         public bool HasTimeLimit => TimeLimit > 0f;
         public bool CanAbandon => canAbandon;
         public bool CanReacceptAfterAbandon => canReacceptAfterAbandon;
+        public string ChapterId => chapterId;
+        public string QuestGiverId => questGiverId;
+        public bool RequiresTurnIn => !string.IsNullOrEmpty(chapterId);
+        public bool RequiresTutorial => requiresTutorial;
+        public string[] AcceptDialogue => acceptDialogue;
+        public string[] ProgressDialogue => progressDialogue;
+        public string[] CompleteDialogue => completeDialogue;
+        public IReadOnlyList<QuestRewardDefinition> StartItems => startItems ?? System.Array.Empty<QuestRewardDefinition>();
 
         public bool TryGetWorldPosition(out Vector3 position) {
             position = worldPosition;

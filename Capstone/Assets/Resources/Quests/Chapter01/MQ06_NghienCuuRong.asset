@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69acce52bc0c61b4caec19b67da37309, type: 3}
+  m_Name: MQ06_NghienCuuRong
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.QuestDefinition
+  questId: main_quest_06
+  title: "Nghiên cứu Rồng Chạng Vạng"
+  description: "Một tài liệu cổ ghi chép rằng loài Rồng Chạng Vạng rất nhạy cảm với nguồn năng lượng bí ẩn. Trưởng làng cần các cá thể sống để nghiên cứu."
+  questType: 0
+  recommendedLevel: 18
+  objectives:
+  - objectiveId: mq06_obj01
+    title: "Tìm khu sinh sống của Rồng Chạng Vạng"
+    objectiveType: 1
+    requiredAmount: 1
+    targetId: "loc_cave_dusk_01"
+    targetTypeId: ""
+    markerId: "loc_cave_dusk_01"
+    nightOnly: 0
+  - objectiveId: mq06_obj02
+    title: "Thu phục Rồng Chạng Vạng"
+    objectiveType: 7
+    requiredAmount: 5
+    targetId: ""
+    targetTypeId: "Dragon Dusk"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-cave-deep"
+    allowedForms:
+    - "01"
+    - "02"
+  - objectiveId: mq06_obj03
+    title: "Giao Rồng Chạng Vạng cho trưởng làng"
+    objectiveType: 17
+    requiredAmount: 5
+    targetId: ""
+    targetTypeId: "Dragon Dusk"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-cave-deep"
+    allowedForms:
+    - "01"
+    - "02"
+  locationName: "Tầng sâu hang động"
+  questGiverName: "Trưởng làng"
+  questGiverId: npc_village_elder
+  prerequisiteQuestIds:
+  - "main_quest_05"
+  unlockQuestIds:
+  - "main_quest_07"
+  rewards:
+  - rewardId: "trainer-exp"
+    displayName: "EXP người chơi"
+    rewardType: 0
+    amount: 700
+    targetId: ""
+  - rewardId: "gold"
+    displayName: "Vàng"
+    rewardType: 1
+    amount: 800
+    targetId: ""
+  - rewardId: "dusk-stone"
+    displayName: "Đá Hoàng Hôn"
+    rewardType: 3
+    amount: 1
+    targetId: "dusk-stone"
+  canAbandon: 0
+  canReacceptAfterAbandon: 0
+  chapterId: chapter_01
+  requiresTutorial: 0
+  acceptDialogue:
+  - "Theo những ghi chép cổ, Rồng Chạng Vạng là loài sinh vật có khả năng cảm nhận những nguồn năng lượng đặc biệt."
+  - "Nếu có thể nghiên cứu chúng, ta tin rằng chúng ta sẽ tìm ra nguồn gốc của sự bất thường này."
+  - "Hãy tiến sâu vào hang động và thu phục 5 cá thể. Nhớ rằng ta cần chúng còn sống."
+  progressDialogue:
+  - "Rồng Chạng Vạng không dễ thu phục. Hãy làm suy yếu chúng trước khi sử dụng bóng."
+  completeDialogue:
+  - "Thật đáng kinh ngạc! Những con rồng này dường như đang phản ứng với một nguồn năng lượng mạnh nằm sâu trong hang động."
+  - "Ta sẽ tiếp tục nghiên cứu chúng. Trong lúc đó, cháu cần kiểm tra những sinh vật kỳ lạ khác ở khu vực ấy."
+  startItems:
+  - rewardId: "capture-ball-rare-01"
+    displayName: "Bóng Hiếm"
+    rewardType: 3
+    amount: 15
+    targetId: "capture-ball-rare-01"

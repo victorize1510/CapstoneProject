@@ -90,7 +90,8 @@ namespace Capstone.Game.HudSystem.Editor {
                 int notifications = 0; follow.EnemyPinned += _ => notifications++;
                 ((Action<DummyEnemy>)Get(follow, "EnemyPinned"))?.Invoke(owned[0]);
                 Check(notifications == 1 && !pet.HasCombatTarget, "pin notification never starts pet attack");
-                Check(command.TryCommandAttack(owned[0]) && pet.HasCombatTarget, "explicit attack command still reaches pinned enemy");
+                Check(command.TrySelectEnemy(owned[0]) && !command.TryCommandAttack(owned[0]) && !pet.HasCombatTarget,
+                    "Selecting a pinned enemy for inspection does not start a basic attack");
                 var movement = player.AddComponent<BasicPlayerMovement>();
                 Check(!movement.allowManualThrowInput && !(bool)Invoke(movement, "WantsToThrow"), "manual click Throw disabled by default");
                 Set(movement, "grounded", true);

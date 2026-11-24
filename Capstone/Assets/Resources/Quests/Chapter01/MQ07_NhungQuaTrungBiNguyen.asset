@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69acce52bc0c61b4caec19b67da37309, type: 3}
+  m_Name: MQ07_NhungQuaTrungBiNguyen
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.QuestDefinition
+  questId: main_quest_07
+  title: "Những quả trứng bị nguyền"
+  description: "Những sinh vật hình quả trứng đang hấp thụ nguồn năng lượng bí ẩn và trở nên mất kiểm soát."
+  questType: 0
+  recommendedLevel: 18
+  objectives:
+  - objectiveId: mq07_obj01
+    title: "Đánh bại Quái Trứng"
+    objectiveType: 9
+    requiredAmount: 10
+    targetId: ""
+    targetTypeId: "egg-shadow"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-cave-deep"
+    allowedForms:
+    - "01"
+    - "02"
+  - objectiveId: mq07_obj02
+    title: "Thu thập mẫu vật của Quái Trứng"
+    objectiveType: 3
+    requiredAmount: 10
+    targetId: "loot-egg-shadow-01"
+    targetTypeId: ""
+    markerId: "capstone-cave-deep"
+    nightOnly: 0
+  - objectiveId: mq07_obj03
+    title: "Giao mẫu vật Quái Trứng"
+    objectiveType: 11
+    requiredAmount: 10
+    targetId: "loot-egg-shadow-01"
+    targetTypeId: ""
+    markerId: ""
+    nightOnly: 0
+  locationName: "Tầng sâu hang động"
+  questGiverName: "Trưởng làng"
+  questGiverId: npc_village_elder
+  prerequisiteQuestIds:
+  - "main_quest_06"
+  unlockQuestIds:
+  - "main_quest_08"
+  rewards:
+  - rewardId: "trainer-exp"
+    displayName: "EXP người chơi"
+    rewardType: 0
+    amount: 850
+    targetId: ""
+  - rewardId: "gold"
+    displayName: "Vàng"
+    rewardType: 1
+    amount: 950
+    targetId: ""
+  - rewardId: "hp-potion-small"
+    displayName: "Bình hồi máu nhỏ"
+    rewardType: 3
+    amount: 5
+    targetId: "hp-potion-small"
+  canAbandon: 0
+  canReacceptAfterAbandon: 0
+  chapterId: chapter_01
+  requiresTutorial: 0
+  acceptDialogue:
+  - "Trong quá trình nghiên cứu loài rồng, ta nhận ra nguồn năng lượng đó không chỉ ảnh hưởng đến thú hoang."
+  - "Có những sinh vật hình quả trứng đang xuất hiện sâu trong hang động. Chúng dường như hấp thụ trực tiếp thứ năng lượng bí ẩn ấy."
+  - "Hãy đánh bại 10 con và mang về 10 mẫu vật để ta kiểm tra."
+  progressDialogue:
+  - "Đừng để vẻ ngoài của những quả trứng đánh lừa cháu. Chúng có thể nguy hiểm hơn những gì chúng ta tưởng."
+  completeDialogue:
+  - "Nguồn năng lượng bên trong những mẫu vật này mạnh hơn hẳn những mẫu trước đó. Nó đang lan rộng, thậm chí còn thu hút cả những sinh vật bóng tối."
+  startItems: []
