@@ -1,3 +1,4 @@
+using Capstone.Game.SettingsSystem;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -7,8 +8,9 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class UIButtonSounds : MonoBehaviour
 {
-    [Tooltip("Audio Source phát tiếng (vd. Ui Sound). Output nên là SFX. Để trống = tự tạo")]
+    [Tooltip("Audio Source phát tiếng (vd. Ui Sound). Để trống = tự tạo. Luôn đi qua kênh UI của game")]
     [SerializeField] AudioSource source;
+    [Tooltip("Để trống = dùng tiếng hover chung của game (Resources/CapstoneAudio)")]
     [SerializeField] AudioClip hoverClip;
     [SerializeField, Range(0f, 1f)] float hoverVolume = 0.6f;
     [Tooltip("Để trống nếu đã gắn tiếng bấm bằng On Click của từng nút (tránh kêu 2 lần)")]
@@ -27,10 +29,10 @@ public class UIButtonSounds : MonoBehaviour
             source = gameObject.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.spatialBlend = 0f;
-            var mixer = GameOptions.LoadMixer();
-            var groups = mixer != null ? mixer.FindMatchingGroups("SFX") : null;
-            if (groups != null && groups.Length > 0) source.outputAudioMixerGroup = groups[0];
         }
+        // Kênh UI của game: thanh âm lượng UI / tắt tiếng trong Cài đặt đều áp dụng.
+        GameAudioRouting.Route(source, GameAudioBus.UI);
+        if (hoverClip == null && GameAudioRouting.Assets != null) hoverClip = GameAudioRouting.Assets.hover;
         Scan();
     }
 
@@ -46,6 +48,8 @@ public class UIButtonSounds : MonoBehaviour
     {
         foreach (Button button in GetComponentsInChildren<Button>(true))
         {
+            // Nút kiểu GreenAngularGraphic của game đã tự kêu hover / bấm -> bỏ qua để không kêu 2 lần.
+            if (button.GetComponent<Capstone.Game.UISystem.GreenAngularGraphic>() != null) continue;
             var trigger = button.GetComponent<EventTrigger>();
             if (trigger != null && trigger.triggers.Exists(entry => entry.eventID == EventTriggerType.PointerEnter)) continue;
             if (trigger == null) trigger = button.gameObject.AddComponent<EventTrigger>();

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.SceneManagement;
+using Capstone.Game.SettingsSystem;
 
 // Nhạc nền cho cả game. Chỉ có MỘT MusicManager, sống xuyên suốt khi chuyển scene.
 // - Mỗi scene một bài (MainMenu, DemoScene, ...). Đổi scene -> nhạc chuyển mượt (fade).
@@ -59,7 +60,6 @@ public class MusicManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         sources = new AudioSource[2];
-        AudioMixerGroup group = FindGroup();
         for (int i = 0; i < 2; i++)
         {
             var source = gameObject.AddComponent<AudioSource>();
@@ -68,8 +68,8 @@ public class MusicManager : MonoBehaviour
             source.spatialBlend = 0f;
             source.volume = 0f;
             source.ignoreListenerPause = true;
-            source.outputAudioMixerGroup = group;
             sources[i] = source;
+            GameAudioRouting.Route(source, GameAudioBus.Music);   // Thanh "Nhạc nền" trong Cài đặt chỉnh được.
         }
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
@@ -82,6 +82,15 @@ public class MusicManager : MonoBehaviour
     }
 
     void Start() => OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+
+    float nextSuppressCheck;
+    void Update()
+    {
+        // Nhạc có sẵn của game có thể được tạo sau MusicManager -> kiểm tra lại định kỳ.
+        if (playingClip == null || Time.unscaledTime < nextSuppressCheck) return;
+        nextSuppressCheck = Time.unscaledTime + 1f;
+        SuppressBuiltInMusic(true);
+    }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -133,6 +142,7 @@ public class MusicManager : MonoBehaviour
             clip = top.clip;
             volume = top.volume;
         }
+        SuppressBuiltInMusic(clip != null);
 
         if (clip == playingClip && clip != null)
         {
@@ -182,6 +192,27 @@ public class MusicManager : MonoBehaviour
         if (to != from) { from.volume = 0f; from.Stop(); }
         if (to != null) to.volume = volume;
         fadeRoutine = null;
+    }
+
+    // Game có sẵn nhạc theo scene (GameSettingsService + Resources/CapstoneAudio).
+    // Khi MusicManager đang phát bài riêng thì tạm tắt tiếng nhạc có sẵn để không bị 2 bài chồng nhau.
+    readonly Dictionary<AudioSource, float> suppressed = new Dictionary<AudioSource, float>();
+
+    void SuppressBuiltInMusic(bool suppress)
+    {
+        var service = GameSettingsService.Instance;
+        if (service != null && suppress)
+        {
+            foreach (AudioSource builtIn in service.GetComponents<AudioSource>())
+            {
+                if (builtIn == null || !builtIn.loop || suppressed.ContainsKey(builtIn)) continue;
+                suppressed[builtIn] = builtIn.volume;
+                builtIn.volume = 0f;
+            }
+            return;
+        }
+        foreach (var entry in suppressed) if (entry.Key != null) entry.Key.volume = entry.Value;
+        suppressed.Clear();
     }
 
     AudioMixerGroup FindGroup()

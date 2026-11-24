@@ -183,7 +183,7 @@ public class NewGameIntroSequence : MonoBehaviour
     void Update()
     {
         // Esc chỉ bỏ qua lời dẫn + lia map + logo. Phần trong nhà phải xem / nói hết.
-        if (running && !inHouse && Input.GetKeyDown(KeyCode.Escape)) skipAll = true;
+        if (running && !inHouse && Capstone.Game.UISystem.GameplayKeyboard.GetKeyDown(KeyCode.Escape)) skipAll = true;
     }
 
     [ContextMenu("Xem thử (chỉ dùng khi đang Play)")]
@@ -757,8 +757,8 @@ public class NewGameIntroSequence : MonoBehaviour
     }
 
     static bool AdvancePressed() =>
-        Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)
-        || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetMouseButtonDown(0);
+        Capstone.Game.UISystem.GameplayKeyboard.GetKeyDown(KeyCode.Space) || Capstone.Game.UISystem.GameplayKeyboard.GetKeyDown(KeyCode.Return)
+        || Capstone.Game.UISystem.GameplayKeyboard.GetKeyDown(KeyCode.KeypadEnter) || Input.GetMouseButtonDown(0);
 
     string FormatName(string text)
     {

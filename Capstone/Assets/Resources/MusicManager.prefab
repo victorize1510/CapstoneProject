@@ -44,16 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 767af65758f91704ea9da6ade3ab780b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MusicManager
-  sceneTracks:
-  - sceneName: MainMenu
-    clip: {fileID: 8300000, guid: dda61bfe41239b94e8fd8ecd4c8f360e, type: 3}
-    volume: 1
-  - sceneName: DemoScene
-    clip: {fileID: 8300000, guid: 3c8eae8e514144842a4065f9edb9e2ff, type: 3}
-    volume: 1
-  - sceneName: EvolutionScene
-    clip: {fileID: 8300000, guid: 4893cad382175214ba019b4d6dd5727e, type: 3}
-    volume: 1
+  sceneTracks: []
   keepMusicForUnknownScene: 0
   fadeTime: 1.5
   musicGroup: Music

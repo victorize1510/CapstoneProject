@@ -556,7 +556,11 @@ MonoBehaviour:
   notificationFadeInDuration: 0.6
   notificationMinDisplayTime: 1.5
   characterCreationSceneName: CharacterCreationScene
-  loadGameSceneName: GameplayScene
+  loadGameSceneName: DemoScene
+  loadGameButton: {fileID: 1300122709}
+  saveSlotPanel: {fileID: 407720021}
+  noSaveMessage: "Ch\u01B0a c\xF3 d\u1EEF li\u1EC7u l\u01B0u. H\xE3y ch\u1ECDn New
+    Game."
   optionsPanel: {fileID: 0}
 --- !u!4 &184386060
 Transform:
@@ -1142,6 +1146,61 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 351406339}
   m_CullTransparentMesh: 1
+--- !u!1 &407720020
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 407720022}
+  - component: {fileID: 407720021}
+  m_Layer: 5
+  m_Name: SaveSlotPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &407720021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407720020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e853c51b9e1604c4bb42ea6a9ddb8450, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveSlotPanel
+  panelSprite: {fileID: 0}
+  buttonSprite: {fileID: 0}
+  font: {fileID: 0}
+  accent: {r: 1, g: 0.84, b: 0.35, a: 1}
+  textColor: {r: 0.97, g: 0.93, b: 0.84, a: 1}
+  mutedColor: {r: 0.75, g: 0.68, b: 0.55, a: 1}
+  panelSize: {x: 1200, y: 820}
+--- !u!224 &407720022
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 407720020}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 977634690}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &434791399
 GameObject:
   m_ObjectHideFlags: 0
@@ -2087,6 +2146,7 @@ GameObject:
   - component: {fileID: 977634688}
   - component: {fileID: 977634687}
   - component: {fileID: 977634691}
+  - component: {fileID: 977634692}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2176,6 +2236,7 @@ RectTransform:
   - {fileID: 1126792567}
   - {fileID: 1536690492}
   - {fileID: 2011072783}
+  - {fileID: 407720022}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -2198,8 +2259,6 @@ MonoBehaviour:
   openButton: {fileID: 114129362}
   hideWhileOpen: {fileID: 1236616753}
   audioMixer: {fileID: 0}
-  musicParameter: MusicVolume
-  sfxParameter: SfxVolume
   panelSprite: {fileID: 0}
   buttonSprite: {fileID: 0}
   font: {fileID: 0}
@@ -2207,6 +2266,24 @@ MonoBehaviour:
   accent: {r: 1, g: 0.84, b: 0.35, a: 1}
   textColor: {r: 0.97, g: 0.93, b: 0.84, a: 1}
   panelSize: {x: 1000, y: 760}
+--- !u!114 &977634692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977634686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19239985afa1def42a01e71e566b007b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIButtonSounds
+  source: {fileID: 2011072784}
+  hoverClip: {fileID: 8300000, guid: 2276996ac98db46478c0ae739ed7d99d, type: 3}
+  hoverVolume: 0.6
+  clickClip: {fileID: 0}
+  clickVolume: 1
+  rescanEverySecond: 1
 --- !u!1 &1076953919
 GameObject:
   m_ObjectHideFlags: 0
@@ -2706,13 +2783,13 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
+      - m_Target: {fileID: 184386059}
+        m_TargetAssemblyTypeName: MainMenuController, Assembly-CSharp
+        m_MethodName: LoadGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 

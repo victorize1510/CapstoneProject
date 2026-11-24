@@ -50,12 +50,19 @@ public class MainMenuController : MonoBehaviour
     public string characterCreationSceneName = "CharacterCreationScene";
 
     [Header("Load Game")]
-    public string loadGameSceneName = "GameplayScene";
+    [Tooltip("Scene gameplay mặc định nếu save chưa ghi scene (vd: DemoScene)")]
+    public string loadGameSceneName = "DemoScene";
+    [Tooltip("Nút Load Game: tự làm mờ khi chưa có save (để trống cũng được)")]
+    public Button loadGameButton;
+    [Tooltip("Bảng danh sách ô save (object có SaveSlotPanel)")]
+    public SaveSlotPanel saveSlotPanel;
+    public string noSaveMessage = "Chưa có dữ liệu lưu. Hãy chọn New Game.";
 
     [Header("Options")]
     public GameObject optionsPanel;
 
     bool newGameInProgress;
+    string pendingNewGameSlot;
     bool confirmPressed;
 
     void Awake()
@@ -66,12 +73,33 @@ public class MainMenuController : MonoBehaviour
         if (newGameConfirmPopup != null) newGameConfirmPopup.SetActive(false);
         if (notificationPanel != null) notificationPanel.SetActive(false);
         if (loadingPanel != null) loadingPanel.SetActive(false);
+        RefreshLoadButton();
+    }
+
+    void RefreshLoadButton()
+    {
+        if (loadGameButton != null) loadGameButton.interactable = AnySave();
+    }
+
+    static bool AnySave()
+    {
+        foreach (var slot in SaveSlotSession.Slots) if (SaveSlotSession.Exists(slot)) return true;
+        return false;
     }
 
     /// <summary>Gắn vào On Click() của nút NEW GAME: chỉ hiện popup hỏi lại.</summary>
     public void NewGame()
     {
         if (newGameInProgress) return;
+
+        // Còn ô trống -> dùng ô đó. Hết ô -> mở bảng cho chọn ô để ghi đè.
+        string empty = SaveSlotSession.FirstEmptySlot();
+        if (empty == null && saveSlotPanel != null)
+        {
+            saveSlotPanel.Show(SaveSlotPanel.Mode.NewGame, slot => { pendingNewGameSlot = slot; ConfirmNewGame(); });
+            return;
+        }
+        pendingNewGameSlot = empty ?? SaveSlotSession.Slots[0];
 
         if (newGameConfirmPopup != null)
             newGameConfirmPopup.SetActive(true);
@@ -161,17 +189,84 @@ public class MainMenuController : MonoBehaviour
             newGameInProgress = false;
             yield break;
         }
+        // New Game: chọn ô và đánh dấu xóa save cũ của ô đó khi vào game.
+        SaveSlotSession.Current = string.IsNullOrEmpty(pendingNewGameSlot) ? SaveSlotSession.Slots[0] : pendingNewGameSlot;
+        SaveSlotSession.RequestReset(SaveSlotSession.Current);
         SceneManager.LoadScene(characterCreationSceneName);
     }
 
     public void LoadGame()
     {
-        if (string.IsNullOrWhiteSpace(loadGameSceneName))
+        bool anySave = AnySave();
+        Debug.Log($"[MainMenu] Bấm Load Game. Có save: {anySave}, SaveSlotPanel: {(saveSlotPanel != null ? saveSlotPanel.name : "CHƯA GÁN")}, " +
+                  $"thư mục save: {System.IO.Path.Combine(Application.persistentDataPath, "Saves")}");
+        if (newGameInProgress) { Debug.LogWarning("[MainMenu] Đang chạy New Game nên bỏ qua Load Game."); return; }
+        if (!anySave) { ShowNoSave(); return; }
+
+        if (saveSlotPanel != null) saveSlotPanel.Show(SaveSlotPanel.Mode.Load, ContinueFromSlot);
+        else ContinueFromSlot(SaveSlotSession.Exists(SaveSlotSession.Current) ? SaveSlotSession.Current : FirstUsedSlot());
+    }
+
+    static string FirstUsedSlot()
+    {
+        foreach (var slot in SaveSlotSession.Slots) if (SaveSlotSession.Exists(slot)) return slot;
+        return SaveSlotSession.Slots[0];
+    }
+
+    void ContinueFromSlot(string slot)
+    {
+        RefreshLoadButton();
+        if (!SaveSlotSession.Exists(slot)) { ShowNoSave(); return; }
+
+        // Vào bằng Load Game thì không phải chơi mới: bỏ dấu xóa save (nếu còn sót) và dữ liệu tạo nhân vật.
+        SaveSlotSession.Current = slot;
+        SaveSlotSession.CancelReset(slot);
+        CharacterSelectionData.Clear();
+        CharacterSelectionData.PlayNewGameIntro = false;
+
+        string scene = PlayerContinueState.HasSavedScene(slot, out string saved) ? saved : loadGameSceneName;
+        if (!Application.CanStreamedLevelBeLoaded(scene)) scene = loadGameSceneName;
+        if (string.IsNullOrWhiteSpace(scene) || !Application.CanStreamedLevelBeLoaded(scene))
         {
-            Debug.LogWarning($"{name}: chưa gán Load Game Scene Name.");
+            Debug.LogWarning($"{name}: scene '{scene}' chưa có trong Build Profiles / Scene List.");
             return;
         }
-        SceneManager.LoadScene(loadGameSceneName);
+        StartCoroutine(LoadGameFlow(scene));
+    }
+
+    IEnumerator LoadGameFlow(string scene)
+    {
+        newGameInProgress = true;
+        if (buttonGroup != null) buttonGroup.SetActive(false);
+        if (loadingPanel != null) loadingPanel.SetActive(true);
+        if (loadingBar != null) { loadingBar.gameObject.SetActive(true); loadingBar.value = 0f; }
+        if (loadingText != null) loadingText.gameObject.SetActive(true);
+
+        var op = SceneManager.LoadSceneAsync(scene);
+        while (!op.isDone)
+        {
+            float progress = Mathf.Clamp01(op.progress / 0.9f);
+            if (loadingBar != null) loadingBar.value = progress;
+            if (loadingText != null) loadingText.text = $"Loading... {Mathf.RoundToInt(progress * 100f)}%";
+            yield return null;
+        }
+    }
+
+    void ShowNoSave()
+    {
+        Debug.Log(noSaveMessage);
+        if (notificationPanel == null || notificationText == null) return;
+        StopCoroutine(nameof(HideNoSave));
+        notificationText.text = noSaveMessage;
+        if (notificationCanvasGroup != null) notificationCanvasGroup.alpha = 1f;
+        notificationPanel.SetActive(true);
+        StartCoroutine(nameof(HideNoSave));
+    }
+
+    IEnumerator HideNoSave()
+    {
+        yield return new WaitForSecondsRealtime(2f);
+        if (!newGameInProgress && notificationPanel != null) notificationPanel.SetActive(false);
     }
 
     public void Options()

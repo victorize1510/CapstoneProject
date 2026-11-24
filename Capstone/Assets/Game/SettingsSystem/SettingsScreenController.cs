@@ -246,6 +246,12 @@ namespace Capstone.Game.SettingsSystem {
         void Unbind() { foreach (var action in unbind) action(); unbind.Clear(); sliders.Clear(); toggles.Clear(); }
         void SaveProgress() {
             if (leavingScene) return;
+            // [Trung] Có SaveSlotPanel trong scene -> cho chọn ô để lưu / ghi đè.
+            if (Application.isPlaying && SaveSlotPanel.TryOpenInGame(message => {
+                    if (message == null || leavingScene) return;   // Bấm Quay lại.
+                    OpenModal(Modal.Save);
+                    modalText.text = message;
+                })) return;
             var save = Application.isPlaying
                 ? GetComponentInParent<PlayerSaveController>() ?? FindFirstObjectByType<PlayerSaveController>()
                 : null;
