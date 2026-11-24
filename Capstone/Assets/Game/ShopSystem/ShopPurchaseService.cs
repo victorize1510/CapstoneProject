@@ -1,6 +1,7 @@
 using System;
 using Capstone.Game.Inventory;
 using Capstone.Game.SaveSystem;
+using Capstone.Game.ProfileSystem;
 using Capstone.Game.UISystem;
 
 namespace Capstone.Game.ShopSystem {
@@ -8,9 +9,12 @@ namespace Capstone.Game.ShopSystem {
         readonly MonsterInventoryAdapter inventory;
         readonly PlayerCurrencyWallet wallet;
         readonly ActionRepeatGate gate;
+        PlayerProfileRuntimeProvider profile;
         bool buying;
-        public ShopPurchaseService(MonsterInventoryAdapter inventory, PlayerCurrencyWallet wallet, Func<double> clock = null) {
+        public ShopPurchaseService(MonsterInventoryAdapter inventory, PlayerCurrencyWallet wallet, Func<double> clock = null,
+            PlayerProfileRuntimeProvider profile = null) {
             this.inventory = inventory; this.wallet = wallet;
+            this.profile = profile;
             gate = clock == null ? new ActionRepeatGate() : new ActionRepeatGate(clock);
         }
 
@@ -18,7 +22,8 @@ namespace Capstone.Game.ShopSystem {
             reason = string.Empty;
             if (inventory == null || wallet == null) { reason = "Chưa kết nối túi đồ hoặc ví vàng."; return 0; }
             if (offer?.Item == null) { reason = "Vật phẩm không còn được bán."; return 0; }
-            if (!offer.Unlocked) { reason = string.IsNullOrWhiteSpace(offer.LockedReason) ? "Vật phẩm đang bị khóa." : offer.LockedReason; return 0; }
+            reason = LockReason(offer);
+            if (reason.Length > 0) return 0;
             if (offer.GoldPrice < 0) { reason = "Vật phẩm chưa được cấu hình giá mua."; return 0; }
             if (offer.Stock < -1 || offer.MaxPerPurchase < 1) { reason = "Cấu hình số lượng không hợp lệ."; return 0; }
             if (offer.Stock == 0) { reason = "Vật phẩm đã hết hàng."; return 0; }
@@ -28,6 +33,19 @@ namespace Capstone.Game.ShopSystem {
             maximum = Math.Min(maximum, int.MaxValue - Owned(offer));
             if (maximum == 0) reason = affordable == 0 ? "Không đủ vàng." : "Số lượng đang có đã đạt giới hạn.";
             return maximum;
+        }
+
+        public string LockReason(ShopOffer offer) {
+            if (offer == null) return string.Empty;
+            if (!offer.Unlocked) return string.IsNullOrWhiteSpace(offer.LockedReason) ? "Vật phẩm đang bị khóa." : offer.LockedReason;
+            return IsVisible(offer) ? string.Empty : $"Cần nhân vật cấp {offer.RequiredPlayerLevel}.";
+        }
+
+        public bool IsVisible(ShopOffer offer) {
+            if (offer?.Item == null) return false;
+            if (offer.RequiredPlayerLevel <= 1) return true;
+            if (profile == null) profile = UnityEngine.Object.FindFirstObjectByType<PlayerProfileRuntimeProvider>();
+            return (profile != null ? profile.Level : 1) >= offer.RequiredPlayerLevel;
         }
 
         GDS.Core.ItemBase InventoryDefinition(ShopOffer offer) => inventory.FindItemBase(offer.Item.StableId) ?? offer.Item;

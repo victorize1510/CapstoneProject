@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c715ea394b159f4e875a6bbb0109a8b, type: 3}
+  m_Name: Combat_protect.normal
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
+  damageKind: 1
+  power: 0.01
+  projectileVisual: {fileID: 0}
+  releaseSocket: Mouth
+  visualScale: 0.5
+  projectileRadius: 0.23
+  lifetime: 4
+  meleeHalfAngle: 50
+  autoAcquireTarget: 1
+  retreatSpeed: 12
+  preferredDistance: 5
+  burstEndNormalized: 0.88
+  delivery: 3
+  range: 0.1
+  authoredStatusRules: 1
+  statusOnly: 1
+  pattern: 0
+  minimumHits: 1
+  maximumHits: 1
+  targetedImpactRadius: 0.15
+  effectSeconds: 0
+  splashFraction: 0
+  displacement: 0
+  weightedWindVolley: 0
+  bleedPower: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  statusCues:
+  - kind: 4096
+    chance: 1
+    duration: 5
+    magnitude: 1
+    valueMode: 0
+    self: 0
+  authoredReleaseSound: {fileID: 8300000, guid: a57b0d1e494bb0c448924a84c55606f2, type: 3}

@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -139,7 +140,7 @@ public class StarterBallTable : MonoBehaviour
             DoorPrompt.Show(this, TableAnchor(), $"<color=#FFD54A><b>[{interactKey}]</b></color> {enterText}");
         else DoorPrompt.Hide(this);
 
-        if (Input.GetKeyDown(interactKey)) StartCoroutine(EnterRoutine());
+        if (PhysicalKeys.GetKeyDown(interactKey)) StartCoroutine(EnterRoutine());
     }
 
     IEnumerator EnterRoutine()
@@ -188,22 +189,22 @@ public class StarterBallTable : MonoBehaviour
 
     void UpdateSelecting()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace))
+        if (PhysicalKeys.GetKeyDown(KeyCode.Escape) || PhysicalKeys.GetKeyDown(KeyCode.Backspace))
         {
             StartCoroutine(ExitRoutine());
             return;
         }
 
         Vector2 direction = Vector2.zero;
-        if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) direction = Vector2.left;
-        else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow)) direction = Vector2.right;
-        else if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)) direction = Vector2.up;
-        else if (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)) direction = Vector2.down;
+        if (PhysicalKeys.GetKeyDown(KeyCode.A) || PhysicalKeys.GetKeyDown(KeyCode.LeftArrow)) direction = Vector2.left;
+        else if (PhysicalKeys.GetKeyDown(KeyCode.D) || PhysicalKeys.GetKeyDown(KeyCode.RightArrow)) direction = Vector2.right;
+        else if (PhysicalKeys.GetKeyDown(KeyCode.W) || PhysicalKeys.GetKeyDown(KeyCode.UpArrow)) direction = Vector2.up;
+        else if (PhysicalKeys.GetKeyDown(KeyCode.S) || PhysicalKeys.GetKeyDown(KeyCode.DownArrow)) direction = Vector2.down;
         if (direction != Vector2.zero) Navigate(direction);
 
         int hovered = UpdateMouseHover();
 
-        bool confirm = Input.GetKeyDown(interactKey) || (Input.GetMouseButtonDown(0) && hovered >= 0);
+        bool confirm = PhysicalKeys.GetKeyDown(interactKey) || (Input.GetMouseButtonDown(0) && hovered >= 0);
         if (confirm && selected >= 0)
         {
             StartCoroutine(ConfirmRoutine());

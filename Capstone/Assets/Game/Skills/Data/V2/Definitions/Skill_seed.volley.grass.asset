@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_seed.volley.grass
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: seed.volley.grass
+  legacyIds: []
+  displayName: "Đạn Hạt Liên Thanh"
+  description: "Bắn 5–10 hạt chia đều sát thương. Đẩy nhẹ lần đầu và có thể làm choáng."
+  element: 1
+  icon: {fileID: 21300000, guid: bb27648c5c6d4cd4a9e543d16b3bfb45, type: 3}
+  cooldownSeconds: 13
+  manaCost: 29
+  animatorStates: 
+  - Cast Spell
+  animationDuration: 2
+  animationFade: 0.08
+  presentation: {fileID: 11400000, guid: a55546c955c3182134388832c86c9682, type: 2}
+  combat: {fileID: 11400000, guid: 2d92ef24b05554aea28bc4fbcfe91b5e, type: 2}

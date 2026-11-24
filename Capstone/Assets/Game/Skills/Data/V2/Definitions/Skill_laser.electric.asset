@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: laser.electric
   legacyIds: []
-  displayName: "Ch\u00F9m Tia Laser"
-  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  displayName: "Chùm Tia Laser"
+  description: "Chiếu 3–5 nhịp laser. Có 30% cơ hội giảm 12% kháng phép trong 6 giây."
   element: 6
   icon: {fileID: 21300000, guid: 6a1ca1a90e8cb4c4fa79697a6a1c43c4, type: 3}
-  cooldownSeconds: 5.2
+  cooldownSeconds: 14
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 8bf8e742705f05bc92637de9eeaa8ef2, type: 2}
   combat: {fileID: 11400000, guid: 4ed07f32b515d55862239a5917a8a836, type: 2}
+  manaCost: 32

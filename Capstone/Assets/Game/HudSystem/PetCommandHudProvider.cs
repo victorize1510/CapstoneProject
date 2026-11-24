@@ -542,7 +542,6 @@ namespace Capstone.Game.HudSystem {
                 usable = true,
                 displayName = name,
                 element = element,
-                skillLevel = 1,
                 description = description,
                 animatorStates = animatorStates,
                 animationDuration = duration,

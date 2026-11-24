@@ -988,6 +988,8 @@ GameObject:
   - component: {fileID: 2000058}
   - component: {fileID: 2000059}
   - component: {fileID: 2000070}
+  - component: {fileID: 3104820869016150779}
+  - component: {fileID: 75724653855181438}
   m_Layer: 0
   m_Name: Visual_cat-electric_01
   m_TagString: Untagged
@@ -1064,6 +1066,150 @@ MonoBehaviour:
   actorRadius: 0
   actorHeight: 0
   actorCenter: {x: 0, y: 0, z: 0}
+--- !u!82 &3104820869016150779
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000057}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: d05a50e216cb304428071df09d717498, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 2
+  MaxDistance: 20
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &75724653855181438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000057}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c660efd1aa94c14a94a74d615e92f57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetCryEventReceiver
+  crySource: {fileID: 3104820869016150779}
+  ambientAction: 9
+  ambient:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  ambientInterval: {x: 12, y: 25}
+  ambientHoldLimit: 4
+  summonAction: 9
+  summon:
+    enabled: 1
+    mode: 0
+    normalized: 0.17
+    clipSeconds: 0
+  summonHoldLimit: 0.45
+  skill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  projectileSkill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  skillActions: 090000000b000000
+  death:
+    enabled: 1
+    mode: 0
+    normalized: 0.12
+    clipSeconds: 0
+  deathPose: 0.72
+  deathHoldLimit: 1.5
+  minimumCryInterval: 0.12
 --- !u!1 &2000060
 GameObject:
   m_ObjectHideFlags: 0
@@ -1301,6 +1447,9 @@ MonoBehaviour:
   followResumeDistance: 7
   leashDistance: 10
   teleportDistance: 24
+  fastReturnSpeedMultiplier: 1.65
+  closeFollowDistance: 2
+  meleeChaseSpeedMultiplier: 1.5
   followSpeed: 4.2
   commandSpeed: 5.3
   acceleration: 18
@@ -1407,162 +1556,8 @@ MonoBehaviour:
   autoResolveSpeciesSkillSet: 0
   equippedSkillSlotCount: 4
   usePrototypeSkillsWhenEmpty: 0
-  skills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.8333333
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 0
-  learnedSkills:
-  - skillId: bite.normal
-    legacySkillIds: []
-    unlocked: 1
-    usable: 1
-    displayName: "C\u1EAFn"
-    skillLevel: 1
-    requiredPetLevel: 1
-    element: 13
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
-    icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
-    animatorStates:
-    - Bite Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.8333333
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 1.6
-    manaCost: 0
-  - skillId: spark.electric
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "Tia l\u1EEDa \u0111i\u1EC7n"
-    skillLevel: 1
-    requiredPetLevel: 5
-    element: 6
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "T\u1EA5n c\xF4ng m\u1ED9t m\u1EE5c ti\xEAu h\u1EE3p l\u1EC7 trong
-      t\u1EA7m nh\xECn."
-    icon: {fileID: 21300000, guid: 5743882b42878c641a853aa8389b864f, type: 3}
-    animatorStates:
-    - Cast Spell
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 3.2
-    manaCost: 0
-  - skillId: orb.electric
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "C\u1EA7u \u0111i\u1EC7n"
-    skillLevel: 1
-    requiredPetLevel: 12
-    element: 6
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "Ph\xF3ng m\u1ED9t \u0111\u1EA1n theo h\u01B0\u1EDBng thi tri\u1EC3n;
-      g\xE2y s\xE1t th\u01B0\u01A1ng khi va ch\u1EA1m."
-    icon: {fileID: 21300000, guid: 1af81a3699ff967469dca70d810c8b2e, type: 3}
-    animatorStates:
-    - Projectile Attack
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 0.8333333
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 4
-    manaCost: 0
-  - skillId: bolt.electric
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "Tia s\xE9t"
-    skillLevel: 1
-    requiredPetLevel: 30
-    element: 6
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "T\u1EA5n c\xF4ng m\u1ED9t m\u1EE5c ti\xEAu h\u1EE3p l\u1EC7 trong
-      t\u1EA7m nh\xECn."
-    icon: {fileID: 21300000, guid: 2b64a5cb0de1cd64290cc61988ba8241, type: 3}
-    animatorStates:
-    - Cast Spell
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 6
-    manaCost: 0
-  - skillId: laser.electric
-    legacySkillIds: []
-    unlocked: 0
-    usable: 1
-    displayName: "Ch\xF9m Tia Laser"
-    skillLevel: 1
-    requiredPetLevel: 36
-    element: 6
-    uiMetadata:
-      damageKind: 0
-      effects: []
-      facts: []
-    description: "G\xE2y s\xE1t th\u01B0\u01A1ng l\xEAn m\u1ED9t m\u1EE5c ti\xEAu
-      trong t\u1EA7m."
-    icon: {fileID: 21300000, guid: 6a1ca1a90e8cb4c4fa79697a6a1c43c4, type: 3}
-    animatorStates:
-    - Cast Spell
-    criticalRateBonus: 0
-    criticalDamageBonus: 0
-    animationDuration: 1
-    animationFade: 0.08
-    windupSeconds: 0
-    recoverySeconds: 0
-    cooldownPercent: 0
-    cooldownSeconds: 5.2
-    manaCost: 0
+  skills: []
+  learnedSkills: []
   petController: {fileID: 3905486807277576643}
   animator: {fileID: 2000059}
   autoFindAnimationReferences: 1

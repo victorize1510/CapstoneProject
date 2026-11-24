@@ -1,5 +1,6 @@
 using System;
 using Capstone.Game.Inventory;
+using Capstone.Game.CreatureSystem;
 using Capstone.Game.SaveSystem;
 using GDS.Core;
 using GDS.Core.Events;
@@ -62,7 +63,23 @@ namespace Capstone.Game.HudSystem {
                 : 0f;
             preview.ActualHealAmount = Mathf.Max(0f, preview.ResultHealth - preview.CurrentHealth);
 
-            if (preview.CurrentHealth <= 0f) {
+            var definition = preview.Item?.Definition;
+            if (definition != null && preview.Item.HasSpecialPetEffect) {
+                preview.IsSpecial = true;
+                preview.Combatant = pet.GetComponent<CreatureCombatant>();
+                preview.Ailments = pet.GetComponent<CombatBleed>();
+                if (definition.RevivePercent > 0) {
+                    preview.ResultHealth = preview.MaxHealth * definition.RevivePercent / 100f;
+                    preview.ActualHealAmount = Mathf.Max(0, preview.ResultHealth - preview.CurrentHealth);
+                    if (preview.CurrentHealth > 0 || preview.MaxHealth <= 0) preview.DisabledReason = "Chỉ dùng cho thú đã gục.";
+                    else if (pet.IsDefeatPresentation) preview.DisabledReason = "Đợi thú được thu hồi xong.";
+                } else if (preview.CurrentHealth <= 0) preview.DisabledReason = "Cần hồi sinh thú trước.";
+                else if (definition.GrantsStatBuff && preview.Combatant == null) preview.DisabledReason = "Thú chưa có dữ liệu chiến đấu.";
+                else if (!definition.GrantsStatBuff && (preview.Ailments == null
+                    || (preview.Ailments.ActiveAilments & CombatAilment.Negative & definition.Cleanses) == 0))
+                    preview.DisabledReason = "Thú không có hiệu ứng phù hợp để giải.";
+            }
+            else if (preview.CurrentHealth <= 0f) {
                 preview.DisabledReason = "Thú đã gục. Cần hồi sinh trước khi dùng vật phẩm hồi phục.";
             }
             else if (!preview.IsValid) {
@@ -71,13 +88,13 @@ namespace Capstone.Game.HudSystem {
             else if (preview.IsFullResource) {
                 preview.DisabledReason = preview.ResourceName + " ĐÃ ĐẦY";
             }
-            else if (preview.Item == null) {
+            if (string.IsNullOrEmpty(preview.DisabledReason) && preview.Item == null) {
                 preview.DisabledReason = $"Không có {preview.ItemName} trong Túi đồ.";
             }
-            else if (preview.OwnedQuantity < preview.RequiredQuantity) {
+            else if (string.IsNullOrEmpty(preview.DisabledReason) && preview.OwnedQuantity < preview.RequiredQuantity) {
                 preview.DisabledReason = $"Không đủ {preview.ItemName}.";
             }
-            else if (saveController == null) {
+            else if (string.IsNullOrEmpty(preview.DisabledReason) && saveController == null) {
                 preview.DisabledReason = "Không tìm thấy PlayerSaveController để lưu hồi phục.";
             }
 
@@ -108,7 +125,8 @@ namespace Capstone.Game.HudSystem {
             }
 
             PetHudRuntimeStats stats = preview.RuntimeStats;
-            stats.SetStatus(preview.ResultHealth, stats.MaxHealth, preview.ResultEnergy, stats.MaxEnergy);
+            if (preview.ActualHealAmount > 0 || preview.ActualEnergyRestore > 0)
+                stats.SetStatus(preview.ResultHealth, stats.MaxHealth, preview.ResultEnergy, stats.MaxEnergy);
 
             if (saveController == null || !saveController.SaveNow()) {
                 stats.RestoreFromSaveData(statsSnapshot);
@@ -117,6 +135,17 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
 
+            var definition = preview.Item.Definition;
+            var actor = pet.GetComponent<CreatureCombatant>();
+            if (preview.ActualHealAmount > 0 && definition != null && definition.HealAmount > 0
+                && definition.Category == GameItemCategory.Medicine)
+                Skills.CombatStatusVisuals.PlayPotion(actor, false);
+            if (preview.ActualEnergyRestore > 0 && definition != null && definition.EnergyRestoreAmount > 0)
+                Skills.CombatStatusVisuals.PlayPotion(actor, true);
+            if (definition != null && preview.IsSpecial) {
+                preview.Ailments?.Cleanse(definition.Cleanses);
+                if (definition.GrantsStatBuff) preview.Combatant.ApplyItemBuff(definition.BuffStat);
+            }
             // Presentation follows the committed transaction; failed saves above never emit a heal number.
             if (preview.ActualHealAmount > 0) FloatingCombatText.ShowHealing(pet.transform.position + Vector3.up, preview.ActualHealAmount);
             PetHealed?.Invoke(pet);
@@ -124,7 +153,8 @@ namespace Capstone.Game.HudSystem {
             string displayName = preview.Metadata != null
                 ? preview.Metadata.ResolveDisplayName(baseName)
                 : baseName;
-            message = $"{displayName} đã hồi {Mathf.RoundToInt(preview.ActualRestoreAmount):N0} {preview.ResourceName}.";
+            message = preview.IsSpecial && preview.ActualHealAmount <= 0
+                ? $"{displayName} đã dùng {preview.ItemName}." : $"{displayName} đã hồi {Mathf.RoundToInt(preview.ActualRestoreAmount):N0} {preview.ResourceName}.";
             return true;
         }
 
@@ -191,6 +221,9 @@ namespace Capstone.Game.HudSystem {
         public float ResultHealth;
         public float ActualHealAmount;
         public float CurrentEnergy, MaxEnergy, ResultEnergy, ActualEnergyRestore;
+        public bool IsSpecial;
+        internal CreatureCombatant Combatant;
+        internal CombatBleed Ailments;
         public int EnergyRestoreAmount;
         public bool RestoresEnergy => EnergyRestoreAmount > 0;
         public string ResourceName => RestoresEnergy ? "MP" : "HP";

@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using AAMAP;
 using Capstone.Game.Inventory;
 using UnityEngine;
@@ -341,7 +342,7 @@ namespace Capstone.Game.MapSystem {
 #if ENABLE_INPUT_SYSTEM
             return Keyboard.current != null && toggleMapInputKey != Key.None && Keyboard.current[toggleMapInputKey].wasPressedThisFrame;
 #elif ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(toggleMapKey);
+            return PhysicalKeys.GetKeyDown(toggleMapKey);
 #else
             return false;
 #endif
@@ -351,7 +352,7 @@ namespace Capstone.Game.MapSystem {
 #if ENABLE_INPUT_SYSTEM
             return Keyboard.current != null && closeMapInputKey != Key.None && Keyboard.current[closeMapInputKey].wasPressedThisFrame;
 #elif ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(closeMapKey);
+            return PhysicalKeys.GetKeyDown(closeMapKey);
 #else
             return false;
 #endif
@@ -363,7 +364,7 @@ namespace Capstone.Game.MapSystem {
                    && ((zoomInInputKey != Key.None && Keyboard.current[zoomInInputKey].wasPressedThisFrame)
                        || (alternateZoomInInputKey != Key.None && Keyboard.current[alternateZoomInInputKey].wasPressedThisFrame));
 #elif ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(zoomInKey);
+            return PhysicalKeys.GetKeyDown(zoomInKey);
 #else
             return false;
 #endif
@@ -375,7 +376,7 @@ namespace Capstone.Game.MapSystem {
                    && ((zoomOutInputKey != Key.None && Keyboard.current[zoomOutInputKey].wasPressedThisFrame)
                        || (alternateZoomOutInputKey != Key.None && Keyboard.current[alternateZoomOutInputKey].wasPressedThisFrame));
 #elif ENABLE_LEGACY_INPUT_MANAGER
-            return Input.GetKeyDown(zoomOutKey) || Input.GetKeyDown(alternateZoomOutKey);
+            return PhysicalKeys.GetKeyDown(zoomOutKey) || PhysicalKeys.GetKeyDown(alternateZoomOutKey);
 #else
             return false;
 #endif

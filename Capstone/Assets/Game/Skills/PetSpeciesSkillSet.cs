@@ -56,6 +56,8 @@ namespace Capstone.Game.Skills
         public PetSkillCatalog catalog;
         [Tooltip("Chi dung cho ca the Wild MOI trong EncounterLevel. Mac dinh tat de giu hanh vi cac bo cu; khong ap khi capture/load/recall.")]
         public bool initializeFreshWildLoadout;
+        [Tooltip("Only equip and learn skills assigned to this form. Older saves migrate to eligible defaults.")]
+        public bool enforceLearnset;
         public List<PetSpeciesSkillEntry> learnset = new List<PetSpeciesSkillEntry>();
         [Tooltip("Loadout ban dau chi cho pet moi. Load save khong tu lap day o trong.")]
         public List<PetSkillDefinition> defaultLoadout = new List<PetSkillDefinition>();
@@ -123,8 +125,18 @@ namespace Capstone.Game.Skills
                 }
             }
 
-            return byId.TryGetValue(id.Trim(), out entry);
+            if (byId.TryGetValue(id.Trim(), out entry)) return true;
+            // A previous loadout can keep a catalog skill removed from the new learnset.
+            if (!enforceLearnset && catalog != null && catalog.TryGet(id, out var definition)) {
+                entry = new PetSpeciesSkillEntry { skill = definition };
+                byId.TryAdd(definition.Id, entry);
+                return true;
+            }
+            return false;
         }
+
+        internal bool IsPreviousSkill(string id) => enforceLearnset && catalog != null &&
+            (catalog.TryGet(id, out _) || catalog.FindRetired(id) != null);
 
         public List<string> ValidateSet()
         {
@@ -164,7 +176,8 @@ namespace Capstone.Game.Skills
                         errors.Add("Duplicate learnset skill: " + entry.skill.Id);
                     }
 
-                    if (catalog != null && (!catalog.TryGet(entry.skill.Id, out var defined) || defined != entry.skill))
+                    if (catalog != null && (!catalog.TryGet(entry.skill.Id, out var defined) || defined != entry.skill)
+                        && (enforceLearnset || catalog.FindRetired(entry.skill.Id) != entry.skill))
                     {
                         errors.Add("Skill is not in catalog: " + entry.skill.Id);
                     }

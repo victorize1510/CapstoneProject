@@ -14,12 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: orb.dark
   legacyIds: []
-  displayName: "Qu\u1EA3 C\u1EA7u B\u00F3ng T\u1ED1i"
-  description: "Ph\xF3ng m\u1ED9t c\u1EA7u n\u0103ng l\u01B0\u1EE3ng b\xF3ng t\u1ED1i
-    v\u1EC1 m\u1EE5c ti\xEAu \u0111\xE3 kh\xF3a."
+  displayName: "Quả Cầu Bóng Tối"
+  description: "Phóng cầu bóng tối. Khi trúng, có 20% cơ hội tăng 12% sát thương bản thân trong 6 giây."
   element: 9
   icon: {fileID: 21300000, guid: 0a1097c91f0183e48a52bb66bac8468b, type: 3}
-  cooldownSeconds: 3.6
+  cooldownSeconds: 6
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:
@@ -34,3 +33,4 @@ MonoBehaviour:
     damageKind: 0
     effects: []
     facts: []
+  manaCost: 18

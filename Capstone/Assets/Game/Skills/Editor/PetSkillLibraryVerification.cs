@@ -78,7 +78,7 @@ namespace Capstone.Game.Skills.Editor {
                 var duplicate = ScriptableObject.CreateInstance<PetSkillDefinition>(); duplicate.skillId = "qa.shared"; library.skills.Add(duplicate); library.Invalidate();
                 Check(library.ValidateCatalog().Count > 0, "duplicate ID detected");
                 library.skills.Remove(duplicate); Object.DestroyImmediate(duplicate); library.Invalidate();
-                Check(a.CreateHudData().skillLevel == 1 && a.CreateHudData().cooldownRemainingSeconds == 0, "definition holds no individual progress/cooldown");
+                Check(a.CreateHudData().cooldownRemainingSeconds == 0, "definition holds no individual cooldown");
             } finally {
                 if (first != null) Object.DestroyImmediate(first.gameObject); if (second != null) Object.DestroyImmediate(second.gameObject); if (restored != null) Object.DestroyImmediate(restored.gameObject);
                 Object.DestroyImmediate(setA); Object.DestroyImmediate(setB); Object.DestroyImmediate(library); Object.DestroyImmediate(a); Object.DestroyImmediate(b);

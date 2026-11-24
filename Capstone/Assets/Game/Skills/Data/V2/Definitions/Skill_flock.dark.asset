@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: flock.dark
   legacyIds: []
-  displayName: "\u0110\u00E0n D\u01A1i"
-  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  displayName: "Đàn Dơi"
+  description: "Đàn dơi làm địch chảy máu 5 giây và chậm 20% trong 10 giây."
   element: 9
   icon: {fileID: 21300000, guid: be5ca9ae72431c54b9ae46ed0c630267, type: 3}
-  cooldownSeconds: 5.2
+  cooldownSeconds: 12
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: e90c33e4373082fcff91a8b99dd7f07c, type: 2}
   combat: {fileID: 11400000, guid: 140dad05205294ee94c14fd0a8b5d858, type: 2}
+  manaCost: 24

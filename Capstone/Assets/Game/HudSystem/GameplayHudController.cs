@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using System.Collections.Generic;
 using Capstone.Game.Inventory;
 using Capstone.Game.MapSystem;
@@ -43,6 +44,8 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] KeyCode[] skillHotkeys = { KeyCode.Z, KeyCode.X, KeyCode.C, KeyCode.V };
 
         RectTransform root, minimapView, skillRegion;
+        Capstone.Game.Skills.PetCombatActionDriver feedbackDriver;
+        float lastSkillFeedbackAt = float.NegativeInfinity;
         Text petName, petLevel, hpText, mpText, portraitEmpty;
         Image portrait, hpFill, mpFill;
         GameObject activeBadge;
@@ -100,13 +103,13 @@ namespace Capstone.Game.HudSystem {
         void Update() {
             SyncVisibility();
             if(previousPartyMode!=partyPickerMode){CancelTransientHud();previousPartyMode=partyPickerMode;}
-            if(InventoryInputController.GameplayInputBlocked){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;waitPartyKeyUp=Input.GetKey(partyKey);radial?.ResetState();}
-            else ProcessPartyRelease(Input.GetKey(partyKey),Input.GetKeyUp(partyKey),Time.unscaledTime);
+            if(InventoryInputController.GameplayInputBlocked){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;waitPartyKeyUp=PhysicalKeys.GetKey(partyKey);radial?.ResetState();}
+            else ProcessPartyRelease(PhysicalKeys.GetKey(partyKey),PhysicalKeys.GetKeyUp(partyKey),Time.unscaledTime);
             if(numberFeedbackUntil>0&&Time.unscaledTime>=numberFeedbackUntil&&!partyManuallyOpened){numberFeedbackUntil=0;radial?.SetOpen(false);}
             if (root == null || !root.gameObject.activeSelf) return;
-            if(trainerMenu==null&&Input.GetKeyDown(partyKey))HandlePartyKey(partyKey);
+            if(trainerMenu==null&&PhysicalKeys.GetKeyDown(partyKey))HandlePartyKey(partyKey);
             if (enableSkillHotkeys && PetSkillsAvailable && !InventoryInputController.GameplayInputBlocked) {
-                for (int i = 0; i < 4; i++) if (Input.GetKeyDown(SkillKey(i))) RequestSkill(i);
+                for (int i = 0; i < 4; i++) if (PhysicalKeys.GetKeyDown(SkillKey(i))) RequestSkill(i);
             }
             if (Time.unscaledTime < nextRefresh) return;
             nextRefresh = Time.unscaledTime + refreshInterval;
@@ -194,9 +197,9 @@ namespace Capstone.Game.HudSystem {
         public bool TryCloseTransientHud() {
             if(evolutionPrompts!=null&&evolutionPrompts.TryDismissForBack())return true;
             if(captureHud!=null&&captureHud.IsPickerOpen){captureHud.ClosePicker();return true;}
-            if(IsPartyOpen){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;radial.SetOpen(false);waitPartyKeyUp=Input.GetKey(partyKey);return true;}return false;
+            if(IsPartyOpen){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;radial.SetOpen(false);waitPartyKeyUp=PhysicalKeys.GetKey(partyKey);return true;}return false;
         }
-        void CancelTransientHud(){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;radial?.ResetState();captureHud?.CancelPending();waitPartyKeyUp=Input.GetKey(partyKey);}
+        void CancelTransientHud(){partyManuallyOpened=false;numberFeedbackUntil=0;partyPressPending=false;radial?.ResetState();captureHud?.CancelPending();waitPartyKeyUp=PhysicalKeys.GetKey(partyKey);}
         void OnApplicationFocus(bool focused){if(!focused)CancelTransientHud();}
         void SubscribeProvider() {
             if (subscribedProvider == Provider) return;
@@ -271,10 +274,16 @@ namespace Capstone.Game.HudSystem {
         void RequestSkill(int index) {
             if (InventoryInputController.GameplayInputBlocked || !PetSkillsAvailable || Provider == null) return;
             IReadOnlyList<SkillHudData> data = Provider.GetSkills();
-            if (index >= 0 && index < data.Count && data[index].unlocked && data[index].usable && !data[index].IsCoolingDown) {
-                Provider.RequestSkill(index);
-                RefreshSkills(); // Include short cooldowns on the frame the cast is accepted.
+            if (index < 0 || index >= data.Count || !data[index].unlocked) return;
+            var skill = data[index];
+            if (skill.IsCoolingDown) radial?.Feedback("Kỹ năng đang hồi.");
+            else if (!skill.usable)
+            {
+                var stats = commandInput != null ? commandInput.activePet?.GetComponent<PetHudRuntimeStats>() : null;
+                radial?.Feedback(stats != null && stats.Energy < skill.manaCost ? "Không đủ mana." : "Kỹ năng chưa sẵn sàng.");
             }
+            else Provider.RequestSkill(index);
+            RefreshSkills();
         }
         void RefreshHud() {
             if(root==null||radial==null)return;
@@ -283,6 +292,23 @@ namespace Capstone.Game.HudSystem {
             // Accepted/queued requests never supply identity. Freeze the last confirmed view during a sequence.
             if(director==null||!director.IsSequenceRunning){confirmedStatus=status;var slots=Provider?.GetPetSlots();for(int i=0;i<6;i++)confirmedSlots[i]=slots!=null&&i<slots.Count?slots[i]:default;}
             var hintMode=partyPressPending&&Time.unscaledTime-partyPressedAt>=partyHoldThreshold?PartyPickerMode.Hold:partyPickerMode;
+            var pet=commandInput!=null?commandInput.activePet:null;
+            var ailments=pet!=null&&pet.IsSummoned&&!pet.IsDefeatPresentation &&
+                (director==null || !director.IsSequenceRunning)
+                ? pet.GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>()?.Status : null;
+            radial.ShowAilments(ailments);
+            var driver = pet != null ? pet.GetComponent<Capstone.Game.Skills.PetCombatActionDriver>() : null;
+            if (driver != feedbackDriver)
+            {
+                feedbackDriver = driver;
+                lastSkillFeedbackAt = float.NegativeInfinity;
+            }
+            if (driver != null && driver.LastRejectionAt > lastSkillFeedbackAt &&
+                Time.unscaledTime - driver.LastRejectionAt < .5f && !string.IsNullOrEmpty(driver.LastRejection))
+            {
+                lastSkillFeedbackAt = driver.LastRejectionAt;
+                radial.Feedback(driver.LastRejection);
+            }
             radial.Refresh(confirmedStatus,confirmedSlots,hintMode,partyKey);RefreshSkills();quickItems?.Refresh();
         }
         void RefreshSkills() {

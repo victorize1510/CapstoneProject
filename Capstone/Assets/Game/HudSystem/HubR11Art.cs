@@ -66,10 +66,20 @@ namespace Capstone.Game.HudSystem {
     }
     [RequireComponent(typeof(CanvasRenderer))]
     public sealed class HubArcGraphic : MaskableGraphic {
-        public float Radius=126,Width=6;float amount;public Color Fill=new Color32(212,123,119,255);
+        public float Radius=126,Width=6;float amount, shield;public Color Fill=new Color32(212,123,119,255);
         public Color Track = new Color(.09f,.13f,.22f,.68f);
-        public void SetAmount(float value){value=float.IsNaN(value)?0:Mathf.Clamp01(value);if(Mathf.Approximately(value,amount))return;amount=value;SetVerticesDirty();}
-        protected override void OnPopulateMesh(VertexHelper mesh) {mesh.Clear();Arc(mesh,90,0,Track);if(amount>0)Arc(mesh,90,90-90*amount,Fill);}
+        public void SetAmount(float value) => SetAmounts(value, 0);
+        public void SetAmounts(float value, float shieldValue) {
+            value = float.IsFinite(value) ? Mathf.Clamp01(value) : 0;
+            shieldValue = float.IsFinite(shieldValue) ? Mathf.Clamp(shieldValue, 0, 1 - value) : 0;
+            if (Mathf.Approximately(value, amount) && Mathf.Approximately(shieldValue, shield)) return;
+            amount = value; shield = shieldValue; SetVerticesDirty();
+        }
+        protected override void OnPopulateMesh(VertexHelper mesh) {
+            mesh.Clear(); Arc(mesh, 90, 0, Track);
+            if (amount > 0) Arc(mesh, 90, 90 - 90 * amount, Fill);
+            if (shield > 0) Arc(mesh, 90 - 90 * amount, 90 - 90 * (amount + shield), Color.white);
+        }
         void Arc(VertexHelper mesh,float start,float end,Color tint){int steps=Mathf.Max(2,Mathf.CeilToInt(Mathf.Abs(end-start)));int offset=mesh.currentVertCount;
             for(int i=0;i<=steps;i++){float a=Mathf.Lerp(start,end,i/(float)steps)*Mathf.Deg2Rad;var v=new Vector2(Mathf.Cos(a),Mathf.Sin(a));mesh.AddVert(v*(Radius-Width/2),tint,Vector2.zero);mesh.AddVert(v*(Radius+Width/2),tint,Vector2.zero);if(i>0){int j=offset+i*2;mesh.AddTriangle(j-2,j-1,j);mesh.AddTriangle(j,j-1,j+1);}}
             Cap(mesh,start,tint);Cap(mesh,end,tint);

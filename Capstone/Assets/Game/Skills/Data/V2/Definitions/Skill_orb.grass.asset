@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: orb.grass
   legacyIds: []
-  displayName: "B\u00F3ng N\u0103ng L\u01B0\u1EE3ng"
-  description: "Ph\u00F3ng m\u1ED9t \u0111\u1EA1n g\u00E2y s\u00E1t th\u01B0\u01A1ng khi ch\u1EA1m."
+  displayName: "Bóng Năng Lượng"
+  description: "Bắn cầu năng lượng. Khi trúng, có 20% cơ hội tăng 12% sát thương trong 6 giây."
   element: 1
   icon: {fileID: 21300000, guid: e4cd646a9b1bf294b886d6c69e2c40c1, type: 3}
-  cooldownSeconds: 3.8
+  cooldownSeconds: 6
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 1e9b3a872465413eec6a78a871642e00, type: 2}
   combat: {fileID: 11400000, guid: 60b5a2f25c9700500576a7d5a2a1cb60, type: 2}
+  manaCost: 18

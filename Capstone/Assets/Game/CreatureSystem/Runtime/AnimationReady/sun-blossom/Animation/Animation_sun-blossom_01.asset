@@ -33,12 +33,24 @@ MonoBehaviour:
     state: Cast Spell
   - action: 11
     state: Projectile Attack
-  skills: 
-  - skillId: "strike.normal"
-    action: 7
+  skills:
   - skillId: "orb.grass"
     action: 11
   - skillId: "leafstorm.grass"
     action: 9
   - skillId: "cyclone.flying"
+    action: 9
+  - skillId: orb.grass
+    action: 9
+  - skillId: poisonburst.grass
+    action: 9
+  - skillId: leafstorm.grass
+    action: 9
+  - skillId: absorb.grass
+    action: 9
+  - skillId: seed.volley.grass
+    action: 9
+  - skillId: wing strike
+    action: 9
+  - skillId: roar.power
     action: 9

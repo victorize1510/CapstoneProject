@@ -1,21 +1,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.VFX;
 using Unity.Profiling;
 
 namespace Capstone.Game.Skills {
     /// <summary>Small scene-owned pool for persistent buff and projectile visuals.</summary>
     public static class CombatEffectPool {
-        sealed class Item { public GameObject prefab, value; public ParticleSystem[] particles; public TrailRenderer[] trails; }
+        sealed class Item {
+            public GameObject prefab, value;
+            public ParticleSystem[] particles;
+            public TrailRenderer[] trails;
+            public VisualEffect[] graphs;
+        }
         static readonly List<Item> idle = new List<Item>(24);
         static readonly Dictionary<GameObject, Item> active = new Dictionary<GameObject, Item>();
         static readonly List<GameObject> dead = new List<GameObject>(64);
-        static Transform root;
+        static Transform root, inactiveRoot;
         public static int IdleCount => idle.Count;
         public static int ActiveCount => active.Count;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void Reset() {
-            idle.Clear(); active.Clear(); dead.Clear(); root = null;
+            idle.Clear(); active.Clear(); dead.Clear(); root = inactiveRoot = null;
             SceneManager.sceneUnloaded -= Prune; SceneManager.sceneUnloaded += Prune;
         }
         static void Prune(Scene scene) {
@@ -31,6 +37,9 @@ namespace Capstone.Game.Skills {
             if (root == null) {
                 idle.Clear(); active.Clear();
                 root = new GameObject("Combat effect pool").transform;
+                inactiveRoot = new GameObject("Inactive visuals").transform;
+                inactiveRoot.SetParent(root, false);
+                inactiveRoot.gameObject.SetActive(false);
             }
             Item item = null;
             for (int i = idle.Count - 1; i >= 0; i--) {
@@ -39,8 +48,16 @@ namespace Capstone.Game.Skills {
                 item = idle[i]; idle.RemoveAt(i); break;
             }
             if (item == null) {
-                var created = Object.Instantiate(prefab, root);
-                item = new Item { prefab = prefab, value = created, particles = created.GetComponentsInChildren<ParticleSystem>(true), trails = created.GetComponentsInChildren<TrailRenderer>(true) };
+                var created = TryInstantiateVisual(prefab, inactiveRoot);
+                if (created == null) return null;
+                created.SetActive(false);
+                DisableVisualColliders(created);
+                item = new Item {
+                    prefab = prefab, value = created,
+                    particles = created.GetComponentsInChildren<ParticleSystem>(true),
+                    trails = created.GetComponentsInChildren<TrailRenderer>(true),
+                    graphs = created.GetComponentsInChildren<VisualEffect>(true)
+                };
             }
             var value = item.value;
             value.transform.SetParent(parent != null ? parent : root, false);
@@ -48,8 +65,30 @@ namespace Capstone.Game.Skills {
             value.transform.localScale = prefab.transform.localScale;
             value.SetActive(true); active[value] = item;
             foreach (var trail in item.trails) trail.Clear();
+            foreach (var graph in item.graphs) if (graph.isActiveAndEnabled) graph.Reinit();
             foreach (var particle in item.particles) { particle.Clear(false); particle.Play(false); }
             return value;
+        }
+        internal static GameObject TryInstantiateVisual(GameObject prefab, Transform parent)
+        {
+            if (prefab == null) return null;
+            try
+            {
+                // The non-generic overload lets us validate prefab-variant references before casting.
+                Object clone = Object.Instantiate((Object)prefab, parent, false);
+                if (clone is GameObject visual) return visual;
+                if (clone != null) Object.Destroy(clone);
+                Debug.LogWarning($"Combat VFX '{prefab.name}' did not instantiate a GameObject.", prefab);
+            }
+            catch (System.Exception error)
+            {
+                Debug.LogWarning($"Combat VFX '{prefab.name}' could not be created: {error.Message}", prefab);
+            }
+            return null;
+        }
+
+        internal static void DisableVisualColliders(GameObject visual) {
+            foreach (var collider in visual.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
         }
         public static void PlayOneShot(GameObject prefab,Vector3 position,float seconds=2) {
             var value=Rent(prefab,position,Quaternion.identity);if(value==null)return;
@@ -64,7 +103,7 @@ namespace Capstone.Game.Skills {
             foreach (var particle in item.particles) particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
             value.SetActive(false);
             if (root == null || idle.Count >= 24) { Object.Destroy(value); return; }
-            value.transform.SetParent(root, false); idle.Add(item);
+            value.transform.SetParent(inactiveRoot, false); idle.Add(item);
         }
     }
 

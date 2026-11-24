@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Combat_spark.electric
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
   damageKind: 1
-  delivery: 2
+  delivery: 0
   power: 1.25
-  range: 9
+  range: 2.8
   projectileSpeed: 9
   projectileRadius: 0.18
   lifetime: 3
@@ -33,3 +33,23 @@ MonoBehaviour:
   preferredDistance: 5
   weightedWindVolley: 0
   burstEndNormalized: 0.78
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 0
+  minimumHits: 1
+  maximumHits: 1
+  targetedImpactRadius: 0.8
+  effectSeconds: 0
+  splashFraction: 0
+  displacement: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  statusCues:
+  - kind: 2
+    chance: 0.25
+    duration: 5
+    magnitude: 0.08
+    valueMode: 1
+    self: 0
+  authoredReleaseSound: {fileID: 8300000, guid: 16c2eb96dddfb464caf23c91a23f74c8, type: 3}

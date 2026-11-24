@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c715ea394b159f4e875a6bbb0109a8b, type: 3}
+  m_Name: Combat_seed.volley.grass
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
+  damageKind: 0
+  power: 1.45
+  projectileVisual: {fileID: 5749441552287667129, guid: cda82f7db9185714c802785eb76231c4, type: 3}
+  releaseSocket: Mouth
+  visualScale: 0.5
+  projectileRadius: 0.4
+  lifetime: 3
+  meleeHalfAngle: 50
+  autoAcquireTarget: 1
+  retreatSpeed: 12
+  preferredDistance: 5
+  burstEndNormalized: 0.88
+  delivery: 1
+  range: 12
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 0
+  minimumHits: 5
+  maximumHits: 10
+  targetedImpactRadius: 0.4
+  effectSeconds: 2
+  splashFraction: 0
+  displacement: 0.4
+  weightedWindVolley: 0
+  bleedPower: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  statusCues:
+  - kind: 16
+    chance: 0.2
+    duration: 0.5
+    magnitude: 1
+    valueMode: 0
+    self: 0
+  authoredReleaseSound: {fileID: 8300000, guid: 5759422ce5901c8489ece2fedb22a2f9, type: 3}

@@ -168,6 +168,7 @@ public class DummyEnemy : MonoBehaviour
     private void OnEnable()
     {
         activeEnemies.Add(this);
+        Capstone.Game.CreatureSystem.CreatureCombatant.RefreshPlayerPassThrough(gameObject);
         EnsureMapMarker();
     }
 
@@ -244,6 +245,11 @@ public class DummyEnemy : MonoBehaviour
             damage = Capstone.Game.CreatureSystem.CreatureCombatant.ResolveElementalDamage(damage, hit, GetComponent<Capstone.Game.HudSystem.PetCollectionMetadata>(), out effectiveness);
         }
 
+        float damageBeforeStatus = damage;
+        var status = combat != null ? combat.Status : GetComponent<Capstone.Game.CreatureSystem.CombatBleed>();
+        if (status != null) damage = status.Absorb(damage);
+        if (damage <= 0)
+            return new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, 0, false, effectiveness, damageBeforeStatus);
         float previousHealth = health;
         health = Mathf.Max(0f, health - Mathf.Max(0f, damage));
         combat?.SyncEnemyHealth(health, maxHealth);
@@ -259,7 +265,8 @@ public class DummyEnemy : MonoBehaviour
             GetComponent<Capstone.Game.CreatureSystem.CombatBleed>()?.ClearWounds();
         }
 
-        var result = new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, previousHealth - health, health <= 0f && !shouldDown, effectiveness);
+        var result = new Capstone.Game.CreatureSystem.CombatDamageResult(hit, gameObject, previousHealth - health, health <= 0f && !shouldDown, effectiveness,
+            Mathf.Max(0, damageBeforeStatus - damage));
         if (health <= 0f)
         {
             // Phat HP mat va dong gop truoc giao dich thuong ket lieu duy nhat.
@@ -288,6 +295,8 @@ public class DummyEnemy : MonoBehaviour
     {
         downed = false;
         defeatCommitted = false;
+        DeathVisualComplete = false;
+        GetComponent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>()?.Cry?.ResetPresence();
         downedSource = null;
         EncounterId = Guid.NewGuid().ToString("N");
         GetComponent<Capstone.Game.CreatureSystem.PveCombatState>()?.ResetEncounter();
@@ -297,6 +306,7 @@ public class DummyEnemy : MonoBehaviour
         GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>()?.SyncEnemyHealth(health, maxHealth);
         flashUntil = 0f;
         SetCollidersEnabled(true);
+        Capstone.Game.CreatureSystem.CreatureCombatant.RefreshPlayerPassThrough(gameObject);
         ApplyColor(idleColor);
         RefreshName();
         HealthChanged?.Invoke(this);
@@ -318,7 +328,18 @@ public class DummyEnemy : MonoBehaviour
         ApplyColor(deadColor);
         RefreshName();
         bool rewardHandled = !trainingDummy && Capstone.Game.CreatureSystem.PveRewardService.HandleDefeat(this, source);
-        if(!trainingDummy&&GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>()!=null&&GetComponent<Capstone.Game.CreatureSystem.EnemyDeathVisual>()==null)gameObject.AddComponent<Capstone.Game.CreatureSystem.EnemyDeathVisual>();
+        if (!trainingDummy && GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>() != null)
+        {
+            var driver = GetComponent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>();
+            if (driver != null)
+            {
+                driver.TryGetActionHash(Capstone.Game.CreatureSystem.CreatureAction.Death, out int deathHash);
+                driver.Cry?.BeginDeath(deathHash);
+            }
+            var visual = GetComponent<Capstone.Game.CreatureSystem.EnemyDeathVisual>()
+                ?? gameObject.AddComponent<Capstone.Game.CreatureSystem.EnemyDeathVisual>();
+            visual.Begin();
+        }
         if (!trainingDummy)
         {
             Defeated?.Invoke(source);
@@ -343,7 +364,7 @@ public class DummyEnemy : MonoBehaviour
         RefreshName();
     }
 
-    private Bounds GetTargetBounds()
+    internal Bounds GetTargetBounds()
     {
         if (cachedRenderer != null)
         {

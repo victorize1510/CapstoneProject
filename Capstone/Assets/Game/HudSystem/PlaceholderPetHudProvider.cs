@@ -151,7 +151,6 @@ namespace Capstone.Game.HudSystem {
                     unlocked = true,
                     usable = true,
                     displayName = "Skill " + index,
-                    skillLevel = 1,
                     description = "Prototype pet skill.",
                     animatorStates = DefaultAnimatorStates(index - 1),
                     animationDuration = 0.85f,
@@ -165,7 +164,6 @@ namespace Capstone.Game.HudSystem {
 
             for (int i = 0; i < skills.Count; i++) {
                 SkillHudData skill = skills[i];
-                skill.skillLevel = Mathf.Max(1, skill.skillLevel);
                 skill.cooldownPercent = Mathf.Clamp01(skill.cooldownPercent);
                 skill.cooldownSeconds = Mathf.Max(0f, skill.cooldownSeconds);
                 skill.animationDuration = Mathf.Max(0f, skill.animationDuration);

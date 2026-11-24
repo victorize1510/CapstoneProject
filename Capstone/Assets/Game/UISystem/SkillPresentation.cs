@@ -22,6 +22,15 @@ namespace Capstone.Game.UISystem {
             var parent=old.parent;int index=parent.IndexOf(old);string value=old.text;old.RemoveFromHierarchy();parent.Insert(index,label);label.SetValue(value);
         }
         public static void SetName(Label label,string value) {if(label is SkillNameLabel skill)skill.SetValue(value);else if(label!=null)label.text=value;}
+
+        public static string Power(SkillHudData skill) {
+            if (skill.combatProfile == null || skill.combatProfile.delivery == Capstone.Game.Skills.PetSkillDelivery.SelfBuff)
+                return "—";
+            return skill.combatProfile.power.ToString("0.##", CultureInfo.GetCultureInfo("vi-VN"));
+        }
+
+        public static string Mana(SkillHudData skill) =>
+            skill.manaCost.ToString("0.##", CultureInfo.GetCultureInfo("vi-VN")) + " MP";
     }
     public sealed class SkillListRow : AngularButton {
         public readonly VisualElement Icon;

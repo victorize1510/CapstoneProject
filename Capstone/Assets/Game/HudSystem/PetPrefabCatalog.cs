@@ -40,7 +40,7 @@ namespace Capstone.Game.HudSystem {
             // Old saves can contain the default "base" alongside a committed evolutionStage.
             // Resolve from authored stage metadata, never from the pet's level.
             if (evolutionStage > 0 && (string.IsNullOrWhiteSpace(formId)
-                || string.Equals(formId, "base", StringComparison.OrdinalIgnoreCase))) {
+                || string.Equals(CanonicalFormId(formId.Trim()), "01", StringComparison.OrdinalIgnoreCase))) {
                 string resolvedForm = null;
                 foreach (var entry in entries) {
                     if (entry?.Prefab == null || !string.Equals(CanonicalDefinitionId(entry.DefinitionId),
@@ -92,7 +92,7 @@ namespace Capstone.Game.HudSystem {
             entries.RemoveAll(entry => entry == null);
         }
 
-        static string CanonicalDefinitionId(string value) {
+        internal static string CanonicalDefinitionId(string value) {
             if (string.Equals(value, "Dragon Dusk Winged", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(value, "Dragon Dusk Elder", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(value, "Dragon Nightfall", StringComparison.OrdinalIgnoreCase)

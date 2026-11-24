@@ -12,8 +12,11 @@ namespace Capstone.Game.Inventory {
         public string FlavorText { get; }
         public int HealAmount { get; }
         public int EnergyRestoreAmount { get; }
+        public MonsterItemDefinition Definition => ItemBase as MonsterItemDefinition;
+        public bool HasSpecialPetEffect => Definition != null && (Definition.RevivePercent > 0
+            || Definition.GrantsStatBuff || Definition.Cleanses != Capstone.Game.CreatureSystem.CombatAilment.None);
         public bool IsRecoveryItem => (Category == GameItemCategory.Medicine || Category == GameItemCategory.Food)
-            && (HealAmount > 0 || EnergyRestoreAmount > 0) && UsableFromInventory && Consumable;
+            && (HealAmount > 0 || EnergyRestoreAmount > 0 || HasSpecialPetEffect) && UsableFromInventory && Consumable;
         public string ItemId { get; }
         public GameItemCategory Category { get; }
         public InventoryItemRarity Rarity { get; }

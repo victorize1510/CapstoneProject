@@ -122,8 +122,9 @@ namespace Capstone.Game.PetSummon.Editor
                             Require(released && pet.IsSummoned,"spawn did not complete");
                             Require(effect.ActiveVfx == null,"spawn effect stayed active");
                             Require(ball.GetComponent<Renderer>().enabled,"spawn did not restore ball for reuse");
-                            yield return null;
-                            Require(pet.CanReceiveCommands,"Cast Spell did not finish");
+                            float readyDeadline = Time.time + 5;
+                            while (!pet.CanReceiveCommands && Time.time < readyDeadline) yield return null;
+                            Require(pet.CanReceiveCommands,"Summon presentation did not finish");
                             if (previewForm<0) {
                                 var target=new GameObject("TemporaryVfxCombatTarget") { hideFlags=HideFlags.DontSave };
                                 combatEnemy=target.AddComponent<DummyEnemy>(); combatEnemy.enabled=false;

@@ -11,20 +11,66 @@ namespace Capstone.Game.HudSystem {
         bool processing;
         internal ICaptureRandom RandomSource;
         CapturePresentation presentation;
+        PetCommandInput targetPlayer;
+        BasicCameraFollow targetCamera;
+        WildCaptureTargeting.Selection normalPreview, aimPreview;
+        bool hasNormalPreview;
+        int aimPreviewFrame = -2;
         public bool IsCapturing => processing || presentation != null && presentation.IsPlaying;
-        public bool CanCaptureFromBag(MonsterItemDefinition ball, MonsterInventoryAdapter inventory, out string reason) {
-            var target=LockedTarget();bool valid=ValidateAttempt(ball,inventory,target,out _,out var failure);reason=CaptureMessages.For(failure);return valid&&CanPresentThrow(out reason);
+        internal BasicCameraFollow CaptureCamera {
+            get {
+                targetPlayer = roster?.PartyInput != null ? roster.PartyInput
+                    : targetPlayer != null ? targetPlayer : FindFirstObjectByType<PetCommandInput>();
+                return targetPlayer != null && targetPlayer.cameraLock != null ? targetPlayer.cameraLock
+                    : targetCamera != null ? targetCamera : targetCamera = FindFirstObjectByType<BasicCameraFollow>();
+            }
         }
-        bool CanPresentThrow(out string reason){
+        internal Camera CaptureView => WildCaptureTargeting.View(targetPlayer, CaptureCamera);
+        internal WildCaptureTargeting.Selection UpdateTargetPreview(bool aim) {
+            var camera = CaptureCamera;
+            var previous = aim ? aimPreview : normalPreview;
+            var next = WildCaptureTargeting.Preview(targetPlayer, camera, aim, previous.Enemy);
+            if (aim) { aimPreview = next; aimPreviewFrame = Time.frameCount; }
+            else { normalPreview = next; hasNormalPreview = true; aimPreviewFrame = -2; aimPreview = default; }
+            return next;
+        }
+
+        WildCaptureTargeting.Selection FrozenSelection(bool aim) {
+            if (aim && (Time.frameCount - aimPreviewFrame > 1 || aimPreview.Enemy == null))
+                return new WildCaptureTargeting.Selection(null, null, CaptureFailure.NoTarget);
+            var shown = aim ? aimPreview : hasNormalPreview ? normalPreview : UpdateTargetPreview(false);
+            if (shown.Failure != CaptureFailure.None) return shown;
+            if (shown.Enemy == null)
+                return new WildCaptureTargeting.Selection(null, null, CaptureFailure.NoTarget);
+            var view = CaptureView;
+            return WildCaptureTargeting.Check(targetPlayer, view, shown.Enemy, aim);
+        }
+
+        internal CaptureFailure PreviewFailure(WildCaptureTargeting.Selection preview, MonsterItemDefinition ball,
+            MonsterInventoryAdapter inventory) {
+            if (preview.Failure != CaptureFailure.None) return preview.Failure;
+            return ValidateAttempt(ball, inventory, preview.Target, out _, out var failure) ? CaptureFailure.None : failure;
+        }
+
+        public bool CanCaptureFromBag(MonsterItemDefinition ball, MonsterInventoryAdapter inventory, out string reason) {
+            var selection = FrozenSelection(false);
+            var failure = PreviewFailure(selection, ball, inventory);
+            reason = CaptureMessages.For(failure);
+            return failure == CaptureFailure.None && CanPresentThrow(out reason);
+        }
+        internal bool CanPresentThrow(out string reason){
             var player=roster?.PartyInput;
             var movement=player!=null?player.GetComponent<BasicPlayerMovement>():null;
             var socket=player!=null?player.GetComponent<PetSummon.PetSummonHandSocket>():null;
             var director=player!=null?player.GetComponent<PetSummon.PetSummonDirector>():null;
             if(movement==null||!movement.CanStartPetThrow||director!=null&&director.IsSequenceRunning){reason="Chờ nhân vật đứng vững và kết thúc động tác hiện tại để ném bóng.";return false;}
             if(socket==null||!socket.IsConfigured||CaptureAssets.Settings?.ballVisual==null){reason="Chưa cấu hình tay ném hoặc model bóng thu phục.";return false;}
+            if (!PetSummon.PlayerThrowPlayback.TryRelease(movement, player.GetComponent<PlayerVisualSwitcher>(), 32, out _)) {
+                reason = "Chưa có hoạt ảnh ném bóng khả dụng.";
+                return false;
+            }
             reason=CaptureMessages.For(CaptureFailure.None);return true;
         }
-        WildPetCaptureTarget LockedTarget()=>WildCaptureTargeting.Find(FindFirstObjectByType<PetCommandInput>(),FindFirstObjectByType<BasicCameraFollow>());
         bool ValidateAttempt(MonsterItemDefinition ball,MonsterInventoryAdapter inventory,WildPetCaptureTarget target,out CaptureContext context,out CaptureFailure failure){
             context=default;ResolveReferences();failure=CaptureFailure.None;
             if(IsCapturing||CaptureEventBatch.IsActive){failure=CaptureFailure.Busy;return false;}
@@ -48,10 +94,23 @@ namespace Capstone.Game.HudSystem {
             bool valid=CaptureCalculator.TryOdds(context,out _,out failure);if(!valid&&failure==CaptureFailure.InvalidData)CaptureDiagnostics.Missing(ball);return valid;
         }
         public bool TryCaptureFromBag(MonsterItemDefinition ball,MonsterInventoryAdapter inventory,out CapturePresentationResult result,out string error)
+            => TryCaptureFromSelection(ball, inventory, false, out result, out error);
+
+        internal bool TryCaptureFromSelection(MonsterItemDefinition ball, MonsterInventoryAdapter inventory, bool aim,
+            out CapturePresentationResult result, out string error)
         {
             result=default;
             if(!Capstone.Game.UISystem.PlayerActionGate.TryBegin(this,"capture-throw",out var lease)){error=CaptureMessages.For(CaptureFailure.Busy);return false;}
-            using(lease){ResolveReferences();if(!CanPresentThrow(out error))return false;return TryCaptureTarget(ball,inventory,LockedTarget(),out result,out error);}
+            using(lease) {
+                ResolveReferences();
+                var selection = FrozenSelection(aim);
+                if (selection.Failure != CaptureFailure.None) {
+                    error = CaptureMessages.For(selection.Failure);
+                    return false;
+                }
+                if(!CanPresentThrow(out error)) return false;
+                return TryCaptureTarget(ball,inventory,selection.Target,out result,out error);
+            }
         }
         internal bool TryCaptureTarget(MonsterItemDefinition ball,MonsterInventoryAdapter inventory,WildPetCaptureTarget target,out CapturePresentationResult result,out string error){
             result=default;
@@ -69,6 +128,9 @@ namespace Capstone.Game.HudSystem {
         public void Present(CapturePresentationResult result,UIDocument document){
             if(this==null||!isActiveAndEnabled)return;
             if(presentation==null)presentation=gameObject.AddComponent<CapturePresentation>();
+            hasNormalPreview = false;
+            aimPreviewFrame = -2;
+            normalPreview = aimPreview = default;
             presentation.Play(result,roster?.PartyInput?.transform,document);
         }
         bool CommitAttempt(PetController pet,string id,string speciesId,bool success,MonsterItemDefinition ball,MonsterInventoryAdapter inventory,WildPetCaptureTarget target,out string error){

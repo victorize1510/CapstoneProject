@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using Capstone.Game.Inventory;
 using UnityEngine;
 using UnityEngine.UI;
@@ -151,7 +152,7 @@ public class DoorInteractable : MonoBehaviour
         }
 
         if (focused == this && !InventoryInputController.GameplayInputBlocked
-            && Input.GetKeyDown(interactKey) && Time.time >= nextToggleTime)
+            && PhysicalKeys.GetKeyDown(interactKey) && Time.time >= nextToggleTime)
             SetOpen(!isOpen, true, false);
 
         if (motionMode == MotionMode.RotateByCode && !Mathf.Approximately(currentAngle, targetAngle))
@@ -258,7 +259,10 @@ public class DoorInteractable : MonoBehaviour
         if (playSound && audioSource != null)
         {
             AudioClip clip = open ? openSound : closeSound;
-            if (clip != null) audioSource.PlayOneShot(clip);
+            if (clip != null) {
+                Capstone.Game.SettingsSystem.GameAudioRouting.Route(audioSource, Capstone.Game.SettingsSystem.GameAudioBus.SFX);
+                audioSource.PlayOneShot(clip);
+            }
         }
     }
 

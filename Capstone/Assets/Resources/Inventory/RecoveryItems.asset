@@ -13,7 +13,28 @@ MonoBehaviour:
   m_Name: RecoveryItems
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.InventoryRecoveryCatalog
   items:
-  - {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
   - {fileID: 11400000, guid: a206ddcbe109a494ea900aa905b1702c, type: 2}
-  - {fileID: 11400000, guid: 2515b74e7584dda42bec74dc04cb3b88, type: 2}
   - {fileID: 11400000, guid: 5bd730739fc04e47a6f9f66bc2a2bf4d, type: 2}
+  - {fileID: 11400000, guid: e5ef69256de4941b50b91da525110c7b, type: 2}
+  - {fileID: 11400000, guid: 1cb7f66293eb0fdfbe630166077b247a, type: 2}
+  - {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
+  - {fileID: 11400000, guid: 233258ad82667dc2d7ce2082b366321a, type: 2}
+  - {fileID: 11400000, guid: 2515b74e7584dda42bec74dc04cb3b88, type: 2}
+  - {fileID: 11400000, guid: 5bf4d8fccc135216819a6227eb01bd54, type: 2}
+  - {fileID: 11400000, guid: 35367cdc7e4d317fb475403af1553dd3, type: 2}
+  - {fileID: 11400000, guid: bbd1b3239c049acde1a1cca3791d2817, type: 2}
+  - {fileID: 11400000, guid: 7405ed834f645b1a943016322ab06f6f, type: 2}
+  - {fileID: 11400000, guid: 3966a771a3ec70cd573cc015f4ce92e9, type: 2}
+  - {fileID: 11400000, guid: 239d82192db15622e24f43291a1e1c58, type: 2}
+  - {fileID: 11400000, guid: dc278e8a227f4855902533225502b044, type: 2}
+  - {fileID: 11400000, guid: f1de7ec272ed1af486c78a772cf23b17, type: 2}
+  - {fileID: 11400000, guid: 463114507255812d587f0ff50dc52020, type: 2}
+  - {fileID: 11400000, guid: e95bd2a24cf419f61d2a45f70eb47dee, type: 2}
+  - {fileID: 11400000, guid: d5226f321e42c56c9a04559d20da82b2, type: 2}
+  - {fileID: 11400000, guid: 3c830ddf18b065409a7cf960a3fc1fc6, type: 2}
+  - {fileID: 11400000, guid: f70206f34849a2f288111770fccfe80d, type: 2}
+  - {fileID: 11400000, guid: e5794b1e348b7bdf830de2fdefb560de, type: 2}
+  - {fileID: 11400000, guid: 3acb16b5c83c92c7602f2ae2f7e0f22f, type: 2}
+  - {fileID: 11400000, guid: 28c6442fcff2f6371cce36098c950835, type: 2}
+  - {fileID: 11400000, guid: 8a790a8dd41df6bd702cac2b4ce9b7f6, type: 2}
+  - {fileID: 11400000, guid: f80bec1c10131af9d9893baff0bb5939, type: 2}

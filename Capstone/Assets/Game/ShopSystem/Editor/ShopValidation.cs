@@ -2,9 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Capstone.Game.CaptureSystem;
+using Capstone.Game.CreatureSystem;
+using Capstone.Game.HudSystem;
 using Capstone.Game.Inventory;
+using Capstone.Game.ProfileSystem;
 using Capstone.Game.SaveSystem;
 using Capstone.Game.UISystem;
 using GDS.Core;
@@ -57,15 +62,88 @@ namespace Capstone.Game.ShopSystem.Editor {
         static void Submit(Button button) { using (var evt = NavigationSubmitEvent.GetPooled()) { evt.target = button; button.SendEvent(evt); } }
         static T Field<T>(object value, string field) => (T)value.GetType().GetField(field, Private).GetValue(value);
 
+        [MenuItem("Tools/Capstone/Advanced/HUD/Validate expanded item data")]
+        public static void ValidateExpandedItems() {
+            var path = Path.Combine(QaArtifactPaths.Root, "ShopProgression", "catalog-checks.txt");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            results.Clear();
+            try {
+                ValidateAuthoredCatalogs();
+                var items = InventoryDefinitionCatalog.Definitions;
+                Check(items.Count == 81 && items.All(item => item.Icon != null), "81 canonical items have imported sprites");
+                var library = AssetDatabase.LoadAssetAtPath<CreatureLibrary>("Assets/Game/CreatureSystem/Data/CreatureLibrary.asset");
+                Check(library.families.Count == 11 && items.Count(item => item.StableId.StartsWith("loot-", StringComparison.Ordinal)) == 33,
+                    "33 materials for the 11 authored families");
+                var familyIcons = new HashSet<Sprite>();
+                var chances = new[] { .45f, .35f, .25f };
+                foreach (var family in library.families) {
+                    var materials = family.forms.Select(form => {
+                        int stage = int.Parse(form.formId) - 1;
+                        var drop = PveLootCatalog.SelectFamilyMaterial(family.definitionId, form.formId, chances[stage] - .001f);
+                        Check(drop != null && PveLootCatalog.SelectFamilyMaterial(family.definitionId, form.formId, chances[stage]) == null,
+                            $"{family.definitionId}/{form.formId} material and roll threshold");
+                        return drop;
+                    }).ToArray();
+                    Check(materials.Length == 3 && materials.All(drop => drop.Icon == materials[0].Icon) && familyIcons.Add(materials[0].Icon),
+                        $"{family.definitionId} shares a unique sprite across its three materials");
+                }
+                Check(items.Select(item => item.HealAmount).Where(amount => amount > 0).OrderBy(amount => amount)
+                    .SequenceEqual(new[] { 25, 30, 50, 100, 200 }), "HP restoration amounts and existing apple");
+                Check(items.Select(item => item.EnergyRestoreAmount).Where(amount => amount > 0).OrderBy(amount => amount)
+                    .SequenceEqual(new[] { 25, 50, 100 }), "three fixed MP restoration amounts");
+                Check(items.Where(item => item.RevivePercent > 0).Select(item => item.RevivePercent).OrderBy(amount => amount)
+                    .SequenceEqual(new[] { 25, 50, 100, 100 }), "four revive values");
+                Check(InventoryDefinitionCatalog.Find("revive-purifying").Cleanses == CombatAilment.All
+                    && InventoryDefinitionCatalog.Find("remedy-cleanse").Cleanses == CombatAilment.All, "special items clear all ailments");
+                Check(items.Where(item => item.GrantsStatBuff).Select(item => item.BuffStat).Distinct().Count() == 5,
+                    "five stat fruits for five separate stats");
+                Check(items.Where(item => item.EvolutionStoneElement != 0).Select(item => item.EvolutionStoneElement).Distinct().Count() == 8,
+                    "eight different elements have evolution stones");
+                foreach (string prefix in new[] { "fruit-cure-", "remedy-" }) {
+                    var singleCures = items.Where(item => item.StableId.StartsWith(prefix, StringComparison.Ordinal) && item.Cleanses != CombatAilment.All);
+                    Check(singleCures.Count() == 9 && singleCures.Aggregate(CombatAilment.None, (mask, item) => mask | item.Cleanses) == CombatAilment.Negative,
+                        prefix + "covers all nine debuffs");
+                }
+                var defaultLoot = Resources.Load<PveLootCatalog>("Pve/LootCatalog");
+                var demoLoot = AssetDatabase.LoadAssetAtPath<PveLootCatalog>("Assets/Game/CreatureSystem/Runtime/DemoSceneOne/Loot.asset");
+                Check(defaultLoot != null && demoLoot != null && demoLoot.EffectiveCatalog == defaultLoot,
+                    "Demo scenes use shared PvE loot data");
+                foreach (var source in new[] { defaultLoot, demoLoot }) {
+                    var loot = source.EffectiveCatalog;
+                    var expectedFruit = items.Where(item => item.StableId == "healing-apple" || item.StableId == "leaf-berry"
+                        || item.StableId.StartsWith("fruit-", StringComparison.Ordinal)).ToHashSet();
+                    Check(loot.itemChance == .30f && loot.entries.Count == 16
+                        && expectedFruit.SetEquals(loot.entries.Select(entry => entry.item)) && loot.entries.All(entry => entry.weight == 1 && entry.quantity == 1),
+                        source.name + " drops one of sixteen fruits in an independent 30-percent roll");
+                    loot.SelectSmallPotions(.049f, .029f, out var hp, out var mp);
+                    Check(hp?.StableId == "hp-potion-small" && mp?.StableId == "mana-potion",
+                        loot.name + " can drop both first-tier potions from the same defeat");
+                    loot.SelectSmallPotions(.05f, .03f, out hp, out mp);
+                    Check(hp == null && mp == null && loot.minimumGold == 2 && loot.maximumGold == 5,
+                        loot.name + " respects the 5-percent HP, 3-percent MP thresholds and the gold range");
+                    Check(loot.SelectEvolutionStone(PetElement.Fire, .049f)?.StableId == "stone-fire" &&
+                        loot.SelectEvolutionStone(PetElement.Dark, .049f)?.StableId == "dusk-stone" &&
+                        loot.SelectEvolutionStone(PetElement.Fire, .05f) == null,
+                        source.name + " drops the defeated creature's primary stone at 5 percent");
+                }
+                Check(PveLootCatalog.SelectFamilyMaterial("Dragon Darkness", "dragon-dusk-elder", 0)?.StableId == "loot-dragon-dusk-03",
+                    "Legacy dragon ID receives the current form material");
+            } catch (Exception exception) {
+                results.Add("FAIL " + exception);
+                throw;
+            } finally {
+                File.WriteAllLines(path, results);
+            }
+            Debug.Log($"Expanded item catalog: {results.Count} checks passed.");
+        }
+
         [MenuItem("Tools/Capstone/Advanced/HUD/Validate Shop")]
         public static async void Run() {
             if (running || EditorApplication.isPlaying) return;
             running = true; results.Clear(); ShopPreviewWindow window = null;
             try {
                 ValidateTransactions();
-                var defaults = Resources.Load<ShopCatalog>("Shop/DefaultShopCatalog");
-                Check(defaults != null && defaults.Offers.Count == 2, "default catalog uses two existing project definitions");
-                foreach (var offer in defaults.Offers) Check(offer.Item != null && offer.GoldPrice == -1, "actual item has unset price: " + offer.Id);
+                ValidateAuthoredCatalogs();
                 window = ShopPreviewWindow.OpenPreview(); await Task.Delay(350);
                 var root = window.Surface.Q("shop-panel"); var controller = window.Controller;
                 Check(root.Query<Button>(className: "shop-category").ToList().Count == 5, "exactly five categories");
@@ -95,7 +173,8 @@ namespace Capstone.Game.ShopSystem.Editor {
                     Check(root.Q<Button>("shop-back").worldBound.xMax <= root.worldBound.xMax + 1, "Back fits " + viewport);
                     Check(root.Q<Button>("shop-buy").worldBound.yMax <= root.worldBound.yMax + 1, "purchase stays inside viewport " + viewport);
                     Check(root.Q("shop-purchase").worldBound.yMin >= root.Q(className: "screen-header").worldBound.yMax, "purchase does not overlap header " + viewport);
-                    Check(root.Q<Label>(className: "screen-title").resolvedStyle.fontSize == 38, "shared title typography " + viewport);
+                    Check(Mathf.Approximately(root.Q<Label>(className: "screen-title").resolvedStyle.fontSize, UnifiedPanelHeader.TitleFont),
+                        "shared title typography " + viewport);
                     Check(root.Q<Image>("shop-portrait").resolvedStyle.width <= root.Q<Image>("shop-portrait").sprite.rect.width, "preview does not enlarge low resolution source " + viewport);
                     var columns = root.Query<VisualElement>(className: "shop-column").ToList();
                     Check(columns[0].worldBound.xMax <= columns[1].worldBound.xMin && columns[1].worldBound.xMax <= columns[2].worldBound.xMin, "three columns never overlap " + viewport);
@@ -116,6 +195,103 @@ namespace Capstone.Game.ShopSystem.Editor {
                 Write("validation.txt"); Debug.Log("Shop validation: " + results.Count + " checks passed.");
             } catch (Exception e) { results.Add("FAIL " + e); Write("validation.txt"); Debug.LogException(e); }
             finally { window?.Close(); running = false; }
+        }
+
+        static void ValidateAuthoredCatalogs() {
+            var defaults = Resources.Load<ShopCatalog>("Shop/DefaultShopCatalog");
+            var demo = AssetDatabase.LoadAssetAtPath<ShopCatalog>("Assets/Game/CreatureSystem/Runtime/DemoSceneOne/Shop.asset");
+            Check(defaults != null && demo != null && demo.sharedCatalog == defaults, "Demo scenes use shared shop data");
+            var balls = new[] { "capture-ball-basic-01", "capture-ball-rare-01", "capture-ball-ultra-01" };
+            var basicItems = new[] { balls[0], "hp-potion-small", "mana-potion", "revive-small" };
+            var tenItems = basicItems.Concat(new[] { balls[1], "hp-potion-medium", "mp-potion-medium", "revive-medium",
+                "remedy-bleed", "remedy-burn", "remedy-shock", "remedy-poison", "remedy-stun", "remedy-root",
+                "remedy-slow", "remedy-defense-down", "remedy-magic-defense-down", "remedy-cleanse" }).ToArray();
+            var fifteenItems = tenItems.Concat(new[] { balls[2], "Potion", "mp-potion-large", "revive-full" }).ToArray();
+            var expected = fifteenItems.Concat(new[] { "hp-potion-super", "revive-purifying" }).ToArray();
+            var owner = new GameObject("AuthoredShopFixture") { hideFlags = HideFlags.HideAndDontSave };
+            try {
+                var bag = owner.AddComponent<MonsterInventoryAdapter>();
+                var wallet = owner.AddComponent<PlayerCurrencyWallet>();
+                var source = owner.AddComponent<ShopSource>();
+                var profile = owner.AddComponent<PlayerProfileRuntimeProvider>();
+                double time = 0;
+                var service = new ShopPurchaseService(bag, wallet, () => time, profile);
+                foreach (var catalog in new[] { defaults, demo }) {
+                    Check(catalog != null, "authored shop catalog loads");
+                    source.Configure(catalog);
+                    bag.SetInventory(new ListBag { Size = 24 });
+                    wallet.RestoreFromSaveData(new CurrencySaveData { captured = true, gold = 1000 });
+                    profile.ResetForNewGame();
+                    var basicBall = source.Find(balls[0]);
+                    var rareBall = source.Find(balls[1]);
+                    var ultraBall = source.Find(balls[2]);
+                    bool Visible(params string[] ids) => source.Offers.Where(service.IsVisible).Select(offer => offer.Id).ToHashSet().SetEquals(ids);
+                    Check(source.Offers.Count == expected.Length && source.Offers.All(offer => offer.Item?.Icon != null),
+                        catalog.name + $" lists {expected.Length} items with sprites");
+                    Check(profile.Level == 1 && basicBall.GoldPrice == 5 && service.Maximum(basicBall, out _) > 0
+                        && Visible(basicItems), catalog.name + " starts with only four basic items");
+                    time += 1;
+                    Check(!service.TryBuy(source, rareBall.Id, 1, rareBall.GoldPrice, out _) && wallet.Gold == 1000,
+                        catalog.name + " rejects locked ball purchases with no deduction");
+                    profile.RestoreFromSaveData(new PlayerProfileSaveData {
+                        captured = true, level = 9, currentExperience = 99, requiredExperience = 100
+                    });
+                    Check(Visible(basicItems), catalog.name + " keeps higher tiers hidden at level nine");
+                    profile.AddExperience(1);
+                    Check(profile.Level == 10 && service.Maximum(rareBall, out _) > 0 && Visible(tenItems),
+                        catalog.name + " adds second-tier items and remedies at level ten");
+                    profile.RestoreFromSaveData(new PlayerProfileSaveData {
+                        captured = true, level = 14, currentExperience = 99, requiredExperience = 100
+                    });
+                    profile.AddExperience(1);
+                    Check(profile.Level == 15 && service.Maximum(ultraBall, out _) > 0 && Visible(fifteenItems),
+                        catalog.name + " adds third-tier items at level fifteen");
+                    profile.SetLevelProgress(20, 3, 100);
+                    Check(Visible(expected), catalog.name + " adds the final HP and revive tiers at level twenty");
+                    foreach (string id in expected) {
+                        var item = InventoryDefinitionCatalog.Find(id);
+                        var offer = source.Offers.SingleOrDefault(entry => entry.Item == item);
+                        Check(item != null && item.Icon != null && offer != null && offer.Unlocked && offer.GoldPrice > 0,
+                            catalog.name + " lists canonical item " + id);
+                        time += 1;
+                        int gold = wallet.Gold;
+                        Check(service.TryBuy(source, offer.Id, 1, offer.GoldPrice, out _)
+                            && bag.GetQuantity(item) == 1 && wallet.Gold == gold - offer.GoldPrice,
+                            catalog.name + " buys " + id + " into the bag");
+                    }
+                    var snapshot = bag.CreateSaveData();
+                    snapshot.quickItemIds = new[] { "ManaPotion", "" };
+                    bag.SetInventory(new ListBag { Size = 24 });
+                    Check(bag.RestoreFromSaveData(snapshot, out _) && expected.All(id => bag.GetQuantity(InventoryDefinitionCatalog.Find(id)) == 1),
+                        catalog.name + " purchases survive bag reload");
+                    Check(bag.GetQuickItemId(0) == "mana-potion" && bag.GetQuickItemId(1) == "", "old quick-item alias migrates to the canonical ID");
+                }
+                Check(InventoryDefinitionCatalog.Find("Leaf Berry") == InventoryDefinitionCatalog.Find("leaf-berry"),
+                    "old growth item resolves to the authored definition");
+                var choices = Resources.Load<CaptureBallPresentationCatalog>("Capture/BallPresentations");
+                var resultsAt70 = new List<bool>();
+                var resultsAt74 = new List<bool>();
+                foreach (string id in balls) {
+                    var item = InventoryDefinitionCatalog.Find(id);
+                    Check(choices.choices.Count(choice => choice.item == item && choice.icon == item.Icon) == 1 && item.IsCaptureBall,
+                        "capture picker uses the shop definition and icon for " + id);
+                    var context = new CaptureContext(50, 100, 45, item.CaptureRules);
+                    var valid70 = CaptureCalculator.TryRoll(context, new FixedCaptureRandom(.7), out var roll70, out _);
+                    var valid74 = CaptureCalculator.TryRoll(context, new FixedCaptureRandom(.74), out var roll74, out _);
+                    Check(!item.CaptureRules.Guaranteed && valid70 && valid74,
+                        "new ball works with real-time capture rules " + id);
+                    resultsAt70.Add(roll70.Success);
+                    resultsAt74.Add(roll74.Success);
+                }
+                Check(resultsAt70.SequenceEqual(new[] { false, true, true }) && resultsAt74.SequenceEqual(new[] { false, false, true }),
+                    "ball tiers improve capture outcomes for the same target and fixed rolls");
+            } finally { Object.DestroyImmediate(owner); }
+        }
+
+        sealed class FixedCaptureRandom : ICaptureRandom {
+            readonly double value;
+            public FixedCaptureRandom(double value) { this.value = value; }
+            public double NextFloat01() => value;
         }
 
         static void ValidateTransactions() {
@@ -172,7 +348,9 @@ namespace Capstone.Game.ShopSystem.Editor {
                 Check(service.Owned(offer) == 2, "owned count resolves saved definition by stable ID");
                 time += .2; Check(service.TryBuy(source,offer.Id,1,0,out _) && bag.GetItems().Count == 1 && bag.GetQuantity(restoredDefinition) == 3, "purchase merges existing saved identity without duplicate definitions");
                 var defaults = Resources.Load<ShopCatalog>("Shop/DefaultShopCatalog");
-                Check(defaults.Offers[1].Item.StableId == "dusk-stone" && ShopPresentation.Category(defaults.Offers[1]) == ShopCategory.Evolution, "evolution item uses existing stable ID and explicit display grouping");
+                Check(defaults.Offers.All(offer => ShopPresentation.Category(offer) != ShopCategory.Evolution)
+                    && InventoryDefinitionCatalog.Find("dusk-stone") != null,
+                    "default shop excludes evolution stones while old inventory IDs still resolve");
             } finally { Object.DestroyImmediate(owner); Object.DestroyImmediate(catalog); foreach (var item in definitions) Object.DestroyImmediate(item); }
         }
         sealed class RejectingBag : ListBag { public override bool Accepts(Item item) => false; }

@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: orb.electric
   legacyIds: []
-  displayName: "Cầu điện"
-  description: "Phóng một đạn theo hướng thi triển; gây sát thương khi va chạm."
+  displayName: "Điện Cầu"
+  description: "Phóng điện cầu theo đường thẳng, gây một đòn sát thương."
   element: 6
   icon: {fileID: 21300000, guid: 1af81a3699ff967469dca70d810c8b2e, type: 3}
-  cooldownSeconds: 4
-  manaCost: 0
+  cooldownSeconds: 11
+  manaCost: 29
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates: 

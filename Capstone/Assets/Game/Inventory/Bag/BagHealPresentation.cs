@@ -10,7 +10,7 @@ namespace Capstone.Game.Inventory.Bag {
         readonly VisualElement overlay, original, card;
         readonly List<Action> restore = new List<Action>();
         readonly BagButton confirm;
-        public BagHealPresentation(VisualElement overlay, Action cancel, Action heal) {
+        public BagHealPresentation(VisualElement overlay, Action cancel, Action heal, DropdownField petSelector = null) {
             this.overlay=overlay; original=overlay.Q("heal-modal-dialog");
             original.style.display=DisplayStyle.None;
             card=new VisualElement{name="bag-heal-dialog"};overlay.Add(card);
@@ -20,7 +20,8 @@ namespace Capstone.Game.Inventory.Bag {
             Surface("detail-art",24,88,744,88);
             Move("heal-pet-portrait",32,96,68,68);
             Move("heal-pet-name",124,98,620,34,"bag-modal-item-name");
-            Label("Thú đang xuất chiến",124,138,620,26);
+            if(petSelector==null) Label("Thú đang xuất chiến",124,138,620,26);
+            else { BagPresentation.Place(petSelector,124,138,620,30);card.Add(petSelector); }
             Surface("detail-art",24,200,744,108);
             Move("heal-resource-title",40,210,704,26);
             Move("heal-current-health",40,244,240,30);
@@ -46,7 +47,7 @@ namespace Capstone.Game.Inventory.Bag {
             Move("heal-feedback",40,474,712,36,"bag-modal-note");
             var close=new BagButton(cancel){text="×",Kind="action-primary",name="bag-heal-close"};BagPresentation.Place(close,724,20,40,40);card.Add(close);
             var back=new BagButton(cancel){text="Hủy",Kind="action-small",name="bag-heal-cancel"};BagPresentation.Place(back,24,536,356,48);card.Add(back);
-            confirm=new BagButton(heal){text="Hồi phục",Kind="action-primary",name="bag-heal-confirm"};confirm.AddToClassList("bag-dark");BagPresentation.Place(confirm,404,536,364,48);card.Add(confirm);
+            confirm=new BagButton(heal){text=petSelector==null?"Hồi phục":"Dùng vật phẩm",Kind="action-primary",name="bag-heal-confirm"};confirm.AddToClassList("bag-dark");BagPresentation.Place(confirm,404,536,364,48);card.Add(confirm);
         }
         void Surface(string kind,float x,float y,float w,float h){var e=new BagSurface{Kind=kind};BagPresentation.Place(e,x,y,w,h);card.Add(e);}
         void Label(string text,float x,float y,float w,float h,string cls=null){var e=new Label(text){pickingMode=PickingMode.Ignore};if(cls!=null)e.AddToClassList(cls);if(cls=="bag-modal-title")e.style.unityFontDefinition=FontDefinition.FromFont(TrainerMenuArt.Serif);BagPresentation.Place(e,x,y,w,h);card.Add(e);}

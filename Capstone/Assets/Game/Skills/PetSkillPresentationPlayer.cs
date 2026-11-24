@@ -27,6 +27,7 @@ namespace Capstone.Game.Skills
         int maxPooledEffects = 8;
         PetHudRuntimeStats stats;
         PetController pet;
+        Capstone.Game.CreatureSystem.CreatureAnimationDriver animationDriver;
         Capstone.Game.CreatureSystem.CreatureCombatContext context;
         Animator boundAnimator;
         Transform effectsRoot;
@@ -45,6 +46,8 @@ namespace Capstone.Game.Skills
         public event Action<int, string> SkillReleased;
         public event Action<int, string> SkillCastStarted;
         public event Action<int, string, int> SkillProjectileReleased;
+        internal float MouthClearance => Mathf.Clamp(.22f * VisualScale, .14f, .4f);
+        internal static bool IsMouthSocket(string key) => string.Equals(key, "Mouth", StringComparison.OrdinalIgnoreCase);
         public Vector3 SocketPosition(string key) => ResolveSocket(key).position;
         sealed class Cast
         {
@@ -58,14 +61,18 @@ namespace Capstone.Game.Skills
 
         sealed class Playback
         {
-            public GameObject prefab, root;
+            public GameObject prefab, root, visual;
+            public Vector3 prefabLocalPosition;
             public ParticleSystem[] particles;
+            public int[] particleCaps;
             public VisualEffect[] graphs;
             public TrailRenderer[] trails;
             public AudioSource[] embeddedAudio;
             public AudioSource audio;
             public int token;
-            public bool castCue;
+            public bool castCue, followChannelAim, mouthRelease, fitActorBounds;
+            public Vector3 actorLocalCenter;
+            public PetSkillCombatExecutor executor;
             public float expiresAt;
             public Transform follow, frame;
             public Vector3 offset;
@@ -76,6 +83,7 @@ namespace Capstone.Game.Skills
         {
             stats = GetComponent<PetHudRuntimeStats>();
             pet = GetComponentInParent<PetController>();
+            animationDriver = GetComponent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>();
             context = Capstone.Game.CreatureSystem.CreatureCombatContext.Get(gameObject);
             stats.SkillAnimationAccepted -= Begin;
             stats.SkillAnimationAccepted += Begin;
@@ -144,6 +152,9 @@ namespace Capstone.Game.Skills
                 return;
             }
 
+            // Bind the current form before publishing a new cast. Changing rig cancels only the old casts.
+            BindAnimator(stats.VisualAnimator);
+
             // Windup bi thay the khong duoc phat tre don cua cast cu.
             for (int i = casts.Count - 1; i >= 0; i--)
             {
@@ -172,7 +183,6 @@ namespace Capstone.Game.Skills
             casts.Add(cast);
             ActiveCastId = cast.token;
             PlayCue(profile.cast, cast, true, null, Quaternion.identity);
-            BindAnimator(stats.VisualAnimator);
             SkillCastStarted?.Invoke(cast.token, skill.skillId);
         }
 
@@ -232,7 +242,7 @@ namespace Capstone.Game.Skills
 
                 if (item.follow != null && item.frame != null)
                 {
-                    item.root.transform.SetPositionAndRotation(item.follow.position + item.frame.TransformVector(item.offset), item.frame.rotation * item.rotation);
+                    PositionFollowingCue(item, item.follow);
                 }
             }
         }
@@ -312,7 +322,7 @@ namespace Capstone.Game.Skills
             cast.released = true;
             cast.releaseMask |= 1;
             StopOwned(cast.token, true);
-            PlayCue(cast.profile.release, cast, false, null, Quaternion.identity);
+            PlayCue(cast.profile.release, cast, false, null, Quaternion.identity, true);
             ReleasedCount++;
             SkillReleased?.Invoke(cast.token, cast.skill.skillId);
         }
@@ -324,7 +334,7 @@ namespace Capstone.Game.Skills
             {
                 if (cast.token == token)
                 {
-                    cast.emissions = Mathf.Clamp(count, 1, 8);
+                    cast.emissions = Mathf.Clamp(count, 1, 10);
                     return;
                 }
             }
@@ -422,6 +432,7 @@ namespace Capstone.Game.Skills
 
         public void CancelPresentation()
         {
+            animationDriver?.Cry?.CancelSkill();
             casts.Clear();
             ActiveCastId = 0;
             for (int i = playing.Count - 1; i >= 0; i--)
@@ -439,6 +450,7 @@ namespace Capstone.Game.Skills
                     StopOwned(casts[i].token, false);
                     if (ActiveCastId == casts[i].token)
                     {
+                        animationDriver?.Cry?.CancelSkill();
                         ActiveCastId = 0;
                     }
 
@@ -451,23 +463,68 @@ namespace Capstone.Game.Skills
         {
             if (!string.IsNullOrWhiteSpace(key) && sockets != null)
             {
+                Transform head = null;
                 foreach (var socket in sockets)
                 {
-                    if (socket != null && socket.anchor != null && string.Equals(socket.key, key, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return socket.anchor;
-                    }
+                    if (socket == null || socket.anchor == null) continue;
+                    if (string.Equals(socket.key, key, StringComparison.OrdinalIgnoreCase)) return socket.anchor;
+                    if (string.Equals(socket.key, "Head", StringComparison.OrdinalIgnoreCase)) head = socket.anchor;
                 }
+                if (IsMouthSocket(key) && head != null) return head;
             }
 
             return transform;
         }
 
-        void PlayCue(PetSkillCue cue, Cast cast, bool castCue, Vector3? worldPosition, Quaternion worldRotation)
+        void PositionFollowingCue(Playback item, Transform anchor)
+        {
+            var orientation = item.frame.rotation;
+            var offset = item.frame.TransformVector(item.offset);
+            Vector3 position = item.fitActorBounds ? transform.TransformPoint(item.actorLocalCenter) : anchor.position;
+            if (item.followChannelAim && item.executor != null)
+            {
+                orientation = Quaternion.LookRotation(item.executor.ChannelDirection(item.token, anchor.position));
+                offset = orientation * Vector3.Scale(item.offset, item.frame.lossyScale);
+            }
+            if (item.mouthRelease)
+                offset += (item.followChannelAim ? orientation * Vector3.forward : transform.forward) * MouthClearance;
+            item.root.transform.SetPositionAndRotation(position + offset, orientation * item.rotation);
+        }
+
+        Bounds GetActorVisualBounds()
+        {
+            bool found = false;
+            Bounds result = default;
+            if (boundAnimator != null)
+            {
+                foreach (var renderer in boundAnimator.GetComponentsInChildren<Renderer>())
+                {
+                    if (!renderer.enabled || !(renderer is MeshRenderer || renderer is SkinnedMeshRenderer)) continue;
+                    Bounds mesh = renderer.localBounds;
+                    Matrix4x4 toActor = transform.worldToLocalMatrix * renderer.localToWorldMatrix;
+                    for (int corner = 0; corner < 8; corner++)
+                    {
+                        Vector3 point = new Vector3((corner & 1) != 0 ? mesh.max.x : mesh.min.x,
+                            (corner & 2) != 0 ? mesh.max.y : mesh.min.y, (corner & 4) != 0 ? mesh.max.z : mesh.min.z);
+                        point = toActor.MultiplyPoint3x4(point);
+                        if (found) result.Encapsulate(point);
+                        else { result = new Bounds(point, Vector3.zero); found = true; }
+                    }
+                }
+            }
+            return found ? result : new Bounds(Vector3.up * .5f, Vector3.one);
+        }
+
+        void PlayCue(PetSkillCue cue, Cast cast, bool castCue, Vector3? worldPosition, Quaternion worldRotation, bool firstRelease = false)
         {
             using (CueMarker.Auto())
             {
-                if (cue == null || (cue.effectPrefab == null && cue.sound == null))
+                if (cue == null) return;
+                var combat = cast.skill.combatProfile;
+                var sound = combat != null && combat.authoredStatusRules
+                    ? firstRelease ? combat.authoredReleaseSound : null
+                    : cue.sound;
+                if (cue.effectPrefab == null && sound == null)
                 {
                     return;
                 }
@@ -494,7 +551,7 @@ namespace Capstone.Game.Skills
                 }
 
                 var anchor = ResolveSocket(cue.socket);
-                var frame = cue.actorSpace ? transform : anchor;
+                var frame = cue.actorSpace || cue.fitActorBounds ? transform : anchor;
                 item.token = cast.token;
                 item.castCue = castCue;
                 item.expiresAt = Time.time + Mathf.Clamp(cue.lifetimeSeconds, 0.05f, 30);
@@ -502,8 +559,35 @@ namespace Capstone.Game.Skills
                 item.frame = frame;
                 item.offset = cue.localOffset;
                 item.rotation = Quaternion.Euler(cue.localEulerAngles);
-                item.root.transform.SetPositionAndRotation(worldPosition.HasValue ? worldPosition.Value + worldRotation * cue.localOffset : anchor.position + frame.TransformVector(cue.localOffset), (worldPosition.HasValue ? worldRotation : frame.rotation) * item.rotation);
-                item.root.transform.localScale = Vector3.one * Mathf.Max(0.01f, cue.scale) * VisualScale;
+                item.mouthRelease = !castCue && !worldPosition.HasValue && IsMouthSocket(cue.socket) &&
+                    combat != null && (combat.delivery == PetSkillDelivery.Projectile ||
+                        combat.pattern == PetSkillPattern.Cone || combat.pattern == PetSkillPattern.Beam);
+                item.followChannelAim = cue.followChannelAim;
+                item.executor = cue.followChannelAim ? GetComponent<PetSkillCombatExecutor>() : null;
+                item.fitActorBounds = cue.fitActorBounds && !worldPosition.HasValue;
+                Vector3 scale = Vector3.one * Mathf.Max(.01f, cue.scale) * VisualScale;
+                if (item.fitActorBounds)
+                {
+                    Bounds bounds = GetActorVisualBounds();
+                    item.actorLocalCenter = bounds.center;
+                    var size = Vector3.Scale(bounds.size, transform.lossyScale);
+                    float AxisSize(Vector3 axis)
+                    {
+                        axis = item.rotation * axis;
+                        return Mathf.Max(.5f, Mathf.Abs(axis.x * size.x) + Mathf.Abs(axis.y * size.y) +
+                            Mathf.Abs(axis.z * size.z));
+                    }
+                    scale = new Vector3(AxisSize(Vector3.right), AxisSize(Vector3.up), AxisSize(Vector3.forward)) * cue.scale;
+                }
+                if (item.visual != null)
+                    item.visual.transform.localPosition = item.mouthRelease || item.fitActorBounds ||
+                        (worldPosition.HasValue && combat != null && combat.GroundsImpact)
+                        ? Vector3.zero : item.prefabLocalPosition;
+                if (worldPosition.HasValue)
+                    item.root.transform.SetPositionAndRotation(worldPosition.Value + worldRotation * item.offset, worldRotation * item.rotation);
+                else
+                    PositionFollowingCue(item, anchor);
+                item.root.transform.localScale = scale;
                 foreach (var trail in item.trails)
                 {
                     if (trail != null)
@@ -513,9 +597,14 @@ namespace Capstone.Game.Skills
                 }
 
                 item.root.SetActive(true);
-                foreach (var particle in item.particles)
+                float particleBudget = SettingsSystem.GameSettingsService.EffectsQuality == PetSummon.PetVFXQuality.Low ? .6f : 1f;
+                for (int i = 0; i < item.particles.Length; i++)
                 {
+                    var particle = item.particles[i];
                     particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+                    var main = particle.main;
+                    main.maxParticles = Mathf.Max(1, Mathf.CeilToInt(item.particleCaps[i] * particleBudget));
+                    if (item.fitActorBounds) main.simulationSpace = ParticleSystemSimulationSpace.Local;
                     particle.Play(false);
                 }
 
@@ -524,14 +613,14 @@ namespace Capstone.Game.Skills
                     graph.Reinit();
                 }
 
-                item.audio.outputAudioMixerGroup = cast.profile.mixerGroup;
+                SettingsSystem.GameAudioRouting.Route(item.audio, SettingsSystem.GameAudioBus.Skill, cast.profile.mixerGroup);
                 item.audio.spatialBlend = cast.profile.spatialBlend;
                 item.audio.minDistance = Mathf.Max(0.1f, cast.profile.minDistance);
                 item.audio.maxDistance = Mathf.Max(item.audio.minDistance, cast.profile.maxDistance);
                 item.audio.volume = Mathf.Clamp01(cue.volume);
                 item.audio.pitch = Mathf.Clamp(cue.pitch * CombatAudioVoices.PitchVariation(), 0.1f, 3);
-                item.audio.clip = cue.sound;
-                if (cue.sound != null)
+                item.audio.clip = sound;
+                if (sound != null)
                 {
                     CombatAudioVoices.Play(item.audio);
                 }
@@ -554,16 +643,21 @@ namespace Capstone.Game.Skills
             var root = new GameObject("Skill Cue");
             root.SetActive(false);
             root.transform.SetParent(effectsRoot, false);
-            GameObject visual = prefab != null ? Instantiate(prefab, root.transform, false) : null;
+            GameObject visual = CombatEffectPool.TryInstantiateVisual(prefab, root.transform);
             if (visual != null)
             {
+                CombatEffectPool.DisableVisualColliders(visual);
                 visual.SetActive(true);
             }
 
             var audio = root.AddComponent<AudioSource>();
             audio.playOnAwake = false;
             audio.rolloffMode = AudioRolloffMode.Logarithmic;
-            var result = new Playback{prefab = prefab, root = root, audio = audio, particles = root.GetComponentsInChildren<ParticleSystem>(true), graphs = root.GetComponentsInChildren<VisualEffect>(true), trails = root.GetComponentsInChildren<TrailRenderer>(true), embeddedAudio = visual != null ? visual.GetComponentsInChildren<AudioSource>(true) : Array.Empty<AudioSource>()};
+            var result = new Playback{prefab = prefab, root = root, visual = visual,
+                prefabLocalPosition = visual != null ? visual.transform.localPosition : Vector3.zero, audio = audio, particles = root.GetComponentsInChildren<ParticleSystem>(true), graphs = root.GetComponentsInChildren<VisualEffect>(true), trails = root.GetComponentsInChildren<TrailRenderer>(true), embeddedAudio = visual != null ? visual.GetComponentsInChildren<AudioSource>(true) : Array.Empty<AudioSource>()};
+            result.particleCaps = new int[result.particles.Length];
+            for (int i = 0; i < result.particles.Length; i++)
+                result.particleCaps[i] = result.particles[i].main.maxParticles;
             // Tat am thanh play-on-awake de moi cue deu qua gioi han voice chung.
             foreach (var embedded in result.embeddedAudio)
             {

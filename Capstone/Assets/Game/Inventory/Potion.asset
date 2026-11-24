@@ -12,21 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
   m_Name: Potion
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
-  Name: "B\xECnh h\u1ED3i m\xE1u"
-  Icon: {fileID: 21300000, guid: e52ea25af699fd445b7046374f81a5b9, type: 3}
+  Name: "Bình hồi máu lớn"
+  Icon: {fileID: 21300000, guid: 1608ee43a113227864b9ae32ea25633d, type: 3}
   Stackable: 1
   MaxStackSize: 99
   Tags: []
   stableId: Potion
-  legacyIds: []
+  legacyIds:
+  - "Bình hồi máu"
   category: 2
-  rarity: 0
-  description: "B\xECnh thu\u1ED1c h\u1ED3i ph\u1EE5c sinh l\u1EF1c cho th\xFA \u0111\u1ED3ng
-    h\xE0nh."
-  effect: "H\u1ED3i t\u1ED1i \u0111a 100 HP."
-  source: "D\u1EEF li\u1EC7u th\u1EED nghi\u1EC7m"
-  flavorText: 
+  rarity: 2
+  description: "Bình hồi máu lớn"
+  effect: "Hồi tối đa 100 HP."
+  source: "Cửa hàng"
+  flavorText: ''
   healAmount: 100
   energyRestoreAmount: 0
+  revivePercent: 0
+  cleanses: 0
+  grantsStatBuff: 0
+  buffStat: 0
+  evolutionStoneElement: 0
   usableFromInventory: 1
   consumable: 1

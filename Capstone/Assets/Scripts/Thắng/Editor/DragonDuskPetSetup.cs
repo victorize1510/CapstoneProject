@@ -34,10 +34,10 @@ public static class DragonDuskPetSetup
 
     private static readonly SkillSpec[] SkillSpecs =
     {
-        new SkillSpec("Bite", "Close-range bite attack.", 1, 1.2f, 0.8f, 0.08f, 0.1f, 0.3f, "Bite Attack", "Bite Attack Low"),
-        new SkillSpec("Blast", "Short magic blast.", 1, 3.8f, 1.0f, 0.08f, 0.1f, 0.3f, "Blast Attack", "Cast Spell"),
-        new SkillSpec("Projectile", "Ranged projectile attack.", 1, 3.0f, 0.95f, 0.08f, 0.1f, 0.3f, "Projectile Attack", "Projectile Attack Low"),
-        new SkillSpec("Wing Strike", "Wing strike attack.", 1, 4.2f, 1.0f, 0.08f, 0.1f, 0.3f, "Wing Attack")
+        new SkillSpec("Bite", "Close-range bite attack.", 1.2f, 0.8f, 0.08f, 0.1f, 0.3f, "Bite Attack", "Bite Attack Low"),
+        new SkillSpec("Blast", "Short magic blast.", 3.8f, 1.0f, 0.08f, 0.1f, 0.3f, "Blast Attack", "Cast Spell"),
+        new SkillSpec("Projectile", "Ranged projectile attack.", 3.0f, 0.95f, 0.08f, 0.1f, 0.3f, "Projectile Attack", "Projectile Attack Low"),
+        new SkillSpec("Wing Strike", "Wing strike attack.", 4.2f, 1.0f, 0.08f, 0.1f, 0.3f, "Wing Attack")
     };
 
     [MenuItem("Tools/Capstone/Advanced/Pet/Rebuild Dragon Dusk Runtime Animator")]
@@ -212,7 +212,6 @@ public static class DragonDuskPetSetup
         skillProperty.FindPropertyRelative("unlocked").boolValue = true;
         skillProperty.FindPropertyRelative("usable").boolValue = true;
         skillProperty.FindPropertyRelative("displayName").stringValue = spec.DisplayName;
-        skillProperty.FindPropertyRelative("skillLevel").intValue = spec.SkillLevel;
         skillProperty.FindPropertyRelative("description").stringValue = spec.Description;
         skillProperty.FindPropertyRelative("animationDuration").floatValue = spec.AnimationDuration;
         skillProperty.FindPropertyRelative("animationFade").floatValue = spec.AnimationFade;
@@ -367,7 +366,6 @@ public static class DragonDuskPetSetup
     {
         public readonly string DisplayName;
         public readonly string Description;
-        public readonly int SkillLevel;
         public readonly float CooldownSeconds;
         public readonly float AnimationDuration;
         public readonly float AnimationFade;
@@ -375,11 +373,10 @@ public static class DragonDuskPetSetup
         public readonly float RecoverySeconds;
         public readonly string[] AnimatorStates;
 
-        public SkillSpec(string displayName, string description, int skillLevel, float cooldownSeconds, float animationDuration, float animationFade, float windupSeconds, float recoverySeconds, params string[] animatorStates)
+        public SkillSpec(string displayName, string description, float cooldownSeconds, float animationDuration, float animationFade, float windupSeconds, float recoverySeconds, params string[] animatorStates)
         {
             DisplayName = displayName;
             Description = description;
-            SkillLevel = skillLevel;
             CooldownSeconds = cooldownSeconds;
             AnimationDuration = animationDuration;
             AnimationFade = animationFade;

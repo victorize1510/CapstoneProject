@@ -35,12 +35,20 @@ MonoBehaviour:
     state: Cast Spell
   - action: 11
     state: Projectile Attack
-  skills: 
-  - skillId: "bite.normal"
-    action: 8
+  skills:
   - skillId: "projectile"
     action: 11
   - skillId: "breath.fire"
     action: 9
   - skillId: "stars.dragon"
+    action: 9
+  - skillId: breath.fire
+    action: 8
+  - skillId: heatwave.fire
+    action: 9
+  - skillId: projectile
+    action: 8
+  - skillId: roar.power
+    action: 9
+  - skillId: shield.fire
     action: 9

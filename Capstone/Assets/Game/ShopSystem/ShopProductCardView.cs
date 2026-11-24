@@ -17,18 +17,20 @@ namespace Capstone.Game.ShopSystem {
             ShopASkin.Face(button, "A-product-card");
             click = () => { if (offer != null) select(offer); }; button.clicked += click;
         }
-        public void Render(ShopOffer value, string selectedId) {
+        public void Render(ShopOffer value, string selectedId, string lockReason) {
             offer = value;
             Root.style.display = value == null ? DisplayStyle.None : DisplayStyle.Flex;
             if (value == null) return;
             name.text = value.Item.Name; price.text = ShopPresentation.Price(value.GoldPrice);
-            status.text = !value.Unlocked ? "Bị khóa" : value.Stock == 0 ? "Hết hàng" : value.Stock > 0 ? "Còn " + value.Stock : "";
+            bool locked = !string.IsNullOrEmpty(lockReason);
+            status.text = locked ? (value.Unlocked ? $"Cấp {value.RequiredPlayerLevel}" : "Bị khóa")
+                : value.Stock == 0 ? "Hết hàng" : value.Stock > 0 ? "Còn " + value.Stock : "";
             status.style.display = status.text.Length == 0 ? DisplayStyle.None : DisplayStyle.Flex;
             icon.style.backgroundImage = value.Item.Icon != null ? new StyleBackground(value.Item.Icon) : new StyleBackground(StyleKeyword.None);
             placeholder.style.display = value.Item.Icon == null ? DisplayStyle.Flex : DisplayStyle.None;
             button.EnableInClassList("is-selected", value.Id == selectedId);
-            button.EnableInClassList("is-unavailable", !value.Unlocked || value.Stock == 0 || value.GoldPrice < 0);
-            button.tooltip = value.Item.Name + " • " + price.text;
+            button.EnableInClassList("is-unavailable", locked || value.Stock == 0 || value.GoldPrice < 0);
+            button.tooltip = locked ? lockReason : value.Item.Name + " • " + price.text;
             ShopASkin.Refresh(button);
         }
         public void Dispose() { button.clicked -= click; Root.RemoveFromHierarchy(); }

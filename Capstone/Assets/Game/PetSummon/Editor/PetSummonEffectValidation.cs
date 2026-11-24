@@ -176,13 +176,11 @@ namespace Capstone.Game.PetSummon.Editor
                 var instance=effect.ActiveVfx;
                 foreach (float time in new[] { .18f,.32f,.48f }) {
                     effect.PreviewAt(time);
-                    Vector3 halo=(Vector3)Field(effect,"haloHalfExtents");
                     ValidateNoSurroundingHalo(instance);
-                    Require(instance.Beam.enabled,"beam missing outside ellipsoid");
+                    Require(instance.Beam.enabled,"beam missing during recall");
                     Vector3 endpoint=instance.Beam.GetPosition(instance.Beam.positionCount-1);
-                    Vector3 expected=PetSummonVfxInstance.ResolveEllipsoidContact(center,effect.PresentationCenter,
-                        halo*effect.PresentationScale,pet.transform.rotation);
-                    Require(Vector3.Distance(endpoint,expected)<.001f,"beam misses recall envelope");
+                    Vector3 expected=((Vector3[])Field(effect,"recallPoints"))[0];
+                    Require(Vector3.Distance(endpoint,expected)<.001f,"beam misses the warped mesh contact");
                     Require(Vector3.Distance(instance.Beam.GetPosition(0),center)<.0001f,"beam misses held ball");
                     ValidateBody(effect,pet,true);
                     ValidateFlashEnvelope(effect,pet);
@@ -192,6 +190,8 @@ namespace Capstone.Game.PetSummon.Editor
                 int strands=0;
                 foreach (var strand in instance.FunnelStrands) if (strand.enabled) {
                     strands++;
+                    Vector3 expected=((Vector3[])Field(effect,"recallPoints"))[strands];
+                    Require(Vector3.Distance(strand.GetPosition(0),expected)<.001f,"strand misses the warped mesh contact");
                     Require(Vector3.Distance(strand.GetPosition(strand.positionCount-1),center)<.0001f,"funnel misses ball");
                 }
                 Require(strands==(quality==PetVFXQuality.Low?1:2),"wrong funnel strand budget");
@@ -207,9 +207,8 @@ namespace Capstone.Game.PetSummon.Editor
                 effect.PreviewAt(.18f);
                 Require(instance.Beam.enabled,"nearby ball inside halo hid the recall beam");
                 Vector3 innerEndpoint=instance.Beam.GetPosition(instance.Beam.positionCount-1);
-                Vector3 expectedInner=PetSummonVfxInstance.ResolveEllipsoidContact(ball.transform.TransformPoint(collider.center),
-                    effect.PresentationCenter,(Vector3)Field(effect,"haloHalfExtents")*effect.PresentationScale,pet.transform.rotation);
-                Require(Vector3.Distance(innerEndpoint,expectedInner)<.001f,"inner beam misses recall envelope");
+                Vector3 expectedInner=((Vector3[])Field(effect,"recallPoints"))[0];
+                Require(Vector3.Distance(innerEndpoint,expectedInner)<.001f,"inner beam misses the warped mesh contact");
                 ball.transform.position=savedBall;
                 effect.Cancel(); ValidateOriginals(pet);
                 foreach (var strand in instance.FunnelStrands) Require(!strand.enabled,"cancel left funnel visible");

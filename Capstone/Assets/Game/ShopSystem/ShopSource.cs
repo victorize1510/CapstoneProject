@@ -24,7 +24,7 @@ namespace Capstone.Game.ShopSystem {
                 }
                 offers.Add(new ShopOffer { Id = id, Item = source.Item, Category = source.Category,
                     GoldPrice = source.GoldPrice, Stock = source.Stock, MaxPerPurchase = source.MaxPerPurchase,
-                    Unlocked = source.Unlocked, LockedReason = source.LockedReason });
+                    Unlocked = source.Unlocked, LockedReason = source.LockedReason, RequiredPlayerLevel = source.RequiredPlayerLevel });
             }
             Changed?.Invoke();
         }

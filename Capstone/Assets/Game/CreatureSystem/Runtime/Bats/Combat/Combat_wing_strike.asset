@@ -15,10 +15,10 @@ MonoBehaviour:
   damageKind: 0
   delivery: 1
   power: 1.8
-  range: 10
+  range: 12
   projectileSpeed: 16
   projectileRadius: 0.38
-  lifetime: 1.2
+  lifetime: 3
   projectileVisual: {fileID: 2060900179291159282, guid: 6f7fee3df4da7c9236eaa0a736c4ff81, type: 3}
   releaseSocket: Body
   autoAcquireTarget: 1
@@ -31,5 +31,25 @@ MonoBehaviour:
   retreatDistance: 2.4
   retreatSpeed: 12
   preferredDistance: 5
-  weightedWindVolley: 1
+  weightedWindVolley: 0
   burstEndNormalized: 0.78
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 0
+  minimumHits: 3
+  maximumHits: 5
+  targetedImpactRadius: 0.45
+  effectSeconds: 0
+  splashFraction: 0
+  displacement: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  statusCues:
+  - kind: 1
+    chance: 0.2
+    duration: 4
+    magnitude: 0.08
+    valueMode: 1
+    self: 0
+  authoredReleaseSound: {fileID: 8300000, guid: 717fa625499653a4d91d73e53a1b0454, type: 3}

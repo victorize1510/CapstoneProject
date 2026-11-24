@@ -15,15 +15,38 @@ MonoBehaviour:
   damageKind: 1
   delivery: 2
   power: 1.4
-  range: 5
+  range: 7
   projectileSpeed: 9
   projectileRadius: 0.18
   lifetime: 3
   projectileVisual: {fileID: 0}
-  releaseSocket: Head
+  releaseSocket: Mouth
   autoAcquireTarget: 1
   meleeHalfAngle: 55
   visualScale: 0.5
   retreatDistance: 0
   retreatSpeed: 12
   preferredDistance: 5
+  authoredStatusRules: 1
+  statusOnly: 0
+  pattern: 2
+  minimumHits: 5
+  maximumHits: 5
+  targetedImpactRadius: 1.2
+  effectSeconds: 2.5
+  splashFraction: 0
+  displacement: 0.6
+  weightedWindVolley: 0
+  bleedPower: 0
+  fireContact: 0
+  interruptsCast: 0
+  interruptChance: 0
+  trackTargetUntilRelease: 1
+  statusCues:
+  - kind: 2
+    chance: 0.25
+    duration: 5
+    magnitude: 0.08
+    valueMode: 1
+    self: 0
+  authoredReleaseSound: {fileID: 8300000, guid: d53961d8a17d24c49855d7a033602cd7, type: 3}

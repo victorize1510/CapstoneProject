@@ -17,13 +17,15 @@ namespace Capstone.Game.ShopSystem {
         [Tooltip("-1: không giới hạn; số khác là tồn kho cho phiên chơi này.")] public int Stock = -1;
         [Min(1)] public int MaxPerPurchase = 99;
         public bool Unlocked = true;
+        [Min(0), Tooltip("Món này chỉ xuất hiện trong shop từ cấp nhân vật này.")] public int RequiredPlayerLevel;
         public string LockedReason;
     }
 
     [CreateAssetMenu(menuName = "Game/Shop/Catalog", fileName = "ShopCatalog")]
     public sealed class ShopCatalog : ScriptableObject {
         [SerializeField] List<ShopOffer> offers = new List<ShopOffer>();
-        public IReadOnlyList<ShopOffer> Offers => offers;
+        public ShopCatalog sharedCatalog;
+        public IReadOnlyList<ShopOffer> Offers => sharedCatalog != null ? sharedCatalog.offers : offers;
     }
 
     public static class ShopPresentation {

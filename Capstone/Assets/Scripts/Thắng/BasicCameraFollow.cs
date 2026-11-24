@@ -1,3 +1,4 @@
+using PhysicalKeys = Capstone.Game.UISystem.GameplayKeyboard;
 using UnityEngine;
 using System.Collections.Generic;
 using Unity.Profiling;
@@ -83,6 +84,7 @@ public class BasicCameraFollow : MonoBehaviour
     public float aimFocusSmoothTime = 0.1f;
     public float aimPositionSmoothTime = 0.08f;
     public bool showAimReticle = false;
+    [SerializeField, Min(.08f)] float captureAimHoldSeconds = .18f;
     public Color reticleColor = new Color(1f, 1f, 1f, 0.85f);
 
     [Header("Enemy Lock")]
@@ -146,6 +148,40 @@ public class BasicCameraFollow : MonoBehaviour
     private bool previousTargetPositionInitialized;
     private bool gameplayInputLocked;
     private bool applicationFocused = true;
+    const int CaptureAimButton = 2;
+    readonly Capstone.Game.HudSystem.HubPressGesture captureAimGesture = new Capstone.Game.HudSystem.HubPressGesture();
+    bool captureAim;
+    int captureInputFrame = -1, captureAimReleaseFrame = -1, pinTapFrame = -1;
+    bool UsesCaptureAim => enableAimCamera && Capstone.Game.HudSystem.HubCaptureHud.OwnsCaptureKey;
+    public bool IsCaptureAiming { get { SampleCaptureAim(); return captureAim; } }
+    public bool CaptureAimOwnsLeftClick => IsCaptureAiming || captureAimReleaseFrame == Time.frameCount;
+
+    void SampleCaptureAim()
+    {
+        if (captureInputFrame == Time.frameCount) return;
+        captureInputFrame = Time.frameCount;
+        if (!UsesCaptureAim || IsGameplayInputBlocked() || Capstone.Game.HudSystem.GameplayHudController.WantsHudCursor)
+        {
+            captureAimGesture.Cancel();
+            captureAim = false;
+            return;
+        }
+        bool down = Input.GetMouseButtonDown(CaptureAimButton);
+        if (down && IsPointerOverHud())
+        {
+            captureAimGesture.Cancel();
+            return;
+        }
+        var intent = captureAimGesture.Step(down, Input.GetMouseButton(CaptureAimButton),
+            Input.GetMouseButtonUp(CaptureAimButton), Time.unscaledTime, captureAimHoldSeconds);
+        if (intent == Capstone.Game.HudSystem.HubPressGesture.Intent.Hold) captureAim = true;
+        if (intent == Capstone.Game.HudSystem.HubPressGesture.Intent.ReleaseHold)
+        {
+            captureAim = false;
+            captureAimReleaseFrame = Time.frameCount;
+        }
+        if (intent == Capstone.Game.HudSystem.HubPressGesture.Intent.Tap) pinTapFrame = Time.frameCount;
+    }
     private bool cameraInputWasBlocked;
     private float ignoreMouseUntil;
     private float nextTargetSearchTime;
@@ -311,14 +347,16 @@ public class BasicCameraFollow : MonoBehaviour
         EnsureZoomInitialized();
         Vector3 position = GetSmoothedTargetPosition(deltaTime);
         UpdateLockedEnemyTracking(position, deltaTime);
-        bool hasLock = HasValidLockTarget(position);
+        bool aiming = IsCaptureAiming;
+        bool hasLock = !aiming && HasValidLockTarget(position);
         currentZoomDistance = preferenceSmoothing ? Mathf.SmoothDamp(currentZoomDistance, targetZoomDistance,
             ref zoomVelocity, zoomSmoothTime, Mathf.Infinity, deltaTime) : targetZoomDistance;
         Quaternion lockYaw = GetLockCameraYaw(hasLock, Quaternion.Euler(0f, yaw, 0f), position);
         UpdateLockSide(hasLock, lockYaw, deltaTime);
-        Vector3 focus = position + Vector3.up * lookHeight;
-        freeLookRig.Render(position, yaw, pitch, currentZoomDistance, hasLock, lockYaw,
-            GetLockCameraLocalOffset(hasLock), focusLockedEnemy && hasLock ? GetLockFocusPoint() : focus);
+        Vector3 focus = aiming ? position + Vector3.up * aimLookHeight
+            + Quaternion.Euler(pitch, yaw, 0f) * Vector3.forward * aimLookAhead : position + Vector3.up * lookHeight;
+        freeLookRig.Render(position, yaw, pitch, currentZoomDistance, hasLock || aiming, lockYaw,
+            aiming ? aimOffset : GetLockCameraLocalOffset(hasLock), focusLockedEnemy && hasLock ? GetLockFocusPoint() : focus, aiming);
     }
 
     private void TryFindTarget(bool force = false)
@@ -432,6 +470,12 @@ public class BasicCameraFollow : MonoBehaviour
             return;
         }
 
+        if (IsCaptureAiming)
+        {
+            LockCursor();
+            return;
+        }
+
         if (hideCursorWhileEnemyLocked && enableEnemyLock && HasLockedEnemy)
         {
             LockCursor();
@@ -462,7 +506,7 @@ public class BasicCameraFollow : MonoBehaviour
 
         if (lockCursorOnPlay)
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (PhysicalKeys.GetKeyDown(KeyCode.Escape))
             {
                 UnlockCursor();
             }
@@ -481,7 +525,7 @@ public class BasicCameraFollow : MonoBehaviour
             return;
         }
 
-        if (rotateOnlyWhileRightMouseHeld && !Input.GetMouseButton(rotateMouseButton))
+        if (!IsCaptureAiming && rotateOnlyWhileRightMouseHeld && !Input.GetMouseButton(rotateMouseButton))
         {
             return;
         }
@@ -491,7 +535,7 @@ public class BasicCameraFollow : MonoBehaviour
             return;
         }
 
-        if (!HasLockedEnemy)
+        if (IsCaptureAiming || !HasLockedEnemy)
         {
             yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
             yaw = NormalizeYaw(yaw);
@@ -503,7 +547,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void UpdateAimBlend()
     {
-        float targetBlend = !IsGameplayInputBlocked() && enableAimCamera && rightMouseZoomsCamera && Input.GetMouseButton(aimMouseButton) ? 1f : 0f;
+        float targetBlend = IsCaptureAiming || !IsGameplayInputBlocked() && enableAimCamera && rightMouseZoomsCamera && Input.GetMouseButton(aimMouseButton) ? 1f : 0f;
         aimBlend = preferenceSmoothing ? Mathf.SmoothDamp(aimBlend, targetBlend, ref aimBlendVelocity, aimBlendSmoothTime, aimBlendSpeed, Time.deltaTime) : targetBlend;
         if (Mathf.Abs(aimBlend - targetBlend) < 0.001f)
         {
@@ -525,7 +569,9 @@ public class BasicCameraFollow : MonoBehaviour
             return;
         }
 
-        if (Input.GetMouseButtonDown(lockMouseButton))
+        bool pinPressed = UsesCaptureAim && lockMouseButton == CaptureAimButton
+            ? pinTapFrame == Time.frameCount : Input.GetMouseButtonDown(lockMouseButton);
+        if (!IsCaptureAiming && pinPressed)
         {
             if (IsPointerOverHud() || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "pin")) return;
             if (enemyLockActive || lockedEnemy != null)
@@ -714,7 +760,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     private void UpdateScrollZoom()
     {
-        if (IsGameplayInputBlocked() || IsPointerOverHud())
+        if (IsGameplayInputBlocked() || IsCaptureAiming || IsPointerOverHud())
         {
             return;
         }
@@ -813,7 +859,7 @@ public class BasicCameraFollow : MonoBehaviour
         EnsureZoomInitialized();
         Vector3 smoothedTargetPosition = GetSmoothedTargetPosition(deltaTime);
         UpdateLockedEnemyTracking(smoothedTargetPosition, deltaTime);
-        bool hasLockTarget = HasValidLockTarget(smoothedTargetPosition);
+        bool hasLockTarget = !IsCaptureAiming && HasValidLockTarget(smoothedTargetPosition);
         float targetLockBlend = hasLockTarget ? 1f : 0f;
         lockBlend = Mathf.MoveTowards(lockBlend, targetLockBlend, lockBlendSpeed * deltaTime);
         targetZoomDistance = Mathf.Clamp(targetZoomDistance, minZoomDistance, maxZoomDistance);
@@ -1249,7 +1295,7 @@ public class BasicCameraFollow : MonoBehaviour
 
     private bool IsGameplayInputBlocked()
     {
-        return gameplayInputLocked || (freeLookRig != null && !applicationFocused)
+        return gameplayInputLocked || !applicationFocused
             || Capstone.Game.Inventory.InventoryInputController.GameplayInputBlocked;
     }
 

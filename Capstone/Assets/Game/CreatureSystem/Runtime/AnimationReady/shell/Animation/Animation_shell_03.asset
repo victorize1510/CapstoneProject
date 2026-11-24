@@ -31,10 +31,20 @@ MonoBehaviour:
     state: Run Forward In Place
   - action: 9
     state: Cast Spell
-  skills: 
-  - skillId: "strike.normal"
-    action: 7
+  skills:
   - skillId: "orb.water"
     action: 9
   - skillId: "jet.water"
+    action: 9
+  - skillId: orb.water
+    action: 9
+  - skillId: jet.water
+    action: 9
+  - skillId: bubbleburst.water
+    action: 9
+  - skillId: waterwhirl.water
+    action: 9
+  - skillId: rain.water
+    action: 9
+  - skillId: roar.power
     action: 9

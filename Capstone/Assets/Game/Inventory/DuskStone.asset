@@ -12,19 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
   m_Name: DuskStone
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
-  Name: Dusk Stone
-  Icon: {fileID: 21300000, guid: e7d29a79bc7fae248887c8a08a160303, type: 3}
+  Name: "Đá Tối"
+  Icon: {fileID: 21300000, guid: 33d97590d37f92c1d870bb26c87d2f60, type: 3}
   Stackable: 1
   MaxStackSize: 99
   Tags: []
   stableId: dusk-stone
-  legacyIds: []
+  legacyIds:
+  - "Dusk Stone"
   category: 6
   rarity: 2
-  description: A dark stone that evolves Dragon Dusk or Dragon Nightfall.
-  effect: Evolve one eligible pet in the Party without increasing its level.
-  source: TestChar
-  flavorText: A faint dragon-shaped shadow moves inside the stone.
+  description: "Đá Tối"
+  effect: "Tiến hóa lên một dạng cho thú có hệ chính Tối."
+  source: "Rơi hiếm từ quái cùng hệ chính."
+  flavorText: ''
   healAmount: 0
+  energyRestoreAmount: 0
+  revivePercent: 0
+  cleanses: 0
+  grantsStatBuff: 0
+  buffStat: 0
+  evolutionStoneElement: 9
   usableFromInventory: 1
   consumable: 1

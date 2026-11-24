@@ -63,6 +63,7 @@ namespace Capstone.Game.SaveSystem {
         public bool IsSaveBlocked => !string.IsNullOrEmpty(saveBlockedReason);
         internal bool HasCompletedStartup => startupCompleted;
         internal bool UsesInventory(MonsterInventoryAdapter adapter) => inventoryAdapter == adapter;
+        internal bool UsesProfile(PlayerProfileRuntimeProvider profile) => profileProvider == profile;
 
         public void SetSaveStore(PlayerJsonFileSaveStore store) {
             saveStore = store ?? throw new ArgumentNullException(nameof(store));
@@ -528,21 +529,7 @@ namespace Capstone.Game.SaveSystem {
                         petsById.Add(petState.petId, pet);
                     }
 
-                    PetCollectionMetadata metadata = ResolveMetadata(pet, true);
-                    if (!string.IsNullOrWhiteSpace(petState.definitionId))
-                        metadata?.AssignDefinitionId(petState.definitionId);
-                    metadata?.RestoreFromSaveData(petState.customization);
-                    PetHudRuntimeStats runtimeStats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
-                    runtimeStats?.RestoreFromSaveData(petState.runtimeStats);
-                    metadata?.RestoreEvolutionPresentation(runtimeStats);
-                    if (metadata != null && runtimeStats != null) {
-                        metadata.SyncRuntimeHealth(runtimeStats);
-                        if (fromLegacyVersion) {
-                            int requirement = runtimeStats.Level >= metadata.MaxLevel ? 0
-                                : PetLevelUpService.CalculateDefaultExperienceRequirement(runtimeStats.Level);
-                            metadata.SetProgress(metadata.Experience, requirement);
-                        }
-                    }
+                    RestorePetState(pet, petState, fromLegacyVersion);
                 }
             }
 
@@ -592,6 +579,23 @@ namespace Capstone.Game.SaveSystem {
                     saveData.releasedToday);
             }
             petCommandInput.OrganizeOwnedPetRoster();
+        }
+
+        static void RestorePetState(PetController pet, PetInstanceSaveData state, bool fromLegacyVersion) {
+            var metadata = ResolveMetadata(pet, true);
+            if (!string.IsNullOrWhiteSpace(state.definitionId)) metadata?.AssignDefinitionId(state.definitionId);
+            metadata?.RestoreFromSaveData(state.customization);
+            var stats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+            // Bind the saved Form before interpreting its skill IDs.
+            metadata?.RestoreEvolutionPresentation(stats);
+            stats?.RestoreFromSaveData(state.runtimeStats);
+            stats?.GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>()?.ClearTransientEffects();
+            if (metadata == null || stats == null) return;
+            metadata.SyncRuntimeHealth(stats);
+            if (!fromLegacyVersion) return;
+            int requirement = stats.Level >= metadata.MaxLevel ? 0
+                : PetLevelUpService.CalculateDefaultExperienceRequirement(stats.Level);
+            metadata.SetProgress(metadata.Experience, requirement);
         }
 
         IEnumerator RestoreSummonedWhenReady(PetController pet) {
@@ -677,16 +681,15 @@ namespace Capstone.Game.SaveSystem {
                 pets.Add(metadata.PersistentId, pet);
             }
             foreach (var state in data.pets.petStates) {
-                PetController pet;
-                if (!pets.TryGetValue(state.petId, out pet)) {
-                    if ((petPrefabCatalog == null || !petPrefabCatalog.TryGetSavedPrefab(
-                            state.definitionId, state.customization?.currentFormId,
-                            state.customization?.evolutionStage ?? 0, out pet))
-                        && (pet = FindScenePetTemplate(state.definitionId)) == null)
-                        throw new InvalidOperationException("Missing pet definition " + state.definitionId + " for " + state.petId + "; save is protected.");
-                }
+                PetController savedPrefab = null;
+                if (petPrefabCatalog != null) petPrefabCatalog.TryGetSavedPrefab(state.definitionId,
+                    state.customization?.currentFormId, state.customization?.evolutionStage ?? 0, out savedPrefab);
+                if (savedPrefab == null && !pets.TryGetValue(state.petId, out savedPrefab))
+                    savedPrefab = FindScenePetTemplate(state.definitionId);
+                if (savedPrefab == null)
+                    throw new InvalidOperationException("Missing pet definition " + state.definitionId + " for " + state.petId + "; save is protected.");
                 if (state.runtimeStats?.captured == true) {
-                    var stats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+                    var stats = savedPrefab.GetComponentInChildren<PetHudRuntimeStats>(true);
                     if (stats == null) throw new InvalidOperationException("Pet stats source is missing: " + state.petId);
                     if (!stats.CanRestoreSaveData(state.runtimeStats, out string error)) throw new InvalidOperationException(error);
                 }

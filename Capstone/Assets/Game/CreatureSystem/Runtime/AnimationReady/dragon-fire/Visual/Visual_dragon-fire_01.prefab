@@ -1108,11 +1108,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2634440365583419861}
   - component: {fileID: 1063598429507243789}
-  - component: {fileID: -4166028419246424799}
-  - component: {fileID: -7648969030592573627}
-  - component: {fileID: -3161099007121662362}
-
   - component: {fileID: 883772101339739177}
+  - component: {fileID: 8362670086550964925}
+  - component: {fileID: 849371994663059540}
   m_Layer: 0
   m_Name: Visual_dragon-fire_01
   m_TagString: Untagged
@@ -1175,6 +1173,177 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &883772101339739177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6441672652124175571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75f8292220cbb1f4cab4201c240ea32f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
+  animationProfile: {fileID: 11400000, guid: 0509857c42404814846966b9d8a3cbb8, type: 2}
+  skillSet: {fileID: 11400000, guid: 154e5cd9238e3be45985017cedf84dae, type: 2}
+  presentationScale: 1
+  sockets:
+  - key: Head
+    anchor: {fileID: 526653169089350147}
+  - key: Mouth
+    anchor: {fileID: 526653169089350147}
+  - key: Body
+    anchor: {fileID: 6601543353228687401}
+  - key: Ground
+    anchor: {fileID: 2634440365583419861}
+  actorRadius: 0.25867
+  actorHeight: 1.48872
+  actorCenter: {x: 0, y: 0.74436, z: -0.04171}
+--- !u!82 &8362670086550964925
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6441672652124175571}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 1c123cc7b85d8da47acde08750e06984, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 2
+  MaxDistance: 20
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &849371994663059540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6441672652124175571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c660efd1aa94c14a94a74d615e92f57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetCryEventReceiver
+  crySource: {fileID: 8362670086550964925}
+  ambientAction: 9
+  ambient:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  ambientInterval: {x: 12, y: 25}
+  ambientHoldLimit: 4
+  summonAction: 9
+  summon:
+    enabled: 1
+    mode: 0
+    normalized: 0.17
+    clipSeconds: 0
+  summonHoldLimit: 0.45
+  skill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  projectileSkill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  skillActions: 090000000b000000
+  death:
+    enabled: 1
+    mode: 0
+    normalized: 0.12
+    clipSeconds: 0
+  deathPose: 0.72
+  deathHoldLimit: 1.5
+  minimumCryInterval: 0.12
 --- !u!1 &6481518705320547831
 GameObject:
   m_ObjectHideFlags: 0
@@ -1522,30 +1691,3 @@ Transform:
   - {fileID: 1450721273974248487}
   m_Father: {fileID: 5648257856317827020}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &883772101339739177
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6441672652124175571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75f8292220cbb1f4cab4201c240ea32f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
-  animationProfile: {fileID: 11400000, guid: 0509857c42404814846966b9d8a3cbb8, type: 2}
-  skillSet: {fileID: 11400000, guid: 154e5cd9238e3be45985017cedf84dae, type: 2}
-  presentationScale: 1
-  sockets: 
-  - key: Head
-    anchor: {fileID: 526653169089350147}
-  - key: Mouth
-    anchor: {fileID: 526653169089350147}
-  - key: Body
-    anchor: {fileID: 6601543353228687401}
-  - key: Ground
-    anchor: {fileID: 2634440365583419861}
-  actorRadius: 0.25867
-  actorHeight: 1.48872
-  actorCenter: {x: 0, y: 0.74436, z: -0.04171}

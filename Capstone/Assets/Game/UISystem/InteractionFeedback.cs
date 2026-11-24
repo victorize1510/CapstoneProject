@@ -18,6 +18,23 @@ namespace Capstone.Game.UISystem {
             root.RegisterCallback<KeyDownEvent>(e=>SetModality(e.currentTarget as VisualElement,true),TrickleDown.TrickleDown);
             root.RegisterCallback<NavigationMoveEvent>(e=>SetModality(e.currentTarget as VisualElement,true),TrickleDown.TrickleDown);
             root.RegisterCallback<PointerDownEvent>(e=>SetModality(e.currentTarget as VisualElement,false),TrickleDown.TrickleDown);
+            root.RegisterCallback<ClickEvent>(e=>{
+                if(e.button==0 && ButtonAt(e.target as VisualElement)!=null) SettingsSystem.GameSettingsService.PlayUiSound(false);
+            },TrickleDown.TrickleDown);
+            root.RegisterCallback<NavigationSubmitEvent>(e=>{
+                if(ButtonAt(e.target as VisualElement)!=null) SettingsSystem.GameSettingsService.PlayUiSound(false);
+            },TrickleDown.TrickleDown);
+            Button hovered=null;
+            root.RegisterCallback<PointerOverEvent>(e=>{
+                var button=ButtonAt(e.target as VisualElement);
+                if(button!=null&&button!=hovered) SettingsSystem.GameSettingsService.PlayUiSound(true);
+                hovered=button;
+            },TrickleDown.TrickleDown);
+            root.RegisterCallback<PointerLeaveEvent>(_=>hovered=null);
+        }
+        static Button ButtonAt(VisualElement target){
+            var button=target as Button??target?.GetFirstAncestorOfType<Button>();
+            return button!=null&&button.enabledInHierarchy?button:null;
         }
         static void SetModality(VisualElement root,bool keyboard){
             KeyboardNavigation=keyboard;

@@ -33,12 +33,20 @@ MonoBehaviour:
     state: Cast Spell
   - action: 11
     state: Projectile Attack
-  skills: 
-  - skillId: "bite.normal"
-    action: 8
+  skills:
   - skillId: "peck.flying"
     action: 8
-  - skillId: "gust.flying"
-    action: 11
   - skillId: "wing strike"
     action: 11
+  - skillId: curl.normal
+    action: 9
+  - skillId: cyclone.flying
+    action: 9
+  - skillId: peck.flying
+    action: 8
+  - skillId: protect.normal
+    action: 9
+  - skillId: roar.power
+    action: 9
+  - skillId: wing strike
+    action: 8

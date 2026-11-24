@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a2bdd8061888b145a4079b8cec76ffd, type: 3}
+  m_Name: remedy-poison
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Inventory.MonsterItemDefinition
+  Name: "Thuốc giải độc"
+  Icon: {fileID: 21300000, guid: d0cb8573d5597f5bc741faeba9a78e99, type: 3}
+  Stackable: 1
+  MaxStackSize: 99
+  Tags: []
+  stableId: remedy-poison
+  legacyIds: []
+  category: 2
+  rarity: 0
+  description: "Thuốc giải độc"
+  effect: "Giải hiệu ứng độc trên thú."
+  source: "Cửa hàng"
+  flavorText: ''
+  healAmount: 0
+  energyRestoreAmount: 0
+  revivePercent: 0
+  cleanses: 8
+  grantsStatBuff: 0
+  buffStat: 0
+  evolutionStoneElement: 0
+  usableFromInventory: 1
+  consumable: 1

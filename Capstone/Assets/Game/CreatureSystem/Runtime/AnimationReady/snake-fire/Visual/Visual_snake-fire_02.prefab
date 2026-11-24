@@ -386,6 +386,8 @@ GameObject:
   - component: {fileID: 1059330670752308470}
   - component: {fileID: 9064281170162406363}
   - component: {fileID: 590869632932998453}
+  - component: {fileID: 7339713363393223861}
+  - component: {fileID: 2831932197357696217}
   m_Layer: 0
   m_Name: Visual_snake-fire_02
   m_TagString: Untagged
@@ -452,6 +454,177 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &590869632932998453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004640819254620576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75f8292220cbb1f4cab4201c240ea32f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
+  animationProfile: {fileID: 11400000, guid: c0b31e61b07b404496adad2db6090e77, type: 2}
+  skillSet: {fileID: 11400000, guid: 65589178dabef77eb51610d087a431dd, type: 2}
+  presentationScale: 1
+  sockets:
+  - key: Head
+    anchor: {fileID: 6129149801578347680}
+  - key: Mouth
+    anchor: {fileID: 6129149801578347680}
+  - key: Body
+    anchor: {fileID: 2922775667016455517}
+  - key: Ground
+    anchor: {fileID: 1059330670752308470}
+  actorRadius: 0.2
+  actorHeight: 3.38033
+  actorCenter: {x: 0, y: 1.69017, z: -0.64864}
+--- !u!82 &7339713363393223861
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004640819254620576}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: 572cc15eeedba4c4194aecd9a0e64d09, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 0.8
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 2
+  MaxDistance: 20
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &2831932197357696217
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004640819254620576}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4c660efd1aa94c14a94a74d615e92f57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PetCryEventReceiver
+  crySource: {fileID: 7339713363393223861}
+  ambientAction: 9
+  ambient:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  ambientInterval: {x: 12, y: 25}
+  ambientHoldLimit: 4
+  summonAction: 9
+  summon:
+    enabled: 1
+    mode: 0
+    normalized: 0.17
+    clipSeconds: 0
+  summonHoldLimit: 0.45
+  skill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  projectileSkill:
+    enabled: 1
+    mode: 0
+    normalized: 0.25
+    clipSeconds: 0
+  skillActions: 090000000b000000
+  death:
+    enabled: 1
+    mode: 0
+    normalized: 0.12
+    clipSeconds: 0
+  deathPose: 0.72
+  deathHoldLimit: 1.5
+  minimumCryInterval: 0.12
 --- !u!1 &2095504577955920219
 GameObject:
   m_ObjectHideFlags: 0
@@ -1934,30 +2107,3 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1059330670752308470}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &590869632932998453
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2004640819254620576}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75f8292220cbb1f4cab4201c240ea32f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureVisualBinding
-  animationProfile: {fileID: 11400000, guid: c0b31e61b07b404496adad2db6090e77, type: 2}
-  skillSet: {fileID: 11400000, guid: 65589178dabef77eb51610d087a431dd, type: 2}
-  presentationScale: 1
-  sockets: 
-  - key: Head
-    anchor: {fileID: 6129149801578347680}
-  - key: Mouth
-    anchor: {fileID: 6129149801578347680}
-  - key: Body
-    anchor: {fileID: 2922775667016455517}
-  - key: Ground
-    anchor: {fileID: 1059330670752308470}
-  actorRadius: 0.2
-  actorHeight: 3.38033
-  actorCenter: {x: 0, y: 1.69017, z: -0.64864}

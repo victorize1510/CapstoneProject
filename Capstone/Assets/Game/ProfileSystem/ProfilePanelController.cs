@@ -198,6 +198,7 @@ namespace Capstone.Game.ProfileSystem {
 
         void HideNameDialog() {
             bool wasOpen = nameDialog != null && nameDialog.gameObject.activeSelf;
+            if (wasOpen) nameInput?.DeactivateInputField();
             if (nameDialog != null) nameDialog.gameObject.SetActive(false);
             if (wasOpen) { Capstone.Game.UISystem.MenuKeyboardNavigation.Restore(popupReturnFocus); popupReturnFocus = null; }
         }

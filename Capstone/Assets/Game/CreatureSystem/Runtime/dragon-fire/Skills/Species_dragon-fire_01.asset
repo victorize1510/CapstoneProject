@@ -16,17 +16,26 @@ MonoBehaviour:
   startingMana: 0
   catalog: {fileID: 11400000, guid: 264fbb1c52ab80040ab84a3aa31dd7d8, type: 2}
   initializeFreshWildLoadout: 1
-  learnset: 
-  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  enforceLearnset: 1
+  learnset:
+  - skill: {fileID: 11400000, guid: 21a64473bc4a43ff8bcfb3a9db8412c1, type: 2}
     learnAtLevel: 1
-    overrideAnimation: 1
-    animatorStates:
-    - "Bite Attack"
-    animationDuration: 0.83333
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
     animationFade: 0.08
     windupSeconds: 0
     recoverySeconds: 0
-    presentationOverride: {fileID: 11400000, guid: 75e7b3b75a96a434f919c13a4a382288, type: 2}
+    presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: e40282104abc8b41c39e346706c5c711, type: 2}
+    learnAtLevel: 1
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
   - skill: {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
     learnAtLevel: 5
     overrideAnimation: 1
@@ -37,16 +46,15 @@ MonoBehaviour:
     windupSeconds: 0
     recoverySeconds: 0
     presentationOverride: {fileID: 11400000, guid: 299903d27d2c1a2be325802616a50f9c, type: 2}
-  - skill: {fileID: 11400000, guid: 6e0a2e6ac64529b6046903cf536044b7, type: 2}
-    learnAtLevel: 12
-    overrideAnimation: 1
-    animatorStates:
-    - "Cast Spell"
-    animationDuration: 1
+  - skill: {fileID: 11400000, guid: 0a6d74a8d426558c97807e26b9240537, type: 2}
+    learnAtLevel: 20
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
     animationFade: 0.08
     windupSeconds: 0
     recoverySeconds: 0
-    presentationOverride: {fileID: 11400000, guid: c23b38635ba3d80b92f6b04ecb8abb76, type: 2}
+    presentationOverride: {fileID: 0}
   - skill: {fileID: 11400000, guid: 6c064ab232d8a6fdca6d327a73bba39f, type: 2}
     learnAtLevel: 30
     overrideAnimation: 1
@@ -57,8 +65,18 @@ MonoBehaviour:
     windupSeconds: 0
     recoverySeconds: 0
     presentationOverride: {fileID: 11400000, guid: 099af939fc148be4d2cde3691d54b0d1, type: 2}
-  defaultLoadout: 
-  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - skill: {fileID: 11400000, guid: 6c9649586479788fd83c2cb839306f6a, type: 2}
+    learnAtLevel: 20
+    overrideAnimation: 0
+    animatorStates: []
+    animationDuration: 0.85
+    animationFade: 0.08
+    windupSeconds: 0
+    recoverySeconds: 0
+    presentationOverride: {fileID: 0}
+  defaultLoadout:
+  - {fileID: 11400000, guid: e40282104abc8b41c39e346706c5c711, type: 2}
   - {fileID: 11400000, guid: 0a1127f5a8b1ebb4988f24eae2de3f5d, type: 2}
-  - {fileID: 11400000, guid: 6e0a2e6ac64529b6046903cf536044b7, type: 2}
+  - {fileID: 11400000, guid: 21a64473bc4a43ff8bcfb3a9db8412c1, type: 2}
+  - {fileID: 11400000, guid: 0a6d74a8d426558c97807e26b9240537, type: 2}
   - {fileID: 11400000, guid: 6c064ab232d8a6fdca6d327a73bba39f, type: 2}

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 namespace Capstone.Game.HudSystem {
@@ -182,6 +183,9 @@ namespace Capstone.Game.HudSystem {
             Func<bool> applyEvolution, Action<bool> onComplete) {
             Transform petTransform=pet.transform;
             PetEvolutionVisualController visual=pet.GetComponentInChildren<PetEvolutionVisualController>(true);
+            Camera gameplayOutput = gameplayCamera != null ? gameplayCamera : Camera.main;
+            Scene gameplayScene = gameplayOutput != null ? gameplayOutput.gameObject.scene : gameObject.scene;
+            int display = gameplayOutput != null ? gameplayOutput.targetDisplay : 0;
             petTransform.SetParent(null,true);
             ownsScene=true;
             loading=SceneManager.LoadSceneAsync(evolutionSceneName,LoadSceneMode.Additive);
@@ -189,6 +193,9 @@ namespace Capstone.Game.HudSystem {
             yield return loading;
             Scene evoScene=SceneManager.GetSceneByName(evolutionSceneName);
             if(!evoScene.IsValid()||!evoScene.isLoaded)throw new InvalidOperationException("Scene tiến hóa chưa sẵn sàng.");
+            var stageCamera = FindStageCamera(evoScene, display);
+            if (stageCamera == null)
+                throw new InvalidOperationException("Scene tiến hóa thiếu camera đang hoạt động cho màn hình gameplay.");
             SceneManager.MoveGameObjectToScene(pet.gameObject,evoScene);
             foreach(var renderer in pet.GetComponentsInChildren<Renderer>(true))
                 if(visual==null||visual.IsCurrentVisualRenderer(renderer))renderer.enabled=true;
@@ -206,6 +213,7 @@ namespace Capstone.Game.HudSystem {
             else {
                 Debug.LogWarning($"{name}: không tìm thấy EvolutionStageAnchor trong '{evolutionSceneName}'.");
             }
+            scope.SwitchToStage(stageCamera, gameplayOutput, gameplayScene);
 
             if (showStartText && EvolutionUI.Instance != null) {
                 EvolutionUI.Instance.Show(string.Format(startMessageFormat, currentName));
@@ -271,6 +279,17 @@ namespace Capstone.Game.HudSystem {
             }
 
             // Guarded/Finish restores exact prior camera, HUD, input, layers and controller states.
+        }
+
+        static Camera FindStageCamera(Scene scene, int display) {
+            foreach (var camera in FindObjectsByType<Camera>(FindObjectsSortMode.None)) {
+                if (camera.gameObject.scene != scene || !camera.isActiveAndEnabled || camera.targetTexture != null
+                    || camera.targetDisplay != display || camera.cameraType != CameraType.Game) continue;
+                if (camera.TryGetComponent<UniversalAdditionalCameraData>(out var data) && data.renderType == CameraRenderType.Overlay)
+                    continue;
+                return camera;
+            }
+            return null;
         }
 
         /// <summary>Y nguyên kỹ thuật auto-correction 360° từ EvolutionController.cs, chỉ đổi target thành Transform truyền vào.</summary>

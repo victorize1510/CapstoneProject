@@ -39,13 +39,16 @@ namespace Capstone.Game.CreatureSystem.Editor {
             var stun = BuildStars();
             ConfigureDemoBat(scene);
             var loot = AssetDatabase.LoadAssetAtPath<PveLootCatalog>(Art + "/Loot.asset");
+            var defaultLoot = Resources.Load<PveLootCatalog>("Pve/LootCatalog");
+            if (defaultLoot == null) throw new InvalidOperationException("Thiếu danh mục phần thưởng quái mặc định.");
             if (loot == null) {
-                loot = Object.Instantiate(Resources.Load<PveLootCatalog>("Pve/LootCatalog"));
-                loot.name = "DemoSceneOneLoot"; loot.entries.Clear();
-                foreach (string path in new[] {"Assets/Game/Inventory/Potion.asset", "Assets/Game/Inventory/HealingApple.asset"})
-                    loot.entries.Add(new PveLootCatalog.Entry { item = AssetDatabase.LoadAssetAtPath<MonsterItemDefinition>(path), weight = 1, quantity = 1 });
+                loot = ScriptableObject.CreateInstance<PveLootCatalog>();
                 AssetDatabase.CreateAsset(loot, Art + "/Loot.asset");
             }
+            loot.sharedCatalog = defaultLoot;
+            loot.name = "Loot";
+            EditorUtility.SetDirty(loot);
+            AssetDatabase.SaveAssetIfDirty(loot);
             var roots = scene.GetRootGameObjects();
             var isolation = roots.SelectMany(r => r.GetComponentsInChildren<DemoSceneOneSaveIsolation>(true)).FirstOrDefault();
             if (isolation == null) {

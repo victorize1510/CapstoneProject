@@ -55,7 +55,7 @@ namespace Capstone.Game.PetSummon
             }
 
             // Scale velocity and gravity together so a faster throw keeps the same arc.
-            if (Phase == MotionPhase.Flight)
+            if (Phase == MotionPhase.Flight || Phase == MotionPhase.Bounce)
                 body.AddForce(Physics.gravity * (motionSpeed * motionSpeed - 1f), ForceMode.Acceleration);
 
             if (Phase == MotionPhase.Bounce)
@@ -110,8 +110,8 @@ namespace Capstone.Game.PetSummon
                 phaseDeadline = Time.time + bounceTimeout;
 
                 Vector3 horizontalVelocity = Vector3.ProjectOnPlane(body.linearVelocity, Vector3.up)
-                    * (bounceHorizontalDamping / motionSpeed);
-                float bounceSpeed = Mathf.Sqrt(2f * -Physics.gravity.y * bounceHeight);
+                    * bounceHorizontalDamping;
+                float bounceSpeed = Mathf.Sqrt(2f * -Physics.gravity.y * bounceHeight) * motionSpeed;
                 body.position += contact.normal * 0.01f;
                 body.linearVelocity = horizontalVelocity + Vector3.up * bounceSpeed;
                 return;

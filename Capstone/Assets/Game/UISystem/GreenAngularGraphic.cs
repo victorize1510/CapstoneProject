@@ -43,10 +43,10 @@ namespace Capstone.Game.UISystem {
         void PaintState(){if(StateOverlay!=null){StateOverlay.hoverAmount=hoverAmount;StateOverlay.pressAmount=pressAmount;StateOverlay.focus=focus;StateOverlay.SetVerticesDirty();}else SetVerticesDirty();}
         void Changed(){if(tween!=null)StopCoroutine(tween);if(isActiveAndEnabled)tween=StartCoroutine(Animate());else PaintState();}
         protected override void OnDisable(){if(tween!=null)StopCoroutine(tween);tween=null;hover=pressed=focus=false;hoverAmount=pressAmount=0;PaintState();base.OnDisable();}
-        public void OnPointerEnter(PointerEventData e){if(TryGetComponent<Selectable>(out var b)&&!b.IsInteractable())return;hover=true;Changed();}
+        public void OnPointerEnter(PointerEventData e){if(TryGetComponent<Selectable>(out var b)&&!b.IsInteractable())return;if(b is Button)SettingsSystem.GameSettingsService.PlayUiSound(true);hover=true;Changed();}
         public void OnPointerExit(PointerEventData e){hover=pressed=false;Changed();}
         public void OnPointerDown(PointerEventData e){if(TryGetComponent<Selectable>(out var b)&&!b.IsInteractable())return;InteractionFeedback.KeyboardNavigation=false;focus=false;pressed=true;Changed();}
-        public void OnPointerUp(PointerEventData e){pressed=false;Changed();}
+        public void OnPointerUp(PointerEventData e){if(pressed&&hover&&e.button==PointerEventData.InputButton.Left&&TryGetComponent<Button>(out var b)&&b.IsInteractable())SettingsSystem.GameSettingsService.PlayUiSound(false);pressed=false;Changed();}
         public void OnSelect(BaseEventData e){focus=InteractionFeedback.KeyboardNavigation&&!(e is PointerEventData);Changed();}
         public void OnDeselect(BaseEventData e){focus=false;Changed();}
     }

@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: leafstorm.grass
   legacyIds: []
-  displayName: "C\u01A1n L\u1ED1c L\u00E1"
-  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  displayName: "Bão Lá"
+  description: "Bão lá gây 4 nhịp sát thương, giảm tốc 25% và có thể làm choáng."
   element: 1
   icon: {fileID: 21300000, guid: 6ee1a9567934a5d4397f96412108aa43, type: 3}
-  cooldownSeconds: 5.1
+  cooldownSeconds: 14
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: b0ee3c9df5b00b2dcd4c8fbd31de6753, type: 2}
   combat: {fileID: 11400000, guid: fd82725b4113881fa2200766e20eb33b, type: 2}
+  manaCost: 26

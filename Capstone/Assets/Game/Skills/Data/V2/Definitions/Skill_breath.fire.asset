@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: breath.fire
   legacyIds: []
-  displayName: "Phun L\u1EEDa"
-  description: "G\u00E2y s\u00E1t th\u01B0\u01A1ng l\u00EAn m\u1ED9t m\u1EE5c ti\u00EAu trong t\u1EA7m."
+  displayName: "Phun Lửa"
+  description: "Phun lửa 5 nhịp, đẩy lùi lần đầu. Có 25% cơ hội gây bỏng trong 5 giây."
   element: 2
   icon: {fileID: 21300000, guid: 2333f9fc80b001a47b4048b23d5420e3, type: 3}
-  cooldownSeconds: 4.2
+  cooldownSeconds: 9
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 46b548e9145862fb2d7819cf0c08c985, type: 2}
   combat: {fileID: 11400000, guid: 0116019d071f3e65bc6bd9cba28b8fcb, type: 2}
+  manaCost: 25

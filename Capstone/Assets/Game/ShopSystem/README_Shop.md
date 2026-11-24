@@ -6,16 +6,19 @@
 
 `MonsterInventoryController` tự gắn và bind `ShopScreenController`. NPC tự lấy `ShopSource` trên chính nó; nếu thiếu, tự thêm component và dùng catalog mặc định. Không cần gán Inspector để mở Shop mặc định.
 
-## Nhập giá sau
+## Danh mục và giá
 
 Mở **Assets/Game/ShopSystem/Resources/Shop/DefaultShopCatalog.asset** trong Inspector.
 
-- Hai mục khởi tạo tham chiếu trực tiếp **Potion.asset** và **DuskStone.asset** đang có.
+- Shop mặc định và DemoScene 1 có 18 món sau khi mở đủ cấp. Từ cấp 1 có bóng thường (5 vàng), bình HP nhỏ (7), bình MP nhỏ (15) và hồi sinh 25% (35).
+- Cấp 10 mở bóng hiếm, thuốc hồi phục và hồi sinh bậc 2, cùng bốn loại thuốc giải. Cấp 15 mở bóng cao cấp và các món bậc 3. Cấp 20 mở bình HP 200 và hồi sinh thanh tẩy. Các món đã mở tiếp tục được bán.
+- Quái rớt trái cây và nguyên liệu riêng. Hai shop này đã bỏ đá tiến hóa khỏi danh mục.
 - `GoldPrice = -1`: chưa có giá, khóa mua và hiện lý do. **Không tự coi là miễn phí**.
 - `GoldPrice = 0`: miễn phí, chỉ dùng nếu chủ động cấu hình.
 - `Stock = -1`: không giới hạn. `Stock >= 0`: tồn kho trong phiên chơi của từng NPC.
 - `MaxPerPurchase`: giới hạn cho một lần mua, mặc định cấu hình 99. Bag vẫn vô hạn và chia stack theo Item Definition.
 - `Unlocked` / `LockedReason`: trạng thái bán và thông báo khóa.
+- `RequiredPlayerLevel`: cấp nhân vật tối thiểu để món xuất hiện trong danh mục và kết quả tìm kiếm.
 - Nhiều cửa hàng: tạo asset `Game > Shop > Catalog`, gắn `ShopSource` lên NPC và chọn catalog riêng. Catalog không bị sửa lúc mua.
 
 Giá và danh sách Shop được cấu hình ngoài UI. Không có tiền kim cương giả hoặc item mới được tạo trong game. Các giá trong công cụ **Preview Shop (Editor fixture)** chỉ là dữ liệu kiểm thử, không được đưa vào build.
@@ -40,7 +43,7 @@ Service kiểm tra lại listing, khóa, giá đang hiển thị, số lượng,
 
 Ví dự phòng khoản vàng trong cùng thao tác đồng bộ. Inventory dựng các stack trong bộ đệm trước khi thay đổi; thất bại không thêm một phần item và trả lại khoản dự phòng. Sau commit, các sự kiện nhìn thấy inventory, vàng và stock đã đồng bộ. `PlayerSaveController` tiếp tục nghe các sự kiện hiện có; UI không ghi save riêng. Item có trong save được đối chiếu ID trước khi cộng thêm, tránh hai definition trùng ID.
 
-Chống lặp 0,15 giây nằm tại service cho cả chuột và xác nhận bàn phím. UI khóa nút khi đang xử lý. Evolution Stone chỉ được mua vào Bag; Shop không tiến hóa pet.
+Chống lặp 0,15 giây nằm tại service cho cả chuột và xác nhận bàn phím. Giao dịch kiểm tra lại cấp nhân vật trước khi trừ vàng.
 
 ## Giao diện và hiệu năng
 
@@ -50,7 +53,7 @@ Chống lặp 0,15 giây nằm tại service cho cả chuột và xác nhận b�
 - `ShopProductCard.uxml` và `ShopProductCardView`: dùng sprite thật, giữ tỷ lệ; các ô tái sử dụng khi lọc/đổi danh mục.
 - Cập nhật qua sự kiện, không có `Update` trong controller/service. Callback của view được tháo trước khi bind lại; đóng Shop hủy theo dõi nguồn dữ liệu.
 - Tìm không dấu trong danh mục đang chọn; sort mặc định/tên/giá/độ hiếm từ Item Definition. Không có nút list giả.
-- Thuật ngữ và mô tả hai item hiện có được Việt hóa ở lớp hiển thị; ID, tên riêng và dữ liệu gốc được giữ.
+- Tên và công dụng được hiển thị bằng tiếng Việt. Save tiếp tục dùng ID ổn định.
 
 Tham chiếu kỹ thuật: [USS của Unity 6.3](https://docs.unity.com/en-us/engine/6000.3/manual/uitoolkits/uielements/uie-uss/properties/supported-properties), [ảnh nền và Sprite trong UI Toolkit](https://docs.unity.com/en-us/engine/6000.3/manual/uitoolkits/uielements/uie-uss/properties/uib-styling-ui-backgrounds).
 
@@ -66,4 +69,4 @@ Kết quả được lưu trong `E:/UnityWork/CapstoneProjectData/Artifacts/shop
 
 ## Giới hạn đã chốt
 
-Giá chính thức chờ người dùng nhập. Shop hiện chỉ bán bằng vàng. Tồn kho hữu hạn hỗ trợ trong phiên chơi, **chưa lưu stock giữa các lần mở game** vì project chưa có stock save. Chưa bổ sung item cho những danh mục đang trống. Những phần này không được lấp bằng dữ liệu tự bịa.
+Giá cấu hình bằng vàng trong catalog. Tồn kho hữu hạn hiện theo phiên chơi. Danh mục Nguyên liệu sẽ có hàng khi có vật phẩm chế tạo tích hợp.

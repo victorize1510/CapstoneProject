@@ -102,16 +102,18 @@ namespace Capstone.Game.Inventory {
             if (string.IsNullOrWhiteSpace(itemId)) return null;
             string expected = itemId.Trim();
 
-            foreach (InventoryItemSnapshot item in GetItems()) {
+            var items = GetItems();
+            foreach (InventoryItemSnapshot item in items) {
                 if (item?.ItemBase == null) continue;
-                if (string.Equals(item.ItemId, expected, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(item.Name, expected, StringComparison.OrdinalIgnoreCase)) {
+                if (string.Equals(item.ItemId, expected, StringComparison.OrdinalIgnoreCase)) {
                     return item.ItemBase;
                 }
             }
 
             var canonical = InventoryDefinitionCatalog.Find(expected);
             if (canonical != null) return canonical;
+            foreach (InventoryItemSnapshot item in items)
+                if (item?.ItemBase != null && string.Equals(item.Name, expected, StringComparison.OrdinalIgnoreCase)) return item.ItemBase;
             foreach (ItemBase itemBase in Resources.FindObjectsOfTypeAll<ItemBase>()) {
                 if (itemBase == null) continue;
                 if ((itemBase is MonsterItemDefinition gameDefinition && gameDefinition.MatchesId(expected))
@@ -343,8 +345,10 @@ namespace Capstone.Game.Inventory {
                 }
                 quickItemIds = new string[2];
                 if (saveData.quickItemIds != null) {
-                    for (int i = 0; i < 2 && i < saveData.quickItemIds.Length; i++)
-                        quickItemIds[i] = saveData.quickItemIds[i] ?? string.Empty;
+                    for (int i = 0; i < 2 && i < saveData.quickItemIds.Length; i++) {
+                        string id = saveData.quickItemIds[i]?.Trim() ?? string.Empty;
+                        quickItemIds[i] = InventoryDefinitionCatalog.Find(id)?.StableId ?? id;
+                    }
                 }
                 SetInventory(restoredBag);
                 return true;

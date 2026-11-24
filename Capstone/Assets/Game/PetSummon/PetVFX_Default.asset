@@ -21,8 +21,8 @@ MonoBehaviour:
   secondaryColor: {r: 0.45, g: 1, b: 0.78, a: 1}
   whiteBlend: 0.75
   bodyEmission: 0.12
-  spawnDuration: 0.8
-  recallDuration: 0.65
+  spawnDuration: 0.48
+  recallDuration: 0.44
   effectScale: 1
   burstPadding: 0.08
   haloPadding: 0.05

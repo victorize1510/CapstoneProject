@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 23128efdf66e45747a944bbbe8d983e6, type: 3}
+  m_Name: Skill_protect.normal
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
+  skillId: protect.normal
+  legacyIds: []
+  displayName: "Bảo Vệ"
+  description: "Chặn sát thương đối thủ trong 5 giây. Tạm khóa các đòn tấn công."
+  element: 13
+  icon: {fileID: 21300000, guid: 2dae17f6f53d7334bb8820f3fd1546c8, type: 3}
+  cooldownSeconds: 36
+  manaCost: 40
+  animatorStates: 
+  - Cast Spell
+  animationDuration: 0.9
+  animationFade: 0.08
+  presentation: {fileID: 11400000, guid: adf51fed1fd99edfc9f95e667be8dce1, type: 2}
+  combat: {fileID: 11400000, guid: 2dc5be45934effb9d82c1697602fb8c9, type: 2}

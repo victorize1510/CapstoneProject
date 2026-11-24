@@ -70,7 +70,19 @@ namespace Capstone.Game.UISystem {
             if (state.TabHandler != null) overlay.UnregisterCallback(state.TabHandler, TrickleDown.TrickleDown);
             state.TabHandler = null; state.Focusable.Clear();
             var target = state.Target; state.Target = null;
-            if (IsVisible(target)) target.Focus();
+            if (IsVisible(target) && !overlay.Contains(target)) target.Focus();
+            else ReleaseFocusWithin(overlay);
+        }
+        internal static void ReleaseFocusWithin(VisualElement scope) {
+            var focused = scope?.focusController?.focusedElement as VisualElement;
+            if (focused == null || focused != scope && !scope.Contains(focused)) return;
+            // UI Toolkit can restore its last text editor when the next key wakes the panel.
+            // A non-navigable root gives the focus controller a safe, explicit destination.
+            var fallback = scope.panel?.visualTree;
+            if (fallback == null || fallback == scope) { focused.Blur(); return; }
+            fallback.focusable = true;
+            fallback.tabIndex = -1;
+            fallback.Focus();
         }
         static bool IsVisible(VisualElement element) {
             if (element == null || element.panel == null || !element.enabledInHierarchy) return false;

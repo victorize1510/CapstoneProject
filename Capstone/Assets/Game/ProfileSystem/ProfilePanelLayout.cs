@@ -116,6 +116,17 @@ namespace Capstone.Game.ProfileSystem {
             experienceFill.fillMethod = Image.FillMethod.Horizontal; experienceFill.fillAmount = 0;
             experienceValueText = CreateText(basic, "ExperienceValue", "- / -", 22, FontStyle.Normal, Muted, TextAnchor.MiddleLeft);
             SetTopLeft(experienceValueText.rectTransform, 186, 246, 556, 42);
+            if (Application.isPlaying && Debug.isDebugBuild && provider is PlayerProfileRuntimeProvider runtimeProfile) {
+                var cheat = CreateOutlinedButton(basic, "DebugPlayerLevelUp", "Cheat +1 cấp", 18);
+                SetTopRight((RectTransform)cheat.transform, 0, 289, 185, 38);
+                var feedback = CreateText(basic, "DebugLevelFeedback", "", 18, FontStyle.Normal, Muted, TextAnchor.MiddleRight);
+                SetTopLeft(feedback.rectTransform, 142, 289, 400, 38);
+                cheat.onClick.AddListener(() => {
+                    if (!PlayerActionGate.TryAccept(this, "profile-debug-level")) return;
+                    bool success = runtimeProfile.TryDebugLevelUp(out string message);
+                    feedback.text = success ? $"Nhân vật đạt cấp {runtimeProfile.Level}." : message;
+                });
+            }
             Line(basic, "BottomDivider", 0, 336, 742, Border);
 
             var team = CreatePanel(panel, "CurrentTeamSection", Color.clear, false);

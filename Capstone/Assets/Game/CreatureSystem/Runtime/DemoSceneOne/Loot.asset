@@ -12,18 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eed7e48b216021488859d0c767fa969, type: 3}
   m_Name: Loot
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.PveLootCatalog
-  entries:
-  - item: {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
-    weight: 1
-    quantity: 1
-  - item: {fileID: 11400000, guid: a206ddcbe109a494ea900aa905b1702c, type: 2}
-    weight: 1
-    quantity: 1
-  potion: {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}
-  healingApple: {fileID: 11400000, guid: a206ddcbe109a494ea900aa905b1702c, type: 2}
-  manaPotion: {fileID: 11400000, guid: 2515b74e7584dda42bec74dc04cb3b88, type: 2}
-  goldIcon: {fileID: 21300000, guid: 45578131b24439545a902ba8f6d0d38f, type: 3}
-  glowMaterial: {fileID: 2100000, guid: 6d2cedb3b8e9d544db9e61741e2df64a, type: 2}
-  itemChance: 0.35
-  minimumGold: 2
-  maximumGold: 5
+  sharedCatalog: {fileID: 11400000, guid: da4a88256fc33bd4ab85c54bcf153f96, type: 2}

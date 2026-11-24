@@ -24,7 +24,7 @@ MonoBehaviour:
   description: "Tr\xE1i t\xE1o d\xF9ng \u0111\u1EC3 h\u1ED3i m\u1ED9t ph\u1EA7n sinh
     l\u1EF1c cho th\xFA \u0111\u1ED3ng h\xE0nh."
   effect: "H\u1ED3i t\u1ED1i \u0111a 30 HP."
-  source: "D\u1EEF li\u1EC7u th\u1EED nghi\u1EC7m"
+  source: "Rơi khi hạ quái"
   flavorText: 
   healAmount: 30
   energyRestoreAmount: 0

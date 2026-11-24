@@ -123,6 +123,7 @@ public partial class BasicPlayerMovement
         characterController.height = safeHeight;
         characterController.radius = safeRadius;
         characterController.center = center;
+        Capstone.Game.CreatureSystem.CreatureCombatant.RegisterPlayerBody(characterController);
     }
 
     private void UpdateGroundedBeforeMove()
@@ -159,7 +160,8 @@ public partial class BasicPlayerMovement
         for (int i = 0; i < hitCount; i++)
         {
             RaycastHit hit = groundHits[i];
-            if (hit.collider == null || OwnsCollider(hit.collider))
+            if (hit.collider == null || OwnsCollider(hit.collider) ||
+                Capstone.Game.CreatureSystem.CreatureCombatTarget.From(hit.collider).Exists)
             {
                 continue;
             }

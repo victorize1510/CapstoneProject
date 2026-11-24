@@ -14,12 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: spark.electric
   legacyIds: []
-  displayName: "Tia lửa điện"
-  description: "Tấn công một mục tiêu hợp lệ trong tầm nhìn."
+  displayName: "Tia Lửa"
+  description: "Đánh cận chiến. Có 25% cơ hội gây bỏng trong 5 giây."
   element: 6
   icon: {fileID: 21300000, guid: 5743882b42878c641a853aa8389b864f, type: 3}
-  cooldownSeconds: 3.2
-  manaCost: 0
+  cooldownSeconds: 4
+  manaCost: 11
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates: 
