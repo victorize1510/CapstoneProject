@@ -23,7 +23,7 @@ MonoBehaviour:
   releaseSocket: Head
   autoAcquireTarget: 1
   meleeHalfAngle: 55
-  visualScale: 0.5
+  visualScale: 0.26
   retreatDistance: 0
   retreatSpeed: 12
   preferredDistance: 5

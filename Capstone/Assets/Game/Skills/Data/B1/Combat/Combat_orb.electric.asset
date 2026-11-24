@@ -23,7 +23,7 @@ MonoBehaviour:
   releaseSocket: Head
   autoAcquireTarget: 1
   meleeHalfAngle: 55
-  visualScale: 0.35
+  visualScale: 0.26
   offenseBuffPercent: 20
   buffDuration: 6
   buffVisual: {fileID: 0}

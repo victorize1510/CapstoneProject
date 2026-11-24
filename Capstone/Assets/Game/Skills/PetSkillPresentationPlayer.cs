@@ -370,6 +370,14 @@ namespace Capstone.Game.Skills
         }
 
         public bool CanImpact(int castId) => CanImpact(castId, 0);
+        internal void KeepImpactOpen(int castId, float until)
+        {
+            foreach (var cast in casts)
+                if (cast.token == castId) {
+                    cast.expiresAt = Mathf.Max(cast.expiresAt, until);
+                    break;
+                }
+        }
         public bool CanImpact(int castId, int emission)
         {
             foreach (var cast in casts)
@@ -478,7 +486,9 @@ namespace Capstone.Game.Skills
 
         void PositionFollowingCue(Playback item, Transform anchor)
         {
-            var orientation = item.frame.rotation;
+            var orientation = item.fitActorBounds
+                ? Quaternion.Euler(0, item.frame.eulerAngles.y, 0)
+                : item.frame.rotation;
             var offset = item.frame.TransformVector(item.offset);
             Vector3 position = item.fitActorBounds ? transform.TransformPoint(item.actorLocalCenter) : anchor.position;
             if (item.followChannelAim && item.executor != null)
@@ -566,6 +576,7 @@ namespace Capstone.Game.Skills
                 item.executor = cue.followChannelAim ? GetComponent<PetSkillCombatExecutor>() : null;
                 item.fitActorBounds = cue.fitActorBounds && !worldPosition.HasValue;
                 Vector3 scale = Vector3.one * Mathf.Max(.01f, cue.scale) * VisualScale;
+                Vector3 fittedVisualOffset = Vector3.zero;
                 if (item.fitActorBounds)
                 {
                     Bounds bounds = GetActorVisualBounds();
@@ -578,11 +589,20 @@ namespace Capstone.Game.Skills
                             Mathf.Abs(axis.z * size.z));
                     }
                     scale = new Vector3(AxisSize(Vector3.right), AxisSize(Vector3.up), AxisSize(Vector3.forward)) * cue.scale;
+                    if (cue.anchorAtActorFeet)
+                    {
+                        var ground = ResolveSocket("Ground");
+                        item.actorLocalCenter.y = ground != transform ? transform.InverseTransformPoint(ground.position).y : bounds.min.y;
+                        // Lift the center of the upright ring while its scene anchor stays at the feet.
+                        float height = Mathf.Max(.5f, Mathf.Abs(size.y)) * cue.scale;
+                        Vector3 lift = Quaternion.Inverse(item.rotation) * (Vector3.up * (height * .5f));
+                        fittedVisualOffset = new Vector3(lift.x / scale.x, lift.y / scale.y, lift.z / scale.z);
+                    }
                 }
                 if (item.visual != null)
                     item.visual.transform.localPosition = item.mouthRelease || item.fitActorBounds ||
                         (worldPosition.HasValue && combat != null && combat.GroundsImpact)
-                        ? Vector3.zero : item.prefabLocalPosition;
+                        ? fittedVisualOffset : item.prefabLocalPosition;
                 if (worldPosition.HasValue)
                     item.root.transform.SetPositionAndRotation(worldPosition.Value + worldRotation * item.offset, worldRotation * item.rotation);
                 else

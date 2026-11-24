@@ -36,7 +36,8 @@ namespace Capstone.Game.Skills {
         public float ObstacleRadius => authoredStatusRules && statusOnly ? Mathf.Min(projectileRadius, .18f) : projectileRadius;
         internal bool TracksUntilRelease => trackTargetUntilRelease || SpawnsAtTarget;
         internal bool RequiresTarget => delivery == PetSkillDelivery.Melee || SpawnsAtTarget;
-        public float CastRange => delivery == PetSkillDelivery.Projectile || delivery == PetSkillDelivery.Targeted ? range + 1f : range;
+        public float CastRange => delivery == PetSkillDelivery.Projectile || delivery == PetSkillDelivery.Targeted
+            ? range + (authoredStatusRules ? 4f : 1f) : range;
         public float TravelRange => CastRange + 2f;
         [Min(.1f)] public float targetedImpactRadius = 1f;
         [Header("Ngam: khoa, dich gan nhin thay, roi huong dang quay")]

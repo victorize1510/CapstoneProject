@@ -15,6 +15,11 @@ public partial class PetCommandInput : MonoBehaviour
     float lastReturnPress = float.NegativeInfinity;
     DummyEnemy selectedEnemy;
     public DummyEnemy SelectedEnemy => selectedEnemy != null && selectedEnemy.IsSelectable ? selectedEnemy : null;
+    internal void ClearSelectionAfterWarp(Vector3 delta, float forwardYaw)
+    {
+        selectedEnemy = null;
+        cameraLock?.ResetAfterWarp(delta, forwardYaw);
+    }
     private static readonly KeyCode[] NumberKeys = {KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6};
     private static readonly KeyCode[] KeypadKeys = {KeyCode.Keypad1, KeyCode.Keypad2, KeyCode.Keypad3, KeyCode.Keypad4, KeyCode.Keypad5, KeyCode.Keypad6};
     [Header("Tham chieu")]
@@ -54,7 +59,7 @@ public partial class PetCommandInput : MonoBehaviour
     }
     void SelectPinnedEnemy(DummyEnemy enemy)
     {
-        // Chon de ngam/bat; chi click hoac skill moi phat lenh tan cong.
+        // Camera lock updates the inspection and capture target.
         if (enemy != null && enemy.IsSelectable) selectedEnemy = enemy;
     }
     private void Awake()
@@ -98,12 +103,7 @@ public partial class PetCommandInput : MonoBehaviour
         }
 
         HandlePetSlotInput();
-        if (summonDirector != null && summonDirector.IsSequenceRunning)
-        {
-            return;
-        }
-
-        if (!Input.GetMouseButtonDown(commandMouseButton) || !CanUsePetSkills
+        if (!Input.GetMouseButtonDown(commandMouseButton)
             || commandMouseButton == 0 && cameraLock != null && cameraLock.CaptureAimOwnsLeftClick)
         {
             return;
@@ -121,11 +121,6 @@ public partial class PetCommandInput : MonoBehaviour
         }
 
         ResolveCameraLock(cameraToUse);
-        if (cameraLock != null && cameraLock.TryGetLockedEnemy(out var pinned))
-        {
-            TryCommandAttack(pinned);
-            return;
-        }
         Ray ray = cameraToUse.ScreenPointToRay(GetCommandScreenPoint());
         int hitCount = Physics.RaycastNonAlloc(ray, hits, rayDistance, commandMask, QueryTriggerInteraction.Collide);
         if (hitCount <= 0 || hitCount == hits.Length)
@@ -134,18 +129,18 @@ public partial class PetCommandInput : MonoBehaviour
         }
 
         if (TryFindClickedEnemy(hitCount, out DummyEnemy clickedEnemy))
-        {
-            if (clickedEnemy.IsDowned)
-            {
-                selectedEnemy = clickedEnemy;
-                return;
-            }
-
-            TryCommandAttack(clickedEnemy);
-        }
+            TrySelectEnemy(clickedEnemy);
     }
 
     private bool CanSendPointerCommand() => (allowCommandsWhileRightMouseHeld || !ignoreWhileRightMouseHeld || !Input.GetMouseButton(aimMouseButton)) && (!ignoreWhenPointerOverUI || Cursor.lockState == CursorLockMode.Locked || EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject());
+    public bool TrySelectEnemy(DummyEnemy enemy)
+    {
+        if (InventoryInputController.GameplayInputBlocked || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsSelectable)
+            return false;
+        selectedEnemy = enemy;
+        return true;
+    }
+
     public bool TryCommandAttack(DummyEnemy enemy)
     {
         if (InventoryInputController.GameplayInputBlocked || !CanUsePetSkills || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsAlive)

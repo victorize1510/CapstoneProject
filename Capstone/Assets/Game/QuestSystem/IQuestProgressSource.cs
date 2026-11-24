@@ -23,6 +23,8 @@ namespace Capstone.Game.QuestSystem {
         public readonly QuestProgressMode Mode;
         public readonly Vector3? WorldPosition;
         public readonly IReadOnlyList<string> Tags;
+        public readonly string FormId, SceneId, ReceiptId;
+        public readonly bool StartedAtNight;
 
         public QuestProgressEvent(
             QuestObjectiveType objectiveType,
@@ -35,7 +37,7 @@ namespace Capstone.Game.QuestSystem {
             string regionId = "",
             string customKey = "",
             Vector3? worldPosition = null,
-            IReadOnlyList<string> tags = null) {
+            IReadOnlyList<string> tags = null, string formId = "", string sceneId = "", string receiptId = "", bool startedAtNight = false) {
             ObjectiveType = objectiveType;
             TargetId = targetId ?? string.Empty;
             Amount = Mathf.Max(1, amount);
@@ -47,6 +49,10 @@ namespace Capstone.Game.QuestSystem {
             CustomKey = customKey ?? string.Empty;
             WorldPosition = worldPosition;
             Tags = tags ?? EmptyTags;
+            FormId = formId;
+            SceneId = sceneId;
+            ReceiptId = receiptId;
+            StartedAtNight = startedAtNight;
         }
 
         public static QuestProgressEvent FromLegacyReport(QuestProgressReport report) {

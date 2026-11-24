@@ -20,13 +20,14 @@ namespace Capstone.Game.CreatureSystem {
         public IReadOnlyList<PetDamageContribution> Contributions=>contributions;
         public float SafeSeconds=>Mathf.Max(0,Time.time-lastUnsafe);
         void Awake(){combat=GetComponent<CreatureCombatant>();pet=GetComponent<PetController>();stats=GetComponent<PetHudRuntimeStats>();enemy=GetComponent<DummyEnemy>();brain=GetComponent<BasicCreatureEnemy>();lastUnsafe=lastTick=Time.time;}
-        public void ResetEncounter(){contributions.Clear();lastUnsafe=Time.time;}
+        public void ResetEncounter(){contributions.Clear();lastUnsafe=Time.time;enemy?.ResetQuestEncounterTime();}
         static PveCombatState Get(GameObject target){if(target==null)return null;var state=target.GetComponent<PveCombatState>();if(state==null)state=target.AddComponent<PveCombatState>();return state;}
         internal static void Record(CombatDamageResult result){
             if(result.HpLost<=0)return;
             var source=Get(result.Hit.Source);var target=Get(result.Target);if(source!=null)source.lastUnsafe=Time.time;if(target==null)return;target.lastUnsafe=Time.time;
             var pet=result.Hit.Source!=null?result.Hit.Source.GetComponent<PetController>():null;
             if(pet==null||pet.IsWildEncounter||pet.owner==null)return;
+            target.enemy?.MarkQuestEncounterStarted();
             var metadata=pet.GetComponent<PetCollectionMetadata>();var stats=pet.GetComponent<PetHudRuntimeStats>();if(metadata==null||stats==null)return;
             PetDamageContribution item=null;foreach(var existing in target.contributions)if(existing.petId==metadata.PetId&&existing.level==stats.Level){item=existing;break;}
             if(item==null){item=new PetDamageContribution{pet=pet,petId=metadata.PetId,level=stats.Level};target.contributions.Add(item);}item.healthLost+=result.HpLost;

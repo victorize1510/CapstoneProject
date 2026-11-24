@@ -1,0 +1,107 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69acce52bc0c61b4caec19b67da37309, type: 3}
+  m_Name: MQ03_BatOnNgayVaDem
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.QuestDefinition
+  questId: main_quest_03
+  title: "Bất ổn ngày và đêm"
+  description: "Sói Tí Nị và Mèo Điện trở nên hung hăng bất thường. Trưởng làng yêu cầu điều tra và mang các mẫu vật về nghiên cứu."
+  questType: 0
+  recommendedLevel: 6
+  objectives:
+  - objectiveId: mq03_obj01
+    title: "Đánh bại Sói Tí Nị vào ban đêm"
+    objectiveType: 9
+    requiredAmount: 5
+    targetId: ""
+    targetTypeId: "wolf"
+    markerId: ""
+    nightOnly: 1
+    allowedZones:
+    - "capstone-grass-mid"
+    - "capstone-grass-hard"
+    allowedForms:
+    - "01"
+  - objectiveId: mq03_obj02
+    title: "Đánh bại Mèo Điện"
+    objectiveType: 9
+    requiredAmount: 5
+    targetId: ""
+    targetTypeId: "cat-electric"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-grass-mid"
+    - "capstone-grass-hard"
+    allowedForms:
+    - "01"
+  - objectiveId: mq03_obj03
+    title: "Thu thập mẫu vật của Sói Tí Nị"
+    objectiveType: 3
+    requiredAmount: 5
+    targetId: "loot-wolf-01"
+    targetTypeId: ""
+    markerId: "capstone-grass-mid"
+    nightOnly: 0
+  - objectiveId: mq03_obj04
+    title: "Thu thập mẫu vật của Mèo Điện"
+    objectiveType: 3
+    requiredAmount: 5
+    targetId: "loot-cat-electric-01"
+    targetTypeId: ""
+    markerId: "capstone-grass-hard"
+    nightOnly: 0
+  - objectiveId: mq03_obj05
+    title: "Giao 5 mẫu vật Sói và 5 mẫu vật Mèo"
+    objectiveType: 11
+    requiredAmount: 10
+    targetId: "loot-wolf-01"
+    targetTypeId: ""
+    markerId: ""
+    nightOnly: 0
+    alternateItemIds:
+    - "loot-cat-electric-01"
+  locationName: "Đồng cỏ phía xa và đồng cỏ sâu"
+  questGiverName: "Trưởng làng"
+  questGiverId: npc_village_elder
+  prerequisiteQuestIds:
+  - "main_quest_02"
+  unlockQuestIds:
+  - "main_quest_04"
+  rewards:
+  - rewardId: "trainer-exp"
+    displayName: "EXP người chơi"
+    rewardType: 0
+    amount: 250
+    targetId: ""
+  - rewardId: "gold"
+    displayName: "Vàng"
+    rewardType: 1
+    amount: 350
+    targetId: ""
+  - rewardId: "hp-potion-small"
+    displayName: "Bình hồi máu nhỏ"
+    rewardType: 3
+    amount: 3
+    targetId: "hp-potion-small"
+  canAbandon: 0
+  canReacceptAfterAbandon: 0
+  chapterId: chapter_01
+  requiresTutorial: 0
+  acceptDialogue:
+  - "Tình hình đang trở nên nghiêm trọng hơn. Ban đêm, lũ Sói Tí Nị thường xuyên xuất hiện. Còn những con Mèo Điện thì trở nên hung hăng cả ngày lẫn đêm."
+  - "Hãy đánh bại ít nhất 5 con mỗi loài và mang về cho ta 5 mẫu vật từ mỗi loài. Ta cần tìm hiểu nguyên nhân khiến chúng thay đổi."
+  progressDialogue:
+  - "Hãy nhớ rằng Sói Tí Nị cần được săn vào ban đêm. Mèo Điện thì cháu có thể tìm kiếm cả ngày lẫn đêm."
+  completeDialogue:
+  - "Thật kỳ lạ... Những mẫu vật này đều có dấu hiệu năng lượng bất thường. Chúng có thể đã tiếp xúc với thứ gì đó ở vùng đồng cỏ phía sâu hơn."
+  startItems: []

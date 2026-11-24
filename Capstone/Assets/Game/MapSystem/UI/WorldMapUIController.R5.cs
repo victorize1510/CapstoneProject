@@ -15,7 +15,7 @@ namespace Capstone.Game.MapSystem.UI {
         bool? r5Ready;
         public bool MapSourceReady => worldMap!=null&&worldMap.MapCamera!=null&&worldMap.MapCamera.isActiveAndEnabled
             &&worldMap.MapCamera.targetTexture!=null&&worldMap.MapCamera.targetTexture.IsCreated()
-            &&r5Display!=null&&r5Display.enabled&&r5Display.gameObject.activeInHierarchy&&r5Display.texture==worldMap.MapCamera.targetTexture;
+            &&r5Display!=null&&r5Display.enabled&&r5Display.gameObject.activeInHierarchy&&r5Display.texture==worldMap.DisplayedMapTexture;
         internal bool BlocksMapPointer => clusters?.IsPopupOpen==true;
 
         void BuildR5() {

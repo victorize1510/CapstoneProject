@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69acce52bc0c61b4caec19b67da37309, type: 3}
+  m_Name: MQ01_RacRoiNoiDongCo
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.QuestDefinition
+  questId: main_quest_01
+  title: "Rắc rối nơi đồng cỏ"
+  description: "Những đàn Chim Con đang phá hoại hoa màu của dân làng. Trưởng làng yêu cầu giảm số lượng thú hoang và thu phục một số cá thể để nuôi dưỡng."
+  questType: 0
+  recommendedLevel: 2
+  objectives:
+  - objectiveId: mq01_obj01
+    title: "Đánh bại Chim Con"
+    objectiveType: 9
+    requiredAmount: 5
+    targetId: ""
+    targetTypeId: "chick"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-grass-easy"
+    allowedForms:
+    - "01"
+  - objectiveId: mq01_obj02
+    title: "Thu phục Chim Con"
+    objectiveType: 7
+    requiredAmount: 5
+    targetId: ""
+    targetTypeId: "chick"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-grass-easy"
+    allowedForms:
+    - "01"
+  - objectiveId: mq01_obj03
+    title: "Giao Chim Con cho trưởng làng"
+    objectiveType: 17
+    requiredAmount: 5
+    targetId: ""
+    targetTypeId: "chick"
+    markerId: ""
+    nightOnly: 0
+    allowedZones:
+    - "capstone-grass-easy"
+    allowedForms:
+    - "01"
+  locationName: "Đồng cỏ gần làng"
+  questGiverName: "Trưởng làng"
+  questGiverId: npc_village_elder
+  prerequisiteQuestIds: []
+  unlockQuestIds:
+  - "main_quest_02"
+  rewards:
+  - rewardId: "trainer-exp"
+    displayName: "EXP người chơi"
+    rewardType: 0
+    amount: 100
+    targetId: ""
+  - rewardId: "gold"
+    displayName: "Vàng"
+    rewardType: 1
+    amount: 150
+    targetId: ""
+  - rewardId: "capture-ball-basic-01"
+    displayName: "Bóng Thường"
+    rewardType: 3
+    amount: 5
+    targetId: "capture-ball-basic-01"
+  canAbandon: 0
+  canReacceptAfterAbandon: 0
+  chapterId: chapter_01
+  requiresTutorial: 1
+  acceptDialogue:
+  - "Dạo gần đây, lũ Chim Con ngoài đồng cỏ thường xuyên kéo đến phá hoại hoa màu của dân làng."
+  - "Ta muốn cháu đánh đuổi 5 con và thu phục thêm 5 con khác. Chúng ta có thể nuôi dưỡng chúng thay vì để chúng tiếp tục phá phách."
+  - "Đây là 15 quả bóng thu phục. Hãy sử dụng chúng cẩn thận."
+  progressDialogue:
+  - "Những con Chim Con thường xuất hiện ở đồng cỏ gần làng. Hãy nhớ mang đủ 5 con sống trở về."
+  completeDialogue:
+  - "Làm tốt lắm! Nhờ cháu mà dân làng có thể yên tâm chăm sóc ruộng vườn. Những con Chim Con này cũng sẽ được chăm sóc chu đáo."
+  startItems:
+  - rewardId: "capture-ball-basic-01"
+    displayName: "Bóng Thường"
+    rewardType: 3
+    amount: 15
+    targetId: "capture-ball-basic-01"

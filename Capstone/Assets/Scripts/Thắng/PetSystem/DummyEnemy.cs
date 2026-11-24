@@ -45,6 +45,19 @@ public class DummyEnemy : MonoBehaviour
     internal bool DeathManagedByEncounter;
     GameObject downedSource;
     public string EncounterId { get; private set; } = Guid.NewGuid().ToString("N");
+    internal string QuestZoneId { get; set; }
+    internal DayNightCycle QuestDayNightClock { get; set; }
+    internal bool? QuestEncounterStartedAtNight { get; private set; }
+
+    internal void MarkQuestEncounterStarted() {
+        if (QuestEncounterStartedAtNight.HasValue) return;
+        var clock = QuestDayNightClock != null ? QuestDayNightClock : FindFirstObjectByType<DayNightCycle>();
+        if (clock == null) return;
+        float hour = Mathf.Repeat(clock.timeOfDay, 1f) * 24f;
+        QuestEncounterStartedAtNight = hour >= 18f || hour < 6f;
+    }
+
+    internal void ResetQuestEncounterTime() => QuestEncounterStartedAtNight = null;
     public bool IsDowned => downed;
     public bool IsSelectable => alive || downed;
     public bool IsDownedAvailable => downed && (Time.time < downedUntil || CaptureLocked);
@@ -299,6 +312,7 @@ public class DummyEnemy : MonoBehaviour
         GetComponent<Capstone.Game.CreatureSystem.CreatureAnimationDriver>()?.Cry?.ResetPresence();
         downedSource = null;
         EncounterId = Guid.NewGuid().ToString("N");
+        ResetQuestEncounterTime();
         GetComponent<Capstone.Game.CreatureSystem.PveCombatState>()?.ResetEncounter();
         alive = true;
         health = Mathf.Max(1f, maxHealth);
@@ -327,6 +341,7 @@ public class DummyEnemy : MonoBehaviour
         SetCollidersEnabled(autoRevive);
         ApplyColor(deadColor);
         RefreshName();
+        Capstone.Game.QuestSystem.ChapterQuestFlow.ReportDefeat(this, source);
         bool rewardHandled = !trainingDummy && Capstone.Game.CreatureSystem.PveRewardService.HandleDefeat(this, source);
         if (!trainingDummy && GetComponent<Capstone.Game.CreatureSystem.CreatureCombatant>() != null)
         {

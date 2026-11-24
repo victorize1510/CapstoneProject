@@ -303,6 +303,8 @@ public class StarterBallTable : MonoBehaviour
         SetSelected(-1);
         if (hideChosenBall && slot.ball != null) slot.ball.gameObject.SetActive(false);
         completed = disableAfterChoosing;
+        var quests = FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>();
+        quests?.MarkStarterChosen();
 
         // 4. Về lại gameplay.
         yield return ExitRoutine();

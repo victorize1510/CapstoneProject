@@ -117,7 +117,7 @@ namespace Capstone.Game.QuestSystem {
                 if (objectiveData == null || string.IsNullOrWhiteSpace(objectiveData.objectiveId)) continue;
 
                 var objective = GetObjective(objectiveData.objectiveId);
-                objective?.Restore(objectiveData.currentAmount, objectiveData.completed);
+                objective?.Restore(objectiveData.currentAmount, objectiveData.completed, objectiveData.receipts);
             }
         }
 

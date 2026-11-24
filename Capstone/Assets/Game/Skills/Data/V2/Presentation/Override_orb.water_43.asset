@@ -52,7 +52,7 @@ MonoBehaviour:
     actorSpace: 1
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
-    scale: 0.38
+    scale: 0.27
     volume: 0.3
     pitch: 1
     lifetimeSeconds: 1.2

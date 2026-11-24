@@ -35,6 +35,9 @@ namespace Capstone.Game.MapSystem {
 
         RenderTexture runtimeMinimapTexture;
         Transform configuredVisualRoot;
+        Sprite mapArt;
+        Rect mapArtBounds;
+        RawImage artDisplay;
 
         public MinimapManager Manager => minimapManager;
         public Camera Camera => minimapCamera;
@@ -61,6 +64,7 @@ namespace Capstone.Game.MapSystem {
             ApplySettings();
             Transform visualRoot = minimapManager != null ? minimapManager.transform : null;
             if (configuredVisualRoot != visualRoot) EnsureOpaqueMinimapVisuals();
+            MapArtProjection.Apply(artDisplay, minimapCamera, mapArt, mapArtBounds);
         }
 
         void Start() {
@@ -80,6 +84,7 @@ namespace Capstone.Game.MapSystem {
 
             Transform visualRoot = minimapManager != null ? minimapManager.transform : null;
             if (configuredVisualRoot != visualRoot) EnsureOpaqueMinimapVisuals();
+            MapArtProjection.Apply(artDisplay, minimapCamera, mapArt, mapArtBounds);
         }
 
         void OnDestroy() {
@@ -108,6 +113,21 @@ namespace Capstone.Game.MapSystem {
         public void SetWorldBounds(Vector2 center, Vector2 size) {
             worldCenter = center;
             worldSize = new Vector2(Mathf.Max(1f, size.x), Mathf.Max(1f, size.y));
+        }
+
+        public void UseMapArt(Sprite sprite, Rect bounds, float zoom) {
+            ResolveReferences();
+            mapArt = sprite;
+            mapArtBounds = bounds;
+            cameraRange = zoom;
+            rotateWithTarget = false;
+            applyCullingMask = true;
+            cullingMask = 0;
+            SetWorldBounds(bounds.center, bounds.size);
+            ApplySettings();
+            if (target != null && minimapCamera != null)
+                minimapCamera.transform.position = ClampCameraPosition(new Vector3(target.position.x, cameraHeight, target.position.z));
+            EnsureOpaqueMinimapVisuals();
         }
 
         void ResolveReferences() {
@@ -203,11 +223,13 @@ namespace Capstone.Game.MapSystem {
 
             Transform displayTransform = mask.Find("Minimap Display");
             RawImage display = displayTransform != null ? displayTransform.GetComponent<RawImage>() : null;
+            artDisplay = display;
             if (display != null) {
                 display.color = Color.white;
                 display.raycastTarget = false;
                 RenderTexture texture = EnsureMinimapRenderTexture();
                 if (texture != null) display.texture = texture;
+                MapArtProjection.Apply(display, minimapCamera, mapArt, mapArtBounds);
                 Stretch(display.rectTransform);
                 display.transform.SetSiblingIndex(1);
             }

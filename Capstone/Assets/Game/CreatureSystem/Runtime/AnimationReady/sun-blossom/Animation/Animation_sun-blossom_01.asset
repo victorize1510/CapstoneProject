@@ -40,11 +40,7 @@ MonoBehaviour:
     action: 9
   - skillId: "cyclone.flying"
     action: 9
-  - skillId: orb.grass
-    action: 9
   - skillId: poisonburst.grass
-    action: 9
-  - skillId: leafstorm.grass
     action: 9
   - skillId: absorb.grass
     action: 9

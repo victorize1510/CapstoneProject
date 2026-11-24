@@ -191,6 +191,19 @@ namespace Capstone.Game.ShopSystem.Editor {
                 quantity.value = int.MaxValue; await Task.Delay(180); Check(quantity.value <= 99, "quantity clamps to purchase maximum");
                 window.Wallet.TrySpendGold(window.Wallet.Gold); await Task.Delay(180);
                 Check(!root.Q<Button>("shop-buy").enabledSelf && !quantity.enabledSelf, "wallet event disables purchase immediately");
+                var saleOffer = window.Source.Find("fixture-0");
+                window.Bag.TryAddItemAtomic(saleOffer.Item, 3);
+                Submit(root.Q<Button>("shop-trade-mode")); await Task.Delay(200);
+                Submit(root.Q<Button>("shop-sell")); await Task.Delay(200);
+                var sale = window.Surface.Q("shop-sale-quantity-popup");
+                Check(sale.resolvedStyle.display == DisplayStyle.Flex &&
+                    sale.Q<Label>("quantity-owned").text.Contains("3"), "sell popup lists owned quantity");
+                int unitPrice = Math.Max(1, saleOffer.GoldPrice / 2);
+                sale.Q<IntegerField>("quantity-field").value = 2;
+                Check(sale.Q<Label>("quantity-price").text.Contains($"{unitPrice:N0} vàng") &&
+                    sale.Q<Label>("quantity-price").text.Contains($"{unitPrice * 2:N0} vàng"),
+                    "sell popup updates unit and total prices");
+                Check(controller.DismissSalePopup() && sale.style.display.value == DisplayStyle.None, "back dismisses only the sale popup");
                 controller.Close(); window.Wallet.AddGold(1000); Check(!controller.IsOpen, "hidden Shop remains closed on wallet changes");
                 Write("validation.txt"); Debug.Log("Shop validation: " + results.Count + " checks passed.");
             } catch (Exception e) { results.Add("FAIL " + e); Write("validation.txt"); Debug.LogException(e); }
@@ -347,6 +360,16 @@ namespace Capstone.Game.ShopSystem.Editor {
                 bag.SetInventory(new ListBag { Size = 1 }); bag.AddItem(restoredDefinition, 2);
                 Check(service.Owned(offer) == 2, "owned count resolves saved definition by stable ID");
                 time += .2; Check(service.TryBuy(source,offer.Id,1,0,out _) && bag.GetItems().Count == 1 && bag.GetQuantity(restoredDefinition) == 3, "purchase merges existing saved identity without duplicate definitions");
+                offer.GoldPrice = 100;
+                var sale = bag.GetItems().Single();
+                int stock = offer.Stock;
+                Check(service.SalePrice(source, restoredDefinition) == 50 && service.MaximumSale(sale, 50) == 3,
+                    "sell quote uses the saved item identity and current stock in the bag");
+                time += .2; Check(!service.TrySell(source, sale, 4, 50, out _) &&
+                    bag.GetQuantity(restoredDefinition) == 3 && wallet.Gold == 700, "overselling preserves both balances");
+                time += .2; Check(service.TrySell(source, sale, 2, 50, out _) &&
+                    wallet.Gold == 800 && bag.GetQuantity(restoredDefinition) == 1 && offer.Stock == stock,
+                    "selling removes two items, pays the quoted gold and preserves merchant stock");
                 var defaults = Resources.Load<ShopCatalog>("Shop/DefaultShopCatalog");
                 Check(defaults.Offers.All(offer => ShopPresentation.Category(offer) != ShopCategory.Evolution)
                     && InventoryDefinitionCatalog.Find("dusk-stone") != null,

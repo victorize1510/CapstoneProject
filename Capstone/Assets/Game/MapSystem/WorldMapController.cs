@@ -130,6 +130,10 @@ namespace Capstone.Game.MapSystem {
         readonly List<TerrainTreeState> hiddenMapTerrains = new List<TerrainTreeState>();
         bool mapSceneVisualsHidden;
         RawImage mapDisplay;
+        Sprite mapArt;
+        Rect mapArtBounds;
+        internal Texture DisplayedMapTexture => mapArt != null ? (Texture)mapArt.texture : mapCamera?.targetTexture;
+        internal string MapRegionName { get; private set; }
         readonly List<FilterListener> filterListeners = new List<FilterListener>();
 
         public event Action<Vector3> WaypointChanged;
@@ -197,6 +201,7 @@ namespace Capstone.Game.MapSystem {
             }
 
             UpdateRegionName();
+            MapArtProjection.Apply(mapDisplay, mapCamera, mapArt, mapArtBounds);
         }
 
         void OnDestroy() {
@@ -217,6 +222,16 @@ namespace Capstone.Game.MapSystem {
             worldCenter = center;
             worldSize = new Vector2(Mathf.Max(1f, size.x), Mathf.Max(1f, size.y));
             ApplyCameraDefaults();
+        }
+
+        public void UseMapArt(Sprite sprite, Rect bounds, string regionName) {
+            ResolveReferences();
+            mapArt = sprite;
+            mapArtBounds = bounds;
+            MapRegionName = regionName;
+            worldBoundsInsetPercent = minimumWorldBoundsInsetPercent = Vector4.zero;
+            SetWorldBounds(bounds.center, bounds.size);
+            if (IsOpen && playerTarget != null) Focus(playerTarget.position, false);
         }
 
         public void SetReferences(MapManager manager, Camera camera, RectTransform interactionRect, RectTransform overlay, Transform target) {
@@ -511,7 +526,8 @@ namespace Capstone.Game.MapSystem {
 
             if (mapCamera != null) {
                 mapCamera.orthographic = true;
-                if (!hideWaterAndEffectsOnMap && !hideTreesWaterAndEffectsOnMap) mapCamera.cullingMask = ~0;
+                if (mapArt != null) mapCamera.cullingMask = 0;
+                else if (!hideWaterAndEffectsOnMap && !hideTreesWaterAndEffectsOnMap) mapCamera.cullingMask = ~0;
                 mapCamera.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
                 mapCamera.nearClipPlane = 0.1f;
                 mapCamera.farClipPlane = Mathf.Max(cameraHeight + 500f, 1000f);
@@ -525,7 +541,7 @@ namespace Capstone.Game.MapSystem {
         }
 
         bool ApplyMapSetBoundsIfAvailable() {
-            if (!useMapSetBounds) return false;
+            if (mapArt != null || !useMapSetBounds) return false;
             if (!TryResolveMapSetBounds()) return false;
 
             Vector3 center = mapSetBounds.center;
@@ -669,6 +685,7 @@ namespace Capstone.Game.MapSystem {
                 display.material = null;
                 display.raycastTarget = false;
                 if (renderTexture != null) display.texture = renderTexture;
+                MapArtProjection.Apply(display, mapCamera, mapArt, mapArtBounds);
                 Stretch(display.rectTransform);
                 display.transform.SetSiblingIndex(1);
             }
@@ -697,7 +714,7 @@ namespace Capstone.Game.MapSystem {
 
             return mapDisplay != null
                    && mapDisplay.gameObject.activeInHierarchy
-                   && mapDisplay.texture == texture;
+                   && mapDisplay.texture == DisplayedMapTexture;
         }
 
         RenderTexture EnsureWorldMapRenderTexture() {

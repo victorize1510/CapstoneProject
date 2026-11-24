@@ -86,6 +86,8 @@ namespace Capstone.Game.HudSystem {
             petCommandInput = input;
             Initialize();
             RemovePartyDuplicates();
+            CompactPartySlots(input);
+            EnsureActivePet(input);
             Changed?.Invoke();
         }
 
@@ -193,7 +195,7 @@ namespace Capstone.Game.HudSystem {
             if (!TryGetPartyArray(input, out PetController[] party, out error)) return false;
             if (!IsPartyIndex(sourceIndex) || !IsPartyIndex(targetIndex)) return Fail("Slot Party không hợp lệ.", out error);
             if (sourceIndex == targetIndex) return Fail("Pet đã ở slot này.", out error);
-            if (party[sourceIndex] == null && party[targetIndex] == null) return Fail("Hai slot đều trống.", out error);
+            if (party[sourceIndex] == null || party[targetIndex] == null) return Fail("Chọn hai ô đang có pet để đổi vị trí.", out error);
 
             PetController source = party[sourceIndex];
             party[sourceIndex] = party[targetIndex];
@@ -228,6 +230,7 @@ namespace Capstone.Game.HudSystem {
             if (!IsPartyIndex(partyIndex)) return Fail("Slot Party không hợp lệ.", out error);
             PetController pet = party[partyIndex];
             if (pet == null) return Fail("Slot Party đang trống.", out error);
+            if (PartyCount <= 1) return Fail("Đội hình phải còn ít nhất 1 pet.", out error);
             if (IsFull) {
                 StorageFull?.Invoke(pet);
                 return Fail("BOX đã đầy.", out error);
@@ -238,6 +241,7 @@ namespace Capstone.Game.HudSystem {
             pet.Withdraw();
             party[partyIndex] = null;
             storedPets[boxIndex] = pet;
+            CompactPartySlots(input);
             EnsureActivePet(input);
             Changed?.Invoke();
             error = string.Empty;
@@ -269,6 +273,7 @@ namespace Capstone.Game.HudSystem {
             else storedPets[boxIndex] = null;
 
             party[partyIndex] = incoming;
+            CompactPartySlots(input);
             if (incoming.owner == null && input != null) incoming.AssignOwner(input.transform);
             if (input.activePet == outgoing || input.activePet == null) input.SetActivePet(incoming);
             Changed?.Invoke();
@@ -287,10 +292,12 @@ namespace Capstone.Game.HudSystem {
             PetController partyPet = party[partyIndex];
             PetController boxPet = storedPets[boxIndex];
             if (partyPet == null && boxPet == null) return Fail("Hai slot đều trống.", out error);
+            if (boxPet == null && PartyCount <= 1) return Fail("Đội hình phải còn ít nhất 1 pet.", out error);
 
             if (partyPet != null) partyPet.Withdraw();
             storedPets[boxIndex] = partyPet;
             party[partyIndex] = boxPet;
+            CompactPartySlots(input);
             if (boxPet != null && boxPet.owner == null) boxPet.AssignOwner(input.transform);
             EnsureActivePet(input);
             Changed?.Invoke();
@@ -420,6 +427,7 @@ namespace Capstone.Game.HudSystem {
             if (partyIndex < 0 && boxIndex < 0) {
                 return Fail("Pet không còn nằm trong Party hoặc Box.", out error);
             }
+            if (partyIndex >= 0 && PartyCount <= 1) return Fail("Đội hình phải còn ít nhất 1 pet.", out error);
 
             token = new PetRosterReleaseToken {
                 Pet = pet,
@@ -433,8 +441,9 @@ namespace Capstone.Game.HudSystem {
             if (partyIndex >= 0) input.petSlots[partyIndex] = null;
             else storedPets[boxIndex] = null;
 
+            CompactPartySlots(input);
             EnsureActivePet(input);
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "RosterChanged", () => Changed?.Invoke());
             error = string.Empty;
             return true;
         }
@@ -446,8 +455,11 @@ namespace Capstone.Game.HudSystem {
             PetCommandInput input = ResolveInput();
             if (token.PartyIndex >= 0) {
                 if (!TryGetPartyArray(input, out PetController[] party, out error)) return false;
-                if (party[token.PartyIndex] != null) return Fail("Slot Party cũ không còn trống.", out error);
-                party[token.PartyIndex] = token.Pet;
+                int empty = FindNextEmptyPartySlot();
+                if (empty < 0) return Fail("Đội hình đã đầy.", out error);
+                int position = Mathf.Min(token.PartyIndex, empty);
+                for (int i = empty; i > position; i--) party[i] = party[i - 1];
+                party[position] = token.Pet;
             }
             else {
                 if (!IsBoxIndex(token.BoxIndex)) return Fail("Slot Box cũ không còn hợp lệ.", out error);
@@ -460,7 +472,7 @@ namespace Capstone.Game.HudSystem {
             if (token.WasSummoned) token.Pet.Summon();
             else token.Pet.Withdraw();
 
-            Changed?.Invoke();
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "RosterChanged", () => Changed?.Invoke());
             error = string.Empty;
             return true;
         }
@@ -543,11 +555,19 @@ namespace Capstone.Game.HudSystem {
             return count;
         }
 
+        internal static void CompactPartySlots(PetCommandInput input) {
+            var party = input != null ? input.petSlots : null;
+            if (party == null) return;
+            int end = Mathf.Min(PartySize, party.Length);
+            int write = 0;
+            for (int read = 0; read < end; read++)
+                if (party[read] != null) party[write++] = party[read];
+            Array.Clear(party, write, end - write);
+        }
+
         void EnsureActivePet(PetCommandInput input) {
             if (input == null || input.petSlots == null) return;
-            for (int i = 0; i < input.petSlots.Length; i++) {
-                if (input.petSlots[i] == input.activePet) return;
-            }
+            if (input.activePet != null && FindPartyIndex(input.activePet, input) >= 0) return;
 
             PetController replacement = null;
             for (int i = 0; i < input.petSlots.Length; i++) {

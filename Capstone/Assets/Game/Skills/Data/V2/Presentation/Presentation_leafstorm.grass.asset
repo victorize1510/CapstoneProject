@@ -45,7 +45,7 @@ MonoBehaviour:
     pitch: 1
     lifetimeSeconds: 1.2
   impact: 
-    effectPrefab: {fileID: 3847542690885776817, guid: acc0aae5580fdcd6f0a77cbbb33a4204, type: 3}
+    effectPrefab: {fileID: 0}
     sound: {fileID: 8300000, guid: 0baf8600b856b794b90ef46e9e7fb215, type: 3}
     socket: 
     followSocket: 0

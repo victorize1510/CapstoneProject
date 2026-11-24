@@ -69,6 +69,7 @@ namespace Capstone.Game.Skills
         CreatureCombatTarget coordinatedTarget;
         bool hasCoordinatedTarget;
         internal void StageTarget(CreatureCombatTarget target) { coordinatedTarget=target;hasCoordinatedTarget=true; }
+        internal void ClearTargetIntent() { coordinatedTarget = default; hasCoordinatedTarget = false; SkipNextRetreat = false; }
         internal CreatureCombatTarget ResolveIntentTarget(PetSkillCombatProfile profile) {
             if(profile.delivery==PetSkillDelivery.SelfBuff)return default;
             if(context.IsEnemy)return context.Target;
@@ -196,7 +197,7 @@ namespace Capstone.Game.Skills
                 return false;
             }
 
-            if (!skipRetreat && target.Exists && profile.delivery != PetSkillDelivery.Melee && profile.retreatDistance > 0)
+            if (context.IsEnemy && !skipRetreat && target.Exists && profile.delivery != PetSkillDelivery.Melee && profile.retreatDistance > 0)
             {
                 Vector3 separation = combat.Center - target.Center;
                 separation.y = 0;
@@ -357,6 +358,7 @@ namespace Capstone.Game.Skills
                     shot.remaining = shot.profile.TravelRange;
                     float flightSeconds = shot.remaining / Mathf.Max(.1f, shot.profile.projectileSpeed);
                     shot.expires = Time.time + Mathf.Max(shot.profile.lifetime, flightSeconds + .1f);
+                    presentation.KeepImpactOpen(token, shot.expires);
                     // SphereCast khong bao collider da nam trong mieng nong khi phat dan.
                     if (ResolveInitialOverlap(shot))
                     {

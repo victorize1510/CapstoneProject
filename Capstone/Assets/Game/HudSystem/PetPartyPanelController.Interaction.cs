@@ -56,6 +56,7 @@ namespace Capstone.Game.HudSystem {
         void ConfirmPartySwap(){
             if(swapSaving||pendingSwapSourceIndex<0||pendingSwapTargetIndex<0||CommandProvider==null)return;
             int source=pendingSwapSourceIndex,target=pendingSwapTargetIndex;
+            if (swapTargetPet == null) { ClearSwapSelection(); SetFeedback("Chọn hai ô đang có pet để đổi vị trí."); return; }
             if(CommandProvider.GetPetControllerAt(source)!=swapSourcePet||swapSourcePet==null||CommandProvider.GetPetControllerAt(target)!=swapTargetPet){ClearSwapSelection();SetFeedback("Đội hình đã thay đổi. Chọn lại vị trí.");return;}
             swapSaving=true;swapConfirm?.SetEnabled(false);HideTooltip();
             try{

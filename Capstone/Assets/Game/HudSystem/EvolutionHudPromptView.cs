@@ -78,7 +78,8 @@ namespace Capstone.Game.HudSystem {
         public void Display(string petName, string targetName, bool canConfirm, string disabledReason) {
             Build();
             message.text = canConfirm ? petName + " có thể tiến hóa thành " + targetName + "." : "Tiến hóa " + petName;
-            reason.text = canConfirm ? "Y: Tiến hóa  ·  N: Để sau" : disabledReason;
+            reason.text = !string.IsNullOrWhiteSpace(disabledReason) ? disabledReason
+                : canConfirm ? "Y: Tiến hóa  ·  N: Để sau" : "";
             Confirm.interactable = canConfirm;
         }
         public void OnCancel(BaseEventData eventData) { Deferred?.Invoke(); eventData.Use(); }

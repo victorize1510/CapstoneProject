@@ -134,7 +134,8 @@ public partial class PetController
             }
             commandedReturnAt = Time.time + .25f;
         }
-        float speed = Mathf.Lerp(followSpeed, followSpeed * fastReturnSpeedMultiplier, Mathf.InverseLerp(1f, 4f, distance));
+        float baseSpeed = enableBasicAttacks ? followSpeed : Mathf.Max(followSpeed, commandSpeed);
+        float speed = Mathf.Lerp(baseSpeed, baseSpeed * fastReturnSpeedMultiplier, Mathf.InverseLerp(.4f, 3f, distance));
         MoveTo(destination, speed, .3f);
         UpdateAnimator(GetCurrentSpeed());
     }

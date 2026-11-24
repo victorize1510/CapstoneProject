@@ -1126,6 +1126,19 @@ public class BasicCameraFollow : MonoBehaviour
 
     internal void ClearPartyDefeatLock() => ClearLockedEnemy();
 
+    internal void ResetAfterWarp(Vector3 delta, float forwardYaw)
+    {
+        ClearLockedEnemy();
+        transform.position += delta;
+        yaw = forwardYaw;
+        previousTargetPositionInitialized = false;
+        InitializeTargetHeight();
+        InitializeFocusPoint();
+        if (freeLookRig == null || !freeLookRig.IsReady) return;
+        freeLookRig.freeCamera.PreviousStateIsValid = false;
+        freeLookRig.lockCamera.PreviousStateIsValid = false;
+    }
+
     private void ClearLockedEnemy()
     {
         enemyLockActive = false;

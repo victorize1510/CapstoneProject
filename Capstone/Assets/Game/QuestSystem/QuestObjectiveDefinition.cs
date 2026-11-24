@@ -25,7 +25,9 @@ namespace Capstone.Game.QuestSystem {
         DiscoverLocation = 13,
         TrainerLevel = 14,
         CreatureLevel = 15,
-        CompleteQuest = 16
+        CompleteQuest = 16,
+        DeliverPet = 17,
+        ReachScene = 18
     }
 
     [Serializable]
@@ -44,6 +46,9 @@ namespace Capstone.Game.QuestSystem {
         [SerializeField, Min(0f)] float targetRadius = 2f;
         [SerializeField] string[] tags = Array.Empty<string>();
         [SerializeField] bool optional = false;
+        [SerializeField] string[] allowedZones, allowedForms, alternateItemIds;
+        [SerializeField] string sceneId, markerId;
+        [SerializeField] bool nightOnly;
 
         public string ObjectiveId => objectiveId;
         public string Title => title;
@@ -59,6 +64,15 @@ namespace Capstone.Game.QuestSystem {
         public float TargetRadius => Mathf.Max(0f, targetRadius);
         public IReadOnlyList<string> Tags => tags;
         public bool Optional => optional;
+        public IReadOnlyList<string> AllowedZones => allowedZones ?? Array.Empty<string>();
+        public IReadOnlyList<string> AlternateItemIds => alternateItemIds ?? Array.Empty<string>();
+        public string SceneId => sceneId;
+        public string MarkerId => markerId;
+        public bool IsHandover => objectiveType == QuestObjectiveType.GiveItem || objectiveType == QuestObjectiveType.DeliverPet;
+
+        public bool MatchesCreature(string family, string form) =>
+            (string.IsNullOrEmpty(targetTypeId) || string.Equals(targetTypeId, family, StringComparison.OrdinalIgnoreCase)) &&
+            (allowedForms == null || allowedForms.Length == 0 || Array.Exists(allowedForms, x => x == form));
 
         public bool TryGetTargetPosition(out Vector3 position) {
             position = targetPosition;
@@ -72,9 +86,12 @@ namespace Capstone.Game.QuestSystem {
 
             if (!MatchesObjectiveType(progressEvent.ObjectiveType)) return false;
             if (!MatchesValue(targetId, progressEvent.TargetId)) return false;
-            if (!MatchesValue(targetTypeId, progressEvent.TargetTypeId)) return false;
+            if (!MatchesCreature(progressEvent.TargetTypeId, progressEvent.FormId)) return false;
             if (!MatchesValue(regionId, progressEvent.RegionId)) return false;
             if (!MatchesValue(customKey, progressEvent.CustomKey)) return false;
+            if (!MatchesValue(sceneId, progressEvent.SceneId)) return false;
+            if (nightOnly && !progressEvent.StartedAtNight) return false;
+            if (AllowedZones.Count > 0 && !Array.Exists(allowedZones, zone => zone == progressEvent.RegionId)) return false;
             return MatchesTags(progressEvent.Tags);
         }
 

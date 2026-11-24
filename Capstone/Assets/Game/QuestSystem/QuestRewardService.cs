@@ -132,8 +132,10 @@ namespace Capstone.Game.QuestSystem {
 
                             case QuestRewardType.Item:
                                 ItemBase itemBase = ResolveItem(reward);
-                                Result addResult = inventory.AddItem(itemBase, reward.Amount);
-                                if (addResult is not Success) {
+                                bool added = state.Definition.RequiresTurnIn
+                                    ? inventory.TryAddItemAtomic(itemBase, reward.Amount, false)
+                                    : inventory.AddItem(itemBase, reward.Amount) is Success;
+                                if (!added) {
                                     error = $"Túi đồ không còn chỗ cho {reward.DisplayName}. Hãy dọn túi rồi mở lại Quest để thử nhận thưởng.";
                                     Rollback(grantedGold, grantedItems, profileSnapshot, state);
                                     return false;
@@ -212,6 +214,13 @@ namespace Capstone.Game.QuestSystem {
                 }
             }
 
+            return true;
+        }
+
+        internal bool TryGrantChapterTurnIn(QuestRuntimeState state, out string error) {
+            ResolveReferences();
+            if (!TryGrantTransaction(state, state.Definition.Rewards, out error)) return false;
+            Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ChapterRewardsGranted", () => RewardsGranted?.Invoke(state.QuestId));
             return true;
         }
 

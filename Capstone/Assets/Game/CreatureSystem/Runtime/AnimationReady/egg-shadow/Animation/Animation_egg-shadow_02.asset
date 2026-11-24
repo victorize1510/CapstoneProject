@@ -34,8 +34,6 @@ MonoBehaviour:
   skills:
   - skillId: "orb.dark"
     action: 9
-  - skillId: orb.dark
-    action: 9
   - skillId: spirit.dark
     action: 9
   - skillId: flock.dark

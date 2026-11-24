@@ -14,9 +14,9 @@ namespace Capstone.Game.WorldFeedback {
     public sealed class EnemyHealthBars : MonoBehaviour {
         const int Capacity = 32;
         sealed class Bar {
-            public RectTransform Root, Fill; public CanvasGroup Group; public Text Title,Cue;
+            public RectTransform Root, Fill; public CanvasGroup Group; public Text Title, Numbers, Cue;
             public DummyEnemy Enemy; public EnemyHealthAnchor Anchor; public BasicCreatureEnemy Brain;
-            public string Identity;public float NextTitle;public DownedRing Ring;
+            public float NextNumbers;public DownedRing Ring;
             public float ActiveUntil, Health = -1, Maximum = -1, NextSight; public bool InSight;
         }
         static EnemyHealthBars live;
@@ -63,11 +63,17 @@ namespace Capstone.Game.WorldFeedback {
             track.color = new Color(.10f, .13f, .20f, .9f); V.Top(track.rectTransform, 36, 25, 108, 7);
             var fill = V.Image(track.transform, "Health"); fill.preserveAspect = false; fill.raycastTarget = false;
             fill.color = new Color(.84f, .43f, .52f); V.Stretch(fill.rectTransform);
+            var numbers = V.Text(root, "Selected HP", "", 13, TextAnchor.MiddleCenter);
+            numbers.raycastTarget = false; numbers.color = title.color;
+            V.Top(numbers.rectTransform, 0, 32, 180, 18);
+            var numberOutline = numbers.gameObject.AddComponent<Outline>();
+            numberOutline.effectColor = outline.effectColor;
+            numberOutline.effectDistance = outline.effectDistance;
             var group = root.gameObject.AddComponent<CanvasGroup>(); group.blocksRaycasts = false; group.interactable = false;
             var cue=V.Text(root,"Downed cue","",20,TextAnchor.MiddleCenter);cue.fontStyle=FontStyle.Bold;cue.color=new Color(1,.88f,.57f);cue.raycastTarget=false;V.Top(cue.rectTransform,70,0,40,40);cue.gameObject.SetActive(false);
             var ringRoot=V.Rect(cue.transform,"Countdown ring");V.Stretch(ringRoot);var ring=ringRoot.gameObject.AddComponent<DownedRing>();ring.color=cue.color;ring.raycastTarget=false;
             root.gameObject.SetActive(false);
-            return new Bar { Root = root, Fill = fill.rectTransform, Group = group, Title = title,Cue=cue,Ring=ring };
+            return new Bar { Root = root, Fill = fill.rectTransform, Group = group, Title = title, Numbers = numbers, Cue=cue,Ring=ring };
         }
         static bool Eligible(DummyEnemy enemy) {
             if (enemy == null || !enemy.isActiveAndEnabled || !enemy.IsSelectable) return false;
@@ -88,10 +94,12 @@ namespace Capstone.Game.WorldFeedback {
             candidates.Clear(); if (cameraSource == null) return;
             Vector3 from = party != null ? party.transform.position : cameraSource.transform.position;
             DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
+            DummyEnemy selected = party != null ? party.SelectedEnemy : null;
             foreach (var enemy in DummyEnemy.ActiveEnemies)
                 if (Eligible(enemy) && (enemy.transform.position - from).sqrMagnitude <= 625) candidates.Add(enemy);
             candidates.Sort((a, b) => {
                 if (a == locked) return b == locked ? 0 : -1; if (b == locked) return 1;
+                if (a == selected) return b == selected ? 0 : -1; if (b == selected) return 1;
                 bool aa = CenterDistance(a) < .0064f, bb = CenterDistance(b) < .0064f;
                 if (aa != bb) return aa ? -1 : 1;
                 aa = WasHitRecently(a); bb = WasHitRecently(b);
@@ -117,7 +125,8 @@ namespace Capstone.Game.WorldFeedback {
             bar.Brain = enemy.GetComponent<BasicCreatureEnemy>();
             var stats = enemy.GetComponent<PetHudRuntimeStats>();
             string name = stats != null ? stats.DisplayName : enemy.name;
-            bar.Identity=name + (stats != null ? " • Cấp " + stats.Level : "");bar.Title.text = bar.Identity;bar.NextTitle=0;
+            bar.Title.text = name + (stats != null ? " • Cấp " + stats.Level : "");
+            bar.NextNumbers = 0;
         }
         void OnHealthChanged(DummyEnemy enemy) {
             foreach (var bar in bars) if (bar.Enemy == enemy) {
@@ -132,6 +141,7 @@ namespace Capstone.Game.WorldFeedback {
             VisibleCount = 0;
             bool hidden = cameraSource == null || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying;
             DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
+            DummyEnemy selected = party != null ? party.SelectedEnemy : null;
             DummyEnemy centered = null;
             float closestToCenter = .0064f;
             foreach (var bar in bars) {
@@ -150,7 +160,8 @@ namespace Capstone.Game.WorldFeedback {
                     bar.NextSight = Time.unscaledTime + .1f;
                     bar.InSight = ClearSight(anchor, bar.Enemy);
                 }
-                bool revealed = bar.Enemy == locked || bar.Enemy == centered || WasHitRecently(bar.Enemy) || Time.unscaledTime < bar.ActiveUntil;
+                bool revealed = bar.Enemy == selected || bar.Enemy == locked || bar.Enemy == centered
+                    || WasHitRecently(bar.Enemy) || Time.unscaledTime < bar.ActiveUntil;
                 bar.Root.gameObject.SetActive(revealed && inView && bar.InSight);
                 if (!bar.Root.gameObject.activeSelf) continue;
                 VisibleCount++;
@@ -161,7 +172,12 @@ namespace Capstone.Game.WorldFeedback {
                 bar.Cue.gameObject.SetActive(bar.Enemy.IsDowned);
                 bar.Fill.parent.gameObject.SetActive(!bar.Enemy.IsDowned);
                 if(bar.Enemy.IsDowned){bar.Cue.text=Mathf.CeilToInt(bar.Enemy.DownedSecondsRemaining).ToString();bar.Ring.SetRemaining(bar.Enemy.DownedSecondsRemaining/Mathf.Max(.01f,bar.Enemy.DownedDuration));}
-                if(Time.unscaledTime>=bar.NextTitle){bar.NextTitle=Time.unscaledTime+.1f;bar.Title.text=bar.Identity;}
+                bool showNumbers = bar.Enemy == selected && !bar.Enemy.IsDowned;
+                if (showNumbers && (!bar.Numbers.enabled || Time.unscaledTime >= bar.NextNumbers)) {
+                    bar.NextNumbers = Time.unscaledTime + .1f;
+                    bar.Numbers.text = $"{bar.Health:0}/{bar.Maximum:0} HP";
+                }
+                bar.Numbers.enabled = showNumbers;
                 bar.Title.enabled = !bar.Enemy.IsDowned;
                 Vector3 pixel = cameraSource.ViewportToScreenPoint(screen);
                 RectTransformUtility.ScreenPointToLocalPointInRectangle(surface, pixel, null, out var point);

@@ -28,6 +28,19 @@ namespace Capstone.Game.SaveSystem.Editor {
         static Report report;
         static string caseRoot;
 
+        [MenuItem("Tools/Capstone/Advanced/Pets/Validate party compaction (isolated)")]
+        static void VerifyCompactParty() {
+            string directory = Path.Combine(Capstone.Game.UISystem.QaArtifactPaths.Root, "SkillUiPartyShopFollowup");
+            report = new Report { unityVersion = Application.unityVersion,
+                fixtures = Path.Combine(directory, "party-fixtures-" + Guid.NewGuid().ToString("N")) };
+            Test("Compact party, preserve active pet and protect last member", BoxSlotOperations);
+            Test("Restore sparse and empty legacy parties", CompactPartySaveRoundtrip);
+            Test("SaveNow persists and restores the current game slot", ControllerRoundtrip);
+            File.WriteAllText(Path.Combine(directory, "party-editor.json"), JsonUtility.ToJson(report, true));
+            if (report.failed > 0) Debug.LogError($"Party validation: {report.failed} failed.");
+            else Debug.Log($"Party validation: {report.passed} passed.");
+        }
+
         public static void RunBatch() {
             if (!Application.isBatchMode) throw new InvalidOperationException("Run in a separate Unity batch process.");
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -203,9 +216,14 @@ namespace Capstone.Game.SaveSystem.Editor {
         static void BoxSlotOperations() {
             RosterController(out var input, out var box);
             var partyPet = Pet("party-slot");
+            var lead = Pet("lead-slot");
+            var reserve = Pet("compact-reserve");
             var firstBoxPet = Pet("box-five");
             var secondBoxPet = Pet("box-twenty");
+            input.petSlots[0] = lead;
             input.petSlots[1] = partyPet;
+            input.petSlots[2] = reserve;
+            input.SetActivePet(reserve);
             var slots = new PetController[60];
             slots[5] = firstBoxPet;
             slots[20] = secondBoxPet;
@@ -215,6 +233,8 @@ namespace Capstone.Game.SaveSystem.Editor {
             Equal(0, box.FindFirstEmptyBoxSlot(), "First empty slot");
             Check(box.TryMovePartyToBox(1, out var moveError), moveError);
             Equal(partyPet, box.GetStoredPet(0), "Party uses first empty Box slot");
+            Equal(reserve, input.petSlots[1], "Remaining pet shifts forward");
+            Equal(reserve, input.activePet, "Compaction preserves active instance");
             Check(box.TrySwapStoredPets(0, 10, out var swapError), swapError);
             Check(box.GetStoredPet(0) == null && box.GetStoredPet(10) == partyPet, "Box swap moved surrounding slots");
             Check(box.TrySwapPartyWithBox(2, 5, out var partySwapError), partySwapError);
@@ -223,6 +243,10 @@ namespace Capstone.Game.SaveSystem.Editor {
             box.ApplyPurchasedCapacity(10);
             Equal(70, box.Capacity, "Expanded capacity");
             Equal(secondBoxPet, box.GetStoredPet(20), "Expansion preserved existing position");
+            RosterController(out var singleInput, out var singleBox);
+            singleInput.petSlots[0] = lead;
+            Check(!singleBox.TryMovePartyToBox(0, out var lastError) && lastError.Contains("ít nhất 1") &&
+                !singleBox.TryDetachPetForRelease(lead, out _, out _), "The last party member cannot be stored or released");
         }
 
         static void BoxPanelMovedPetVisibility() {
@@ -230,6 +254,7 @@ namespace Capstone.Game.SaveSystem.Editor {
             var stored = new PetController[60];
             for (int i = 0; i < 30; i++) stored[i] = Pet("stored-" + i.ToString("D2"));
             var movedPet = Pet("moved-visible");
+            input.petSlots[0] = Pet("party-lead");
             input.petSlots[1] = movedPet;
             box.RestoreState(stored, 60);
 
@@ -263,6 +288,27 @@ namespace Capstone.Game.SaveSystem.Editor {
             Check(name != null && name.text == "moved-visible", "Moved pet name is missing from card");
             Check(meta != null && meta.text.Contains("Lv.12"), "Moved pet level is missing from card");
             Check(feedback.text.Contains("slot 31"), "Move feedback does not identify destination slot");
+        }
+        static void CompactPartySaveRoundtrip() {
+            var controller = RosterController(out var input, out var box);
+            var first = Pet("compact-first");
+            var second = Pet("compact-second");
+            var boxed = Pet("compact-box");
+            input.petSlots[2] = first;
+            input.petSlots[5] = second;
+            input.SetActivePet(second);
+            var stored = new PetController[60];
+            stored[8] = boxed;
+            box.RestoreState(stored, 60);
+            Check(controller.SaveNow() && controller.LoadNow(), controller.SaveBlockedReason);
+            Check(input.petSlots[0] == first && input.petSlots[1] == second && input.activePet == second &&
+                box.GetStoredPet(8) == boxed, "Legacy slot order, active instance and Box were restored");
+
+            Array.Clear(input.petSlots, 0, input.petSlots.Length);
+            input.SetActivePet(null);
+            Check(controller.SaveNow() && controller.LoadNow(), controller.SaveBlockedReason);
+            Check(input.petSlots[0] == boxed && input.activePet == boxed && box.StoredCount == 0,
+                "Legacy Box-only save promotes one pet without duplicating it");
         }
         static void MagicStatsMigration() {
             JObject root = JObject.Parse(JsonUtility.ToJson(Full()));
@@ -504,15 +550,9 @@ namespace Capstone.Game.SaveSystem.Editor {
             Check(!controller.LoadNow(), "Fixture must block save");
             var service = Component<PetEvolutionService>();
             Set(service, "saveController", controller);
-            var panel = Component<PetEvolutionPanelController>();
-            var feedback = new UnityEngine.UIElements.Label();
-            Set(panel, "evolutionService", service);
-            Set(panel, "targetPet", pet);
-            Set(panel, "preview", service.CreatePreview(pet));
-            Set(panel, "feedback", feedback);
             string before = JsonUtility.ToJson(metadata.CreateSaveData());
-            typeof(PetEvolutionPanelController).GetMethod("ConfirmEvolution", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(panel, null);
-            Check(feedback.text.Contains("Không thể lưu"), "Evolution save failure message was cleared by refresh");
+            Check(!service.TryEvolve(pet, out string message) && message == controller.SaveBlockedReason &&
+                service.CreatePreview(pet).DisabledReason == message, "Evolution preserves the save failure message");
             Equal(before, JsonUtility.ToJson(metadata.CreateSaveData()), "Failed evolution changed metadata");
             Equal("broken", File.ReadAllText(Store().GetPath("main")), "Failed evolution overwrote protected save");
         }
@@ -983,7 +1023,7 @@ namespace Capstone.Game.SaveSystem.Editor {
             for (int i = 0; i < 3; i++) Check(controller.LoadNow(), controller.SaveBlockedReason);
             Equal("first", metadata.Nickname, "Nickname restored"); Check(metadata.IsFavorite, "Favorite restored"); Check(Mathf.Approximately(109.2f, stats.Health), "Health ratio restored");
             Equal(21, metadata.MagicAttack, "SP.ATK recalculated"); Equal(21, metadata.MagicDefense, "SP.DEF recalculated");
-            Equal(first, input.petSlots[0], "Party first"); Equal(second, input.petSlots[2], "Party gap preserved"); Equal(1, box.StoredCount, "Box not duplicated"); Equal(third, box.StoredPets[8], "Sparse Box identity");
+            Equal(first, input.petSlots[0], "Party first"); Equal(second, input.petSlots[1], "Legacy party compacted"); Equal(1, box.StoredCount, "Box not duplicated"); Equal(third, box.StoredPets[8], "Sparse Box identity");
             metadata.TrySetNickname("new-name", out _); metadata.ToggleFavorite(); stats.SetIdentity("first", 13);
             Check(controller.SaveNow(), controller.SaveBlockedReason); Check(controller.LoadNow(), controller.SaveBlockedReason);
             Equal("new-name", metadata.Nickname, "Second nickname"); Check(!metadata.IsFavorite, "Second favorite"); Equal(13, stats.Level, "Second level");

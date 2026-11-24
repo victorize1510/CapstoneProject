@@ -102,6 +102,8 @@ public class VillageChiefCutscene : MonoBehaviour
     [SerializeField] bool playOnlyOnce = true;
     [Tooltip("Gọi khi cutscene xong. Ví dụ: bật bàn chọn bóng ở nhà trưởng làng, thêm nhiệm vụ...")]
     public UnityEvent onFinished = new UnityEvent();
+    public Transform Chief => npc;
+    public Sprite ChiefPortrait => npcPortrait;
 
     bool played;
     bool running;
@@ -273,6 +275,7 @@ public class VillageChiefCutscene : MonoBehaviour
 
         fadeCanvas.gameObject.SetActive(false);
         running = false;
+        FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>()?.MarkElderIntroductionComplete();
         onFinished?.Invoke();
     }
 

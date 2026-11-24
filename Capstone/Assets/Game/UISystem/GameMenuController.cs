@@ -510,7 +510,7 @@ namespace Capstone.Game.UISystem {
             if (command != null) {
                 text.AppendLine("1–6 — Gọi thú ở ô tương ứng");
                 if (command.withdrawKey != KeyCode.None) text.AppendLine(command.withdrawKey + " — Thu thú");
-                text.AppendLine("Chuột " + (command.commandMouseButton + 1) + " — Ra lệnh thú tấn công mục tiêu");
+                text.AppendLine((command.commandMouseButton == 0 ? "Chuột trái" : "Chuột " + (command.commandMouseButton + 1)) + " — Xem thông tin quái");
             }
             var visuals = FindFirstObjectByType<PlayerVisualSwitcher>();
             if (visuals != null && visuals.SwitchKey != KeyCode.None) text.AppendLine(visuals.SwitchKey + " — Đổi nhân vật nam / nữ");

@@ -117,7 +117,7 @@ public partial class PetCommandInput
             yield return FadeDefeatCurtain(curtain, false);
 
             var point = partyDefeatSpawnPoint;
-            movement.WarpAfterPartyDefeat(point != null ? point.position : initialPlayerPosition,
+            movement.WarpTo(point != null ? point.position : initialPlayerPosition,
                 point != null ? point.rotation : initialPlayerRotation);
             selectedEnemy = null;
             cameraLock?.ClearPartyDefeatLock();

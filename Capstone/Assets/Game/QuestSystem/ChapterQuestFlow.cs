@@ -1,0 +1,455 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using Capstone.Game.CaptureSystem;
+using Capstone.Game.CreatureSystem;
+using Capstone.Game.HudSystem;
+using Capstone.Game.Inventory;
+using Capstone.Game.SaveSystem;
+using Capstone.Game.UISystem;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace Capstone.Game.QuestSystem {
+    [DisallowMultipleComponent]
+    internal sealed class ChapterQuestFlow : MonoBehaviour {
+        internal const string GameplayScene = "DemoScene 3";
+        internal const string ChapterId = "chapter_01";
+        const string ElderId = "npc_village_elder";
+        const string FinalQuestId = "main_quest_09";
+
+        QuestManager quests;
+        MonsterInventoryAdapter inventory;
+        PlayerSaveController saves;
+        QuestRewardService rewards;
+        PetBoxRuntimeProvider roster;
+        PetCommandInput player;
+        ChapterWorldLayout world;
+        VillageChiefCutscene chief;
+        DialogueBoxUI dialogue;
+        TextMesh grassMarker, caveMarker;
+        bool conversation, refreshing;
+        float nextWorldCheck;
+        static ChapterQuestFlow live;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Reset() => live = null;
+
+        void Start() {
+            quests = GetComponent<QuestManager>();
+            inventory = FindFirstObjectByType<MonsterInventoryAdapter>(FindObjectsInactive.Include);
+            roster = FindFirstObjectByType<PetBoxRuntimeProvider>(FindObjectsInactive.Include);
+            saves = FindFirstObjectByType<PlayerSaveController>(FindObjectsInactive.Include);
+            player = roster != null ? roster.PartyInput : FindFirstObjectByType<PetCommandInput>();
+            rewards = FindFirstObjectByType<QuestRewardService>(FindObjectsInactive.Include);
+            chief = FindFirstObjectByType<VillageChiefCutscene>(FindObjectsInactive.Include);
+            world = FindFirstObjectByType<ChapterWorldLayout>();
+            live = this;
+            if (inventory != null) inventory.InventoryChanged += Refresh;
+            if (roster != null) roster.Changed += Refresh;
+            quests.QuestsChanged += Refresh;
+            if (world != null) {
+                grassMarker = CreateElderMarker(world.GrassElder);
+                caveMarker = CreateElderMarker(world.CaveElder);
+            }
+            Refresh();
+        }
+
+        static TextMesh CreateElderMarker(Transform elder) {
+            if (elder == null) return null;
+            var marker = new GameObject("Chapter I NPC Indicator").AddComponent<TextMesh>();
+            marker.transform.SetParent(elder, false);
+            marker.transform.position = elder.position + Vector3.up * 2.15f;
+            marker.characterSize = .13f;
+            marker.fontSize = 64;
+            marker.anchor = TextAnchor.MiddleCenter;
+            Capstone.Game.WorldFeedback.CameraActorOccluder.Ensure(elder.gameObject);
+            return marker;
+        }
+
+        void OnDestroy() {
+            if (inventory != null) inventory.InventoryChanged -= Refresh;
+            if (roster != null) roster.Changed -= Refresh;
+            if (quests != null) quests.QuestsChanged -= Refresh;
+            if (live == this) live = null;
+            ReleaseDialogue();
+        }
+
+        void OnDisable() {
+            StopAllCoroutines();
+            DoorPrompt.Hide(this);
+            ReleaseDialogue();
+        }
+
+        static QuestProgressEvent CreatureEvent(QuestObjectiveType type, DummyEnemy enemy, PetCollectionMetadata pet) =>
+            new QuestProgressEvent(type, type == QuestObjectiveType.DefeatBoss ? "chapter_01_boss" : "",
+                targetTypeId: pet != null ? pet.DefinitionId : "", regionId: enemy.QuestZoneId,
+                formId: pet != null ? pet.CurrentFormId : "", sceneId: enemy.gameObject.scene.name,
+                receiptId: type == QuestObjectiveType.CaptureCreature ? pet.PersistentId : enemy.EncounterId,
+                startedAtNight: enemy.QuestEncounterStartedAtNight == true);
+
+        internal static void ReportCapture(QuestManager manager, DummyEnemy enemy, PetCollectionMetadata pet) {
+            if (manager?.Chapter == null || enemy == null || pet == null || string.IsNullOrEmpty(enemy.QuestZoneId)) return;
+            manager.ReportProgress(CreatureEvent(QuestObjectiveType.CaptureCreature, enemy, pet));
+        }
+
+        internal static void ReportDefeat(DummyEnemy enemy, GameObject source) {
+            if (live == null || enemy == null || source == null || enemy.IsTrainingDummy ||
+                !source.TryGetComponent<PetController>(out var pet) || pet.IsWildEncounter ||
+                live.player == null || pet.owner != live.player.transform) return;
+            if (enemy.IsBoss) {
+                if (live.world != null && live.world.Boss == enemy)
+                    live.quests.ReportProgress(CreatureEvent(QuestObjectiveType.DefeatBoss, enemy, null));
+                return;
+            }
+            if (!string.IsNullOrEmpty(enemy.QuestZoneId) && enemy.TryGetComponent<PetCollectionMetadata>(out var metadata))
+                live.quests.ReportProgress(CreatureEvent(QuestObjectiveType.DefeatCreature, enemy, metadata));
+        }
+
+        bool IsChapter(QuestDefinition definition) => definition != null && definition.ChapterId == ChapterId
+            && definition.QuestGiverId == ElderId;
+
+        QuestRuntimeState Active() => quests.GetActiveQuests().FirstOrDefault(state => IsChapter(state.Definition));
+
+        QuestDefinition Available() => quests.GetQuestDefinitions()
+            .FirstOrDefault(def => IsChapter(def) && quests.GetQuestAvailability(def.QuestId) == QuestAvailabilityState.Available);
+
+        void Refresh() {
+            if (refreshing || quests == null) return;
+            refreshing = true;
+            try {
+                var state = Active();
+                if (state != null && inventory != null)
+                    foreach (var objective in state.Definition.Objectives)
+                        if (objective.ObjectiveType == QuestObjectiveType.CollectItem)
+                            quests.RefreshChapterObjective(state, objective, Quantity(objective.TargetId));
+                if (grassMarker != null || caveMarker != null) {
+                    bool ready = state != null && IsReady(state);
+                    string symbol = state != null ? "?" : Available() != null ? "!" : "";
+                    Color color = state == null || ready ? new Color(1f, .79f, .29f) : new Color(.62f, .66f, .72f);
+                    SetMarker(grassMarker, symbol, color);
+                    SetMarker(caveMarker, symbol, color);
+                }
+            } finally { refreshing = false; }
+        }
+
+        static void SetMarker(TextMesh marker, string symbol, Color color) {
+            if (marker == null) return;
+            marker.text = symbol;
+            marker.color = color;
+        }
+
+        int Quantity(string id) {
+            var item = InventoryDefinitionCatalog.Find(id);
+            return item != null && inventory != null ? inventory.GetQuantity(item) : 0;
+        }
+
+        internal bool IsReady(QuestRuntimeState state) {
+            foreach (var objective in state.Definition.Objectives) {
+                switch (objective.ObjectiveType) {
+                    case QuestObjectiveType.GiveItem:
+                        if (!HasMaterials(objective)) return false;
+                        break;
+                    case QuestObjectiveType.DeliverPet:
+                        if (EligiblePets(state, objective).Count < objective.RequiredAmount) return false;
+                        break;
+                    default:
+                        if (state.GetObjective(objective.ObjectiveId)?.IsComplete != true) return false;
+                        break;
+                }
+            }
+            return true;
+        }
+
+        static IEnumerable<(string id, int count)> Materials(QuestObjectiveDefinition objective) {
+            int count = objective.RequiredAmount / (objective.AlternateItemIds.Count + 1);
+            yield return (objective.TargetId, count);
+            foreach (var id in objective.AlternateItemIds) yield return (id, count);
+        }
+
+        bool HasMaterials(QuestObjectiveDefinition objective) => Materials(objective).All(item => Quantity(item.id) >= item.count);
+
+        List<PetController> EligiblePets(QuestRuntimeState state, QuestObjectiveDefinition delivery) {
+            if (roster == null || player == null) return new List<PetController>();
+            var receipts = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var objective in state.Definition.Objectives)
+                if (objective.ObjectiveType == QuestObjectiveType.CaptureCreature)
+                    receipts.UnionWith(state.GetObjective(objective.ObjectiveId).Receipts);
+            return roster.StoredPets.Concat(player.petSlots).Where(pet => pet != null && !pet.IsSummoned &&
+                !pet.IsDefeatPresentation && !pet.HasCombatTarget && pet.TryGetComponent<PetCollectionMetadata>(out var info) &&
+                !info.IsReleased && !info.IsFavorite && receipts.Contains(info.PersistentId) &&
+                delivery.MatchesCreature(info.DefinitionId, info.CurrentFormId)).Distinct().ToList();
+        }
+
+        internal bool TryGetTarget(QuestRuntimeState state, out QuestTargetInfo target) {
+            target = default;
+            if (player == null || world == null) return false;
+            if (IsReady(state) && world.ElderFor(player.transform.position) is Transform elder) {
+                target = new QuestTargetInfo(state.QuestId, "", "Trả nhiệm vụ cho Trưởng làng", elder.position);
+                return true;
+            }
+            foreach (var objective in state.Definition.Objectives) {
+                if (objective.IsHandover || state.GetObjective(objective.ObjectiveId)?.IsComplete == true) continue;
+                if (world.TryGetPoint(objective, player.transform.position, out var position, out bool cave))
+                    return world.PointForMap(player.transform.position, position, cave, state.QuestId, objective.ObjectiveId, objective.Title, out target);
+            }
+            if (world.TryGetHuntingPoint(state.Definition, player.transform.position, out var hunt, out bool inCave))
+                return world.PointForMap(player.transform.position, hunt, inCave, state.QuestId, "", "Tìm thêm thú để giao", out target);
+            return false;
+        }
+
+        void Update() {
+            if (quests == null || player == null) return;
+            var camera = Camera.main;
+            if (camera != null) {
+                FaceMarker(grassMarker, camera.transform.position);
+                FaceMarker(caveMarker, camera.transform.position);
+            }
+            if (Time.unscaledTime >= nextWorldCheck) {
+                nextWorldCheck = Time.unscaledTime + .25f;
+                var active = Active();
+                if (active != null && world != null) world.ReportLocations(quests, active, player.transform.position);
+            }
+            var elder = world != null ? world.ElderFor(player.transform.position) : null;
+            bool near = !conversation && !InventoryInputController.GameplayInputBlocked &&
+                WorldInteractionView.CanInteract(player.transform, elder, ChapterWorldLayout.ElderTalkDistance);
+            if (near && Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible)
+                DoorPrompt.Show(this, elder.position + Vector3.up * 1.6f, "[E] Nói chuyện với Trưởng làng");
+            else DoorPrompt.Hide(this);
+            if (near && GameplayKeyboard.GetKeyDown(KeyCode.E) && WorldInteractionView.TryConsumePress())
+                StartCoroutine(Talk(elder));
+        }
+
+        static void FaceMarker(TextMesh marker, Vector3 cameraPosition) {
+            if (marker == null || marker.text.Length == 0) return;
+            Vector3 facing = marker.transform.position - cameraPosition;
+            if (facing.sqrMagnitude > .001f) marker.transform.rotation = Quaternion.LookRotation(facing, Vector3.up);
+        }
+
+        DialogueBoxUI GetDialogue() {
+            if (dialogue != null) return dialogue;
+            dialogue = FindFirstObjectByType<DialogueBoxUI>(FindObjectsInactive.Include);
+            if (dialogue != null && dialogue.GetComponentInParent<Canvas>() is Canvas existing && existing.gameObject.activeInHierarchy) {
+                dialogue.Build(existing.transform);
+                return dialogue;
+            }
+            var canvas = new GameObject("Chapter I Dialogue", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            canvas.transform.SetParent(transform, false);
+            var output = canvas.GetComponent<Canvas>();
+            output.renderMode = RenderMode.ScreenSpaceOverlay;
+            output.sortingOrder = 110;
+            var scaler = canvas.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            dialogue = canvas.AddComponent<DialogueBoxUI>();
+            dialogue.Build(canvas.transform);
+            return dialogue;
+        }
+
+        IEnumerator Talk(Transform elder) {
+            conversation = true;
+            DoorPrompt.Hide(this);
+            InventoryInputController.SetExternalGameplayInputBlocked(this, true);
+            bool travel = false;
+            try {
+                var box = GetDialogue();
+                Refresh();
+                yield return box.Show("Trưởng làng", chief != null ? chief.ChiefPortrait : null);
+                bool fromCave = elder == world.CaveElder;
+                bool canTravel = world.CanTravelFrom(elder);
+                yield return box.TypeLine(fromCave ? "Cháu muốn bàn chuyện nhiệm vụ hay trở về đồng cỏ?"
+                    : "Cháu muốn bàn chuyện nhiệm vụ hay vào hang động?", 58, false);
+                string[] options = canTravel
+                    ? new[] { "Nhiệm vụ", fromCave ? "Về đồng cỏ" : "Vào hang động", "Rời đi" }
+                    : new[] { "Nhiệm vụ", "Rời đi" };
+                int choice = -1;
+                yield return box.Choose(options, result => choice = result);
+                if (choice == 0) yield return TalkAboutQuest(box);
+                else if (choice == 1 && canTravel) {
+                    yield return box.TypeLine("Đi theo ta. Ta sẽ đưa cháu sang bên kia.", 65, false);
+                    travel = true;
+                }
+                yield return box.Hide();
+            } finally { ReleaseDialogue(); }
+            if (travel && !world.TryTravelFromElder(elder)) StartCoroutine(ShowTravelUnavailable());
+        }
+
+        IEnumerator ShowTravelUnavailable() {
+            conversation = true;
+            InventoryInputController.SetExternalGameplayInputBlocked(this, true);
+            try {
+                var box = GetDialogue();
+                yield return box.Show("Trưởng làng", chief != null ? chief.ChiefPortrait : null);
+                yield return box.TypeLine("Lối đi đang bị chặn. Cháu hãy quay lại sau nhé.", 52);
+                yield return box.Hide();
+            } finally { ReleaseDialogue(); }
+        }
+
+        IEnumerator TalkAboutQuest(DialogueBoxUI box) {
+            if (!quests.TutorialComplete) {
+                yield return box.TypeLine("Hãy hoàn thành phần hướng dẫn và chọn thú đồng hành đầu tiên. Sau đó ta sẽ giao việc cho cháu.", 48);
+                yield break;
+            }
+            var state = Active();
+            if (state != null) yield return IsReady(state) ? TurnIn(box, state) : Lines(box, state.Definition.ProgressDialogue);
+            else if (Available() is QuestDefinition next) {
+                yield return Lines(box, next.AcceptDialogue, false);
+                int choice = -1;
+                yield return box.Choose(new[] { "Nhận nhiệm vụ", "Để sau" }, result => choice = result);
+                if (choice != 0) yield return box.TypeLine("Không sao. Khi nào chuẩn bị xong, hãy quay lại gặp ta.", 42);
+                else if (!TryAccept(next)) yield return box.TypeLine("Chưa thể nhận nhiệm vụ. Hãy kiểm tra chỗ trống trong túi và bản lưu.", 42);
+            } else {
+                string text = quests.IsQuestCompleted(FinalQuestId)
+                    ? "Nhờ có cháu mà ngôi làng đã trở lại bình yên. Ta hy vọng một ngày nào đó sẽ được nghe thêm những câu chuyện về hành trình của cháu."
+                    : "Hãy luôn cẩn thận khi khám phá thế giới bên ngoài ngôi làng.";
+                yield return box.TypeLine(text, 42);
+            }
+        }
+
+        static IEnumerator Lines(DialogueBoxUI box, string[] lines, bool waitForLast = true) {
+            if (lines == null) yield break;
+            for (int i = 0; i < lines.Length; i++)
+                yield return box.TypeLine(lines[i], 42, waitForLast || i < lines.Length - 1);
+        }
+
+        void ReleaseDialogue() {
+            if (!conversation) return;
+            conversation = false;
+            if (dialogue != null) dialogue.HideImmediate();
+            InventoryInputController.SetExternalGameplayInputBlocked(this, false);
+        }
+
+        IEnumerator TurnIn(DialogueBoxUI box, QuestRuntimeState active) {
+            yield return box.TypeLine("Cháu đã hoàn thành những gì ta nhờ rồi sao? Hãy để ta kiểm tra.", 42, false);
+            var selected = new List<PetController>();
+            var delivery = active.Definition.Objectives.FirstOrDefault(objective => objective.ObjectiveType == QuestObjectiveType.DeliverPet);
+            if (delivery != null && roster != null) {
+                var candidates = EligiblePets(active, delivery);
+                int page = 0;
+                while (selected.Count < delivery.RequiredAmount) {
+                    const int pageSize = 3;
+                    var remaining = candidates.Except(selected).ToList();
+                    if (remaining.Count == 0) yield break;
+                    page = Mathf.Clamp(page, 0, (remaining.Count - 1) / pageSize);
+                    var displayed = remaining.Skip(page * pageSize).Take(pageSize).ToArray();
+                    var options = displayed.Select(PetLabel).ToList();
+                    int next = options.Count;
+                    if (remaining.Count > pageSize) options.Add($"Trang kế · {page + 1}/{(remaining.Count + pageSize - 1) / pageSize}");
+                    options.Add("Hủy giao thú");
+                    yield return box.TypeLine($"Chọn thú để giao ({selected.Count}/{delivery.RequiredAmount}).", 110, false);
+                    int choice = -1;
+                    yield return box.Choose(options.ToArray(), value => choice = value);
+                    if (choice < 0 || choice == options.Count - 1) yield break;
+                    if (choice == next) { page = (page + 1) % ((remaining.Count + pageSize - 1) / pageSize); continue; }
+                    selected.Add(displayed[choice]);
+                }
+                yield return box.TypeLine("Các thú đã chọn sẽ được giao cho trưởng làng và rời bộ sưu tập của cháu. Cháu có đồng ý không?", 42, false);
+            }
+            int confirm = -1;
+            yield return box.Choose(new[] { "Xác nhận trả nhiệm vụ", "Để sau" }, result => confirm = result, 1);
+            if (confirm != 0) yield break;
+            if (!TryTurnIn(active, selected, out string error)) { yield return box.TypeLine(error, 42); yield break; }
+            yield return Lines(box, active.Definition.CompleteDialogue);
+            if (active.QuestId == FinalQuestId)
+                yield return box.TypeLine("HOÀN THÀNH CHƯƠNG I\nBí ẩn hang động", 34);
+        }
+
+        string PetLabel(PetController pet) {
+            var info = pet.GetComponent<PetCollectionMetadata>();
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            var id = info.PersistentId;
+            string suffix = id.Substring(Mathf.Max(0, id.Length - 5));
+            return $"{stats.DisplayName} · Cấp {stats.Level} · {(roster.StoredPets.Contains(pet) ? "Kho" : "Đội")} #{suffix}";
+        }
+
+        internal bool TryAccept(QuestDefinition definition) {
+            if (!IsChapter(definition) || Active() != null || saves == null || inventory == null ||
+                !quests.CanAcceptQuest(definition) || CaptureEventBatch.IsActive) return false;
+            var bag = inventory.CaptureSlots();
+            var journal = quests.CreateSaveData();
+            using var batch = new CaptureEventBatch();
+            bool committed = false;
+            try {
+                foreach (var grant in definition.StartItems) {
+                    var item = InventoryDefinitionCatalog.Find(grant.TargetId);
+                    if (item == null || !inventory.TryAddItemAtomic(item, grant.Amount, false)) return false;
+                }
+                if (!quests.AcceptChapterQuest(definition)) return false;
+                Refresh();
+                if (!saves.SaveNow()) return false;
+                committed = true;
+                if (definition.StartItems.Count > 0) inventory.NotifyAtomicAddition();
+                batch.Commit();
+                return true;
+            } finally {
+                if (!committed) {
+                    inventory.RestoreCaptureSlots(bag);
+                    quests.RestoreFromSaveData(journal);
+                }
+            }
+        }
+
+        internal bool TryTurnIn(QuestRuntimeState state, IReadOnlyList<PetController> selected, out string error) {
+            error = "Chưa đủ điều kiện trả nhiệm vụ.";
+            if (state == null || Active() != state || !IsReady(state) || CaptureEventBatch.IsActive ||
+                inventory == null || saves == null || roster == null || player == null) return false;
+            if (rewards == null) rewards = FindFirstObjectByType<QuestRewardService>(FindObjectsInactive.Include);
+            if (rewards == null) { error = "Hệ thống phần thưởng chưa sẵn sàng."; return false; }
+            var delivery = state.Definition.Objectives.FirstOrDefault(objective => objective.ObjectiveType == QuestObjectiveType.DeliverPet);
+            if (delivery != null) {
+                var eligible = EligiblePets(state, delivery);
+                if (selected.Count != delivery.RequiredAmount || selected.Distinct().Count() != selected.Count ||
+                    selected.Any(pet => !eligible.Contains(pet))) {
+                    error = "Danh sách thú đã thay đổi. Hãy chọn lại đúng cá thể, thu thú về và bỏ Yêu thích trước khi giao.";
+                    return false;
+                }
+                if (!player.petSlots.Any(pet => pet != null && !selected.Contains(pet) &&
+                    pet.GetComponent<PetHudRuntimeStats>() is PetHudRuntimeStats stats && stats.Health > 0)) {
+                    error = "Đội hình phải giữ ít nhất một thú còn khả năng chiến đấu.";
+                    return false;
+                }
+            } else if (selected.Count != 0) return false;
+            var journal = quests.CreateSaveData();
+            var bag = inventory.CaptureSlots();
+            var detached = new List<PetRosterReleaseToken>();
+            using var batch = new CaptureEventBatch();
+            bool committed = false;
+            try {
+                foreach (var pet in selected) {
+                    if (!roster.TryDetachPetForRelease(pet, out var token, out error)) return false;
+                    detached.Add(token);
+                    pet.GetComponent<PetCollectionMetadata>().SetReleased(true);
+                }
+                foreach (var objective in state.Definition.Objectives) {
+                    if (!objective.IsHandover) continue;
+                    if (objective.ObjectiveType == QuestObjectiveType.GiveItem)
+                        foreach (var item in Materials(objective))
+                            if (!inventory.TryRemoveItemAtomic(InventoryDefinitionCatalog.Find(item.id), item.count)) {
+                                error = "Số lượng vật phẩm đã thay đổi.";
+                                return false;
+                            }
+                    quests.RefreshChapterObjective(state, objective, objective.RequiredAmount);
+                }
+                if (!quests.CompleteChapterQuest(state.QuestId) || !rewards.TryGrantChapterTurnIn(state, out error)) return false;
+                committed = true;
+                foreach (var token in detached) {
+                    token.Pet.gameObject.SetActive(false);
+                    Destroy(token.Pet.gameObject);
+                }
+                inventory.NotifyAtomicAddition();
+                batch.Commit();
+                return true;
+            } finally {
+                if (!committed) {
+                    for (int i = detached.Count - 1; i >= 0; i--) {
+                        detached[i].Pet.GetComponent<PetCollectionMetadata>().SetReleased(false);
+                        roster.RestoreDetachedPet(detached[i], out _);
+                    }
+                    inventory.RestoreCaptureSlots(bag);
+                    quests.RestoreFromSaveData(journal);
+                }
+            }
+        }
+    }
+}

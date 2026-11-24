@@ -5,6 +5,8 @@ namespace Capstone.Game.QuestSystem {
     [Serializable]
     public sealed class QuestSaveData {
         public int version = 1;
+        public bool tutorialComplete;
+        public bool elderIntroductionComplete, starterChosen;
         public string trackedQuestId;
         public List<string> unlockedQuestIds = new List<string>();
         public List<QuestRuntimeSaveData> questStates = new List<QuestRuntimeSaveData>();
@@ -34,5 +36,6 @@ namespace Capstone.Game.QuestSystem {
         public string objectiveId;
         public int currentAmount;
         public bool completed;
+        public List<string> receipts = new List<string>();
     }
 }

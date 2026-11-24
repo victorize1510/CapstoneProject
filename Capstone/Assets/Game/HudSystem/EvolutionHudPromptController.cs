@@ -22,6 +22,7 @@ namespace Capstone.Game.HudSystem {
         PlayerSaveController save;
         PetController current;
         PetController manualRequest;
+        string manualFailure;
         bool manual;
         string currentKey;
         PetEvolutionPreview offeredPreview;
@@ -43,6 +44,7 @@ namespace Capstone.Game.HudSystem {
         public void RequestManual(PetController pet) {
             if (pet == null || pet.IsWildEncounter) return;
             if (current != null) { var previous = current; Hide(true); Enqueue(previous); }
+            manualFailure = null;
             manualRequest = pet;
             tickAt = 0;
         }
@@ -214,19 +216,28 @@ namespace Capstone.Game.HudSystem {
             string presentationReason = PresentationBlockReason(current);
             if (!string.IsNullOrEmpty(presentationReason)) { view.Display(preview.CurrentName, preview.TargetName, false, presentationReason); return; }
             var pet = current; string key = currentKey;
+            bool wasManual = manual;
+            manualFailure = null;
             shown.Add(key); Hide(true); presenting = true;
             var scene = pet.owner != null ? pet.owner.gameObject.scene : gameObject.scene;
             PetEvolutionPresentationController.Present(scene, service, pet, PetEvolutionMethod.Level, null, (success, message) => {
                 if (this == null) return;
                 presenting = false;
-                if (!success) { shown.Remove(key); failures[key] = message; Enqueue(pet); Debug.LogWarning("Evolution: " + message, this); }
+                if (!success) {
+                    shown.Remove(key);
+                    if (!wasManual) failures[key] = message;
+                    else { manualFailure = message; manualRequest = pet; }
+                    Enqueue(pet);
+                    Debug.LogWarning("Evolution: " + message, this);
+                }
                 else Enqueue(pet);
             });
         }
         void Display(PetEvolutionPreview preview) {
             bool failed = currentKey != null && failures.TryGetValue(currentKey, out _);
             string reason = failed ? failures[currentKey] : !preview.CanEvolve ? preview.DisabledReason : PresentationBlockReason(current);
-            view.Display(preview.CurrentName, preview.TargetName, preview.CanEvolve && !failed && string.IsNullOrEmpty(reason), reason);
+            bool enabled = preview.CanEvolve && !failed && string.IsNullOrEmpty(reason);
+            view.Display(preview.CurrentName, preview.TargetName, enabled, enabled && manual ? manualFailure : reason);
         }
         string PresentationBlockReason(PetController pet) {
             var scene = pet != null && pet.owner != null ? pet.owner.gameObject.scene : gameObject.scene;
