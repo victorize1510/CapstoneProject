@@ -140,7 +140,7 @@ Nguồn: `Assets/Sounds/Trung/SFX/Skills/`, có 29 file. Ví dụ `Quả Cầu b
 
 ### UI hover/click
 
-Nguồn: `Assets/Sounds/Trung/SFX/Hover And Click/ButtonClickSound.mp3` và `HoverButtonSound.wav`. Chưa thấy binder hover/click dùng chung trên các panel runtime đã đọc. Có demo `Assets/Scripts/Thang/ThangTest/UIThang/GDS/Examples/01-Beginner/05-AddSounds/UITK/AddSounds_Sfx.cs`, nhưng các trường **Fail/Pick/Place** nghe sự kiện inventory, không phải hook hover/click của HUD.
+Nguồn: `Assets/Sounds/Trung/SFX/Hover And Click/ButtonClickSound.mp3` và `HoverButtonSound.wav`. Chưa thấy binder hover/click dùng chung trên các panel runtime đã đọc. Có demo `Assets/ThangTest/UIThang/GDS/Examples/01-Beginner/05-AddSounds/UITK/AddSounds_Sfx.cs`, nhưng các trường **Fail/Pick/Place** nghe sự kiện inventory, không phải hook hover/click của HUD.
 
 Đề xuất ít thay đổi cho uGUI: AudioSource dùng chung, **Play On Awake** tắt, **Spatial Blend** = 0; Button → On Click gọi **AudioSource.PlayOneShot(AudioClip)** với ButtonClickSound; Event Trigger → Pointer Enter gọi cùng AudioSource với HoverButtonSound. Phải giới hạn tiếng hover khi nhiều nút liên tiếp. UI Toolkit không có On Click Inspector giống uGUI, cần một binder dùng chung nhận PointerEnter/Click/Submit trước khi tự gắn qua cấu hình. Chưa tạo binder, AudioSource hay sửa panel trong lượt này. Không gán tiếng UI vào Cast/Release/Impact của pet.
 

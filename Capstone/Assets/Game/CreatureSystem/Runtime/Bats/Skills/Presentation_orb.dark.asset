@@ -38,7 +38,7 @@ MonoBehaviour:
     pitch: 1
     lifetimeSeconds: 0.6
   release:
-    effectPrefab: {fileID: 0}
+    effectPrefab: {fileID: 100006, guid: e48d810aaed66164bb312165453b460c, type: 3}
     sound: {fileID: 0}
     socket: Mouth
     followSocket: 0
