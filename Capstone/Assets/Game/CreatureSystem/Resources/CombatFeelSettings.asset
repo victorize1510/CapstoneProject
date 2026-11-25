@@ -14,6 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CombatFeelSettings
   cameraAmplitude: 0.03
   cameraDuration: 0.1
+  skillCameraAmplitude: 0.105
+  skillCameraDuration: 0.17
   criticalVisualPause: 0.035
   basicImpact: {fileID: 455658096764472626, guid: a6a0a25a42f567d44a227c3010b53321, type: 3}
   bleedImpact: {fileID: 2480320714726115140, guid: db1018516ba4b584a90349496cb71db1, type: 3}

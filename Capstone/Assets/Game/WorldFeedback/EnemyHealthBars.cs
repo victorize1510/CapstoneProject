@@ -116,7 +116,7 @@ namespace Capstone.Game.WorldFeedback {
         }
         void Bind(Bar bar, DummyEnemy enemy) {
             if (bar.Enemy != null) bar.Enemy.HealthChanged -= OnHealthChanged;
-            bar.Enemy = enemy; bar.Health = -1; bar.Maximum = -1; bar.ActiveUntil = 0; bar.NextSight = 0;
+            bar.Enemy = enemy; bar.Health = -1; bar.Maximum = -1; bar.ActiveUntil = 0; bar.NextSight = 0; bar.InSight = false;
             bar.Root.gameObject.SetActive(false);
             if (enemy == null) return;
             enemy.HealthChanged += OnHealthChanged;
@@ -147,7 +147,7 @@ namespace Capstone.Game.WorldFeedback {
             foreach (var bar in bars) {
                 if (hidden || !Eligible(bar.Enemy)) continue;
                 float distance = CenterDistance(bar.Enemy);
-                if (distance >= closestToCenter || !ClearSight(bar.Enemy.TargetPosition, bar.Enemy)) continue;
+                if (distance >= closestToCenter || !CanSeeEnemy(bar.Enemy)) continue;
                 centered = bar.Enemy;
                 closestToCenter = distance;
             }
@@ -156,12 +156,12 @@ namespace Capstone.Game.WorldFeedback {
                 Vector3 anchor = bar.Anchor.Position;
                 Vector3 screen = cameraSource.WorldToViewportPoint(anchor);
                 bool inView = screen.z > 0 && screen.x > .01f && screen.x < .99f && screen.y > .02f && screen.y < .98f;
-                if (inView && Time.unscaledTime >= bar.NextSight) {
-                    bar.NextSight = Time.unscaledTime + .1f;
-                    bar.InSight = ClearSight(anchor, bar.Enemy);
-                }
                 bool revealed = bar.Enemy == selected || bar.Enemy == locked || bar.Enemy == centered
                     || WasHitRecently(bar.Enemy) || Time.unscaledTime < bar.ActiveUntil;
+                if (inView && revealed && Time.unscaledTime >= bar.NextSight) {
+                    bar.NextSight = Time.unscaledTime + .08f;
+                    bar.InSight = CanSeeEnemy(bar.Enemy) && ClearSight(cameraSource.transform.position, anchor, bar.Enemy);
+                }
                 bar.Root.gameObject.SetActive(revealed && inView && bar.InSight);
                 if (!bar.Root.gameObject.activeSelf) continue;
                 VisibleCount++;
@@ -184,14 +184,24 @@ namespace Capstone.Game.WorldFeedback {
                 bar.Root.anchoredPosition = point;
             }
         }
-        bool ClearSight(Vector3 point, DummyEnemy enemy) {
-            Vector3 start = cameraSource.transform.position, delta = point - start;
-            int count = Physics.RaycastNonAlloc(start, delta.normalized, sight, delta.magnitude, ~0, QueryTriggerInteraction.Ignore);
+        bool CanSeeEnemy(DummyEnemy enemy) {
+            Vector3 body = enemy.GetTargetBounds().center;
+            if (!ClearSight(cameraSource.transform.position, body, enemy)) return false;
+            return party == null || ClearSight(party.transform.position + Vector3.up * 1.35f, body, enemy);
+        }
+
+        bool ClearSight(Vector3 start, Vector3 point, DummyEnemy enemy) {
+            Vector3 delta = point - start;
+            if (delta.sqrMagnitude < .001f) return true;
+            int count = Physics.RaycastNonAlloc(start, delta.normalized, sight, delta.magnitude, ~0, QueryTriggerInteraction.Collide);
             if (count == sight.Length) return false;
             for (int i = 0; i < count; i++) {
                 var collider = sight[i].collider;
                 if (collider == null || collider.transform.IsChildOf(enemy.transform)) continue;
                 if (party != null && collider.transform.IsChildOf(party.transform)) continue;
+                if (collider.GetComponentInParent<PetController>() is PetController pet && !pet.IsWildEncounter) continue;
+                if (collider.isTrigger && collider.GetComponentInParent<CameraOccluder>() is not
+                    { actor: false, kind: CameraOccluder.Kind.Wall or CameraOccluder.Kind.Column }) continue;
                 return false;
             }
             return true;

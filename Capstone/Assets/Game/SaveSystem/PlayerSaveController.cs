@@ -97,6 +97,14 @@ namespace Capstone.Game.SaveSystem {
             yield return null;
             ResolveReferences();
             SubscribeDataSources();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (UISystem.DevCheatService.Active) {
+                LoadNow();
+                startupCompleted = true;
+                petCommandInput?.OrganizeOwnedPetRoster();
+                yield break;
+            }
+#endif
             if (!ApplyPendingReset()) yield break;
             var starter = GetComponent<Capstone.Game.CreatureSystem.DemoSceneOneStarterGrant>();
             // A persistent one-time starter must restore the roster/receipt before staging gifts.
@@ -107,6 +115,7 @@ namespace Capstone.Game.SaveSystem {
                 && TrySeedDragonPreviewParty()) SaveNow();
             startupCompleted = true;
             petCommandInput?.OrganizeOwnedPetRoster();
+            SyncOwnedCodexForms();
         }
 
         bool TrySeedDragonPreviewParty() {
@@ -272,6 +281,8 @@ namespace Capstone.Game.SaveSystem {
                     if (saveData.appliedStarterGrants != null)
                         foreach (string key in saveData.appliedStarterGrants)
                             if (!string.IsNullOrWhiteSpace(key)) appliedStarterGrants.Add(key);
+                    Capstone.Game.WorldFeedback.ExperiencePlayback.Clear();
+                    SyncOwnedCodexForms();
                     LoadCompleted?.Invoke(saveData);
                     return true;
                 } catch (Exception exception) { return BlockSave(exception.Message, true); }
@@ -320,6 +331,7 @@ namespace Capstone.Game.SaveSystem {
         }
 
         PlayerSaveData CaptureSaveData() {
+            SyncOwnedCodexForms();
             FindFirstObjectByType<Capstone.Game.CodexSystem.PetCodexRuntimeProvider>()?.RefreshSnapshot();
             return new PlayerSaveData {
                 version = PlayerSaveData.CurrentVersion,
@@ -333,6 +345,24 @@ namespace Capstone.Game.SaveSystem {
                 pveRewards = GetComponent<Capstone.Game.CreatureSystem.PveRewardService>()?.CreateSaveData() ?? retainedData?.pveRewards,
                 appliedStarterGrants = new List<string>(appliedStarterGrants)
             };
+        }
+
+        void SyncOwnedCodexForms() {
+            var catalog = Capstone.Game.CodexSystem.PetCodexCatalog.Default;
+            if (profileProvider == null || catalog == null) return;
+            if (petCommandInput?.petSlots != null)
+                foreach (var pet in petCommandInput.petSlots) Record(pet);
+            if (petBoxProvider != null)
+                foreach (var pet in petBoxProvider.StoredPets) Record(pet);
+            catalog.SyncProfile(profileProvider);
+
+            void Record(PetController pet) {
+                var meta = ResolveMetadata(pet, false);
+                if (meta == null || meta.IsReleased) return;
+                var source = catalog.Find(meta)?.Metadata;
+                if (source != null)
+                    profileProvider.RecordCodexForm(Capstone.Game.CodexSystem.PetCodexRuntimeProvider.FormKey(source), false);
+            }
         }
 
         internal bool HasStarterGrant(string key) => appliedStarterGrants.Contains(key);
@@ -665,6 +695,7 @@ namespace Capstone.Game.SaveSystem {
                 loadedSlotPath = SavePath;
                 saveBlockedReason = string.Empty;
                 isApplyingSave = false;
+                Capstone.Game.WorldFeedback.ExperiencePlayback.Clear();
                 LoadCompleted?.Invoke(migratedData);
                 return true;
             } catch (Exception exception) { return BlockSave(exception.Message, true); }
@@ -783,8 +814,34 @@ namespace Capstone.Game.SaveSystem {
         }
 
         PlayerJsonFileSaveStore GetSaveStore() {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (UISystem.DevCheatService.Store != null) return UISystem.DevCheatService.Store;
+#endif
             return saveStore ??= new PlayerJsonFileSaveStore();
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        internal bool TryBeginDeveloperSave(out string error) {
+            error = "Save gameplay chưa được nạp an toàn.";
+            if (!startupCompleted || isApplyingSave || IsSaveBlocked || (HasSave && !IsCurrentSlotLoaded)) return false;
+            var baseline = CaptureSaveData();
+            var branch = PlayerJsonFileSaveStore.CreateDeveloperSession();
+            if (!branch.TrySave(SlotId, baseline, out error)) return false;
+            UISystem.DevCheatService.StartSession(branch, baseline);
+            loadedSlotPath = SavePath;
+            saveQueued = false;
+            return true;
+        }
+
+        internal bool TryRestoreDeveloperSave(PlayerSaveData baseline, out string error) {
+            error = "Phiên thử chưa sẵn sàng.";
+            if (!UISystem.DevCheatService.Active || baseline == null || !startupCompleted || isApplyingSave) return false;
+            if (!GetSaveStore().TrySave(SlotId, baseline, out error)) return false;
+            if (LoadNow()) return true;
+            error = SaveBlockedReason;
+            return false;
+        }
+#endif
 
         PetController FindFirstPartyPet() {
             if (petCommandInput == null || petCommandInput.petSlots == null) return null;

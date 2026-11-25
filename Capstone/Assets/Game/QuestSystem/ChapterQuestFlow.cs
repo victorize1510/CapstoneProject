@@ -278,8 +278,7 @@ namespace Capstone.Game.QuestSystem {
                 bool fromCave = elder == world.CaveElder;
                 if (isGuide && world.CanTravelFrom(elder)) {
                     yield return box.TypeLine(fromCave ? "Bạn muốn trở về đồng cỏ?" : "Bạn muốn vào hang động?", 58, false);
-                    yield return box.Choose(new[] { fromCave ? "Về đồng cỏ" : "Vào hang động", leaveLabel },
-                        choice => travel = choice == 0);
+                    yield return box.ChooseCaveTravel(fromCave, accepted => travel = accepted);
                 } else if (isGuide) {
                     yield return box.TypeLine("Lối đi đang tạm đóng.", 58);
                 } else {
@@ -380,7 +379,15 @@ namespace Capstone.Game.QuestSystem {
             int confirm = -1;
             yield return box.Choose(new[] { turnInLabel, "Để sau" }, result => confirm = result, 1);
             if (confirm != 0) yield break;
-            if (!TryTurnIn(active, selected, out string error)) { yield return box.TypeLine(error, 42); yield break; }
+            PetElement starterChoice = PetElement.Unknown;
+            if (active.QuestId == "main_quest_06" && quests.StarterElement == PetElement.Unknown) {
+                yield return box.TypeLine("Thú khởi đầu của cháu thuộc hệ chính nào?", 75, false);
+                int choice = -1;
+                yield return box.Choose(new[] { "Lửa", "Nước", "Cỏ", "Để sau" }, value => choice = value, 3);
+                starterChoice = choice switch { 0 => PetElement.Fire, 1 => PetElement.Water, 2 => PetElement.Nature, _ => PetElement.Unknown };
+                if (starterChoice == PetElement.Unknown) yield break;
+            }
+            if (!TryTurnInWithStarter(active, selected, starterChoice, out string error)) { yield return box.TypeLine(error, 42); yield break; }
             yield return Lines(box, active.Definition.CompleteDialogue);
             if (active.QuestId == FinalQuestId)
                 yield return box.TypeLine("HOÀN THÀNH CHƯƠNG I\nBí ẩn hang động", 34);
@@ -430,14 +437,35 @@ namespace Capstone.Game.QuestSystem {
             }
         }
 
-        internal bool TryTurnIn(QuestRuntimeState state, IReadOnlyList<PetController> selected, out string error) {
+        internal bool TryTurnIn(QuestRuntimeState state, IReadOnlyList<PetController> selected, out string error) =>
+            TryTurnInWithStarter(state, selected, PetElement.Unknown, out error);
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        internal bool TryDeveloperComplete(QuestDefinition definition, PetElement starter, out string error) {
+            error = "Không thể nhận nhiệm vụ qua luồng Chương I.";
+            if (!Capstone.Game.UISystem.DevCheatService.Active || !IsChapter(definition)) return false;
+            var state = quests.GetQuestState(definition.QuestId);
+            if (state?.Status == QuestStatus.Completed) {
+                if (state.RewardsClaimed) return true;
+                rewards ??= FindFirstObjectByType<QuestRewardService>(FindObjectsInactive.Include);
+                if (rewards != null) return rewards.TryGrantChapterTurnIn(state, out error);
+                return false;
+            }
+            if (state?.Status != QuestStatus.Active && !TryAccept(definition)) return false;
+            return TryTurnInWithStarter(quests.GetQuestState(definition.QuestId), Array.Empty<PetController>(), starter,
+                out error, true);
+        }
+#endif
+
+        bool TryTurnInWithStarter(QuestRuntimeState state, IReadOnlyList<PetController> selected, PetElement starterChoice,
+            out string error, bool simulateHandover = false) {
             error = "Chưa đủ điều kiện trả nhiệm vụ.";
-            if (state == null || Active() != state || !IsReady(state) || CaptureEventBatch.IsActive ||
+            if (state == null || Active() != state || (!simulateHandover && !IsReady(state)) || CaptureEventBatch.IsActive ||
                 inventory == null || saves == null || roster == null || player == null) return false;
             if (rewards == null) rewards = FindFirstObjectByType<QuestRewardService>(FindObjectsInactive.Include);
             if (rewards == null) { error = "Hệ thống phần thưởng chưa sẵn sàng."; return false; }
             var delivery = state.Definition.Objectives.FirstOrDefault(objective => objective.ObjectiveType == QuestObjectiveType.DeliverPet);
-            if (delivery != null) {
+            if (delivery != null && !simulateHandover) {
                 var eligible = EligiblePets(state, delivery);
                 if (selected.Count != delivery.RequiredAmount || selected.Distinct().Count() != selected.Count ||
                     selected.Any(pet => !eligible.Contains(pet))) {
@@ -456,12 +484,18 @@ namespace Capstone.Game.QuestSystem {
             using var batch = new CaptureEventBatch();
             bool committed = false;
             try {
+                if (state.QuestId == "main_quest_06" && quests.StarterElement == PetElement.Unknown)
+                    quests.StarterElement = starterChoice;
                 foreach (var pet in selected) {
                     if (!roster.TryDetachPetForRelease(pet, out var token, out error)) return false;
                     detached.Add(token);
                     pet.GetComponent<PetCollectionMetadata>().SetReleased(true);
                 }
                 foreach (var objective in state.Definition.Objectives) {
+                    if (simulateHandover) {
+                        quests.RefreshChapterObjective(state, objective, objective.RequiredAmount);
+                        continue;
+                    }
                     if (!objective.IsHandover) continue;
                     if (objective.ObjectiveType == QuestObjectiveType.GiveItem)
                         foreach (var item in Materials(objective))

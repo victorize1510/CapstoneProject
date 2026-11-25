@@ -103,7 +103,7 @@ namespace Capstone.Game.HudSystem {
             if (rarity != null) rarity.text = FormatRarity(preview.Rarity);
             if (level != null) level.text = preview.IsValid ? $"Cấp {preview.Level}" : "-";
             if (stage != null) stage.text = preview.IsValid ? preview.EvolutionStage.ToString() : "-";
-            if (goldValue != null) goldValue.text = $"+{preview.GoldValue:N0}";
+            if (goldValue != null) goldValue.text = $"+{preview.GoldValue:N0} · +{preview.TrainerExperience} EXP nhân vật";
 
             RefreshRefunds(preview.Refunds);
             if (favoriteWarning != null) {

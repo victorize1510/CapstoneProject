@@ -134,6 +134,7 @@
                     <box:BoxUnifiedButton name="box-move-button" text="BỎ VÀO KHO THÚ" class="box-action-button box-primary-action" />
                     <ui:VisualElement class="box-secondary-actions">
                         <box:BoxUnifiedButton name="box-replace-button" text="THAY THẾ" class="box-action-button box-half-action box-replace-action" />
+                        <box:BoxUnifiedButton name="box-release-button" text="THẢ TỰ DO" class="box-action-button box-half-action" />
                         <box:BoxUnifiedButton name="box-details-button" text="CHI TIẾT" class="box-action-button box-half-action" />
                     </ui:VisualElement>
                 </ui:VisualElement>

@@ -68,7 +68,7 @@ MonoBehaviour:
     recoverySeconds: 0
     presentationOverride: {fileID: 0}
   - skill: {fileID: 11400000, guid: 6c9649586479788fd83c2cb839306f6a, type: 2}
-    learnAtLevel: 20
+    learnAtLevel: 1
     overrideAnimation: 0
     animatorStates: []
     animationDuration: 0.85
@@ -76,9 +76,13 @@ MonoBehaviour:
     windupSeconds: 0
     recoverySeconds: 0
     presentationOverride: {fileID: 0}
+  - skill: {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+    learnAtLevel: 1
   defaultLoadout:
   - {fileID: 11400000, guid: 8a74da36cc1789b00ab037cf39bed032, type: 2}
   - {fileID: 11400000, guid: cf102f878a9b667127ed4e3e654030d4, type: 2}
   - {fileID: 11400000, guid: 3b15b43d2ce910b6b53cbb6e4d127bac, type: 2}
   - {fileID: 11400000, guid: 64460269199456f188a5c596924e28a3, type: 2}
   - {fileID: 11400000, guid: 7d8ee3181623614ed637709ce5516fab, type: 2}
+  - {fileID: 11400000, guid: b835ee8fbad1b514b9af929e77bb5781, type: 2}
+  - {fileID: 11400000, guid: 6c9649586479788fd83c2cb839306f6a, type: 2}

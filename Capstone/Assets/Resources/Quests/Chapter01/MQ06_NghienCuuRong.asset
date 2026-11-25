@@ -60,21 +60,26 @@ MonoBehaviour:
   unlockQuestIds:
   - "main_quest_07"
   rewards:
+  - rewardId: "level-candy"
+    displayName: "Kẹo Tăng Cấp"
+    rewardType: 3
+    amount: 10
+    targetId: "level-candy"
   - rewardId: "trainer-exp"
     displayName: "EXP người chơi"
     rewardType: 0
-    amount: 700
+    amount: 400
     targetId: ""
   - rewardId: "gold"
     displayName: "Vàng"
     rewardType: 1
     amount: 800
     targetId: ""
-  - rewardId: "dusk-stone"
-    displayName: "Đá Hoàng Hôn"
+  - rewardId: "starter-evolution-stone"
+    displayName: "Đá tiến hóa hệ thú khởi đầu"
     rewardType: 3
     amount: 1
-    targetId: "dusk-stone"
+    targetId: "starter-evolution-stone"
   canAbandon: 0
   canReacceptAfterAbandon: 0
   chapterId: chapter_01

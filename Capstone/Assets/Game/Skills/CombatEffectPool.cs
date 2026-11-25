@@ -30,7 +30,7 @@ namespace Capstone.Game.Skills {
             for(int i=idle.Count-1;i>=0;i--)if(idle[i].value==null)idle.RemoveAt(i);
             dead.Clear();
         }
-        public static GameObject Rent(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null) {
+        public static GameObject Rent(GameObject prefab, Vector3 position, Quaternion rotation, Transform parent = null, bool preservePrefabRotation = false, bool lockParticlesToMovingRoot = false, float particleWarmupSeconds = 0) {
             if (prefab == null) return null;
             // Visual-only backpressure. A dropped effect never cancels a projectile or changes damage.
             if (active.Count >= 64) return null;
@@ -52,6 +52,10 @@ namespace Capstone.Game.Skills {
                 if (created == null) return null;
                 created.SetActive(false);
                 DisableVisualColliders(created);
+                foreach (var source in created.GetComponentsInChildren<AudioSource>(true)) {
+                    source.playOnAwake = false;
+                    source.enabled = false;
+                }
                 item = new Item {
                     prefab = prefab, value = created,
                     particles = created.GetComponentsInChildren<ParticleSystem>(true),
@@ -61,12 +65,24 @@ namespace Capstone.Game.Skills {
             }
             var value = item.value;
             value.transform.SetParent(parent != null ? parent : root, false);
-            value.transform.SetPositionAndRotation(position, rotation);
+            value.transform.SetPositionAndRotation(position,
+                preservePrefabRotation ? rotation * prefab.transform.localRotation : rotation);
             value.transform.localScale = prefab.transform.localScale;
             value.SetActive(true); active[value] = item;
             foreach (var trail in item.trails) trail.Clear();
             foreach (var graph in item.graphs) if (graph.isActiveAndEnabled) graph.Reinit();
-            foreach (var particle in item.particles) { particle.Clear(false); particle.Play(false); }
+            foreach (var particle in item.particles) {
+                var main = particle.main;
+                main.stopAction = ParticleSystemStopAction.None;
+                if (lockParticlesToMovingRoot) main.simulationSpace = ParticleSystemSimulationSpace.Local;
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+            }
+            foreach (var particle in item.particles) {
+                if (!particle.gameObject.activeInHierarchy) continue;
+                if (particleWarmupSeconds > 0 && particle.main.loop)
+                    particle.Simulate(particleWarmupSeconds, false, true, true);
+                particle.Play(false);
+            }
             return value;
         }
         internal static GameObject TryInstantiateVisual(GameObject prefab, Transform parent)
@@ -95,6 +111,14 @@ namespace Capstone.Game.Skills {
             var lifetime=value.GetComponent<CombatEffectLifetime>()??value.AddComponent<CombatEffectLifetime>();
             lifetime.Arm(Mathf.Clamp(seconds,.1f,5));
         }
+        internal static void FinishEmission(GameObject value, float seconds) {
+            if (value == null || !active.TryGetValue(value, out var item)) return;
+            foreach (var particle in item.particles)
+                particle.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            var lifetime = value.GetComponent<CombatEffectLifetime>() ?? value.AddComponent<CombatEffectLifetime>();
+            lifetime.Arm(seconds);
+        }
+
         public static void Return(GameObject value) {
             if (value == null) return;
             var lifetime=value.GetComponent<CombatEffectLifetime>();if(lifetime!=null)lifetime.enabled=false;
@@ -125,6 +149,25 @@ namespace Capstone.Game.Skills {
             random ^= random << 13; random ^= random >> 17; random ^= random << 5;
             return .95f + (random & 65535) / 65535f * .1f;
         }
+        internal static void PlaySkill(AudioClip clip, Vector3 position, PetSkillPresentationProfile profile,
+                PetSkillCue cue, Scene scene) {
+            var root = new GameObject("Skill SFX · " + clip.name);
+            if (scene.IsValid() && scene.isLoaded) SceneManager.MoveGameObjectToScene(root, scene);
+            root.transform.position = position;
+            var voice = root.AddComponent<AudioSource>();
+            voice.playOnAwake = false;
+            voice.clip = clip;
+            voice.rolloffMode = AudioRolloffMode.Logarithmic;
+            voice.spatialBlend = profile.spatialBlend;
+            voice.minDistance = Mathf.Max(.1f, profile.minDistance);
+            voice.maxDistance = Mathf.Max(voice.minDistance, profile.maxDistance);
+            voice.volume = Mathf.Clamp01(cue.volume);
+            voice.pitch = Mathf.Clamp(cue.pitch * PitchVariation(), .1f, 3f);
+            SettingsSystem.GameAudioRouting.Route(voice, SettingsSystem.GameAudioBus.Skill, profile.mixerGroup);
+            Play(voice);
+            Object.Destroy(root, clip.length / voice.pitch + .1f);
+        }
+
         public static void Play(AudioSource voice) {
             using (VoiceMarker.Auto()) {
             if (voice == null || voice.clip == null || !voice.isActiveAndEnabled) return;

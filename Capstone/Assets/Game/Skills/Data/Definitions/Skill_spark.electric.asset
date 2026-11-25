@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Đánh cận chiến. Có 25% cơ hội gây bỏng trong 5 giây."
   element: 6
   icon: {fileID: 21300000, guid: 5743882b42878c641a853aa8389b864f, type: 3}
-  cooldownSeconds: 4
-  manaCost: 11
+  cooldownSeconds: 1.333333
+  manaCost: 7
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates: 

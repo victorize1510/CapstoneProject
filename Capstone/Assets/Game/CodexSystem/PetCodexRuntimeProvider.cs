@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Capstone.Game.HudSystem;
+using Capstone.Game.Inventory;
 using Capstone.Game.SaveSystem;
 using Capstone.Game.UISystem;
 using UnityEngine;
@@ -93,21 +94,30 @@ namespace Capstone.Game.CodexSystem {
                         if (target == null) continue;
                         nodes.Add(new PetCodexEvolutionViewData {
                             Name = target.Metadata.SpeciesDisplayName, Icon = target.Icon,
-                            Known = entries.Exists(e => e.Id == target.id && e.Known), Requirement = Requirement(rule)
+                            Known = entries.Exists(e => e.Id == target.id && e.Known), Requirement = Requirement(rule, source.Element)
                         });
                     }
                 }
+                catalog?.SyncProfile(profile);
                 Changed?.Invoke();
             } finally { refreshing = false; }
         }
-        string Requirement(PetEvolutionRule rule) {
-            string itemName = "vật phẩm tiến hóa";
-            if (catalog.evolutionItems != null) foreach (var item in catalog.evolutionItems)
-                if (item != null && item.StableId == rule.RequiredItemId) { itemName = VietnameseUI.ItemName(item.Name); break; }
+        string Requirement(PetEvolutionRule rule, PetElement primaryElement) {
+            var item = InventoryDefinitionCatalog.Find(rule.RequiredItemId);
+            int quantity = rule.RequiredItemQuantity;
+            if (item == null && Capstone.Game.Elements.ElementCatalog.IsSupported(primaryElement)) {
+                foreach (var stone in InventoryDefinitionCatalog.Definitions) {
+                    if (stone.EvolutionStoneElement != primaryElement) continue;
+                    item = stone;
+                    quantity = 1;
+                    break;
+                }
+            }
+            string itemName = item != null ? VietnameseUI.ItemName(item.Name) : "vật phẩm tiến hóa";
             string level = "Cấp " + rule.RequiredLevel;
-            string itemText = itemName + " ×" + rule.RequiredItemQuantity;
-            return rule.Trigger == PetEvolutionTrigger.Level ? level
-                : rule.Trigger == PetEvolutionTrigger.Item ? itemText : level + " hoặc " + itemText;
+            string itemText = itemName + " ×" + quantity;
+            if (rule.Trigger == PetEvolutionTrigger.Item) return itemText;
+            return item == null && rule.Trigger == PetEvolutionTrigger.Level ? level : level + " hoặc " + itemText;
         }
         static CodexType MapType(PetElement value) => Capstone.Game.Elements.CodexElementAdapter.ToCodex(value);
     }

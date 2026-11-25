@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
   damageKind: 1
   delivery: 1
-  power: 1.2
+  power: 1.35
   range: 12
   projectileSpeed: 9
   projectileRadius: 0.18

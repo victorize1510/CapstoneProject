@@ -87,6 +87,8 @@ namespace Capstone.Game.Inventory {
         PetSkillsPanelController petSkillsPanelController;
         PetLevelUpPanelController petLevelUpPanelController;
         PetHealPanelController petHealPanelController;
+        BagPetTargetPopup petTargetPopup;
+        bool bagItemEvolutionRunning;
         PetEvolutionPanelController petEvolutionPanelController;
         VisualElement bagEvolutionOverlay;
         Label bagEvolutionText;
@@ -740,7 +742,7 @@ namespace Capstone.Game.Inventory {
         }
 
         public void OpenPetReleasePanel(PetController pet = null) {
-            if (activeSection != MenuSection.Party) OpenContentSection(MenuSection.Party);
+            if (activeSection != MenuSection.Party && activeSection != MenuSection.Box) OpenContentSection(MenuSection.Party);
             petPartyPanelController?.CloseRenamePopup();
             petSkillsPanelController?.Close();
             petLevelUpPanelController?.Close();
@@ -776,6 +778,8 @@ namespace Capstone.Game.Inventory {
 
         public void RequestClose() {
             if (!Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "close")) return;
+            if (petTargetPopup?.IsOpen == true) { petTargetPopup.Hide(); return; }
+            if (petReleasePanelController?.IsOpen == true) { petReleasePanelController.Close(); return; }
             if (activeSection == MenuSection.Shop && shopController?.DismissSalePopup() == true) return;
             if (activeSection == MenuSection.Box && petBoxPanelController != null) { petBoxPanelController.RequestBack(); return; }
             Close(); BackRequested?.Invoke();
@@ -788,6 +792,7 @@ namespace Capstone.Game.Inventory {
             Capstone.Game.UISystem.PanelFocusUtility.TryCloseNativeDropdown(document?.rootVisualElement);
 
             quantityPopup?.Hide();
+            petTargetPopup?.Hide();
             CloseBagEvolutionConfirmation();
             petBoxPanelController?.CloseTransientUi();
             petSkillsPanelController?.Close();
@@ -812,6 +817,7 @@ namespace Capstone.Game.Inventory {
             var assignment = document?.rootVisualElement.Q("quick-item-assignment")?.userData as GameplayHudQuickItemsView;
             if (assignment != null && assignment.TryCloseAssignment()) return true;
             if (quantityPopup?.IsOpen == true) { quantityPopup.Hide(); return true; }
+            if (petTargetPopup?.IsOpen == true) { petTargetPopup.Hide(); return true; }
             if (IsCodexOpen && codexController != null && codexController.TryCloseFilters()) return true;
             if (IsSettingsOpen && settingsController != null && settingsController.TryCloseModal()) return true;
             if (bagEvolutionOverlay != null
@@ -877,7 +883,10 @@ namespace Capstone.Game.Inventory {
         }
 
         void SetActiveSection(MenuSection section) {
-            if(section != MenuSection.Bag) bagPresentation?.Suspend();
+            if (section != MenuSection.Bag) {
+                bagPresentation?.Suspend();
+                petTargetPopup?.Hide();
+            }
             root?.EnableInClassList("bag-active", section == MenuSection.Bag);
             petPartyPanelController?.CloseRenamePopup();
             petPartyPanelController?.CloseDetails();
@@ -1152,7 +1161,7 @@ namespace Capstone.Game.Inventory {
             if (selectedItem == null) return;
 
             if (IsSelectedPetEvolutionItem(selectedItem)) {
-                ConfigureActionButton(useButton, InventoryActionType.UseItem, "TIẾN HÓA");
+                ConfigureActionButton(useButton, InventoryActionType.UseItem, "SỬ DỤNG");
                 if (!IsProtectedDropItem(selectedItem)) {
                     ConfigureActionButton(dropButton, InventoryActionType.DropItem, "BỎ");
                 }
@@ -1213,8 +1222,8 @@ namespace Capstone.Game.Inventory {
             button.tooltip = !available ? GetUnavailableActionReason(actionType, selectedItem)
                 : actionType == InventoryActionType.AssignQuickSlot ? "Gán vào R/T. Chọn phím sẽ lưu ngay và không tiêu hao vật phẩm."
                 : actionType == InventoryActionType.DropItem ? "Chọn số lượng để bỏ. Chỉ trừ vật phẩm sau khi xác nhận."
-                : actionType == InventoryActionType.UseItem && IsHealingItem(selectedItem) ? "Mở hồi phục cho thú đang xuất chiến bằng " + selectedItem.Name + "."
-                : actionType == InventoryActionType.UseItem && IsSelectedPetEvolutionItem(selectedItem) ? "Chọn thú đủ điều kiện trong Thú đồng hành để tiến hóa."
+                : actionType == InventoryActionType.UseItem && IsHealingItem(selectedItem) ? "Chọn một thú trong đội để dùng vật phẩm."
+                : actionType == InventoryActionType.UseItem && IsSelectedPetEvolutionItem(selectedItem) ? "Chọn thú đủ điều kiện để tiến hóa."
                 : label;
         }
 
@@ -1246,12 +1255,14 @@ namespace Capstone.Game.Inventory {
             if(actionType==InventoryActionType.UseItem&&item.Category==GameItemCategory.CaptureBall){var capture=FindFirstObjectByType<PetCaptureCoordinator>();return capture!=null&&capture.CanCaptureFromBag(item.ItemBase as MonsterItemDefinition,adapter,out _);}
             if (actionType == InventoryActionType.UseItem && IsSelectedPetEvolutionItem(item)) return true;
             if (actionType == InventoryActionType.UseItem && IsHealingItem(item)) return true;
+            if (actionType == InventoryActionType.UseItem && IsLevelCandy(item)) return true;
             return allowPlaceholderActions || HasGameplayHandler(actionType);
         }
 
         bool IsActionAllowed(InventoryActionType actionType, InventoryItemSnapshot item) {
             if (item == null) return false;
             if (actionType == InventoryActionType.UseItem && IsSelectedPetEvolutionItem(item)) return true;
+            if (actionType == InventoryActionType.UseItem && IsLevelCandy(item)) return true;
             if(actionType==InventoryActionType.UseItem&&item.Category==GameItemCategory.CaptureBall)return true;
 
             switch (actionType) {
@@ -1279,6 +1290,9 @@ namespace Capstone.Game.Inventory {
 
         bool IsHealingItem(InventoryItemSnapshot item) => petHealPanelController != null
             && item != null && item.IsRecoveryItem;
+
+        static bool IsLevelCandy(InventoryItemSnapshot item) =>
+            item?.Definition?.MatchesId(PetLevelUpService.LevelCandyId) == true;
 
         static bool SupportsQuickSlot(InventoryItemSnapshot item) => item != null
             && item.IsRecoveryItem;
@@ -1382,11 +1396,7 @@ namespace Capstone.Game.Inventory {
                 }else bagPresentation?.Feedback(error);
                 return;
             }
-            if (actionType == InventoryActionType.UseItem
-                && petEvolutionPanelController != null
-                && petEvolutionPanelController.TryOpenFromInventory(selectedItem)) return;
-            if (actionType == InventoryActionType.UseItem && IsHealingItem(selectedItem)
-                && petHealPanelController.TryOpenFromInventory(selectedItem)) return;
+            if (actionType == InventoryActionType.UseItem && TryOpenBagPetTargets(selectedItem)) return;
 
             bool removeByDefault = ShouldRemoveItemByDefault(actionType, selectedItem);
             int safeQuantity = Mathf.Clamp(quantity, 1, Mathf.Max(1, selectedItem.Quantity));
@@ -1419,6 +1429,66 @@ namespace Capstone.Game.Inventory {
             }
 
             ActionCompleted?.Invoke(request);
+        }
+
+        bool TryOpenBagPetTargets(InventoryItemSnapshot item) {
+            bool stone = IsSelectedPetEvolutionItem(item);
+            bool candy = IsLevelCandy(item);
+            if (!stone && !candy && !IsHealingItem(item)) return false;
+            if (bagItemEvolutionRunning || root == null || adapter == null) return true;
+            var commands = FindFirstObjectByType<PetCommandHudProvider>(FindObjectsInactive.Include);
+            var partyInput = commands == null ? FindFirstObjectByType<PetCommandInput>() : null;
+            var evolution = GetComponent<PetEvolutionService>();
+            var heal = GetComponent<PetHealService>();
+            var levelUp = GetComponent<PetLevelUpService>();
+            if (petTargetPopup == null || !petTargetPopup.BelongsTo(root)) petTargetPopup = new BagPetTargetPopup(root);
+            petTargetPopup.Show(item.Name, PetAt, Preview, stone, Apply);
+            return true;
+
+            PetController PetAt(int index) {
+                if (commands != null) return commands.GetPetControllerAt(index);
+                var slots = partyInput != null ? partyInput.petSlots : null;
+                return slots != null && index < slots.Length ? slots[index] : null;
+            }
+
+            (bool, string) Preview(PetController pet) {
+                if (adapter.GetQuantity(item.ItemBase) < 1) return (false, "Bạn không còn vật phẩm này.");
+                if (stone && evolution != null) {
+                    var value = evolution.CreatePreview(pet, PetEvolutionMethod.Item, item.ItemId);
+                    return (value.CanEvolve, value.DisabledReason);
+                }
+                if (candy && levelUp != null) {
+                    var value = levelUp.CreatePreview(pet);
+                    return (value.CanLevelUp, value.DisabledReason);
+                }
+                if (!stone && !candy && heal != null) {
+                    var value = heal.CreatePreview(pet, item.ItemBase);
+                    string reason = value.DisabledReason == value.ResourceName + " ĐÃ ĐẦY"
+                        ? $"{value.ResourceName} đã đầy." : value.DisabledReason;
+                    return (value.CanHeal, reason);
+                }
+                return (false, "Chưa kết nối hệ thống dùng vật phẩm.");
+            }
+
+            void Apply(PetController pet) {
+                if (stone) {
+                    petTargetPopup.Hide();
+                    bagItemEvolutionRunning = true;
+                    PetEvolutionPresentationController.Present(gameObject.scene, evolution, pet, PetEvolutionMethod.Item, item.ItemId,
+                        (_, message) => {
+                            if (this == null) return;
+                            bagItemEvolutionRunning = false;
+                            RefreshFromAdapter();
+                            bagPresentation?.Feedback(message);
+                        });
+                    return;
+                }
+                bool success = candy ? levelUp.TryLevelUp(pet, out string message) : heal.TryHeal(pet, item.ItemBase, out message);
+                if (!success) { petTargetPopup.Report(message); return; }
+                petTargetPopup.Hide();
+                RefreshFromAdapter();
+                bagPresentation?.Feedback(message);
+            }
         }
 
         static bool NeedsQuantityPopup(InventoryActionType actionType) {

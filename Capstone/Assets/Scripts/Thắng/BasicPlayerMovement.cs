@@ -359,6 +359,7 @@ public partial class BasicPlayerMovement : MonoBehaviour
 
     private void Awake()
     {
+        Capstone.Game.CreatureSystem.LocomotionSound.Attach(gameObject);
         characterController = GetComponent<CharacterController>();
         CaptureStandingControllerShape();
         SanitizeRigidbody();

@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Áp sát và mổ mạnh một mục tiêu trong tầm cận chiến."
   element: 12
   icon: {fileID: 21300000, guid: 18286c71b45cbed458fc6a20f4c692b2, type: 3}
-  cooldownSeconds: 8
-  manaCost: 20
+  cooldownSeconds: 2.666667
+  manaCost: 12
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates: 

@@ -262,7 +262,10 @@ namespace Capstone.Game.CreatureSystem.Editor
                     Check(await WaitFor(() => driver.LastReleaseNormalized > 0, 3) &&
                         Vector3.Distance(rangedOrigin, actor.transform.position) < .15f,
                         "In-range projectile casts from the current position");
-                Check(await WaitFor(() => voice.isPlaying, 3), "Accepted Projectile Attack plays a cry");
+                var skillClip = stats.GetSkills()[slot].combatProfile.authoredReleaseSound;
+                Check(await WaitFor(() => Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None)
+                    .Any(source => source.clip == skillClip && source.isPlaying) && !voice.isPlaying, 3),
+                    "Projectile Attack plays its own imported clip without the form cry");
                 bool visual = await WaitFor(() => executor.ActiveProjectileCount > 0
                     && Object.FindObjectsByType<Transform>(FindObjectsSortMode.None)
                         .Any(t => t.name == visualName && t.GetComponentsInChildren<ParticleSystem>().Any(p => p.isPlaying)), 4);
@@ -555,6 +558,30 @@ namespace Capstone.Game.CreatureSystem.Editor
 
             fire.GetComponent<PetController>().Withdraw();
             Object.Destroy(fire.gameObject);
+
+            var starter = Object.Instantiate(library.families.Single(item => item.definitionId == "dragon-fire").forms[0].petPrefab);
+            var starterPet = starter.GetComponent<PetController>();
+            var starterStats = starter.GetComponent<PetHudRuntimeStats>();
+            starterPet.AssignOwner(owner);
+            starterPet.roamAroundOwner = false;
+            var commands = owner.gameObject.AddComponent<PetCommandInput>();
+            commands.SetActivePet(starterPet);
+            check(starterPet.TrySummonAt(Vector3.zero, Vector3.forward) && await waitFor(() => starterPet.CanReceiveCommands, 7),
+                "Rồng Trẻ Con starter summoned using its authored loadout");
+            int heatSlot = starterStats.GetSkills().ToList().FindIndex(skill => skill.skillId == "heatwave.fire" && skill.unlocked);
+            check(heatSlot >= 0, "Đốt Nóng is unlocked in the starter's authored loadout");
+            target.transform.position = new Vector3(20f, 1f, 0f);
+            Physics.SyncTransforms();
+            check(commands.TrySelectEnemy(enemy), "Far target remains selected for inspection");
+            starterStats.RequestSkill(heatSlot);
+            var starterExecutor = starter.GetComponent<PetSkillCombatExecutor>();
+            check(await waitFor(() => starterExecutor.ActiveProjectileCount > 0, 4) && commands.SelectedEnemy == enemy &&
+                starterStats.GetSkills()[heatSlot].IsCoolingDown, "Starter fires Đốt Nóng even with a distant selection");
+            starterPet.Withdraw();
+            Object.Destroy(starter);
+            Object.Destroy(commands);
+            await Task.Yield();
+
             target.transform.position = new Vector3(0, 1f, 5f);
             var electric = await Summon("cat-electric", "thunder.electric");
             float before = enemy.CurrentHealth;
@@ -572,6 +599,11 @@ namespace Capstone.Game.CreatureSystem.Editor
                 target.transform.position.z)) < .12f, "Sấm Sét spawns at the target's feet");
             await Task.Delay(800);
             check(ActiveVisual(catalog.shockAura) != null, "Shock aura stays visible beyond its previous half-second cutoff");
+            var releaseSound = Object.FindObjectsByType<AudioSource>(FindObjectsSortMode.None)
+                .FirstOrDefault(source => source.clip == equipped.combatProfile.authoredReleaseSound);
+            await Task.Delay(2100);
+            check(releaseSound != null && releaseSound.isPlaying,
+                "Sấm Sét still plays the imported skill clip after the two-second cue expires");
 
             electric.GetComponent<PetController>().Withdraw();
             Object.Destroy(electric.gameObject);
@@ -585,6 +617,10 @@ namespace Capstone.Game.CreatureSystem.Editor
                 Vector3.Distance(leaves.position, leafLaunch) > 2f &&
                 leaves.GetComponentsInChildren<ParticleSystem>().Any(system => system.particleCount > 0), 3),
                 "Bão Lá particles remain visible on the same instance in flight");
+            check(await waitFor(() => leaves.gameObject.activeInHierarchy &&
+                leaves.GetComponentsInChildren<ParticleSystem>().All(system => !system.isEmitting) &&
+                leaves.GetComponentsInChildren<ParticleSystem>().Any(system => system.particleCount > 0), 4),
+                "Bão Lá keeps its existing particles while they fade at the end of travel");
             blossom.GetComponent<PetController>().Withdraw();
             Object.Destroy(blossom.gameObject);
             var flyer = await Summon("chick", "cyclone.flying");
@@ -592,15 +628,16 @@ namespace Capstone.Game.CreatureSystem.Editor
             flyer.RequestSkill(0);
             check(await waitFor(() => ActiveVisual(vortex) != null, 4), "Lốc Xoáy spawns its traveling prefab");
             var moving = ActiveVisual(vortex);
-            var mesh = moving.GetComponent<MeshFilter>()?.sharedMesh;
-            var renderer = moving.GetComponent<MeshRenderer>();
-            check(mesh != null && mesh.bounds.size.y > .25f && mesh.bounds.size.z > .1f &&
+            var renderer = moving.GetComponentInChildren<ParticleSystemRenderer>();
+            check(AssetDatabase.GetAssetPath(vortex) == "Assets/Prefabs/Trung/Skills/Flying/Lốc Xoáy.prefab" &&
                 renderer != null && renderer.enabled && renderer.sharedMaterial.shader.isSupported,
-                "Lốc Xoáy uses a supported mesh with height and depth");
+                "Lốc Xoáy uses the original Trung particle prefab and material");
             Vector3 launch = moving.position;
             check(await waitFor(() => moving.gameObject.activeInHierarchy && Vector3.Distance(launch, moving.position) > 2f, 3) &&
-                moving.up.y > .99f && ActiveVisual(vortex) == moving,
-                "The same upright tornado mesh moves more than 2m in flight");
+                ((moving.rotation * Quaternion.Inverse(vortex.transform.localRotation)) * Vector3.up).y > .99f &&
+                ActiveVisual(vortex) == moving && moving.GetComponentsInChildren<ParticleSystem>().Any(system =>
+                    system.particleCount > 0 && system.main.simulationSpace == ParticleSystemSimulationSpace.Local),
+                "The same original tornado particles move more than 2m with the authored orientation");
 
             await CaptureEffectFrame(renderer.bounds.center, Mathf.Max(3f, renderer.bounds.extents.magnitude * 2.6f), "cyclone-in-flight.png");
         }
@@ -742,6 +779,16 @@ namespace Capstone.Game.CreatureSystem.Editor
             check(stats.Health <= 0 && pets[1].GetComponent<CreatureAnimationDriver>().Cry.GetComponent<AudioSource>().clip
                 != pets[0].GetComponent<CreatureAnimationDriver>().Cry.GetComponent<AudioSource>().clip,
                 "The defeated pet stays at zero HP and the replacement has its own Form recording");
+            settings.FindProperty("pickupStartTimeout").floatValue = .25f;
+            settings.ApplyModifiedPropertiesWithoutUndo();
+            movement.enabled = false;
+            try
+            {
+                check(director.RequestRecall() && await waitFor(() => !director.IsSequenceRunning, 2) &&
+                    !pets[1].IsSummoned && input.activePet == pets[1] && string.IsNullOrEmpty(failure),
+                    "Recall returns the selected pet even when the Pickup animation cannot start");
+            }
+            finally { movement.enabled = true; }
             Object.Destroy(baseline);
         }
     }

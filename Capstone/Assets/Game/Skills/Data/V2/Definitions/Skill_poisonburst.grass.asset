@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Gây nhiễm độc trong 5 giây, sát thương độc giảm với boss."
   element: 1
   icon: {fileID: 21300000, guid: dbd39e4765893634d9ac07bb45d1155b, type: 3}
-  cooldownSeconds: 14
-  manaCost: 23
+  cooldownSeconds: 4.666667
+  manaCost: 14
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

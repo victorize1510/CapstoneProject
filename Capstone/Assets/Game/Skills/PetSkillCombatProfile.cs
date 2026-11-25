@@ -25,6 +25,8 @@ namespace Capstone.Game.Skills {
         [Range(.01f, 1)] public float projectileRadius = .18f;
         [Range(.1f, 10)] public float lifetime = 3;
         public GameObject projectileVisual;
+        [Min(0)] public float travelVisualWarmupSeconds;
+        [Range(0, 2)] public float travelVisualTailSeconds;
         public string releaseSocket = "Mouth";
         [Tooltip("Cho phép chiêu cập nhật hướng hoặc điểm đánh theo mục tiêu đến lúc phát.")]
         public bool trackTargetUntilRelease;
@@ -42,6 +44,8 @@ namespace Capstone.Game.Skills {
         [Min(.1f)] public float targetedImpactRadius = 1f;
         [Header("Ngam: khoa, dich gan nhin thay, roi huong dang quay")]
         public bool autoAcquireTarget = true;
+        [Tooltip("Cho phép phóng theo hướng mục tiêu khi mục tiêu đang chọn ở ngoài tầm hoặc sau vật cản.")]
+        public bool allowFreeCastWhenTargetUnavailable;
         [Range(5, 89)] public float meleeHalfAngle = 55;
         [Min(.01f)] public float visualScale = .35f;
         [Header("Buff ban than: chi runtime, lam moi thoi gian, khong cong don")]

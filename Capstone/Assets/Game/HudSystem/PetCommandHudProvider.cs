@@ -92,15 +92,22 @@ namespace Capstone.Game.HudSystem {
             int experienceRequirement = source != null && source.Level < maxLevel
                 ? PetLevelUpService.CalculateDefaultExperienceRequirement(source.Level)
                 : 0;
+            int level = source?.Level ?? 0;
+            int experience = metadata != null ? metadata.Experience : 0;
+            if (Capstone.Game.WorldFeedback.ExperiencePlayback.TrySample(pet, out var displayed)) {
+                level = displayed.Level;
+                experience = displayed.Experience;
+                experienceRequirement = displayed.Required;
+            }
             return new PetStatusHudData {
                 hasPet = true,
                 displayName = metadata != null ? metadata.ResolveDisplayName(baseName) : baseName,
-                level = source != null ? source.Level : 0,
+                level = level,
                 health = source != null ? source.Health : 0f,
                 maxHealth = source != null ? source.MaxHealth : 0f,
                 energy = source != null ? source.Energy : 0f,
                 maxEnergy = source != null ? source.MaxEnergy : 0f,
-                experience = metadata != null ? metadata.Experience : 0,
+                experience = experience,
                 experienceToNextLevel = experienceRequirement,
                 icon = source?.Icon
             };

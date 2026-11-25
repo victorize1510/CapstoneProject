@@ -18,10 +18,10 @@ MonoBehaviour:
   description: "Đàn dơi làm địch chảy máu 5 giây và chậm 20% trong 10 giây."
   element: 9
   icon: {fileID: 21300000, guid: be5ca9ae72431c54b9ae46ed0c630267, type: 3}
-  cooldownSeconds: 12
+  cooldownSeconds: 4
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: e90c33e4373082fcff91a8b99dd7f07c, type: 2}
   combat: {fileID: 11400000, guid: 140dad05205294ee94c14fd0a8b5d858, type: 2}
-  manaCost: 24
+  manaCost: 14

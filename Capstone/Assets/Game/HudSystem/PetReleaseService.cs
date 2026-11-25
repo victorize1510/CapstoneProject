@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Capstone.Game.Inventory;
+using Capstone.Game.CaptureSystem;
+using Capstone.Game.ProfileSystem;
 using Capstone.Game.SaveSystem;
 using GDS.Core;
 using GDS.Core.Events;
@@ -14,6 +16,8 @@ namespace Capstone.Game.HudSystem {
         [SerializeField] PetBoxRuntimeProvider roster = null;
         [SerializeField] PlayerCurrencyWallet currencyWallet = null;
         [SerializeField] PlayerSaveController saveController = null;
+
+        PlayerProfileRuntimeProvider profile;
 
         [Header("Refund")]
         [SerializeField, Range(0f, 1f)] float releaseRefundRate = 0.30f;
@@ -66,6 +70,7 @@ namespace Capstone.Game.HudSystem {
             preview.Element = preview.Metadata.Element;
             preview.Rarity = preview.Metadata.Rarity;
             preview.Level = Mathf.Max(0, preview.RuntimeStats.Level);
+            preview.TrainerExperience = Mathf.Min(preview.Level, 25) * 2;
             preview.EvolutionStage = preview.Metadata.EvolutionStage + 1;
             preview.Icon = preview.RuntimeStats.Icon;
             preview.IsFavorite = preview.Metadata.IsFavorite;
@@ -85,6 +90,7 @@ namespace Capstone.Game.HudSystem {
             else if (roster.ReleasedToday >= DailyReleaseLimit) preview.DisabledReason = $"Đã đạt giới hạn thả {DailyReleaseLimit} thú hôm nay.";
             else if (currencyWallet == null) preview.DisabledReason = "Không tìm thấy ví Gold của người chơi.";
             else if (saveController == null) preview.DisabledReason = "Không tìm thấy PlayerSaveController để lưu thao tác.";
+            else if (profile == null || !saveController.UsesProfile(profile)) preview.DisabledReason = "Hồ sơ người chơi chưa sẵn sàng để nhận EXP.";
             else if (preview.HasUnresolvedRefund) preview.DisabledReason = "Thiếu vật phẩm Definition để hoàn lại tài nguyên đã đầu tư.";
 
             preview.CanRelease = string.IsNullOrWhiteSpace(preview.DisabledReason);
@@ -103,48 +109,54 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
 
-            var addedRefunds = new List<PetReleaseRefundPreview>();
+            if (CaptureEventBatch.IsActive) { message = "Đợi giao dịch hiện tại hoàn tất."; return false; }
+            using var batch = new CaptureEventBatch();
+            var profileSnapshot = profile.CreateSaveData();
+            var currencySnapshot = currencyWallet.CreateSaveData();
+            var slots = inventory?.CaptureSlots();
             for (int i = 0; i < preview.Refunds.Count; i++) {
                 PetReleaseRefundPreview refund = preview.Refunds[i];
-                Result addResult = inventory.AddItem(refund.ItemBase, refund.RefundQuantity);
-                if (addResult is Fail) {
-                    RollbackRefunds(addedRefunds);
+                if (!inventory.TryAddItemAtomic(refund.ItemBase, refund.RefundQuantity, false)) {
+                    if (slots != null) inventory.RestoreCaptureSlots(slots);
                     message = "Túi đồ không đủ chỗ để nhận toàn bộ tài nguyên hoàn lại.";
                     return false;
                 }
-                addedRefunds.Add(refund);
             }
 
             currencyWallet.AddGold(preview.GoldValue);
             if (!roster.TryDetachPetForRelease(pet, out PetRosterReleaseToken rosterToken, out string rosterError)) {
-                currencyWallet.TrySpendGold(preview.GoldValue);
-                RollbackRefunds(addedRefunds);
+                currencyWallet.RestoreFromSaveData(currencySnapshot);
+                if (slots != null) inventory.RestoreCaptureSlots(slots);
                 message = rosterError;
                 return false;
             }
 
             if (!roster.TryConsumeDailyRelease(DailyReleaseLimit, out string dailyLimitError)) {
                 roster.RestoreDetachedPet(rosterToken, out _);
-                currencyWallet.TrySpendGold(preview.GoldValue);
-                RollbackRefunds(addedRefunds);
+                currencyWallet.RestoreFromSaveData(currencySnapshot);
+                if (slots != null) inventory.RestoreCaptureSlots(slots);
                 message = dailyLimitError;
                 return false;
             }
 
             preview.Metadata.SetReleased(true);
+            profile.AddExperience(preview.TrainerExperience);
             if (!saveController.SaveNow()) {
+                profile.RestoreFromSaveData(profileSnapshot);
                 preview.Metadata.SetReleased(false);
                 roster.UndoDailyRelease();
                 roster.RestoreDetachedPet(rosterToken, out _);
-                currencyWallet.TrySpendGold(preview.GoldValue);
-                RollbackRefunds(addedRefunds);
+                currencyWallet.RestoreFromSaveData(currencySnapshot);
+                if (slots != null) inventory.RestoreCaptureSlots(slots);
                 message = "Không thể lưu game nên thú chưa bị thả.";
                 return false;
             }
 
             pet.gameObject.SetActive(false);
-            PetReleased?.Invoke(preview);
-            message = $"Đã thả {preview.DisplayName}. Nhận {preview.GoldValue:N0} Gold.";
+            if (preview.Refunds.Count > 0) inventory.NotifyAtomicAddition();
+            CaptureEventBatch.Publish(this, "release", () => PetReleased?.Invoke(preview));
+            batch.Commit();
+            message = $"Đã thả {preview.DisplayName}. Nhận {preview.GoldValue:N0} vàng và {preview.TrainerExperience} EXP.";
             return true;
         }
 
@@ -207,20 +219,11 @@ namespace Capstone.Game.HudSystem {
             return false;
         }
 
-        void RollbackRefunds(IReadOnlyList<PetReleaseRefundPreview> refunds) {
-            if (inventory == null || refunds == null) return;
-            for (int i = refunds.Count - 1; i >= 0; i--) {
-                PetReleaseRefundPreview refund = refunds[i];
-                if (refund?.ItemBase != null && refund.RefundQuantity > 0) {
-                    inventory.RemoveItem(refund.ItemBase, refund.RefundQuantity);
-                }
-            }
-        }
-
         void ResolveReferences() {
             if (inventory == null) inventory = GetComponent<MonsterInventoryAdapter>();
             if (inventory == null) inventory = GetComponentInParent<MonsterInventoryAdapter>();
             if (inventory == null) inventory = FindFirstObjectByType<MonsterInventoryAdapter>(FindObjectsInactive.Include);
+            if (profile == null) profile = FindFirstObjectByType<PlayerProfileRuntimeProvider>(FindObjectsInactive.Include);
             if (roster == null) roster = GetComponent<PetBoxRuntimeProvider>();
             if (roster == null) roster = GetComponentInParent<PetBoxRuntimeProvider>();
             if (roster == null) roster = FindFirstObjectByType<PetBoxRuntimeProvider>(FindObjectsInactive.Include);
@@ -264,6 +267,7 @@ namespace Capstone.Game.HudSystem {
         public int Level;
         public int EvolutionStage;
         public int GoldValue;
+        public int TrainerExperience;
         public int ReleasedToday;
         public int DailyReleaseLimit;
     }

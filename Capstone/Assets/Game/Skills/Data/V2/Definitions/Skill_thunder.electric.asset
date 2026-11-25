@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Gọi sét, gây nhiễm điện 10 giây. Có thể làm choáng hoặc gián đoạn chiêu đang thi triển."
   element: 6
   icon: {fileID: 21300000, guid: 67fdddc2973f95f4a93e77935f6d6a84, type: 3}
-  cooldownSeconds: 17
-  manaCost: 36
+  cooldownSeconds: 5.666667
+  manaCost: 22
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

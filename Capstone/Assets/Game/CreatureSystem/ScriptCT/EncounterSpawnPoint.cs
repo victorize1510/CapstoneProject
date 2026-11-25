@@ -82,6 +82,14 @@ namespace Capstone.Game.CreatureSystem {
             if(phase==Phase.Live) {
                 if(actor==null){ScheduleRespawn();return;}
                 if(capture!=null && !capture.IsWild){DetachCaptured();return;}
+                if (ZoneOwner != null && !actor.gameObject.activeSelf && !actor.CaptureLocked) {
+                    // Inactive wild actors do not hold a population slot indefinitely.
+                    Unsubscribe();
+                    Destroy(actor.gameObject);
+                    actor = null; capture = null; driver = null;
+                    ScheduleRespawn();
+                    return;
+                }
                 if(ZoneOwner != null && Time.time >= nextScheduleCheck) {
                     nextScheduleCheck = Time.time + 1f;
                     if (ZoneOwner.CanRetireForSchedule(actor)) {

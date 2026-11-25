@@ -21,6 +21,7 @@ MonoBehaviour:
   lifetime: 3
   meleeHalfAngle: 50
   autoAcquireTarget: 1
+  allowFreeCastWhenTargetUnavailable: 1
   retreatSpeed: 12
   preferredDistance: 5
   burstEndNormalized: 0.88

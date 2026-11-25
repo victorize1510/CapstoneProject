@@ -23,6 +23,13 @@ namespace Capstone.Game.CreatureSystem {
             int gap = petLevel - enemyLevel;
             return gap < 0 ? 1 + Math.Min(5, -gap) * .05 : gap <= 2 ? 1 : gap >= 10 ? 0 : 1 - (gap - 2) * .125;
         }
+        public static int WildExperienceAward(int petLevel, int enemyLevel, double share, bool boss, bool deepCave) {
+            int requirement = HudSystem.PetLevelUpService.CalculateDefaultExperienceRequirement(enemyLevel);
+            double baseReward = Math.Floor(requirement / 3d + .5d) * (boss ? 3d : 1d);
+            double factor = Math.Max(deepCave ? .5d : 0d, ExperienceFactor(petLevel, enemyLevel));
+            return (int)Math.Min(int.MaxValue, Math.Floor(baseReward * share * factor + .5d));
+        }
+
         public static int ExperienceAward(int baseReward, int petLevel, int enemyLevel, double share = 1) {
             if (baseReward < 0 || double.IsNaN(share) || double.IsInfinity(share) || share < 0 || share > 1) throw new ArgumentOutOfRangeException();
             return (int)Math.Min(int.MaxValue, Math.Floor(baseReward * share * ExperienceFactor(petLevel, enemyLevel) + .5));

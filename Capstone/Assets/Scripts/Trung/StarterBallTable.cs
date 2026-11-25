@@ -114,6 +114,8 @@ public class StarterBallTable : MonoBehaviour
 
     void OnSaveLoaded(PlayerSaveData data) => RefreshFromSave();
 
+    static PetElement StarterElement(BallSlot slot) => slot.petPrefab.GetComponentInChildren<PetCollectionMetadata>(true)?.Element ?? PetElement.Unknown;
+
     string ChoiceKey(int index) => $"{saveKey}.{index}";
 
     // Save đã có dấu "đã chọn bóng N" -> khóa bàn, ẩn đúng quả đã chọn.
@@ -127,6 +129,10 @@ public class StarterBallTable : MonoBehaviour
             {
                 if (!save.HasStarterGrant(ChoiceKey(i))) continue;
                 chosenInSave = true;
+                var questManager = FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>(FindObjectsInactive.Include);
+                if (questManager != null && questManager.StarterElement == PetElement.Unknown && IsValid(i))
+                    questManager.StarterElement = StarterElement(balls[i]);
+                questManager?.MarkStarterChosen();
                 if (hideChosenBall && IsValid(i)) balls[i].ball.gameObject.SetActive(false);
             }
         }
@@ -324,8 +330,12 @@ public class StarterBallTable : MonoBehaviour
         // 2. Thêm thú vào Party (Party đầy thì vào Box).
         var granter = GetComponent<StarterPetGranter>();
         if (granter == null) granter = gameObject.AddComponent<StarterPetGranter>();
+        var quests = FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>(FindObjectsInactive.Include);
+        var previousElement = quests != null ? quests.StarterElement : PetElement.Unknown;
+        if (quests != null) quests.StarterElement = StarterElement(slot);
         if (!granter.TryGrant(slot.petPrefab, string.IsNullOrEmpty(saveKey) ? null : ChoiceKey(selected), out string grantError))
         {
+            if (quests != null) quests.StarterElement = previousElement;
             Debug.LogWarning($"[StarterBall] Không nhận được thú: {grantError}", this);
             yield return dialogueBox.TypeLine($"Không thể nhận {petName}: {grantError}", typingSpeed);
             yield return dialogueBox.Hide();
@@ -336,7 +346,7 @@ public class StarterBallTable : MonoBehaviour
         }
         int chosen = selected;
         // Báo cho hệ thống nhiệm vụ: đã chọn thú đầu tiên -> trưởng làng mới giao nhiệm vụ chương 1.
-        FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>(FindObjectsInactive.Include)?.MarkStarterChosen();
+        quests?.MarkStarterChosen();
         onBallConfirmed?.Invoke(chosen);
         onPetGranted?.Invoke(slot.petPrefab);
 

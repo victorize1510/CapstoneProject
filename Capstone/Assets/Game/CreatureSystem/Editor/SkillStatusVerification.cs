@@ -60,19 +60,19 @@ namespace Capstone.Game.CreatureSystem.Editor {
             var catalog = Resources.Load<PetSkillCatalog>("PetSkills/PetSkillCatalog");
             Check(catalog != null, "Runtime catalog");
             if (catalog != null) {
-                Check(catalog.skills.Count == 31 && catalog.skills.All(s => s != null) &&
-                    catalog.skills.Select(s => s.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 31,
-                    "31 unique active skill IDs");
-                Check(catalog.retiredSkills.Count == 9 && catalog.retiredSkills.All(s => s != null &&
-                    !catalog.TryGet(s.Id, out _) && catalog.FindRetired(s.Id) == s), "9 legacy skills recognized only for migration");
+                Check(catalog.skills.Count == 32 && catalog.skills.All(s => s != null) &&
+                    catalog.skills.Select(s => s.Id).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 32,
+                    "32 unique active skill IDs");
+                Check(catalog.retiredSkills.Count == 8 && catalog.retiredSkills.All(s => s != null &&
+                    !catalog.TryGet(s.Id, out _) && catalog.FindRetired(s.Id) == s), "8 legacy skills recognized only for migration");
                 Check(catalog.buffAura != null && catalog.debuffAura != null && catalog.hpPotionAura != null &&
                     catalog.mpPotionAura != null && catalog.shockAura != null && catalog.burnAura != null, "Six linked status VFX prefabs");
                 foreach (var (id, name, mp, cd) in balance) {
                     bool found = catalog.TryGet(id, out var skill);
                     var data = found ? skill.CreateHudData() : default;
-                    Check(found && skill.displayName == name && data.manaCost == mp && data.cooldownSeconds == cd &&
+                    Check(found && skill.displayName == name && data.manaCost == Mathf.RoundToInt(mp * .6f) && Mathf.Abs(data.cooldownSeconds - cd / 3f) < .0001f &&
                         skill.icon != null && skill.combat != null && skill.combat.authoredStatusRules && skill.presentation != null,
-                        $"{id} | {name} | {mp} MP | {cd}s | sprite loads");
+                        $"{id} | {name} | {data.manaCost} MP | {data.cooldownSeconds:0.##}s | sprite loads");
                 }
                 Check(catalog.TryGet("blackhole.dark", out var blackHole) && blackHole.combat.projectileVisual != null &&
                     blackHole.presentation.impact.effectPrefab != null && blackHole.combat.pattern == PetSkillPattern.ImpactArea &&
@@ -81,7 +81,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 Check(catalog.TryGet("spirit.dark", out var spirit) && spirit.combat.impactAtTargetFeet &&
                     spirit.combat.trackTargetUntilRelease && spirit.combat.statusCues.Length == 2,
                     "Linh Hồn Ma Quái tracks to release and spawns its VFX at the target's feet");
-                var groundSkills = new[] { "spirit.dark", "flock.dark", "stars.dragon", "laser.electric",
+                var groundSkills = new[] { "spirit.dark", "flock.dark", "stars.dragon",
                     "thunder.electric", "bubbleburst.water", "orb.water", "poisonburst.grass", "waterwhirl.water", "bolt.electric" };
                 foreach (string id in groundSkills)
                     Check(catalog.TryGet(id, out var skill) && skill.combat.GroundsImpact &&
@@ -102,11 +102,16 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 Check(catalog.TryGet("cyclone.flying", out var cyclone) &&
                     cyclone.combat.pattern == PetSkillPattern.TravelingArea &&
                     cyclone.combat.projectileVisual != null &&
-                    cyclone.combat.projectileVisual.GetComponent<MeshFilter>()?.sharedMesh is Mesh vortex &&
-                    vortex.bounds.size.y > .25f && vortex.bounds.size.z > .1f &&
-                    cyclone.combat.projectileVisual.GetComponent<MeshRenderer>()?.sharedMaterial?.shader?.isSupported == true &&
+                    AssetDatabase.GetAssetPath(cyclone.combat.projectileVisual) == "Assets/Prefabs/Trung/Skills/Flying/Lốc Xoáy.prefab" &&
+                    cyclone.combat.projectileVisual.GetComponentInChildren<ParticleSystem>(true) != null &&
                     cyclone.presentation.impact.effectPrefab == null,
-                    "Lốc Xoáy uses a 3D mesh in flight and has no stationary billboard impact");
+                    "Lốc Xoáy uses the original Trung particle prefab in flight");
+                Check(catalog.TryGet("laser.electric", out var laser) && laser.combat.pattern == PetSkillPattern.Beam &&
+                    laser.presentation.release.followSocket && laser.presentation.release.followChannelAim,
+                    "Chùm Tia Laser hits along the displayed beam");
+                Check(catalog.TryGet("orb.water", out var bubble) && bubble.combat.projectileVisual == null &&
+                    AssetDatabase.GetAssetPath(bubble.presentation.impact.effectPrefab) == "Assets/Prefabs/Trung/Skills/Water/Tia Bong Bóng.prefab",
+                    "Tia Bong Bóng spawns the original prefab at the impact");
                 Check(catalog.TryGet("heatwave.fire", out var heatwave) && heatwave.combat.statusOnly &&
                     heatwave.combat.ObstacleRadius < heatwave.combat.projectileRadius &&
                     heatwave.combat.projectileVisual != null &&
@@ -136,6 +141,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
             var library = AssetDatabase.LoadAssetAtPath<CreatureLibrary>(CreatureLibraryAuthoring.LibraryPath);
             var forms = library.families.SelectMany(f => f.forms).ToArray();
             var ids = new HashSet<string>(balance.Select(x => x.id), StringComparer.OrdinalIgnoreCase);
+            ids.Add("bite.normal");
             Check(forms.Length == 33, "33 creature forms");
             foreach (var form in forms) {
                 var profile = form.animationProfile;
@@ -156,15 +162,13 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 var starter = set?.CreateFreshDefaultLoadout(1);
                 var adult = set?.CreateFreshDefaultLoadout(36);
                 Check(starter?.Count > 0 && starter[0].combatProfile?.statusOnly == false && adult?.Count == 4 &&
-                    adult.All(skill => skill.unlocked && ids.Contains(skill.skillId) && skill.skillId != "roar.power"),
+                    adult.All(skill => skill.unlocked && ids.Contains(skill.skillId)),
                     name + " | damaging starter and four valid level-36 slots");
                 var roarEntry = set?.learnset.FirstOrDefault(e => e.skill != null && e.skill.Id == "roar.power");
-                bool nonDefault = set != null && set.defaultLoadout.All(s => s != null && s.Id != "roar.power");
-                var cast = profile?.actions.FirstOrDefault(action => action.action == CreatureAction.Cast);
+                var attackEntry = set?.learnset.FirstOrDefault(e => e.skill != null && e.skill.Id == "bite.normal");
                 var states = controller != null ? controller.layers[0].stateMachine.states : Array.Empty<ChildAnimatorState>();
-                bool hasSpell = cast != null && states.Any(entry => entry.state.name == cast.state.Replace("Base Layer.", "") && entry.state.motion != null);
-                Check(roarEntry != null && roarEntry.learnAtLevel == 20 && nonDefault && hasSpell &&
-                    profile.skills.Any(binding => binding.skillId == "roar.power" && binding.action == CreatureAction.Cast), name + " | Lv20 Cast Spell, manual equip");
+                Check(roarEntry?.learnAtLevel == 1 && roarEntry.skill.icon != null &&
+                    attackEntry?.learnAtLevel == 1 && attackEntry.skill.icon != null, name + " | both common skills available at Lv1 with icons");
                 if (set == null || profile == null) continue;
                 if (profile.definitionId == "Dragon Dusk" &&
                     set.TryGet("breath.dragon", out var breath))
@@ -181,7 +185,12 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 foreach (var entry in set.learnset) {
                     if (entry.skill == null || !ids.Contains(entry.skill.Id)) continue;
                     var action = profile.skills.FirstOrDefault(skill => skill.skillId == entry.skill.Id);
-                    var binding = action != null ? profile.actions.FirstOrDefault(candidate => candidate.action == action.action) : null;
+                    var semantic = action?.action ?? (entry.skill.Id switch {
+                        "bite.normal" => profile.actions.Any(candidate => candidate.action == CreatureAction.Bite) ? CreatureAction.Bite : CreatureAction.Attack,
+                        "roar.power" => profile.actions.Any(candidate => candidate.action == CreatureAction.Cast) ? CreatureAction.Cast : CreatureAction.Attack,
+                        _ => CreatureAction.None
+                    });
+                    var binding = profile.actions.FirstOrDefault(candidate => candidate.action == semantic);
                     Check(binding != null && states.Any(state => state.state.name == binding.state.Replace("Base Layer.", "") && state.state.motion != null),
                         name + " | " + entry.skill.Id + " animation");
                 }
@@ -288,7 +297,8 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 old.equippedSkillIds = new List<string> { "orb.dark", "bite.normal", "", "blast" };
                 stats.RestoreFromSaveData(old);
                 equipped = stats.CreateSaveData().equippedSkillIds;
-                check(equipped.SequenceEqual(new[] { "orb.dark", "", "", "" }), "Lv1 migration respects level and slot uniqueness");
+                check(equipped.Count == 4 && equipped[0] == "orb.dark" && equipped[1] == "bite.normal" && equipped[2] == "",
+                    "Lv1 migration keeps both available skills and the explicit empty slot");
             } finally {
                 EditorSceneManager.ClosePreviewScene(preview);
             }
@@ -311,7 +321,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
             try {
                 var pet = (GameObject)PrefabUtility.InstantiatePrefab(evolved.petPrefab, preview);
                 var stats = pet.GetComponent<PetHudRuntimeStats>();
-                string[] expected = { "orb.dark", "spirit.dark", "flock.dark", "blackhole.dark", "curl.normal", "protect.normal", "roar.power" };
+                string[] expected = { "orb.dark", "spirit.dark", "flock.dark", "blackhole.dark", "curl.normal", "protect.normal", "roar.power", "bite.normal" };
                 var saved = stats.CreateSaveData();
                 saved.level = 36;
                 saved.energy = saved.maxEnergy = 100;
@@ -321,7 +331,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 }).ToList();
                 stats.RestoreFromSaveData(saved);
                 var learned = stats.GetLearnedSkills();
-                Check(learned.Select(value => value.skillId).ToHashSet().SetEquals(expected), "Lv36 panel receives all seven skills despite stale unlock flags");
+                Check(learned.Select(value => value.skillId).ToHashSet().SetEquals(expected), "Lv36 panel receives all eight skills despite stale unlock flags");
                 var equipped = stats.GetSkills();
                 Check(equipped[0].skillId == "flock.dark" && equipped[0].unlocked && equipped[0].usable &&
                     equipped[1].skillId == "orb.dark" && string.IsNullOrEmpty(equipped[2].skillId) && string.IsNullOrEmpty(equipped[3].skillId),
@@ -330,7 +340,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
                 Check(stats.TryEquipLearnedSkill(shield, 2) && stats.GetSkills()[2].skillId == "curl.normal", "An eligible recovered skill can be equipped by panel index");
 
                 stats.SetIdentity(stats.DisplayName, 1);
-                Check(stats.GetLearnedSkills().Select(skill => skill.skillId).SequenceEqual(new[] { "orb.dark" }) &&
+                Check(stats.GetLearnedSkills().Select(skill => skill.skillId).ToHashSet().SetEquals(new[] { "orb.dark", "bite.normal", "roar.power" }) &&
                     !stats.GetSkills()[0].unlocked, "Lv1 gates both learned and equipped skills");
                 stats.ConfigureSkillSet(earlier.skillSet, true);
                 stats.SetIdentity(stats.DisplayName, 36);

@@ -26,6 +26,7 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         void LateUpdate() {
+            if (IsOpen && provider is PlayerProfileRuntimeProvider profile) RefreshExperience(profile);
             if (!IsOpen) return;
             FitDesignSurface();
             if (Time.unscaledTime < nextRefresh) return;

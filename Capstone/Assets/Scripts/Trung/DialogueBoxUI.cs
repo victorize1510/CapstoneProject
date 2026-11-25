@@ -329,6 +329,90 @@ public class DialogueBoxUI : MonoBehaviour
         onChosen?.Invoke(result);
     }
 
+    internal IEnumerator ChooseCaveTravel(bool fromCave, System.Action<bool> completed)
+    {
+        var art = Resources.Load<Capstone.Game.QuestSystem.CaveTravelArt>("CaveTravelArt");
+        var rootCanvas = GetComponentInParent<Canvas>()?.rootCanvas;
+        if (rootCanvas == null || art == null || art.frame == null || art.confirm == null || art.cancel == null)
+        {
+            yield return Choose(new[] { "Xác nhận", "Hủy" }, result => completed(result == 0), 1);
+            yield break;
+        }
+
+        var veil = NewImage(rootCanvas.transform, "Xác nhận đi qua hang", new Color(0, 0, 0, .58f), null);
+        Stretch(veil.rectTransform, 0);
+        veil.raycastTarget = true;
+        RectTransform Frame(Transform parent, string title, Texture2D texture, Vector2 size, Vector2 position)
+        {
+            var node = new GameObject(title, typeof(RectTransform), typeof(RawImage));
+            var rect = node.GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.sizeDelta = size;
+            rect.anchoredPosition = position;
+            var image = node.GetComponent<RawImage>();
+            image.texture = texture;
+            image.raycastTarget = false;
+            return rect;
+        }
+
+        var card = Frame(veil.transform, "Khung hỏi", art.frame, new Vector2(850, 425), Vector2.zero);
+        var question = NewText(card, "Câu hỏi", nameText != null ? nameText.font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"),
+            33, TextAnchor.MiddleCenter, Color.white);
+        question.rectTransform.sizeDelta = new Vector2(620, 105);
+        question.text = fromCave ? "Bạn muốn trở về đồng cỏ?" : "Bạn muốn vào hang động?";
+        var yes = Frame(card, "Xác nhận", art.confirm, new Vector2(230, 78), new Vector2(-126, -112));
+        var no = Frame(card, "Hủy", art.cancel, new Vector2(230, 78), new Vector2(126, -112));
+        int clicked = -1;
+        Button MakeButton(RectTransform rect, int value)
+        {
+            var image = rect.GetComponent<RawImage>();
+            image.raycastTarget = true;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            button.navigation = new Navigation { mode = Navigation.Mode.None };
+            button.onClick.AddListener(() => clicked = value);
+            return button;
+        }
+        MakeButton(yes, 0);
+        MakeButton(no, 1);
+
+        bool previousVisible = Cursor.visible;
+        var previousLock = Cursor.lockState;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        bool confirm = false;
+        try
+        {
+            yield return null;
+            int selected = 1;
+            while (true)
+            {
+                if (PhysicalKeys.GetKeyDown(KeyCode.LeftArrow) || PhysicalKeys.GetKeyDown(KeyCode.A)) selected = 0;
+                if (PhysicalKeys.GetKeyDown(KeyCode.RightArrow) || PhysicalKeys.GetKeyDown(KeyCode.D)) selected = 1;
+                int hovered = RectTransformUtility.RectangleContainsScreenPoint(yes, Input.mousePosition) ? 0 :
+                    RectTransformUtility.RectangleContainsScreenPoint(no, Input.mousePosition) ? 1 : -1;
+                if (hovered >= 0) selected = hovered;
+                yes.localScale = Vector3.one * (selected == 0 ? 1.05f : 1f);
+                no.localScale = Vector3.one * (selected == 1 ? 1.05f : 1f);
+                if (PhysicalKeys.GetKeyDown(KeyCode.Escape) || PhysicalKeys.GetKeyDown(KeyCode.Backspace)) break;
+                if (clicked >= 0 || PhysicalKeys.GetKeyDown(KeyCode.Return) || PhysicalKeys.GetKeyDown(KeyCode.Space) ||
+                    (UnityEngine.EventSystems.EventSystem.current == null && hovered >= 0 && Input.GetMouseButtonUp(0)))
+                {
+                    confirm = (clicked >= 0 ? clicked : selected) == 0;
+                    break;
+                }
+                yield return null;
+            }
+        }
+        finally
+        {
+            Destroy(veil.gameObject);
+            Cursor.lockState = previousLock;
+            Cursor.visible = previousVisible;
+        }
+        completed(confirm);
+    }
+
     void BuildChoices(string[] options)
     {
         if (choicePanel == null)

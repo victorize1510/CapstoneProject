@@ -55,6 +55,9 @@ namespace Capstone.Game.QuestSystem.Save {
         public bool Save() {
             var unified = UnifiedSave();
             if (unified != null) return unified.SaveNow();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Capstone.Game.UISystem.DevCheatService.Active) return false;
+#endif
             ResolveReferences();
             EnsureSaveStore();
             if (questManager == null) return Fail("QuestManager is missing.");
@@ -70,6 +73,9 @@ namespace Capstone.Game.QuestSystem.Save {
         public bool Load() {
             var unified = UnifiedSave();
             if (unified != null) return unified.LoadNow();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Capstone.Game.UISystem.DevCheatService.Active) return false;
+#endif
             ResolveReferences();
             EnsureSaveStore();
             if (questManager == null) return Fail("QuestManager is missing.");
@@ -86,6 +92,9 @@ namespace Capstone.Game.QuestSystem.Save {
         }
 
         public bool StartNewGame(bool deleteStoredSave = true) {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Capstone.Game.UISystem.DevCheatService.Active) return false;
+#endif
             if (UnifiedSave() != null) return Fail("Quest-only reset is unavailable while unified player save owns this slot.");
             ResolveReferences();
             EnsureSaveStore();

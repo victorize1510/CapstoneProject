@@ -18,10 +18,10 @@ MonoBehaviour:
   description: "Bắn tia nước 5 nhịp, đẩy lùi mục tiêu ở lần trúng đầu."
   element: 3
   icon: {fileID: 21300000, guid: a85230eefce805f4dbb81103045a9fef, type: 3}
-  cooldownSeconds: 10
+  cooldownSeconds: 3.333333
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: a1d0b913d700ff41f873b27b56e10980, type: 2}
   combat: {fileID: 11400000, guid: 697d5cf83cc7a66c23d7faab07e2ccb7, type: 2}
-  manaCost: 26
+  manaCost: 16

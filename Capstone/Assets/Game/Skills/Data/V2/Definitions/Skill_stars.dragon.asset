@@ -18,10 +18,10 @@ MonoBehaviour:
   description: "Gọi 2–5 đợt sao rơi, gây sát thương vùng lên tối đa 4 mục tiêu."
   element: 10
   icon: {fileID: 21300000, guid: e31cf94d994592a419ddc51b0f39f76e, type: 3}
-  cooldownSeconds: 15
+  cooldownSeconds: 5
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 099af939fc148be4d2cde3691d54b0d1, type: 2}
   combat: {fileID: 11400000, guid: 2d384ed28c8ebaf6f279f4df0f6a13a1, type: 2}
-  manaCost: 34
+  manaCost: 20

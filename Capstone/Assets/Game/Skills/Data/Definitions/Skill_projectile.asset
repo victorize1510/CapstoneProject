@@ -19,8 +19,8 @@ MonoBehaviour:
   description: "Phóng quả cầu lửa. Có 25% cơ hội gây bỏng trong 5 giây."
   element: 2
   icon: {fileID: 21300000, guid: c499d79bb7a7e80438eccdc74e791190, type: 3}
-  cooldownSeconds: 10
-  manaCost: 28
+  cooldownSeconds: 3.333333
+  manaCost: 17
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:

@@ -18,6 +18,10 @@ namespace Capstone.Game.QuestSystem {
         [SerializeField] Vector4 caveRegionBounds;
         CreatureEncounterZone[] zones;
         Transform player;
+        BasicPlayerMovement playerMovement;
+        BoxCollider caveCatchFloor;
+        Vector3? lastSafeCavePosition;
+        float nextCaveSafetyCheck;
         MinimapController minimap;
         WorldMapController map;
         QuestManager quests;
@@ -49,12 +53,62 @@ namespace Capstone.Game.QuestSystem {
 
         void Start() {
             player = FindFirstObjectByType<PetCommandInput>()?.transform;
+            playerMovement = player != null ? player.GetComponent<BasicPlayerMovement>() : null;
             quests = FindFirstObjectByType<QuestManager>();
             minimap = FindFirstObjectByType<MinimapController>(FindObjectsInactive.Include);
             map = FindFirstObjectByType<WorldMapController>(FindObjectsInactive.Include);
             grassPortalMarker = AddPortalMarker(grassGuide, "chapter-cave-entrance", "Lối vào hang động");
             cavePortalMarker = AddPortalMarker(caveElder, "chapter-cave-exit", "Lối ra đồng cỏ");
+            if (gameObject.scene.name == ChapterQuestFlow.GameplayScene) InstallCaveSafety();
             RefreshMap();
+        }
+
+        void InstallCaveSafety() {
+            var guards = new GameObject("Map Cave - Collider an toàn").transform;
+            guards.SetParent(transform, false);
+            AddPortalBackWall(guards, grassGuide, grassPortal, 12f, "Vách sau NPC vào hang");
+            AddPortalBackWall(guards, caveElder, cavePortal, 10f, "Vách sau NPC trong hang");
+
+            var cave = gameObject.scene.GetRootGameObjects()
+                .SelectMany(root => root.GetComponentsInChildren<Transform>(true))
+                .FirstOrDefault(node => node.name == "MapCave");
+            if (cave == null) return;
+
+            Bounds rockBounds = default;
+            bool foundRock = false;
+            foreach (var rock in cave.GetComponentsInChildren<Collider>()) {
+                if (!rock.enabled || rock.isTrigger || rock.bounds.size.sqrMagnitude < .001f) continue;
+                if (foundRock) rockBounds.Encapsulate(rock.bounds);
+                else rockBounds = rock.bounds;
+                foundRock = true;
+            }
+            if (!foundRock) return;
+
+            var region = BoundsRect(caveRegionBounds.z > 0 ? caveRegionBounds : caveBounds);
+            const float margin = 8f;
+            Vector3 min = new(Mathf.Min(rockBounds.min.x, region.xMin) - margin, rockBounds.min.y - 3f,
+                Mathf.Min(rockBounds.min.z, region.yMin) - margin);
+            Vector3 max = new(Mathf.Max(rockBounds.max.x, region.xMax) + margin, rockBounds.min.y - 2f,
+                Mathf.Max(rockBounds.max.z, region.yMax) + margin);
+            caveCatchFloor = AddSafetyBox(guards, "Sàn chặn rơi MapCave", (min + max) * .5f, Quaternion.identity, max - min);
+        }
+
+        static void AddPortalBackWall(Transform parent, Transform npc, Transform arrival, float width, string label) {
+            if (npc == null || arrival == null) return;
+            var back = Vector3.ProjectOnPlane(npc.position - arrival.position, Vector3.up);
+            if (back.sqrMagnitude < .01f) back = -npc.forward;
+            back = Vector3.ProjectOnPlane(back, Vector3.up).normalized;
+            var center = npc.position + back * 3.7f + Vector3.up * 3f;
+            AddSafetyBox(parent, label, center, Quaternion.LookRotation(back), new Vector3(width, 8f, 1f));
+        }
+
+        static BoxCollider AddSafetyBox(Transform parent, string label, Vector3 center, Quaternion rotation, Vector3 size) {
+            var guard = new GameObject(label);
+            guard.transform.SetPositionAndRotation(center, rotation);
+            guard.transform.SetParent(parent, true);
+            var box = guard.AddComponent<BoxCollider>();
+            box.size = size;
+            return box;
         }
 
         static MapMarker AddPortalMarker(Transform point, string id, string label) {
@@ -66,6 +120,7 @@ namespace Capstone.Game.QuestSystem {
 
         void Update() {
             if (player == null) return;
+            CheckCaveFall();
             RefreshMap();
             if (Boss != null && quests != null) {
                 var finale = quests.GetQuestState("main_quest_09");
@@ -73,6 +128,43 @@ namespace Capstone.Game.QuestSystem {
                 if (Boss.gameObject.activeSelf != enabled && (enabled || Boss.IsAlive || Boss.DeathVisualComplete))
                     Boss.gameObject.SetActive(enabled);
             }
+        }
+
+        void CheckCaveFall() {
+            if (playerMovement == null || caveCatchFloor == null || Time.time < nextCaveSafetyCheck) return;
+            nextCaveSafetyCheck = Time.time + .12f;
+            Vector3 position = player.position;
+            if (!InCave(position)) {
+                if (lastSafeCavePosition is Vector3 edge) {
+                    if (Vector3.ProjectOnPlane(position - edge, Vector3.up).sqrMagnitude > 18f * 18f)
+                        lastSafeCavePosition = null;
+                    else if (position.y < edge.y - 4.5f) Teleport(edge, player.rotation);
+                }
+                return;
+            }
+
+            if (position.y < caveCatchFloor.bounds.min.y - 1f && cavePortal != null) {
+                Teleport(lastSafeCavePosition ?? cavePortal.position, player.rotation);
+                return;
+            }
+            bool foundGround = Physics.Raycast(position + Vector3.up * .15f, Vector3.down, out var ground, 12f,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            if (foundGround && ground.collider == caveCatchFloor && ground.distance < .85f &&
+                lastSafeCavePosition == null && cavePortal != null) {
+                Teleport(cavePortal.position, cavePortal.rotation);
+                return;
+            }
+            bool foundLanding = foundGround && ground.collider != caveCatchFloor &&
+                NavMesh.SamplePosition(ground.point, out var floor, .65f, NavMesh.AllAreas) &&
+                Mathf.Abs(ground.point.y - floor.position.y) < .5f;
+            if (playerMovement.IsGroundedForPetThrow && foundLanding && ground.distance < .8f &&
+                NavMesh.FindClosestEdge(ground.point, out var boundary, NavMesh.AllAreas) && boundary.distance >= .4f) {
+                lastSafeCavePosition = position;
+                return;
+            }
+
+            if (foundLanding || lastSafeCavePosition is not Vector3 safe || position.y > safe.y - 4.5f) return;
+            Teleport(safe, player.rotation);
         }
 
         internal bool CanTravelFrom(Transform elder) => elder != null && elder.gameObject.activeInHierarchy &&
@@ -118,6 +210,7 @@ namespace Capstone.Game.QuestSystem {
         }
 
         void Teleport(Vector3 point, Quaternion rotation) {
+            lastSafeCavePosition = null;
             Vector3 departure = player.position;
             player.TryGetComponent<PetCommandInput>(out var input);
             if (input != null && input.activePet != null && input.activePet.IsSummoned) input.activePet.Withdraw();
@@ -132,10 +225,49 @@ namespace Capstone.Game.QuestSystem {
             quests?.RefreshChapterTracking();
         }
 
-        bool InCave(Vector3 position) => BoundsRect(caveRegionBounds.z > 0 ? caveRegionBounds : caveBounds)
+        internal bool InCave(Vector3 position) => BoundsRect(caveRegionBounds.z > 0 ? caveRegionBounds : caveBounds)
             .Contains(new Vector2(position.x, position.z));
 
         static Rect BoundsRect(Vector4 bounds) => new Rect(bounds.x, bounds.y, bounds.z, bounds.w);
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        DummyEnemy developerBoss;
+
+        internal Transform DeveloperWaypoint(int index) => index switch {
+            0 => grassElder,
+            4 => cavePortal,
+            5 => duskPoint,
+            7 => bossPoint,
+            _ => null
+        };
+
+        internal void DeveloperTeleport(Vector3 position, Quaternion orientation) => Teleport(position, orientation);
+
+        internal bool TryBindDeveloperBoss(out string error) {
+            error = string.Empty;
+            if (Boss != null) return true;
+#if UNITY_EDITOR
+            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Trung/Detale.prefab");
+            if (bossPoint != null && prefab != null && prefab.TryGetComponent<DummyEnemy>(out var template) && template.IsBoss &&
+                NavMesh.SamplePosition(bossPoint.position, out var floor, 6f, NavMesh.AllAreas)) {
+                var actor = Instantiate(prefab, floor.position, bossPoint.rotation, transform);
+                developerBoss = boss = actor.GetComponent<DummyEnemy>();
+                actor.SetActive(false);
+                return true;
+            }
+#endif
+            error = "Chưa có Boss hợp lệ tại điểm đấu trường. Kiểm tra prefab Detale, mốc Boss và NavMesh của hang.";
+            return false;
+        }
+
+        internal void ClearDeveloperBossFixture() {
+            if (developerBoss == null) return;
+            if (boss == developerBoss) boss = null;
+            developerBoss.gameObject.SetActive(false);
+            Destroy(developerBoss.gameObject);
+            developerBoss = null;
+        }
+#endif
 
         void RefreshMap() {
             if (player == null) return;

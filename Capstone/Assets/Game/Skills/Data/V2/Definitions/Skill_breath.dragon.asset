@@ -18,10 +18,10 @@ MonoBehaviour:
   description: "Phun theo hình nón 6 nhịp. Có 25% cơ hội gây bỏng trong 5 giây."
   element: 10
   icon: {fileID: 21300000, guid: c4f87bf08b60722479597b2fa4c01b21, type: 3}
-  cooldownSeconds: 10
+  cooldownSeconds: 3.333333
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: c23b38635ba3d80b92f6b04ecb8abb76, type: 2}
   combat: {fileID: 11400000, guid: a393201a87005058a18cc0e2f50a83d7, type: 2}
-  manaCost: 28
+  manaCost: 17

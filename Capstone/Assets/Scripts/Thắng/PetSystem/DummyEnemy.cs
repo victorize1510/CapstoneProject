@@ -162,6 +162,7 @@ public class DummyEnemy : MonoBehaviour
 
     private void Awake()
     {
+        Capstone.Game.CreatureSystem.LocomotionSound.Attach(gameObject);
         cachedRenderer = GetComponentInChildren<Renderer>();
         colliders = GetComponentsInChildren<Collider>();
         baseName = gameObject.name;

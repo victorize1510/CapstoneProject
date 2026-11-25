@@ -503,7 +503,8 @@ namespace Capstone.Game.HudSystem {
             SetNamedText(documentRoot, "pet-details-nature", Capstone.Game.UISystem.VietnameseUI.Nature(metadata.Nature));
             SetNamedText(documentRoot, "pet-details-bst", metadata.BaseStatTotal.ToString());
             RefreshGeneticsTable(documentRoot, metadata);
-            string codexState = metadata.CodexRegistered ? "Đã đăng ký" : "Chưa đăng ký";
+            bool inCatalog = Capstone.Game.CodexSystem.PetCodexCatalog.Default?.Find(metadata) != null;
+            string codexState = metadata.CodexRegistered || inCatalog ? "Đã đăng ký" : "Chưa đăng ký";
             SetNamedText(documentRoot, "pet-details-codex-state-basic", codexState);
 
             PetStatSnapshot scores = metadata.GetStatsAtLevel(level);

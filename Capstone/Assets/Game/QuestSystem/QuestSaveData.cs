@@ -7,6 +7,7 @@ namespace Capstone.Game.QuestSystem {
         public int version = 1;
         public bool tutorialComplete;
         public bool elderIntroductionComplete, starterChosen;
+        public Capstone.Game.HudSystem.PetElement starterElement;
         public string trackedQuestId;
         public List<string> unlockedQuestIds = new List<string>();
         public List<QuestRuntimeSaveData> questStates = new List<QuestRuntimeSaveData>();

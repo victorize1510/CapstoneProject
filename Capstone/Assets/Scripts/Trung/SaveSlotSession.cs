@@ -79,6 +79,9 @@ public static class SaveSlotSession
     // Đánh dấu ô sẽ bị xóa khi vào scene gameplay (PlayerSaveController tự xóa).
     public static void RequestReset(string slot)
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Capstone.Game.UISystem.DevCheatService.Active) return;
+#endif
         try
         {
             string marker = new PlayerJsonFileSaveStore().GetPath(slot) + ".reset-pending";
@@ -91,6 +94,9 @@ public static class SaveSlotSession
 
     public static void CancelReset(string slot)
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Capstone.Game.UISystem.DevCheatService.Active) return;
+#endif
         try
         {
             string marker = new PlayerJsonFileSaveStore().GetPath(slot) + ".reset-pending";
@@ -101,6 +107,9 @@ public static class SaveSlotSession
 
     public static bool Delete(string slot, out string error)
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Capstone.Game.UISystem.DevCheatService.Active) { error = "Thoát phiên thử trước khi xóa ô lưu thật."; return false; }
+#endif
         var store = new PlayerJsonFileSaveStore();
         if (!store.TryDelete(slot, out error)) return false;
         new QuestJsonFileSaveStore(store.RootDirectory).TryDelete(slot, out _);
@@ -131,6 +140,9 @@ public static class SaveSlotSession
     // Đổi ô của PlayerSaveController sang ô mới rồi lưu. Từ đó game tự lưu tiếp vào ô mới.
     public static bool SaveInto(string slot, out string message)
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Capstone.Game.UISystem.DevCheatService.Active) { message = "Phiên thử chỉ lưu trong RAM."; return false; }
+#endif
         var save = UnityEngine.Object.FindFirstObjectByType<PlayerSaveController>();
         if (save == null) { message = "Hiện chưa có phiên chơi để lưu."; return false; }
         if (save.IsSaveBlocked) { message = "Chưa lưu được: " + save.SaveBlockedReason; return false; }

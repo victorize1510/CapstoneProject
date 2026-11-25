@@ -35,6 +35,7 @@ namespace Capstone.Game.QuestSystem {
         bool requirementProvidersBuilt;
         public bool ElderIntroductionComplete { get; private set; }
         public bool StarterChosen { get; private set; }
+        internal Capstone.Game.HudSystem.PetElement StarterElement { get; set; }
         public bool TutorialComplete => ElderIntroductionComplete && StarterChosen;
         internal ChapterQuestFlow Chapter { get; private set; }
         public bool IsReadyForTurnIn(QuestRuntimeState state) =>
@@ -435,6 +436,7 @@ namespace Capstone.Game.QuestSystem {
                 tutorialComplete = TutorialComplete,
                 elderIntroductionComplete = ElderIntroductionComplete,
                 starterChosen = StarterChosen,
+                starterElement = StarterElement,
                 trackedQuestId = GetTrackedQuest()?.QuestId
             };
 
@@ -488,6 +490,7 @@ namespace Capstone.Game.QuestSystem {
             unlockedQuestIds.Clear();
             ElderIntroductionComplete = saveData?.tutorialComplete == true || saveData?.elderIntroductionComplete == true;
             StarterChosen = saveData?.tutorialComplete == true || saveData?.starterChosen == true;
+            StarterElement = saveData?.starterElement ?? Capstone.Game.HudSystem.PetElement.Unknown;
 
             if (saveData != null) {
                 if (saveData.unlockedQuestIds != null) {

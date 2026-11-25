@@ -342,6 +342,7 @@ public partial class PetController : MonoBehaviour
 
     private void Awake()
     {
+        Capstone.Game.CreatureSystem.LocomotionSound.Attach(gameObject);
         if (animator == null)
         {
             animator = GetComponentInChildren<Animator>();
@@ -785,7 +786,7 @@ public partial class PetController : MonoBehaviour
             return;
         }
         float ownerDistance = FlatDistance(transform.position, owner.position);
-        if (ownerDistance > teleportDistance || Mathf.Abs(transform.position.y - owner.position.y) > 3f)
+        if (ownerDistance > teleportDistance)
         {
             if (TeleportNearOwner())
             {
@@ -826,7 +827,7 @@ public partial class PetController : MonoBehaviour
         }
 
         float ownerDistance = FlatDistance(transform.position, owner.position);
-        if (ownerDistance > teleportDistance || Mathf.Abs(transform.position.y - owner.position.y) > 3f)
+        if (ownerDistance > teleportDistance)
         {
             if (TeleportNearOwner())
             {
@@ -1099,7 +1100,12 @@ public partial class PetController : MonoBehaviour
             levelUpService = gameObject.AddComponent<PetLevelUpService>();
         }
 
-        levelUpService.GrantBattleExperience(this, defeatedEnemy.ExperienceReward, out _);
+        var petStats = GetComponentInChildren<PetHudRuntimeStats>(true);
+        var defeatedStats = defeatedEnemy.GetComponentInChildren<PetHudRuntimeStats>(true);
+        if (petStats == null || petStats.Health <= 0f) return;
+        int experience = PveBalanceRules.WildExperienceAward(petStats.Level, defeatedStats?.Level ?? 1, 1,
+            defeatedEnemy.IsBoss, defeatedEnemy.QuestZoneId == "capstone-cave-deep");
+        levelUpService.TryCommitBattleExperience(this, experience);
     }
 
     private float CalculateAttackDamage()

@@ -90,6 +90,20 @@ namespace Capstone.Game.CreatureSystem
         bool initialized;
         public int TargetPopulation { get; private set; }
         public int EligibleSpeciesCount => eligible.Count;
+        internal IEnumerable<(string name, Sprite icon, int min, int max)> PreviewPopulation()
+        {
+            foreach (var group in eligible)
+                for (int i = 0; i < group.forms.Count; i++)
+                {
+                    var form = group.forms[i];
+                    int min = formEligibilityUsesIndividualLevel
+                        ? Mathf.Max(group.minimumLevel, group.formMinimumLevels[i]) : group.minimumLevel;
+                    string id = group.source.definitionId;
+                    string name = CreatureAvatarCatalog.ResolveDisplayName(id, form.formId) ?? id;
+                    yield return (name, CreatureAvatarCatalog.Resolve(id, form.formId, null), min, group.maximumLevel);
+                }
+        }
+
         public int TotalSpawned { get; private set; }
         public string LastStatus { get; private set; } = "Chua khoi tao";
         public IReadOnlyList<string> ConfigurationIssues => configurationIssues;

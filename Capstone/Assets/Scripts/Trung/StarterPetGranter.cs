@@ -58,6 +58,7 @@ namespace Capstone.Game.HudSystem {
                 instance.name = petPrefab.name;
                 pet = instance.GetComponentInChildren<PetController>(true);
                 var metadata = instance.GetComponentInChildren<PetCollectionMetadata>(true);
+                PrepareStarter(pet, metadata);
                 if (metadata != null) metadata.AssignPersistentId("starter-ball-" + System.Guid.NewGuid().ToString("N"));
                 if (player != null) pet.AssignOwner(player);
                 pet.Withdraw();
@@ -102,6 +103,7 @@ namespace Capstone.Game.HudSystem {
             GameObject instance = Instantiate(petPrefab, position, rotation);
             instance.name = petPrefab.name;
             PetController pet = instance.GetComponentInChildren<PetController>(true);
+            PrepareStarter(pet, instance.GetComponentInChildren<PetCollectionMetadata>(true));
             if (pet.owner == null && player != null) pet.AssignOwner(player);
 
             bool ok;
@@ -127,6 +129,16 @@ namespace Capstone.Game.HudSystem {
             Debug.Log($"[StarterPet] Đã thêm {petPrefab.name} vào Party/Box.", this);
             error = string.Empty;
             return true;
+        }
+
+        static void PrepareStarter(PetController pet, PetCollectionMetadata metadata) {
+            const int starterLevel = 5;
+            if (!pet.TryGetComponent<PetHudRuntimeStats>(out var stats)) return;
+            stats.SetIdentity(stats.DisplayName, starterLevel, stats.Icon);
+            metadata?.SetProgress(0, PetLevelUpService.CalculateDefaultExperienceRequirement(starterLevel));
+            stats.UnlockSkillsUpToLevel(starterLevel, out _);
+            if (stats.SpeciesSkillSet != null)
+                stats.SetSkills(stats.SpeciesSkillSet.CreateFreshDefaultLoadout(starterLevel));
         }
 
         // Dự phòng khi scene không có PetCaptureCoordinator: đặt thẳng vào slot Party trống.

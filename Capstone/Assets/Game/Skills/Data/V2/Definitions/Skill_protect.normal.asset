@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Chặn sát thương đối thủ trong 5 giây. Tạm khóa các đòn tấn công."
   element: 13
   icon: {fileID: 21300000, guid: 2dae17f6f53d7334bb8820f3fd1546c8, type: 3}
-  cooldownSeconds: 36
-  manaCost: 40
+  cooldownSeconds: 12
+  manaCost: 24
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Làm nổ bong bóng tại đích và gây sát thương lan."
   element: 3
   icon: {fileID: 21300000, guid: 150394465ed801744b6ae2cbd7ea1a88, type: 3}
-  cooldownSeconds: 11
-  manaCost: 27
+  cooldownSeconds: 3.666667
+  manaCost: 16
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

@@ -20,7 +20,7 @@ using UnityEngine.UI;
 namespace Capstone.Game.QuestSystem.Editor {
     public static class ChapterQuestPlayVerification {
         const string SessionKey = "Capstone.ChapterI.IsolatedVerification";
-        static string Folder => Path.Combine(QaArtifactPaths.Root, "Chapter01");
+        static string Folder => Path.Combine(QaArtifactPaths.Root, "ChapterProgression");
 
         [MenuItem("Tools/Capstone/Chapter I/Verify Transactions in Isolated Play Mode")]
         public static void Start() {
@@ -93,6 +93,7 @@ namespace Capstone.Game.QuestSystem.Editor {
                     bag.GetQuantity(balls) == 15 && manager.GetQuestState(first.QuestId).IsTracked, "15 balls once, with tracking persisted across load");
 
                 VerifyElderTravel(Check, player, manager);
+                VerifyTravelPrompt(Check);
                 VerifyPetHandover(Check, manager, flow, player, roster, bag, wallet, saves);
                 await Task.Delay(70);
                 var chapterSnapshot = manager.CreateSaveData();
@@ -128,6 +129,8 @@ namespace Capstone.Game.QuestSystem.Editor {
                     bag.GetQuantity(InventoryDefinitionCatalog.Find("hp-potion-small")) == 3, "Only required materials deducted; exact rewards claimed");
                 Check(saves.LoadNow() && wallet.Gold == 500 && !(bool)Invoke(flow, "TryTurnIn", success), "Reload preserves the claim and cannot replay the reward");
 
+                VerifyProgressionTransactions(Check, fixture, player, roster, bag, wallet, profile, saves);
+                await VerifyChapterRewardGrowth(Check, manager, rewards, profile, bag, saves);
                 VerifyMapArt(Check);
                 VerifyCapturePicker(fixture, Check);
                 lines.Insert(0, "COMPLETE isolated Chapter I Play Mode");
@@ -140,6 +143,28 @@ namespace Capstone.Game.QuestSystem.Editor {
                 File.WriteAllLines(Path.Combine(Folder, "play-checks.txt"), lines);
                 if (EditorApplication.isPlaying) EditorApplication.ExitPlaymode();
             }
+        }
+
+        static void VerifyTravelPrompt(Action<bool, string> check) {
+            var fixture = new GameObject("QA travel popup", typeof(Canvas));
+            var dialogue = fixture.AddComponent<DialogueBoxUI>();
+            dialogue.Build(fixture.transform);
+            try {
+                foreach (bool confirm in new[] { false, true }) {
+                    bool? result = null;
+                    Action<bool> finish = value => result = value;
+                    var routine = (System.Collections.IEnumerator)Invoke(dialogue, "ChooseCaveTravel", confirm, finish);
+                    try {
+                        check(routine.MoveNext(), "Travel popup opens and waits for input");
+                        var popup = fixture.transform.Find("Xác nhận đi qua hang");
+                        check(popup != null && popup.GetComponentsInChildren<RawImage>().Count(image => image.texture != null) == 3,
+                            "Travel popup resolves all three supplied textures");
+                        var button = popup.GetComponentsInChildren<Button>().Single(control => control.name == (confirm ? "Xác nhận" : "Hủy"));
+                        button.onClick.Invoke();
+                        check(!routine.MoveNext() && result == confirm, confirm ? "Travel confirmation is accepted" : "Travel cancellation is respected");
+                    } finally { (routine as IDisposable)?.Dispose(); }
+                }
+            } finally { UnityEngine.Object.DestroyImmediate(fixture); }
         }
 
         static void VerifyElderTravel(Action<bool, string> check, PetCommandInput player, QuestManager manager) {
@@ -225,6 +250,118 @@ namespace Capstone.Game.QuestSystem.Editor {
                 "Returning NV01 immediately makes NV02 available for the next dialogue offer");
         }
 
+        static void VerifyProgressionTransactions(Action<bool, string> check, GameObject fixture,
+            PetCommandInput player, PetBoxRuntimeProvider roster, MonsterInventoryAdapter bag, PlayerCurrencyWallet wallet,
+            PlayerProfileRuntimeProvider profile, PlayerSaveController saves) {
+            var pet = player.petSlots.First(member => member != null);
+            var stats = pet.GetComponent<PetHudRuntimeStats>();
+            var metadata = pet.GetComponent<PetCollectionMetadata>();
+            var service = fixture.AddComponent<PetLevelUpService>();
+            service.Bind(bag);
+            var candy = InventoryDefinitionCatalog.Find(PetLevelUpService.LevelCandyId);
+            int initialLevel = stats.Level, initialCandy = bag.GetQuantity(candy);
+            metadata.SetProgress(37, service.CalculateExperienceRequirement(stats.Level));
+            check(initialCandy == 10 && profile.Level == 6, "NV01 and NV03 paid 10 candies and 500 player EXP");
+            Set(saves, "saveBlockedReason", "QA intentional candy failure");
+            check(!service.TryLevelUp(pet, out _) && stats.Level == initialLevel && metadata.Experience == 37 &&
+                bag.GetQuantity(candy) == initialCandy, "Candy save failure restores pet level, EXP and candy");
+            Set(saves, "saveBlockedReason", "");
+            UnityEngine.Object.DestroyImmediate(service);
+            service = fixture.AddComponent<PetLevelUpService>();
+            service.Bind(bag);
+            check(service.TryLevelUp(pet, out _) && stats.Level == initialLevel + 1 && metadata.Experience == 37 &&
+                bag.GetQuantity(candy) == initialCandy - 1, "One candy increases one level and keeps accumulated EXP");
+
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Game/CreatureSystem/Runtime/Chicks/OwnedPet/OwnedPet_chick_01.prefab");
+            var stored = UnityEngine.Object.Instantiate(prefab).GetComponent<PetController>();
+            stored.AssignOwner(player.transform);
+            stored.Withdraw();
+            stored.GetComponent<PetCollectionMetadata>().AssignPersistentId("qa-release-exp");
+            var storedStats = stored.GetComponent<PetHudRuntimeStats>();
+            storedStats.SetIdentity(storedStats.DisplayName, 25, storedStats.Icon);
+            check(roster.TryStoreCapturedPet(stored, out _), "Release fixture enters Box");
+            var release = fixture.AddComponent<PetReleaseService>();
+            release.Bind(bag);
+            int startGold = wallet.Gold, startReleases = roster.ReleasedToday;
+            profile.SetLevelProgress(6, 80, 100);
+            check(release.CreatePreview(stored).TrainerExperience == 50, "Release preview advertises the 50 EXP cap");
+            Set(saves, "saveBlockedReason", "QA intentional release failure");
+            check(!release.TryRelease(stored, out _) && roster.Contains(stored) && wallet.Gold == startGold &&
+                roster.ReleasedToday == startReleases && profile.GetSnapshot().CurrentExperience == 80,
+                "Release save failure restores Box pet, gold, daily quota, and player EXP");
+            Set(saves, "saveBlockedReason", "");
+            UnityEngine.Object.DestroyImmediate(release);
+            release = fixture.AddComponent<PetReleaseService>();
+            release.Bind(bag);
+            check(release.TryRelease(stored, out _) && !roster.Contains(stored) &&
+                profile.Level == 7 && profile.GetSnapshot().CurrentExperience == 30 &&
+                roster.ReleasedToday == startReleases + 1, "Release commits roster and XP overflow together");
+            check(saves.LoadNow() && profile.Level == 7 && profile.GetSnapshot().CurrentExperience == 30 &&
+                !roster.Contains(stored) && bag.GetQuantity(candy) == initialCandy - 1,
+                "Reload keeps committed candy and release results without replay");
+            pet = player.petSlots.First(member => member != null);
+            stats = pet.GetComponent<PetHudRuntimeStats>();
+            metadata = pet.GetComponent<PetCollectionMetadata>();
+            stats.SetIdentity(stats.DisplayName, metadata.MaxLevel - 1, stats.Icon);
+            metadata.SetProgress(37, service.CalculateExperienceRequirement(stats.Level));
+            UnityEngine.Object.DestroyImmediate(service);
+            service = fixture.AddComponent<PetLevelUpService>();
+            service.Bind(bag);
+            check(service.TryLevelUp(pet, out _) && stats.Level == metadata.MaxLevel &&
+                metadata.Experience == 0 && metadata.ExperienceToNextLevel == 0, "Candy reaches the level cap without overflowing EXP");
+            check(!service.CreatePreview(pet).CanLevelUp && bag.GetQuantity(candy) == initialCandy - 2,
+                "A max-level pet cannot consume another candy");
+        }
+
+        static async Task VerifyChapterRewardGrowth(Action<bool, string> check, QuestManager manager,
+            QuestRewardService rewards, PlayerProfileRuntimeProvider profile, MonsterInventoryAdapter bag, PlayerSaveController saves) {
+            foreach (var entry in new[] {
+                (PetElement.Fire, "stone-fire"), (PetElement.Water, "stone-water"), (PetElement.Nature, "stone-grass")
+            }) {
+                var snapshot = manager.CreateSaveData();
+                snapshot.starterElement = entry.Item1;
+                snapshot.questStates.RemoveAll(q => q.questId == "main_quest_06");
+                snapshot.questStates.Add(new QuestRuntimeSaveData { questId = "main_quest_06", status = QuestStatus.Completed });
+                manager.RestoreFromSaveData(snapshot);
+                var quest = manager.GetQuestState("main_quest_06");
+                var stone = InventoryDefinitionCatalog.Find(entry.Item2);
+                int before = bag.GetQuantity(stone);
+                var args = new object[] { quest, "" };
+                check((bool)Invoke(rewards, "TryGrantChapterTurnIn", args) && bag.GetQuantity(stone) == before + 1 &&
+                    !(bool)Invoke(rewards, "TryGrantChapterTurnIn", args), "NV06 pays exactly one " + entry.Item2);
+                check(saves.LoadNow() && manager.CreateSaveData().starterElement == entry.Item1, "Starter main element persists");
+            }
+            var journal = manager.CreateSaveData();
+            journal.questStates.Add(new QuestRuntimeSaveData { questId = "main_quest_09", status = QuestStatus.Completed });
+            manager.RestoreFromSaveData(journal);
+            profile.SetLevelProgress(28, 0, 100);
+            var finale = manager.GetQuestState("main_quest_09");
+            var playback = typeof(PlayerProfileRuntimeProvider).Assembly.GetType("Capstone.Game.WorldFeedback.ExperiencePlayback", true);
+            var sample = playback.GetMethod("TrySample", BindingFlags.Static | BindingFlags.NonPublic);
+            var batchType = typeof(QuestRewardService).Assembly.GetType("Capstone.Game.CaptureSystem.CaptureEventBatch", true);
+            using (var batch = (IDisposable)Activator.CreateInstance(batchType, true)) {
+                check((bool)Invoke(rewards, "TryGrantChapterTurnIn", new object[] { finale, "" }) &&
+                    profile.Level == 30, "NV09 reward transaction reaches player level 30 using a completed Boss fixture");
+                batchType.GetMethod("Commit").Invoke(batch, null);
+            }
+            var full = new HashSet<int>();
+            float deadline = Time.unscaledTime + 1.53f;
+            while (Time.unscaledTime < deadline && full.Count < 2) {
+                var args = new object[] { profile, null };
+                if ((bool)sample.Invoke(null, args)) {
+                    var point = args[1];
+                    var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    int level = (int)point.GetType().GetField("Level", flags).GetValue(point);
+                    int exp = (int)point.GetType().GetField("Experience", flags).GetValue(point);
+                    if (exp == 100) full.Add(level);
+                }
+                await Task.Yield();
+            }
+            check(full.SetEquals(new[] { 28, 29 }), "Both consecutive thresholds display a full EXP bar before the next level");
+            check(saves.LoadNow() && !(bool)sample.Invoke(null, new object[] { profile, null }),
+                "A saved multi-level gain does not replay on reload");
+        }
+
         static void VerifyMapArt(Action<bool, string> check) {
             var camera = new GameObject("QA projection camera").AddComponent<Camera>();
             camera.enabled = false;
@@ -298,6 +435,7 @@ namespace Capstone.Game.QuestSystem.Editor {
             boss.transform.position += Vector3.up * 500;
             Invoke(minimap, "LateUpdate");
             var icon = image.transform.Find("Map Art Icons").GetComponentsInChildren<RawImage>().Single();
+            check(icon.rectTransform.sizeDelta == new Vector2(168, 168), "Boss minimap icon is 168 UI units");
             check(icon.rectTransform.anchorMin == new Vector2(.5f, .5f),
                 "The sprite minimap preserves the boss icon while ignoring altitude");
             var projectedOutside = (Vector2)projection.GetMethod("ViewportPoint", BindingFlags.Static | BindingFlags.NonPublic)

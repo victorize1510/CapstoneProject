@@ -295,6 +295,26 @@ namespace Capstone.Game.ProfileSystem {
 
         void HandleProfileChanged() { if (IsOpen) Refresh(); }
 
+        void RefreshExperience(PlayerProfileRuntimeProvider profile) {
+            var point = Capstone.Game.WorldFeedback.ExperiencePlayback.TrySample(profile, out var pending) ? pending : profile.ExperiencePoint;
+            DrawExperience(point);
+        }
+
+        void RefreshExperience(PlayerProfileSnapshot snapshot) {
+            var point = Capstone.Game.WorldFeedback.ExperiencePlayback.TrySample(provider as UnityEngine.Object, out var pending) ? pending :
+                new Capstone.Game.WorldFeedback.ExperiencePlayback.Point(snapshot.Level, snapshot.CurrentExperience, snapshot.RequiredExperience);
+            DrawExperience(point);
+        }
+
+        void DrawExperience(Capstone.Game.WorldFeedback.ExperiencePlayback.Point point) {
+            if (levelText != null) levelText.text = point.Level > 0 ? point.Level.ToString() : "-";
+            if (experienceFill != null) experienceFill.fillAmount = point.Fraction;
+            if (experienceValueText != null) experienceValueText.text = point.Required > 0 ?
+                point.Experience + " / " + point.Required : "- / -";
+            if (experiencePercentText != null) experiencePercentText.text = point.Required > 0 ?
+                Mathf.RoundToInt(point.Fraction * 100f) + "%" : "-";
+        }
+
         void Refresh() {
             if (provider == null) return;
             PlayerProfileSnapshot snapshot = provider.GetSnapshot();
@@ -306,26 +326,7 @@ namespace Capstone.Game.ProfileSystem {
                 displayNameText.text = Capstone.Game.UISystem.MenuTypography.FitSingleLine(displayNameText, fullName);
             }
 
-            if (levelText != null) levelText.text = snapshot.Level > 0 ? snapshot.Level.ToString() : "-";
-
-            float experienceProgress = snapshot.RequiredExperience > 0
-                ? Mathf.Clamp01((float)snapshot.CurrentExperience / snapshot.RequiredExperience)
-                : 0f;
-            if (experienceFill != null) {
-                experienceFill.fillAmount = experienceProgress;
-            }
-
-            if (experienceValueText != null) {
-                experienceValueText.text = snapshot.RequiredExperience > 0
-                    ? snapshot.CurrentExperience + " / " + snapshot.RequiredExperience
-                    : "- / -";
-            }
-
-            if (experiencePercentText != null) {
-                experiencePercentText.text = snapshot.RequiredExperience > 0
-                    ? Mathf.RoundToInt(experienceProgress * 100f) + "%"
-                    : "-";
-            }
+            RefreshExperience(snapshot);
 
             if (avatarImage != null) {
                 avatarImage.sprite = snapshot.Avatar;

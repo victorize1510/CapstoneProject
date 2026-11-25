@@ -86,7 +86,11 @@ namespace Capstone.Game.Skills
             if (!context.IsEnemy && data.delivery != PetSkillDelivery.Melee)
             {
                 if (context.CanHit(victim) && !executor.InReach(victim, data))
+                {
+                    if (data.allowFreeCastWhenTargetUnavailable && !data.RequiresTarget)
+                        return StartSkillWithTarget(slot, candidate, executor, default, victim.Center - transform.position);
                     return Reject("Mục tiêu ngoài tầm hoặc bị che khuất. Hãy đưa pet đến gần hơn.");
+                }
 
                 if (!victim.Exists && data.RequiresTarget)
                     return Reject("Cần mục tiêu trong tầm kỹ năng.");
@@ -159,10 +163,11 @@ namespace Capstone.Game.Skills
                 Finish(false);
         }
 
-        bool StartSkillWithTarget(int slot, SkillHudData candidate, PetSkillCombatExecutor executor, CreatureCombatTarget target)
+        bool StartSkillWithTarget(int slot, SkillHudData candidate, PetSkillCombatExecutor executor,
+            CreatureCombatTarget target, Vector3 fallbackDirection = default)
         {
             executor.SkipNextRetreat = true;
-            executor.StageTarget(target);
+            executor.StageTarget(target, fallbackDirection);
             if (StartSkill(slot, candidate)) return true;
             executor.ClearTargetIntent();
             return false;
@@ -308,7 +313,9 @@ namespace Capstone.Game.Skills
             }
 
             animator.CrossFadeInFixedTime(hash, .09f, 0, 0);
-            binding?.Cry?.BeginSkill(binding, hash);
+            bool hasSkillSound = skill.combatProfile?.authoredStatusRules == true
+                ? skill.combatProfile.authoredReleaseSound != null : profile.release?.sound != null;
+            binding?.Cry?.BeginSkill(binding, hash, hasSkillSound: hasSkillSound);
             presentation.StartCoordinatedAnimation(token);
         }
 

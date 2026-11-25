@@ -5,6 +5,8 @@ namespace Capstone.Game.CreatureSystem {
     public sealed class CombatFeelSettings : ScriptableObject {
         [Range(0, .03f)] public float cameraAmplitude = .03f;
         [Range(.05f, .2f)] public float cameraDuration = .1f;
+        [Range(0, .15f)] public float skillCameraAmplitude = .105f;
+        [Range(.05f, .25f)] public float skillCameraDuration = .17f;
         [Range(0, .05f)] public float criticalVisualPause = .035f;
         public GameObject basicImpact, bleedImpact;
         public GameObject directImpact;

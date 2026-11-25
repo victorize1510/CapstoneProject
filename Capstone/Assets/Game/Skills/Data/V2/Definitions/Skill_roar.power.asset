@@ -17,9 +17,9 @@ MonoBehaviour:
   displayName: "Gầm Uy Lực"
   description: "Gầm lên và tự tăng 15% sát thương vật lý và phép trong 8 giây."
   element: 13
-  icon: {fileID: 21300000, guid: 06d2beed4a8d01547ab931c3e52b260e, type: 3}
-  cooldownSeconds: 16
-  manaCost: 20
+  icon: {fileID: 21300000, guid: 738080789c3f4f40a6170e2ac1bd3f14, type: 3}
+  cooldownSeconds: 5.333333
+  manaCost: 12
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9
