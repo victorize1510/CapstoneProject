@@ -74,12 +74,14 @@ public class MusicManager : MonoBehaviour
             GameAudioRouting.Route(source, GameAudioBus.Music);   // Thanh "Nhạc nền" trong Cài đặt chỉnh được.
         }
         SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
     }
 
     void OnDestroy()
     {
         if (Instance != this) return;
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
         Instance = null;
     }
 
@@ -117,9 +119,30 @@ public class MusicManager : MonoBehaviour
         SuppressBuiltInMusic(true);
     }
 
+    // Scene tiến hóa được mở CHỒNG lên scene gameplay (Additive) -> phát nhạc tiến hóa tới khi đóng lại.
+    static readonly object EvolutionOwner = new object();
+    [Header("Nhạc tiến hóa (EvolutionScene mở chồng lên gameplay)")]
+    [Tooltip("Tên scene tiến hóa (mở chồng lên gameplay)")]
+    [SerializeField] string evolutionSceneName = "EvolutionScene";
+    [Tooltip("Để trống = nhạc tiến hóa có sẵn của game")]
+    [SerializeField] AudioClip evolutionMusic;
+    [SerializeField, Range(0f, 1f)] float evolutionVolume = 0.6f;
+
+    void OnSceneUnloaded(Scene scene)
+    {
+        if (string.Equals(scene.name, evolutionSceneName, StringComparison.OrdinalIgnoreCase)) Release(EvolutionOwner);
+    }
+
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (mode == LoadSceneMode.Additive) return;
+        if (mode == LoadSceneMode.Additive)
+        {
+            if (!string.Equals(scene.name, evolutionSceneName, StringComparison.OrdinalIgnoreCase)) return;
+            AudioClip clip = evolutionMusic != null ? evolutionMusic
+                : GameAudioRouting.Assets != null ? GameAudioRouting.Assets.evolutionMusic : null;
+            if (clip != null) Push(EvolutionOwner, clip, evolutionVolume);
+            return;
+        }
         overrides.RemoveAll(request => request.owner == null || (request.owner is UnityEngine.Object o && o == null));
 
         SceneTrack track = sceneTracks.Find(t => t != null && t.clip != null
@@ -197,11 +220,13 @@ public class MusicManager : MonoBehaviour
         }
         forceSilent = silent;
         SuppressBuiltInMusic(clip != null || silent);
+        Debug.Log($"[Music] {SceneManager.GetActiveScene().name}: " + (silent ? "IM LẶNG" : clip != null ? $"phát '{clip.name}'" : "không có bài riêng -> dùng nhạc có sẵn của game")
+                  + (overrides.Count > 0 ? $" (do {overrides[overrides.Count - 1].owner})" : " (nhạc scene)"));
 
         if (clip == playingClip && clip != null)
         {
             // Cùng bài -> chỉ chỉnh âm lượng, không phát lại từ đầu.
-            CrossFade(null, volume);
+            CrossFade(clip, volume);
             return;
         }
         playingClip = clip;
@@ -216,34 +241,37 @@ public class MusicManager : MonoBehaviour
 
     IEnumerator CrossFadeRoutine(AudioClip clip, float volume)
     {
-        AudioSource from = sources[activeSource];
-        AudioSource to = from;
-        if (clip != null || playingClip == null)
+        AudioSource to = null;
+        if (clip == null) to = null;   // Im lặng.
+        else if (clip == sources[activeSource].clip && sources[activeSource].isPlaying) to = sources[activeSource];   // Cùng bài.
+        else
         {
-            // Bài mới: phát ở nguồn còn lại rồi tăng dần, nguồn cũ giảm dần.
-            if (clip != null)
-            {
-                activeSource = 1 - activeSource;
-                to = sources[activeSource];
-                to.clip = clip;
-                to.volume = 0f;
-                to.Play();
-            }
-            else to = null;   // Im lặng.
+            // Bài mới: phát ở nguồn còn lại rồi tăng dần.
+            activeSource = 1 - activeSource;
+            to = sources[activeSource];
+            to.clip = clip;
+            to.volume = 0f;
+            to.Play();
         }
 
-        float fromStart = from.volume;
+        // Giảm dần MỌI nguồn khác (kể cả nguồn của lần chuyển bài trước bị ngắt giữa chừng),
+        // để không còn bài cũ nào chạy lén ở âm lượng nhỏ.
+        var fading = new List<AudioSource>();
+        var starts = new List<float>();
+        foreach (var source in sources)
+            if (source != to && source.isPlaying) { fading.Add(source); starts.Add(source.volume); }
         float toStart = to != null ? to.volume : 0f;
+
         float t = 0f;
         while (t < fadeTime)
         {
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / fadeTime);
-            if (to != from) from.volume = Mathf.Lerp(fromStart, 0f, k);
+            for (int i = 0; i < fading.Count; i++) fading[i].volume = Mathf.Lerp(starts[i], 0f, k);
             if (to != null) to.volume = Mathf.Lerp(toStart, volume, k);
             yield return null;
         }
-        if (to != from) { from.volume = 0f; from.Stop(); }
+        foreach (var source in fading) { source.volume = 0f; source.Stop(); }
         if (to != null) to.volume = volume;
         fadeRoutine = null;
     }

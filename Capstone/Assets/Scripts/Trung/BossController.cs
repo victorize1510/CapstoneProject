@@ -387,6 +387,14 @@ public class BossController : MonoBehaviour
 
     void Start()
     {
+        // DummyEnemy tự gắn tiếng bước chân nhỏ của thú thường (LocomotionSound).
+        // Boss có tiếng bước chân riêng thì tắt cái đó đi để không kêu 2 lớp.
+        if (footstepSounds != null && footstepSounds.Length > 0)
+        {
+            var genericSteps = GetComponent<LocomotionSound>();
+            if (genericSteps != null) genericSteps.enabled = false;
+        }
+
         if (overrideHealth)
         {
             enemy.maxHealth = maxHealth;

@@ -86,6 +86,15 @@ namespace Capstone.Game.HudSystem {
         public Key congratsContinueKey = Key.Space;
 
         GameObject activeRingVfx;
+
+        [Header("Dừng game trong lúc tiến hóa")]
+        [Tooltip("Bật = cả thế giới gameplay đứng im (quái, NPC, ngày đêm...) tới khi tiến hóa xong và quay về")]
+        public bool freezeWorldDuringEvolution = true;
+        float timeScaleBefore = 1f;
+        bool frozeWorld;
+        float nextUnscaleScan;
+        readonly System.Collections.Generic.Dictionary<Animator, AnimatorUpdateMode> animatorModes = new();
+        readonly System.Collections.Generic.Dictionary<ParticleSystem, bool> particleModes = new();
         static PetEvolutionPresentationController active;
         public static bool AnyPlaying => active != null && active.IsPlaying;
         internal static bool IsPresenting(PetController pet) => AnyPlaying && active.currentPet == pet;
@@ -131,6 +140,7 @@ namespace Capstone.Game.HudSystem {
             activeOverlay?.Cleanup(); activeOverlay=null;
             if(growing!=null)growing.localScale=growingScale;
             StopAllCoroutines(); DespawnGroundRing();
+            UnfreezeWorld();
             scope?.Dispose(); scope=null;
             if(EvolutionUI.Instance!=null)EvolutionUI.Instance.Hide();
             if(ownsScene) {
@@ -143,6 +153,49 @@ namespace Capstone.Game.HudSystem {
             var callback=completion; completion=null; running=null; completing=false;
             try { callback?.Invoke(committed); } catch(Exception e) { Debug.LogException(e,this); }
         }
+        // ---------- Dừng thế giới gameplay ----------
+        // Time.timeScale = 0 làm mọi thứ chạy theo thời gian game đứng im (quái, boss, NPC, ngày đêm, đòn đánh...).
+        // Riêng sân khấu tiến hóa (pet, vòng sáng, hạt) được chuyển sang chạy theo thời gian thật nên vẫn diễn bình thường.
+        Scene stageScene;
+        void FreezeWorld() {
+            if (!freezeWorldDuringEvolution || frozeWorld) return;
+            frozeWorld = true;
+            timeScaleBefore = Time.timeScale;
+            Time.timeScale = 0f;
+            KeepStageRunning(true);
+        }
+        void UnfreezeWorld() {
+            if (!frozeWorld) return;
+            frozeWorld = false;
+            foreach (var pair in animatorModes) if (pair.Key != null) pair.Key.updateMode = pair.Value;
+            foreach (var pair in particleModes) if (pair.Key != null) { var main = pair.Key.main; main.useUnscaledTime = pair.Value; }
+            animatorModes.Clear(); particleModes.Clear();
+            Time.timeScale = Capstone.Game.UISystem.GameplayPause.IsPaused ? 0f : (timeScaleBefore > 0f ? timeScaleBefore : 1f);
+        }
+        void Update() {
+            // Model mới sinh ra lúc tiến hóa / hạt mới -> chuyển sang thời gian thật.
+            if (frozeWorld && Time.unscaledTime >= nextUnscaleScan) { nextUnscaleScan = Time.unscaledTime + 0.1f; KeepStageRunning(false); }
+        }
+        void KeepStageRunning(bool force) {
+            if (stageScene.IsValid() && stageScene.isLoaded)
+                foreach (var root in stageScene.GetRootGameObjects()) Unscale(root);
+            if (currentPet != null) Unscale(currentPet.gameObject);
+            if (activeRingVfx != null) Unscale(activeRingVfx);
+        }
+        void Unscale(GameObject root) {
+            foreach (var animator in root.GetComponentsInChildren<Animator>(true)) {
+                if (animatorModes.ContainsKey(animator)) continue;
+                animatorModes[animator] = animator.updateMode;
+                animator.updateMode = AnimatorUpdateMode.UnscaledTime;
+            }
+            foreach (var particle in root.GetComponentsInChildren<ParticleSystem>(true)) {
+                if (particleModes.ContainsKey(particle)) continue;
+                var main = particle.main;
+                particleModes[particle] = main.useUnscaledTime;
+                main.useUnscaledTime = true;
+            }
+        }
+
         static void UnloadOwned(string name) { var scene=SceneManager.GetSceneByName(name);if(scene.IsValid()&&scene.isLoaded)SceneManager.UnloadSceneAsync(scene); }
         IEnumerator Guarded(IEnumerator routine) {
             var stack=new System.Collections.Generic.Stack<IEnumerator>();stack.Push(routine);
@@ -193,6 +246,7 @@ namespace Capstone.Game.HudSystem {
             yield return loading;
             Scene evoScene=SceneManager.GetSceneByName(evolutionSceneName);
             if(!evoScene.IsValid()||!evoScene.isLoaded)throw new InvalidOperationException("Scene tiến hóa chưa sẵn sàng.");
+            stageScene=evoScene;
             var stageCamera = FindStageCamera(evoScene, display);
             if (stageCamera == null)
                 throw new InvalidOperationException("Scene tiến hóa thiếu camera đang hoạt động cho màn hình gameplay.");
@@ -214,6 +268,7 @@ namespace Capstone.Game.HudSystem {
                 Debug.LogWarning($"{name}: không tìm thấy EvolutionStageAnchor trong '{evolutionSceneName}'.");
             }
             scope.SwitchToStage(stageCamera, gameplayOutput, gameplayScene);
+            FreezeWorld();
 
             if (showStartText && EvolutionUI.Instance != null) {
                 EvolutionUI.Instance.Show(string.Format(startMessageFormat, currentName));
@@ -222,6 +277,7 @@ namespace Capstone.Game.HudSystem {
             }
 
             SpawnGroundRing(petTransform);
+            if (frozeWorld && activeRingVfx != null) Unscale(activeRingVfx);
 
             // 1) Ép animation model CŨ đứng yên ở Idle trước khi xoay.
             ForceIdle(visual != null ? visual.ActiveAnimator : pet.GetComponentInChildren<Animator>());

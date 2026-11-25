@@ -2675,6 +2675,9 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   openSound: {fileID: 0}
   closeSound: {fileID: 0}
+  soundVolume: 1
+  pitchVariation: 0.08
+  closeSoundWhenShut: 1
   passThroughPlayerWhileMoving: 1
   animatorMotionDuration: 1
   highlight: {fileID: 0}
@@ -15355,7 +15358,7 @@ GameObject:
   m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &253385102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21225,6 +21228,7 @@ GameObject:
   - component: {fileID: 343804637}
   - component: {fileID: 343804644}
   - component: {fileID: 343804645}
+  - component: {fileID: 343804646}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -21714,6 +21718,26 @@ MonoBehaviour:
   maleVisualKeyword: Boy
   femaleVisualKeyword: Girl
   lockVisualAfterApply: 1
+  logSteps: 1
+--- !u!114 &343804646
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 343804634}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c297a1fa28b6c5344a241784b8a33534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerContinueState
+  useLastChosenSlot: 1
+  slotId: main
+  freshTestWhenPlayingSceneDirectly: 1
+  player: {fileID: 0}
+  visualSwitcher: {fileID: 0}
+  saveOnQuitAndPause: 1
+  autoSaveInterval: 60
   logSteps: 1
 --- !u!1001 &345585647
 PrefabInstance:
@@ -38440,6 +38464,7 @@ MonoBehaviour:
     {1}!"
   congratsMinDisplayTime: 1
   congratsContinueKey: 1
+  freezeWorldDuringEvolution: 1
 --- !u!1001 &623058499
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -48662,7 +48687,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &765243654
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -54459,6 +54484,9 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   openSound: {fileID: 0}
   closeSound: {fileID: 0}
+  soundVolume: 1
+  pitchVariation: 0.08
+  closeSoundWhenShut: 1
   passThroughPlayerWhileMoving: 1
   animatorMotionDuration: 1
   highlight: {fileID: 0}
@@ -67401,6 +67429,9 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   openSound: {fileID: 0}
   closeSound: {fileID: 0}
+  soundVolume: 1
+  pitchVariation: 0.08
+  closeSoundWhenShut: 1
   passThroughPlayerWhileMoving: 1
   animatorMotionDuration: 1
   highlight: {fileID: 0}
@@ -70551,8 +70582,6 @@ MonoBehaviour:
   coopPlayerColor: {r: 0.55, g: 0.75, b: 1, a: 1}
   scanExistingMarkers: 1
   autoCreatePlayerMarker: 1
-  autoCreatePetMarkers: 1
-  autoCreateEnemyMarkers: 1
   scanPeriodically: 0
   markerScanInterval: 0.75
   useMarkerTextureOverrides: 0
@@ -73337,8 +73366,13 @@ MonoBehaviour:
     {pet}!"
   typingSpeed: 40
   dialogueBox: {fileID: 1494329589}
+  hoverSound: {fileID: 0}
+  selectSound: {fileID: 0}
+  hoverVolume: 0.7
+  selectVolume: 1
   hideChosenBall: 1
   disableAfterChoosing: 1
+  saveKey: starterball.v1
   onPetGranted:
     m_PersistentCalls:
       m_Calls: []
@@ -77104,7 +77138,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 30, y: 24}
-  m_SizeDelta: {x: 244, y: 48}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1267380964
 MonoBehaviour:
@@ -81057,10 +81091,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1267380963}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 122, y: -22.5}
-  m_SizeDelta: {x: 176, y: 33}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1347008161
 MonoBehaviour:
@@ -87484,6 +87518,9 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   openSound: {fileID: 0}
   closeSound: {fileID: 0}
+  soundVolume: 1
+  pitchVariation: 0.08
+  closeSoundWhenShut: 1
   passThroughPlayerWhileMoving: 1
   animatorMotionDuration: 1
   highlight: {fileID: 0}
@@ -88972,7 +89009,7 @@ GameObject:
   m_Icon: {fileID: 419385456094870383, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1494329587
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89020,6 +89057,7 @@ MonoBehaviour:
     end: {fileID: 1779339192}
     duration: 14
   revealFadeTime: 2.5
+  cutBetweenShots: 1
   shotTransitionFade: 0.6
   logo: {fileID: 21300000, guid: bdd0cb7203251ce4ea5cb7794df241b9, type: 3}
   logoFallbackText: 
@@ -89071,6 +89109,9 @@ MonoBehaviour:
   returnFadeIn: 1.5
   locationTitle: "Nh\xE0 c\u1EE7a {name}"
   introIdleState: IdleNeutral
+  silentDuringStory: 1
+  flyoverMusic: {fileID: 8300000, guid: bb0242023dbcdaa4095dfb91af41e736, type: 3}
+  flyoverMusicVolume: 0.8
   music: {fileID: 0}
 --- !u!4 &1494329588
 Transform:
@@ -89118,6 +89159,8 @@ MonoBehaviour:
   fontOverride: {fileID: 0}
   customBoxSprite: {fileID: -1144449632, guid: bc5916f3a19510340b6c101744133e15, type: 3}
   customNameTagSprite: {fileID: 0}
+  choiceSprite: {fileID: 0}
+  selectedChoiceSprite: {fileID: 0}
   typeSound: {fileID: 0}
   typeVolume: 0.35
   soundEveryChars: 2
@@ -123596,6 +123639,9 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   openSound: {fileID: 0}
   closeSound: {fileID: 0}
+  soundVolume: 1
+  pitchVariation: 0.08
+  closeSoundWhenShut: 1
   passThroughPlayerWhileMoving: 1
   animatorMotionDuration: 1
   highlight: {fileID: 0}
@@ -127114,6 +127160,9 @@ MonoBehaviour:
   audioSource: {fileID: 0}
   openSound: {fileID: 0}
   closeSound: {fileID: 0}
+  soundVolume: 1
+  pitchVariation: 0.08
+  closeSoundWhenShut: 1
   passThroughPlayerWhileMoving: 1
   animatorMotionDuration: 1
   highlight: {fileID: 0}

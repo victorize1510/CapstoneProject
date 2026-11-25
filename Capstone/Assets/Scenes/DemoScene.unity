@@ -39917,6 +39917,7 @@ MonoBehaviour:
     {1}!"
   congratsMinDisplayTime: 1
   congratsContinueKey: 1
+  freezeWorldDuringEvolution: 1
 --- !u!1001 &623058499
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -51173,6 +51174,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 783559682}
   m_CullTransparentMesh: 1
+--- !u!1 &784481454
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 784481456}
+  - component: {fileID: 784481455}
+  m_Layer: 0
+  m_Name: CaveMusic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &784481455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 784481454}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 755b83e9b80d81748a58ae502f2b67ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CaveMusicSwitcher
+  caveMusic: {fileID: 8300000, guid: 90dc25ec9ac3808478e299a396f47e0d, type: 3}
+  volume: 0.814
+  checkInterval: 0.5
+  caveArea: {fileID: 0}
+  logChanges: 1
+--- !u!4 &784481456
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 784481454}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -70.65035, y: -88.64979, z: -1107.4419}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &785265285
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -136994,3 +137044,4 @@ SceneRoots:
   - {fileID: 1967071581}
   - {fileID: 116852592}
   - {fileID: 369030761}
+  - {fileID: 784481456}

@@ -64,6 +64,21 @@ public class PlayerContinueState : MonoBehaviour
         SaveSlotSession.ApplyToScene(slotId);
         Log($"Đang dùng {SaveSlotSession.DisplayName(slotId)} ({slotId}).");
 
+        // Vừa tạo nhân vật xong (New Game) -> xóa hẳn save của ô này NGAY BÂY GIỜ,
+        // trước khi PlayerSaveController kịp nạp, để không dính pet / nhiệm vụ của lần chơi trước.
+        if (CharacterSelectionData.HasPendingSelection)
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (!Capstone.Game.UISystem.DevCheatService.Active)
+#endif
+            {
+                bool had = SaveSlotSession.Exists(slotId);
+                if (!SaveSlotSession.Delete(slotId, out string error)) Debug.LogWarning($"[Continue] Không xóa được save cũ của {slotId}: {error}");
+                else Log(had ? $"New Game -> đã xóa save cũ của {SaveSlotSession.DisplayName(slotId)}, chơi mới từ đầu."
+                             : $"New Game -> {SaveSlotSession.DisplayName(slotId)} trống, chơi mới.");
+            }
+        }
+
         if (player == null)
         {
             var move = FindFirstObjectByType<BasicPlayerMovement>();
