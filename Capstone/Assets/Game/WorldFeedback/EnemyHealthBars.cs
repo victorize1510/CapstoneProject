@@ -29,22 +29,25 @@ namespace Capstone.Game.WorldFeedback {
         readonly List<Bar> bars = new List<Bar>(Capacity);
         readonly List<DummyEnemy> candidates = new List<DummyEnemy>(64);
         readonly RaycastHit[] sight = new RaycastHit[32];
-        RectTransform surface; Camera cameraSource; BasicCameraFollow cameraLock; PetCommandInput party;
+        RectTransform surface; Canvas canvas; Camera cameraSource; BasicCameraFollow cameraLock; PetCommandInput party;
         float refreshAt;
         public int VisibleCount { get; private set; }
         public int PooledCount => bars.Count;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void Reset() => live = null;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)] static void Install() {
-            if (live == null) new GameObject("Enemy Overhead Health", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler)).AddComponent<EnemyHealthBars>();
+            if (live == null) new GameObject("Enemy Overhead Health", typeof(RectTransform), typeof(Canvas)).AddComponent<EnemyHealthBars>();
         }
         void Awake() {
             if (live != null && live != this) { Destroy(gameObject); return; }
             live = this; DontDestroyOnLoad(gameObject); surface = (RectTransform)transform;
-            // World annotations stay below the gameplay HUD/minimap and modal canvases.
-            var canvas = GetComponent<Canvas>(); canvas.renderMode = RenderMode.ScreenSpaceOverlay; canvas.sortingOrder = -20;
-            var scaler = GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1600, 900); scaler.matchWidthOrHeight = .5f;
+            // Draw at the pet's depth so visible scenery occludes HP, including meshes without colliders.
+            canvas = GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.sortingOrder = -20;
             for (int i = 0; i < Capacity; i++) bars.Add(Build(i));
+            int uiLayer = LayerMask.NameToLayer("UI");
+            if (uiLayer >= 0)
+                foreach (var element in GetComponentsInChildren<Transform>(true)) element.gameObject.layer = uiLayer;
             SceneManager.activeSceneChanged += SceneChanged;
         }
         void OnDestroy() { SceneManager.activeSceneChanged -= SceneChanged; foreach (var bar in bars) if (bar.Enemy != null) bar.Enemy.HealthChanged -= OnHealthChanged; if (live == this) live = null; }
@@ -89,6 +92,7 @@ namespace Capstone.Game.WorldFeedback {
             foreach (var hit in recentHits) if (hit.Key == null || hit.Value <= Time.unscaledTime) expiredHits.Add(hit.Key);
             foreach (var enemy in expiredHits) recentHits.Remove(enemy);
             if (cameraSource == null) cameraSource = Camera.main;
+            if (canvas.worldCamera != cameraSource) canvas.worldCamera = cameraSource;
             if (cameraLock == null) cameraLock = FindFirstObjectByType<BasicCameraFollow>();
             if (party == null) party = FindFirstObjectByType<PetCommandInput>();
             candidates.Clear(); if (cameraSource == null) return;
@@ -140,6 +144,7 @@ namespace Capstone.Game.WorldFeedback {
             if (Time.unscaledTime >= refreshAt) { refreshAt = Time.unscaledTime + .25f; RefreshCandidates(); }
             VisibleCount = 0;
             bool hidden = cameraSource == null || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying;
+            float uiScale = hidden ? 0f : WorldUnitsPerUiUnit(cameraSource);
             DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
             DummyEnemy selected = party != null ? party.SelectedEnemy : null;
             DummyEnemy centered = null;
@@ -179,10 +184,16 @@ namespace Capstone.Game.WorldFeedback {
                 }
                 bar.Numbers.enabled = showNumbers;
                 bar.Title.enabled = !bar.Enemy.IsDowned;
-                Vector3 pixel = cameraSource.ViewportToScreenPoint(screen);
-                RectTransformUtility.ScreenPointToLocalPointInRectangle(surface, pixel, null, out var point);
-                bar.Root.anchoredPosition = point;
+                bar.Root.SetPositionAndRotation(anchor, cameraSource.transform.rotation);
+                bar.Root.localScale = Vector3.one * (cameraSource.orthographic ? uiScale : uiScale * screen.z);
             }
+        }
+
+        static float WorldUnitsPerUiUnit(Camera view) {
+            var bottom = view.ViewportToWorldPoint(new Vector3(.5f, 0f, 1f));
+            var top = view.ViewportToWorldPoint(new Vector3(.5f, 1f, 1f));
+            float displayScale = Mathf.Sqrt((view.pixelWidth / 1600f) * (view.pixelHeight / 900f));
+            return Vector3.Distance(bottom, top) * displayScale / Mathf.Max(1, view.pixelHeight);
         }
         bool CanSeeEnemy(DummyEnemy enemy) {
             Vector3 body = enemy.GetTargetBounds().center;
@@ -193,8 +204,17 @@ namespace Capstone.Game.WorldFeedback {
         bool ClearSight(Vector3 start, Vector3 point, DummyEnemy enemy) {
             Vector3 delta = point - start;
             if (delta.sqrMagnitude < .001f) return true;
-            int count = Physics.RaycastNonAlloc(start, delta.normalized, sight, delta.magnitude, ~0, QueryTriggerInteraction.Collide);
-            if (count == sight.Length) return false;
+            float distance = delta.magnitude;
+            Vector3 direction = delta / distance;
+            var physics = enemy.gameObject.scene.GetPhysicsScene();
+            // Unity raycasts miss colliders containing the origin. The reverse ray covers camera clipping into a wall.
+            return !IsSightBlocked(physics, start, direction, distance, enemy)
+                && !IsSightBlocked(physics, point, -direction, distance, enemy);
+        }
+
+        bool IsSightBlocked(PhysicsScene physics, Vector3 start, Vector3 direction, float distance, DummyEnemy enemy) {
+            int count = physics.Raycast(start, direction, sight, distance, ~0, QueryTriggerInteraction.Collide);
+            if (count == sight.Length) return true;
             for (int i = 0; i < count; i++) {
                 var collider = sight[i].collider;
                 if (collider == null || collider.transform.IsChildOf(enemy.transform)) continue;
@@ -202,9 +222,9 @@ namespace Capstone.Game.WorldFeedback {
                 if (collider.GetComponentInParent<PetController>() is PetController pet && !pet.IsWildEncounter) continue;
                 if (collider.isTrigger && collider.GetComponentInParent<CameraOccluder>() is not
                     { actor: false, kind: CameraOccluder.Kind.Wall or CameraOccluder.Kind.Column }) continue;
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
     }
 }
