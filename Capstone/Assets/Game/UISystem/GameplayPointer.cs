@@ -31,11 +31,18 @@ namespace Capstone.Game.UISystem {
         void Update() {
             if (!Cursor.visible || Cursor.lockState == CursorLockMode.Locked) return;
             Vector2 mouse = Input.mousePosition;
+            // Chuột ngoài cửa sổ Game (vừa bấm Play, đang ở Inspector...) -> Unity trả về vị trí vô cực
+            // làm Camera.ScreenPointToRay báo lỗi "Screen position out of view frustum". Bỏ qua frame đó.
+            if (!OnScreen(mouse)) return;
             bool canClick = IsClickable(mouse);
             if (clickable == canClick) return;
             clickable = canClick;
             Cursor.SetCursor(canClick ? action : normal, canClick ? new Vector2(12, 3) : new Vector2(3, 3), CursorMode.Auto);
         }
+
+        static bool OnScreen(Vector2 p) =>
+            !float.IsNaN(p.x) && !float.IsNaN(p.y) && !float.IsInfinity(p.x) && !float.IsInfinity(p.y)
+            && p.x >= 0f && p.y >= 0f && p.x <= Screen.width && p.y <= Screen.height;
 
         bool IsClickable(Vector2 mouse) {
             var events = EventSystem.current;
