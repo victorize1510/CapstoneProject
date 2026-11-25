@@ -129,8 +129,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2562896}
   - component: {fileID: 2562899}
-  - component: {fileID: 2562898}
   - component: {fileID: 2562897}
+  - component: {fileID: 2562901}
+  - component: {fileID: 2562900}
   m_Layer: 0
   m_Name: Water Surface 1
   m_TagString: Untagged
@@ -202,8 +203,16 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &2562898
-MeshCollider:
+--- !u!33 &2562899
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2562895}
+  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!65 &2562900
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -217,21 +226,24 @@ MeshCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
---- !u!33 &2562899
-MeshFilter:
+  serializedVersion: 3
+  m_Size: {x: 10, y: -5, z: 10}
+  m_Center: {x: -0.0000019073486, y: 0, z: 0}
+--- !u!114 &2562901
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2562895}
-  m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 540e42acd9448ce40bdf427679487bdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WaterTrigger
 --- !u!1001 &2756899
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2042,6 +2054,7 @@ GameObject:
   - component: {fileID: 40204726}
   - component: {fileID: 40204725}
   - component: {fileID: 40204724}
+  - component: {fileID: 40204731}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2320,6 +2333,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 663689890}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &40204731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 40204722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c50f64c938668a4db1c568ae35198d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnderwaterController
+  underwaterFeature: {fileID: -557507023288245450, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
+  viewPoint: {fileID: 0}
+  usePlayerHead: 1
+  headHeight: 1.5
+  logChanges: 1
 --- !u!1001 &41417323
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4619,6 +4649,7 @@ GameObject:
   - component: {fileID: 74429317}
   - component: {fileID: 74429316}
   - component: {fileID: 74429315}
+  - component: {fileID: 74429324}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -4891,8 +4922,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BasicPlayerMovement
   animator: {fileID: 1273542212}
   cameraTransform: {fileID: 40204730}
-  slowRunSpeed: 7
-  sprintSpeed: 12
+  slowRunSpeed: 5
+  sprintSpeed: 10
   backwardSpeed: 2.8
   crouchWalkSpeed: 1.55
   acceleration: 18
@@ -5109,6 +5140,26 @@ CharacterController:
   m_SkinWidth: 0.02
   m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0.95, z: 0}
+--- !u!114 &74429324
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 74429312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c297a1fa28b6c5344a241784b8a33534, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerContinueState
+  useLastChosenSlot: 1
+  slotId: main
+  freshTestWhenPlayingSceneDirectly: 1
+  player: {fileID: 0}
+  visualSwitcher: {fileID: 0}
+  saveOnQuitAndPause: 1
+  autoSaveInterval: 60
+  logSteps: 1
 --- !u!4 &74961723 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2146010354818802771, guid: d3318093acf0d394b9684aa9df6d6915, type: 3}
@@ -16772,7 +16823,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 114d89e1f65b40f46af8c285bf0770e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VillageChiefCutscene
-  npc: {fileID: 0}
+  npc: {fileID: 1098205783}
   npcName: "Tr\u01B0\u1EDFng l\xE0ng"
   npcPortrait: {fileID: 0}
   npcAnimator: {fileID: 0}
@@ -43366,8 +43417,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 674685753}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.14728737, y: -0.12266077, z: 0.018410927, w: 0.9812858}
-  m_LocalPosition: {x: 40.76443, y: -89.751976, z: 29.108807}
+  m_LocalRotation: {x: 0.05984159, y: -0.12380915, z: 0.007480208, w: 0.9904718}
+  m_LocalPosition: {x: 40.337513, y: -90.76591, z: 30.789799}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -43433,7 +43484,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 1.06443, y: 2.528021, z: -4.191193}
+  FollowOffset: {x: 0.6375115, y: 1.51409, z: -2.510201}
 --- !u!114 &674685758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -49614,7 +49665,10 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 8699652204047898494, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1543244816}
   m_SourcePrefab: {fileID: 100100000, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
 --- !u!1001 &759525926
 PrefabInstance:
@@ -73175,7 +73229,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DayNightCycle
   sunLight: {fileID: 2003931976}
   moonLight: {fileID: 925173751}
-  dayLengthInMinutes: 10
+  dayLengthInMinutes: 7.85
   timeOfDay: 0.513
   sunIntensityCurve:
     serializedVersion: 2
@@ -94935,7 +94989,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c44aa71a76bf4444926999bb16628fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ChiefStarterTalk
-  npc: {fileID: 0}
+  npc: {fileID: 1098205783}
   npcName: "Tr\u01B0\u1EDFng l\xE0ng"
   npcPortrait: {fileID: 0}
   playerPortrait: {fileID: 0}
@@ -94944,7 +94998,7 @@ MonoBehaviour:
   turnSpeed: 360
   playerIdleState: IdleNeutral
   requireElderIntro: 0
-  ballTable: {fileID: 0}
+  ballTable: {fileID: 1209891443}
   lines:
   - speaker: 0
     text: "A, {name} t\u1EDBi r\u1ED3i \u0111\u1EA5y \xE0! V\xE0o \u0111\xE2y, v\xE0o
@@ -95794,6 +95848,36 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 89cfd99d916484c498ef98057e6b0c8f, type: 3}
+--- !u!1 &1543244813 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+  m_PrefabInstance: {fileID: 759093760}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1543244816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1543244813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e47d5316dd4435c95869c7730469581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.UISystem.NpcPanelInteractable
+  targetPanel: 0
+  interactKey: 101
+  interactDistance: 2.75
+  player: {fileID: 0}
+  menuController: {fileID: 876790935}
+  dialogue: {fileID: 1494329589}
+  speaker: 
+  portrait: {fileID: 0}
+  greeting: 
+  openChoice: 
+  healChoice: "H\u1ED3i ph\u1EE5c cho pet"
+  promptOffset: {x: 0, y: 1.65, z: 0}
+  promptColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &1543938154 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8800436137218903276, guid: 3e54838d3a6357b44a7309d5701fb37c, type: 3}
@@ -110391,7 +110475,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 540e42acd9448ce40bdf427679487bdb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaterTrigger
-  cameraTag: MainCamera
 --- !u!65 &1766896704
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -110411,8 +110494,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 10, y: 2.220446e-16, z: 10}
-  m_Center: {x: 0.0000038146973, y: 0, z: 0}
+  m_Size: {x: 10, y: -5.25, z: 13.532024}
+  m_Center: {x: 0.0000040306236, y: -1.15, z: 1.7660097}
 --- !u!23 &1766896705
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -137011,6 +137094,10 @@ PrefabInstance:
     - target: {fileID: 7724722090093391366, guid: 53cda23590f684c4e84174f8c5bcee04, type: 3}
       propertyPath: m_Name
       value: Detale
+      objectReference: {fileID: 0}
+    - target: {fileID: 9089074541710817641, guid: 53cda23590f684c4e84174f8c5bcee04, type: 3}
+      propertyPath: maxHealth
+      value: 2000
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

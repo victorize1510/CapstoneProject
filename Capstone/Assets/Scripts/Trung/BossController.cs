@@ -203,6 +203,14 @@ public class BossController : MonoBehaviour
     [Tooltip("Hiện khói khi biến mất (khói chết chung của game)")]
     [SerializeField] bool deathSmoke = true;
     [SerializeField] AudioClip dieSound;
+
+    [Header("Kết thúc game")]
+    [Tooltip("Bật = đánh bại boss xong thì chuyển sang scene Ending (chạy credit)")]
+    [SerializeField] bool loadEndingOnDefeat = true;
+    [SerializeField] string endingSceneName = "EndingScene";
+    [Tooltip("Đợi thêm bấy nhiêu giây sau khi boss biến mất rồi mới tối màn hình")]
+    [SerializeField, Min(0f)] float endingDelay = 2f;
+    [SerializeField, Min(0.1f)] float endingFadeTime = 2f;
     public UnityEvent onDefeated = new UnityEvent();
 
     DummyEnemy enemy;
@@ -904,6 +912,7 @@ public class BossController : MonoBehaviour
         if (autoHide != null) autoHide.enabled = false;
         onDefeated?.Invoke();
         if (vanishAfterDeath) StartCoroutine(VanishRoutine());
+        else if (loadEndingOnDefeat) StartEndingRunner(6f + endingDelay);   // Giữ xác: đợi animation chết rồi sang Ending.
     }
 
     IEnumerator VanishRoutine()
@@ -946,6 +955,7 @@ public class BossController : MonoBehaviour
             yield return null;
         }
         enemy.DeathVisualComplete = true;
+        if (loadEndingOnDefeat) StartEndingRunner(endingDelay);   // Chạy trên object riêng vì boss sắp bị ẩn.
         gameObject.SetActive(false);
     }
 
@@ -1159,6 +1169,19 @@ public class BossController : MonoBehaviour
         return transform.position + Vector3.up * height * 0.6f + Flat(transform.forward).normalized * BodyRadius();
     }
 
+    // ---------- Sang scene Ending ----------
+
+    void StartEndingRunner(float delay)
+    {
+        if (string.IsNullOrWhiteSpace(endingSceneName) || !Application.CanStreamedLevelBeLoaded(endingSceneName))
+        {
+            Debug.LogError($"[Boss] Scene Ending '{endingSceneName}' chưa có trong Build Profiles / Scene List.", this);
+            return;
+        }
+        var runner = new GameObject("BossEndingRunner").AddComponent<BossEndingRunner>();
+        runner.Begin(endingSceneName, delay, endingFadeTime);
+    }
+
     // ---------- Vòng đỏ ----------
 
     float bodyRadius = -1f;
@@ -1303,5 +1326,41 @@ public class BossController : MonoBehaviour
         DrawCircle(origin, zoneRadius);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
+}
+
+// Đợi -> lưu game -> tối màn hình -> sang scene Ending. Nằm trên object riêng để boss bị ẩn cũng không ngắt.
+public class BossEndingRunner : MonoBehaviour
+{
+    public void Begin(string scene, float delay, float fadeTime) => StartCoroutine(Run(scene, delay, fadeTime));
+
+    IEnumerator Run(string scene, float delay, float fadeTime)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+
+        // Lưu tiến trình (EXP, quà boss...) trước khi rời màn chơi.
+        var save = FindFirstObjectByType<Capstone.Game.SaveSystem.PlayerSaveController>();
+        if (save != null && !save.IsSaveBlocked) save.SaveNow();
+
+        // Khóa điều khiển + màn đen phủ dần.
+        Capstone.Game.Inventory.InventoryInputController.SetExternalGameplayInputBlocked(this, true);
+        var canvasGo = new GameObject("EndingFade", typeof(Canvas));
+        canvasGo.transform.SetParent(transform, false);
+        var canvas = canvasGo.GetComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 32000;
+        var black = new GameObject("Black", typeof(RectTransform), typeof(UnityEngine.UI.Image)).GetComponent<UnityEngine.UI.Image>();
+        black.transform.SetParent(canvasGo.transform, false);
+        var rect = black.rectTransform;
+        rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one; rect.offsetMin = rect.offsetMax = Vector2.zero;
+        for (float t = 0f; t < fadeTime; t += Time.unscaledDeltaTime)
+        {
+            black.color = new Color(0f, 0f, 0f, t / fadeTime);
+            yield return null;
+        }
+        black.color = Color.black;
+        Capstone.Game.Inventory.InventoryInputController.SetExternalGameplayInputBlocked(this, false);
+        Debug.Log($"[Boss] Đã đánh bại boss -> chuyển sang {scene}.");
+        UnityEngine.SceneManagement.SceneManager.LoadScene(scene);
     }
 }

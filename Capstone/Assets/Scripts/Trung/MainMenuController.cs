@@ -287,6 +287,10 @@ public class MainMenuController : MonoBehaviour
 
     public void Quit()
     {
+        Debug.Log("[MainMenu] Bấm Quit -> thoát game.");
+        // Lưu cài đặt (âm lượng, độ phân giải...) trước khi thoát.
+        Capstone.Game.SettingsSystem.GameSettingsService.Instance?.Flush();
+        PlayerPrefs.Save();
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #else

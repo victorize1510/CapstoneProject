@@ -23,6 +23,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CharacterCreationScene.unity
     guid: 3e555a71f9589884a963e0b83659c42d
+  - enabled: 1
+    path: Assets/Scenes/EndingScene.unity
+    guid: 5a48bcf8574f6c64ea19637677441dc4
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
   m_UseUCBPForAssetBundles: 0
