@@ -23,6 +23,29 @@ public static class SaveSlotSession
     {
         current = null;
         ChosenThisSession = false;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    // Chạy cho MỌI scene gameplay, kể cả khi scene chưa gắn PlayerContinueState (vd. scene vừa Update từ VCS bị mất component):
+    // gán đúng ô đã chọn ở Main Menu, và New Game thì xóa save cũ của ô đó trước khi PlayerSaveController nạp (nạp ở Start).
+    static void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        if (!ChosenThisSession || mode != UnityEngine.SceneManagement.LoadSceneMode.Single) return;
+        if (UnityEngine.Object.FindFirstObjectByType<PlayerSaveController>(FindObjectsInactive.Include) == null) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Capstone.Game.UISystem.DevCheatService.Active) return;
+#endif
+        string slot = Current;
+        ApplyToScene(slot);
+        if (CharacterSelectionData.HasPendingSelection)
+        {
+            bool had = Exists(slot);
+            if (Delete(slot, out string error))
+                Debug.Log($"[SaveSlot] {scene.name}: New Game -> {(had ? "đã xóa save cũ của" : "dùng ô trống")} {DisplayName(slot)} ({slot}).");
+            else Debug.LogWarning($"[SaveSlot] Không xóa được save cũ của {slot}: {error}");
+        }
+        else Debug.Log($"[SaveSlot] {scene.name}: dùng {DisplayName(slot)} ({slot}).");
     }
     public static string Current
     {

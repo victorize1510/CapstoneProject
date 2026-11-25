@@ -175,6 +175,7 @@ public class VillageChiefCutscene : MonoBehaviour
 
     void MarkAlreadyPlayed()
     {
+        if (!played) Debug.Log("[Chief] Save đã ghi 'đã gặp trưởng làng' -> bỏ qua cutscene. (New Game mà vẫn thấy dòng này = save cũ chưa được xóa)", this);
         played = true;
         if (npc != null && !npc.gameObject.activeSelf) npc.gameObject.SetActive(true);
     }
