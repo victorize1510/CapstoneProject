@@ -67,6 +67,10 @@ public class BossController : MonoBehaviour
 
         [NonSerialized] public float readyAt;
         [NonSerialized] public float projectileScale = 1f;
+        // Lấy từ cue Impact của pet (giống cách pet đặt hiệu ứng).
+        [NonSerialized] public Vector3 hitOffset;
+        [NonSerialized] public Vector3 hitEuler;
+        [NonSerialized] public float hitScale = 1f;
     }
 
     enum Mode { Idle, Chase, Return, Busy, Dead }
@@ -123,6 +127,18 @@ public class BossController : MonoBehaviour
     [SerializeField, Min(0f)] float firstSkillDelay = 4f;
     [SerializeField] List<BossSkill> skills = new List<BossSkill> { new BossSkill() };
 
+    [Header("Vòng đỏ cảnh báo (chiêu Target Ground)")]
+    [Tooltip("Bật = tự đo kích thước Hit Effect lúc vào game rồi chỉnh Radius (vòng đỏ + vùng sát thương) cho khớp hiệu ứng")]
+    [SerializeField] bool fitRingToEffect = true;
+    [Tooltip("Nhân thêm cho kích thước đo được (1 = khít hiệu ứng)")]
+    [SerializeField, Range(0.5f, 1.5f)] float ringFitScale = 0.9f;
+    [Tooltip("Tắt = vòng đỏ hiện ngay dưới chân pet.\nBật = pet đứng sát boss thì vòng bị đẩy ra xa (cách thân boss Ring Gap From Boss mét)")]
+    [SerializeField] bool pushRingAwayFromBoss = false;
+    [Tooltip("Chỉ dùng khi bật Push Ring Away From Boss")]
+    [SerializeField, Min(0f)] float ringGapFromBoss = 2f;
+    [SerializeField] Color ringColor = new Color(1f, 0.15f, 0.1f, 0.9f);
+    [SerializeField, Min(0.02f)] float ringWidth = 0.15f;
+
     [Header("Chết")]
     [Tooltip("Mấy giây sau khi chết thì ẩn boss. 0 = giữ xác")]
     [SerializeField, Min(0f)] float hideAfterDeath = 0f;
@@ -175,10 +191,13 @@ public class BossController : MonoBehaviour
             audioSource.spatialBlend = 1f;
             audioSource.maxDistance = 40f;
         }
+        // Đi qua kênh âm thanh "Kỹ năng" của game: thanh Hiệu ứng / Kỹ năng trong Cài đặt chỉnh được.
+        Capstone.Game.SettingsSystem.GameAudioRouting.Route(audioSource, Capstone.Game.SettingsSystem.GameAudioBus.Skill);
 
         home = transform.position;
         homeRotation = transform.rotation;
         foreach (BossSkill skill in skills) ApplyPetSkill(skill);
+        FitRingsToEffects();
     }
 
     // Lấy dữ liệu từ chiêu của pet: kiểu chiêu, tầm, sức mạnh, hồi chiêu, hiệu ứng, âm thanh.
@@ -236,8 +255,15 @@ public class BossController : MonoBehaviour
             GameObject release = look.release != null ? look.release.effectPrefab : null;
             GameObject impact = look.impact != null ? look.impact.effectPrefab : null;
             if (skill.projectilePrefab == null && skill.shape == SkillShape.Projectile) skill.projectilePrefab = release;
-            if (impact != null) skill.hitEffect = impact;
-            else if (skill.shape != SkillShape.Projectile && release != null) skill.hitEffect = release;
+            PetSkillCue hitCue = null;
+            if (impact != null) { skill.hitEffect = impact; hitCue = look.impact; }
+            else if (skill.shape != SkillShape.Projectile && release != null) { skill.hitEffect = release; hitCue = look.release; }
+            if (hitCue != null)
+            {
+                skill.hitOffset = hitCue.localOffset;
+                skill.hitEuler = hitCue.localEulerAngles;
+                skill.hitScale = hitCue.scale > 0f ? hitCue.scale : 1f;
+            }
             AudioClip hitSound = look.impact != null && look.impact.sound != null ? look.impact.sound
                 : look.release != null ? look.release.sound : null;
             if (hitSound != null) skill.hitSound = hitSound;
@@ -432,9 +458,13 @@ public class BossController : MonoBehaviour
         PlaySound(skill.castSound);
 
         // Chiêu đập đất: hiện vòng cảnh báo ngay khi bắt đầu, khóa vị trí pet lúc đó.
-        Vector3 groundPoint = IsValidTarget(victim) ? GroundPoint(victim.transform.position) : transform.position;
+        Vector3 groundPoint = IsValidTarget(victim) ? GroundPoint(victim.Center) : transform.position;
         GameObject warning = null;
-        if (skill.shape == SkillShape.TargetGround) warning = CreateWarningRing(groundPoint, skill.radius);
+        if (skill.shape == SkillShape.TargetGround)
+        {
+            if (pushRingAwayFromBoss) groundPoint = PushAwayFromBoss(groundPoint, skill.radius);
+            warning = CreateWarningRing(groundPoint, skill.radius, ringColor, ringWidth);
+        }
 
         yield return WaitForAnimation(skill.animatorState, skill.hitTime, () =>
         {
@@ -464,7 +494,7 @@ public class BossController : MonoBehaviour
 
     void Explode(BossSkill skill, Vector3 center, float radius, bool coneOnly)
     {
-        Spawn(skill.hitEffect, coneOnly ? center + transform.forward * radius * 0.5f : center, transform.rotation, null);
+        SpawnHit(skill, coneOnly ? center + transform.forward * radius * 0.5f : center, transform.rotation);
         PlaySound(skill.hitSound);
         foreach (CreatureCombatant pet in PetsInRange(center, radius))
         {
@@ -488,7 +518,9 @@ public class BossController : MonoBehaviour
         if (warning != null) Destroy(warning);
         if (mode == Mode.Dead) yield break;
 
-        Spawn(skill.hitEffect, point, Quaternion.identity, null);
+        // Hướng hiệu ứng theo hướng boss -> chỗ nổ (giống pet tung chiêu về phía mục tiêu).
+        Vector3 aim = Flat(point - transform.position);
+        SpawnHit(skill, point, aim.sqrMagnitude > 0.01f ? Quaternion.LookRotation(aim) : transform.rotation);
         PlaySound(skill.hitSound);
         foreach (CreatureCombatant pet in PetsInRange(point, skill.radius))
             DealDamage(pet, skill.damageMultiplier, skill.damageKind, skill.skillName);
@@ -543,7 +575,7 @@ public class BossController : MonoBehaviour
 
         if (bullet != null)
         {
-            Spawn(skill.hitEffect, bullet.transform.position, Quaternion.identity, null);
+            SpawnHit(skill, bullet.transform.position, Quaternion.identity);
             if (exploded) PlaySound(skill.hitSound);
             Destroy(bullet);
         }
@@ -740,11 +772,56 @@ public class BossController : MonoBehaviour
 
     // ---------- Hiệu ứng ----------
 
-    static void Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform follow)
+    void SpawnHit(BossSkill skill, Vector3 point, Quaternion rotation)
     {
-        if (prefab == null) return;
+        Quaternion final = rotation * Quaternion.Euler(skill.hitEuler);
+        GameObject effect = Spawn(skill.hitEffect, point + rotation * skill.hitOffset, final, null);
+        if (effect != null && !Mathf.Approximately(skill.hitScale, 1f)) effect.transform.localScale *= skill.hitScale;
+    }
+
+    GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform follow)
+    {
+        if (prefab == null) return null;
         GameObject effect = Instantiate(prefab, position, rotation, follow);
+        IgnoreBossBody(effect, position);
         Destroy(effect, 5f);
+        return effect;
+    }
+
+    // Hiệu ứng của pet có thể có Collider hoặc hạt va chạm (Particle Collision) -> rơi trúng thân boss là nổ luôn.
+    // Pet cũng tắt Collider của hiệu ứng như vậy. Hạt va chạm thì bỏ layer của boss ra khỏi danh sách va chạm.
+    int bossLayerMask = -1;
+    bool layerWarned;
+    void IgnoreBossBody(GameObject effect, Vector3 point)
+    {
+        foreach (var c in effect.GetComponentsInChildren<Collider>(true)) c.enabled = false;
+
+        if (bossLayerMask < 0)
+        {
+            bossLayerMask = 0;
+            foreach (var c in GetComponentsInChildren<Collider>(true)) bossLayerMask |= 1 << c.gameObject.layer;
+        }
+        if (bossLayerMask == 0) return;
+
+        // Layer của mặt đất chỗ nổ: không được bỏ, không thì hạt rơi xuyên đất.
+        int groundMask = 0;
+        foreach (var hit in Physics.RaycastAll(point + Vector3.up * 3f, Vector3.down, 20f, ~0, QueryTriggerInteraction.Ignore))
+            if (!hit.collider.transform.IsChildOf(transform)) { groundMask = 1 << hit.collider.gameObject.layer; break; }
+        int remove = bossLayerMask & ~groundMask;
+        if (remove != bossLayerMask && !layerWarned)
+        {
+            layerWarned = true;
+            Debug.LogWarning($"[Boss] {name} đang cùng Layer với mặt đất nên hạt của chiêu vẫn có thể nổ trên người boss. " +
+                             "Hãy đổi Layer của boss sang layer riêng (vd. Enemy).", this);
+        }
+        if (remove == 0) return;
+
+        foreach (var ps in effect.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            var collision = ps.collision;
+            if (!collision.enabled || collision.type != ParticleSystemCollisionType.World) continue;
+            collision.collidesWith = collision.collidesWith & ~remove;
+        }
     }
 
     void PlaySound(AudioClip clip)
@@ -752,7 +829,66 @@ public class BossController : MonoBehaviour
         if (clip != null && audioSource != null) audioSource.PlayOneShot(clip);
     }
 
-    static GameObject CreateWarningRing(Vector3 center, float radius)
+    // ---------- Vòng đỏ ----------
+
+    float bodyRadius = -1f;
+    float BodyRadius()
+    {
+        if (bodyRadius >= 0f) return bodyRadius;
+        bodyRadius = 0f;
+        foreach (var c in GetComponentsInChildren<Collider>())
+        {
+            if (c.isTrigger || !c.enabled) continue;
+            Vector3 e = c.bounds.extents;
+            bodyRadius = Mathf.Max(bodyRadius, Mathf.Max(e.x, e.z));
+        }
+        return bodyRadius;
+    }
+
+    // Pet đứng sát boss thì đẩy tâm vòng ra xa (theo hướng boss -> pet) để vòng không đè lên boss.
+    Vector3 PushAwayFromBoss(Vector3 point, float radius)
+    {
+        float minDistance = BodyRadius() + ringGapFromBoss + radius;
+        Vector3 offset = Flat(point - transform.position);
+        if (offset.magnitude >= minDistance) return point;
+        Vector3 dir = offset.sqrMagnitude > 0.01f ? offset.normalized : Flat(transform.forward).normalized;
+        return GroundPoint(transform.position + dir * minDistance);
+    }
+
+    // Đo hiệu ứng: chạy thử hạt 1.5 giây rồi lấy độ rộng trên mặt đất.
+    static float MeasureEffectRadius(GameObject prefab, float scale)
+    {
+        if (prefab == null) return 0f;
+        GameObject probe = Instantiate(prefab, new Vector3(0f, -5000f, 0f), Quaternion.identity);
+        probe.transform.localScale *= scale;
+        foreach (var ps in probe.GetComponentsInChildren<ParticleSystem>(true))
+            ps.Simulate(1.5f, false, true);
+        bool any = false;
+        Bounds bounds = default;
+        foreach (var r in probe.GetComponentsInChildren<Renderer>(true))
+        {
+            if (r is ParticleSystemRenderer psr && psr.GetComponent<ParticleSystem>().particleCount == 0) continue;
+            if (!any) { bounds = r.bounds; any = true; }
+            else bounds.Encapsulate(r.bounds);
+        }
+        DestroyImmediate(probe);
+        return any ? Mathf.Max(bounds.extents.x, bounds.extents.z) : 0f;
+    }
+
+    void FitRingsToEffects()
+    {
+        if (!fitRingToEffect) return;
+        foreach (BossSkill skill in skills)
+        {
+            if (skill.shape != SkillShape.TargetGround || skill.hitEffect == null) continue;
+            float measured = MeasureEffectRadius(skill.hitEffect, skill.hitScale) * ringFitScale;
+            if (measured < 0.3f) continue;   // Đo không ra -> giữ Radius cũ.
+            skill.radius = measured;
+            Debug.Log($"[Boss] {skill.skillName}: vòng đỏ khớp hiệu ứng, bán kính {measured:0.0} m.", this);
+        }
+    }
+
+    static GameObject CreateWarningRing(Vector3 center, float radius, Color color, float width)
     {
         var ring = new GameObject("BossWarningRing");
         ring.transform.position = center + Vector3.up * 0.05f;
@@ -761,10 +897,10 @@ public class BossController : MonoBehaviour
         line.useWorldSpace = false;
         line.loop = true;
         line.positionCount = segments;
-        line.widthMultiplier = 0.15f;
+        line.widthMultiplier = width;
         if (warningMaterial == null) warningMaterial = new Material(Shader.Find("Sprites/Default"));
         line.material = warningMaterial;
-        line.startColor = line.endColor = new Color(1f, 0.15f, 0.1f, 0.9f);
+        line.startColor = line.endColor = color;
         for (int i = 0; i < segments; i++)
         {
             float angle = i * Mathf.PI * 2f / segments;

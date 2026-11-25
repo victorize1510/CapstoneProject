@@ -13,9 +13,12 @@ public class UIButtonSounds : MonoBehaviour
     [Tooltip("Để trống = dùng tiếng hover chung của game (Resources/CapstoneAudio)")]
     [SerializeField] AudioClip hoverClip;
     [SerializeField, Range(0f, 1f)] float hoverVolume = 0.6f;
-    [Tooltip("Để trống nếu đã gắn tiếng bấm bằng On Click của từng nút (tránh kêu 2 lần)")]
+    [Tooltip("Để trống = dùng tiếng bấm chung của game (Resources/CapstoneAudio)")]
     [SerializeField] AudioClip clickClip;
     [SerializeField, Range(0f, 1f)] float clickVolume = 1f;
+    [Tooltip("Bật = chỉ thêm tiếng bấm cho nút KHÔNG có gì trong On Click (các nút trong bảng Load Game, Cài đặt... do code tạo). " +
+             "Nút bạn đã tự gắn tiếng bấm ở On Click sẽ không bị kêu 2 lần.\nTắt = thêm tiếng bấm cho mọi nút.")]
+    [SerializeField] bool clickOnlyForCodeButtons = true;
     [Tooltip("Bật = cả các nút được tạo sau này (vd. bảng Cài đặt dựng lúc chạy) cũng có tiếng")]
     [SerializeField] bool rescanEverySecond = true;
 
@@ -33,6 +36,7 @@ public class UIButtonSounds : MonoBehaviour
         // Kênh UI của game: thanh âm lượng UI / tắt tiếng trong Cài đặt đều áp dụng.
         GameAudioRouting.Route(source, GameAudioBus.UI);
         if (hoverClip == null && GameAudioRouting.Assets != null) hoverClip = GameAudioRouting.Assets.hover;
+        if (clickClip == null && GameAudioRouting.Assets != null) clickClip = GameAudioRouting.Assets.click;
         Scan();
     }
 
@@ -57,10 +61,18 @@ public class UIButtonSounds : MonoBehaviour
             Button captured = button;
             AddEntry(trigger, EventTriggerType.PointerEnter, () => PlayHover(captured));
             // Chọn bằng phím (W/S, mũi tên) cũng kêu; bấm chuột thì không (đã kêu lúc rê chuột vào rồi).
-            AddEntry(trigger, EventTriggerType.Select, () => { if (!Input.GetMouseButton(0)) PlayHover(captured); });
-            if (clickClip != null)
+            AddEntry(trigger, EventTriggerType.Select, () => { if (!MouseHeld()) PlayHover(captured); });
+            // Nút do code tạo không có gì trong On Click (Inspector) -> thêm tiếng bấm.
+            if (!clickOnlyForCodeButtons || captured.onClick.GetPersistentEventCount() == 0)
                 captured.onClick.AddListener(() => Play(clickClip, clickVolume));
         }
+    }
+
+    // Dự án dùng Input System mới: Input.GetMouseButton cũ có thể báo lỗi.
+    static bool MouseHeld()
+    {
+        var mouse = UnityEngine.InputSystem.Mouse.current;
+        return mouse != null && mouse.leftButton.isPressed;
     }
 
     static void AddEntry(EventTrigger trigger, EventTriggerType type, System.Action action)
@@ -77,8 +89,25 @@ public class UIButtonSounds : MonoBehaviour
         Play(hoverClip, hoverVolume);
     }
 
+    AudioSource fallback;
+
     void Play(AudioClip clip, float volume)
     {
-        if (clip != null && source != null) source.PlayOneShot(clip, volume);
+        if (clip == null) return;
+        AudioSource s = source;
+        // Audio Source bị tắt (vd. nằm trong popup đang ẩn) thì không phát được -> dùng nguồn dự phòng.
+        if (s == null || !s.isActiveAndEnabled)
+        {
+            if (fallback == null)
+            {
+                fallback = gameObject.AddComponent<AudioSource>();
+                fallback.playOnAwake = false;
+                fallback.spatialBlend = 0f;
+                GameAudioRouting.Route(fallback, GameAudioBus.UI);
+                if (source != null) Debug.LogWarning($"[UIButtonSounds] Audio Source '{source.name}' đang bị tắt / nằm trong object ẩn -> dùng nguồn dự phòng.");
+            }
+            s = fallback;
+        }
+        s.PlayOneShot(clip, volume);
     }
 }

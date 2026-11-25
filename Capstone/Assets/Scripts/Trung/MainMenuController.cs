@@ -153,6 +153,16 @@ public class MainMenuController : MonoBehaviour
         if (loadingBar != null) loadingBar.gameObject.SetActive(false);
         if (loadingText != null) loadingText.gameObject.SetActive(false);
 
+        // Nạp sẵn scene tạo nhân vật ngầm trong lúc đọc thông báo -> bấm Xác Nhận là chuyển ngay,
+        // không lộ màn hình Main Menu ở giữa.
+        AsyncOperation preload = null;
+        if (!string.IsNullOrWhiteSpace(characterCreationSceneName)
+            && Application.CanStreamedLevelBeLoaded(characterCreationSceneName))
+        {
+            preload = SceneManager.LoadSceneAsync(characterCreationSceneName);
+            preload.allowSceneActivation = false;
+        }
+
         confirmPressed = false;
         if (notificationPanel != null)
         {
@@ -180,19 +190,19 @@ public class MainMenuController : MonoBehaviour
         while (!confirmPressed)
             yield return null;
 
-        if (notificationPanel != null) notificationPanel.SetActive(false);
-        if (loadingPanel != null) loadingPanel.SetActive(false);
-
-        if (string.IsNullOrWhiteSpace(characterCreationSceneName))
+        if (preload == null)
         {
-            Debug.LogWarning($"{name}: chưa gán Character Creation Scene Name.");
+            if (notificationPanel != null) notificationPanel.SetActive(false);
+            if (loadingPanel != null) loadingPanel.SetActive(false);
+            Debug.LogWarning($"{name}: scene '{characterCreationSceneName}' chưa gán hoặc chưa có trong Build Profiles / Scene List.");
             newGameInProgress = false;
             yield break;
         }
         // New Game: chọn ô và đánh dấu xóa save cũ của ô đó khi vào game.
         SaveSlotSession.Current = string.IsNullOrEmpty(pendingNewGameSlot) ? SaveSlotSession.Slots[0] : pendingNewGameSlot;
         SaveSlotSession.RequestReset(SaveSlotSession.Current);
-        SceneManager.LoadScene(characterCreationSceneName);
+        // Giữ nguyên Loading + Thông báo trên màn hình cho tới khi scene mới hiện ra.
+        preload.allowSceneActivation = true;
     }
 
     public void LoadGame()
