@@ -230,9 +230,20 @@ namespace Capstone.Game.CreatureSystem.Editor
                 if (FollowUpRun)
                 {
                     var overhead = Object.FindFirstObjectByType<Capstone.Game.WorldFeedback.EnemyHealthBars>();
-                    Check(overhead != null && await WaitFor(() => overhead.GetComponentsInChildren<UnityEngine.UI.Text>()
-                        .Any(label => label.enabled && label.name == "Selected HP" && label.text == "500/500 HP"), 2),
+                    bool SelectedHpVisible() => overhead != null && overhead.GetComponentsInChildren<UnityEngine.UI.Text>()
+                        .Any(label => label.enabled && label.name == "Selected HP" && label.text == "500/500 HP");
+                    Check(await WaitFor(SelectedHpVisible, 2),
                         "Selected enemy shows current and maximum HP above its model");
+                    Check(overhead.GetComponent<Canvas>().renderMode == RenderMode.WorldSpace,
+                        "Overhead canvas draws at scene depth so an opaque mesh can occlude it without a collider");
+                    var obstruction = new GameObject("QA wall enclosing camera");
+                    obstruction.transform.position = hitCamera.transform.position;
+                    obstruction.AddComponent<BoxCollider>().size = Vector3.one * .5f;
+                    Physics.SyncTransforms();
+                    Check(await WaitFor(() => !SelectedHpVisible(), 2),
+                        "Selected HP hides even when the camera starts inside the wall collider");
+                    Object.Destroy(obstruction);
+                    Check(await WaitFor(SelectedHpVisible, 2), "Selected HP returns after the obstruction is removed");
                 }
                 if (HitFeedbackRun)
                 {
