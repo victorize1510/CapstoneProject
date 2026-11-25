@@ -1,0 +1,13 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: 8c817067667e48d1adafa8309febc536, type: 3}
+  m_Name: CaveTravelArt
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.CaveTravelArt
+  frame: {fileID: 2800000, guid: c470a61cb6756b04daa3037ba3326bd9, type: 3}
+  confirm: {fileID: 2800000, guid: 9015acbf75dd1414e94b5b10a821de12, type: 3}
+  cancel: {fileID: 2800000, guid: e38fb74e400d0334db49657387cead0a, type: 3}

@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Bắn tia sét 5 nhịp. Có 25% cơ hội gây choáng trong 0,6 giây."
   element: 6
   icon: {fileID: 21300000, guid: 2b64a5cb0de1cd64290cc61988ba8241, type: 3}
-  cooldownSeconds: 9
-  manaCost: 22
+  cooldownSeconds: 3
+  manaCost: 13
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates: 

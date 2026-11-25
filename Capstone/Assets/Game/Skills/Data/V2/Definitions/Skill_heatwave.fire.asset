@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Phóng luồng khí nóng gây bỏng trong 5 giây khi chạm mục tiêu."
   element: 2
   icon: {fileID: 21300000, guid: 56c9b8d96975ad74d9906cb0399b7920, type: 3}
-  cooldownSeconds: 11
-  manaCost: 19
+  cooldownSeconds: 3.666667
+  manaCost: 11
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

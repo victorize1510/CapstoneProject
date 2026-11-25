@@ -276,7 +276,7 @@ namespace Capstone.Game.HudSystem {
             if (maxLabel != null) maxLabel.style.display = preview.IsMaxLevel ? DisplayStyle.Flex : DisplayStyle.None;
             SetFill(expFill, Percent(preview.CurrentExperience, preview.RequiredExperience));
             if (expValue != null) expValue.text = preview.IsValid ? $"{preview.CurrentExperience:N0} / {preview.RequiredExperience:N0}" : "- / -";
-            if (expNeeded != null) expNeeded.text = preview.IsMaxLevel ? "Đã đạt cấp tối đa" : $"Cần thêm {preview.ExperienceNeeded:N0} EXP";
+            if (expNeeded != null) expNeeded.text = preview.IsMaxLevel ? "Đã đạt cấp tối đa" : "Dùng 1 Kẹo Tăng Cấp để lên 1 cấp";
             float health = preview.RuntimeStats?.Health ?? 0f;
             float maxHealth = preview.RuntimeStats?.MaxHealth ?? 0f;
             SetFill(healthFill, Percent(health, maxHealth));

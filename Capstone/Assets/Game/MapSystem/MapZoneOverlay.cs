@@ -11,8 +11,12 @@ namespace Capstone.Game.MapSystem {
         internal const string CaveGroup = "ZoneCave";
         internal readonly Bounds Bounds;
         internal readonly string Label, Group;
+        internal readonly CreatureEncounterZone Source;
 
-        internal MapEncounterZone(Bounds bounds, string label, string group) {
+        internal MapEncounterZone(Bounds bounds, string label, string group) : this(bounds, label, group, null) {}
+
+        internal MapEncounterZone(Bounds bounds, string label, string group, CreatureEncounterZone source) {
+            Source = source;
             Bounds = bounds;
             Label = label;
             Group = group;
@@ -38,7 +42,11 @@ namespace Capstone.Game.MapSystem {
             return null;
         }
 
+        internal static bool IsSecretStarter(CreatureEncounterZone zone) =>
+            zone.zoneId is "capstone-special-dragon-fire" or "capstone-special-shell" or "capstone-special-sun-blossom";
+
         internal static string DisplayName(CreatureEncounterZone zone, int fallback = 0) {
+            if (IsSecretStarter(zone)) return string.Empty;
             string name = (zone.zoneName ?? "").Trim();
             if (name.StartsWith("Zone ", StringComparison.OrdinalIgnoreCase) && int.TryParse(name.Substring(5), out int number))
                 return $"Vùng {number}";
@@ -55,6 +63,8 @@ namespace Capstone.Game.MapSystem {
         Text[] labels = Array.Empty<Text>();
         Rect viewBounds;
         bool minimap;
+        RectTransform info;
+        CreatureEncounterZone pinned, displayed;
 
         internal static MapZoneOverlay Create(RawImage map, bool forMinimap) {
             var layer = MapArtProjection.CreateOverlay(map.rectTransform, "Encounter Zones");
@@ -77,6 +87,7 @@ namespace Capstone.Game.MapSystem {
                 for (int i = 0; i < labels.Length; i++) labels[i] = CreateLabel();
             }
             for (int i = 0; i < labels.Length; i++) labels[i].text = labels[i].gameObject.name = zones[i].Label;
+            if (!zones.Any(zone => zone.Source == pinned)) pinned = null;
             UpdateLabels();
             SetVerticesDirty();
         }
@@ -90,6 +101,111 @@ namespace Capstone.Game.MapSystem {
             if (sceneCamera != null) rotation = sceneCamera.transform.rotation;
             UpdateLabels();
             SetVerticesDirty();
+        }
+
+        protected override void OnDisable() {
+            pinned = displayed = null;
+            if (info != null) info.gameObject.SetActive(false);
+            base.OnDisable();
+        }
+
+        void Update() {
+            if (minimap || viewBounds.width <= 0 || !Cursor.visible) return;
+            Rect viewport = rectTransform.rect;
+            var rootCanvas = canvas?.rootCanvas;
+            Camera eventCamera = rootCanvas != null && rootCanvas.renderMode != RenderMode.ScreenSpaceOverlay
+                ? rootCanvas.worldCamera : null;
+            CreatureEncounterZone hovered = null;
+            string title = null;
+            float nearest = float.PositiveInfinity;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, Input.mousePosition, eventCamera, out var local)
+                && viewport.Contains(local)) {
+                foreach (var zone in zones) {
+                    if (zone.Source == null) continue;
+                    float radius = Mathf.Max(zone.Bounds.extents.x, zone.Bounds.extents.z);
+                    if (radius <= 0f) continue;
+                    Vector2 center = viewport.min + Vector2.Scale(viewport.size, Project(zone.Bounds.center));
+                    var distance = local - center;
+                    var normalized = new Vector2(distance.x * viewBounds.width / (radius * viewport.width),
+                        distance.y * viewBounds.height / (radius * viewport.height));
+                    if (normalized.sqrMagnitude > 1f || normalized.sqrMagnitude >= nearest) continue;
+                    hovered = zone.Source;
+                    title = zone.Label;
+                    nearest = normalized.sqrMagnitude;
+                }
+                if (Input.GetMouseButtonDown(0)) pinned = pinned == hovered ? null : hovered;
+            }
+            var next = hovered != null ? hovered : pinned;
+            if (next == displayed) return;
+            displayed = next;
+            if (next == null) {
+                if (info != null) info.gameObject.SetActive(false);
+                return;
+            }
+            BuildInfo(next, title ?? zones.First(zone => zone.Source == next).Label);
+        }
+
+        void BuildInfo(CreatureEncounterZone source, string title) {
+            if (info != null) {
+                info.gameObject.SetActive(false);
+                Destroy(info.gameObject);
+            }
+            var block = new GameObject("Zone Information", typeof(RectTransform), typeof(Image),
+                typeof(VerticalLayoutGroup), typeof(ContentSizeFitter));
+            info = block.GetComponent<RectTransform>();
+            info.SetParent(rectTransform, false);
+            info.SetAsLastSibling();
+            info.anchorMin = info.anchorMax = info.pivot = Vector2.one;
+            info.anchoredPosition = new Vector2(-18, -18);
+            info.sizeDelta = new Vector2(290, 0);
+            var image = block.GetComponent<Image>();
+            image.color = new Color(.07f, .10f, .17f, .96f);
+            image.raycastTarget = false;
+            var stack = block.GetComponent<VerticalLayoutGroup>();
+            stack.padding = new RectOffset(12, 12, 8, 8);
+            stack.spacing = 5;
+            stack.childControlHeight = true;
+            stack.childForceExpandHeight = false;
+            block.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            CreateInfoLabel(info, title, 21, 30);
+            var entries = source.PreviewPopulation().ToArray();
+            if (entries.Length == 0) CreateInfoLabel(info, "Đang cập nhật danh sách thú", 16, 32);
+            foreach (var (name, sprite, min, max) in entries) {
+                var row = new GameObject("Creature", typeof(RectTransform), typeof(HorizontalLayoutGroup), typeof(LayoutElement));
+                row.transform.SetParent(info, false);
+                row.GetComponent<LayoutElement>().preferredHeight = 38;
+                var layout = row.GetComponent<HorizontalLayoutGroup>();
+                layout.spacing = 8;
+                layout.childControlWidth = layout.childControlHeight = true;
+                layout.childForceExpandWidth = layout.childForceExpandHeight = false;
+                if (sprite != null) {
+                    var portrait = new GameObject("Portrait", typeof(RectTransform), typeof(Image), typeof(LayoutElement));
+                    portrait.transform.SetParent(row.transform, false);
+                    var icon = portrait.GetComponent<Image>();
+                    icon.sprite = sprite;
+                    icon.preserveAspect = true;
+                    icon.raycastTarget = false;
+                    portrait.GetComponent<LayoutElement>().preferredWidth = 36;
+                    portrait.GetComponent<LayoutElement>().preferredHeight = 36;
+                }
+                var levels = min == max ? $"Cấp {min}" : $"Cấp {min}–{max}";
+                var label = CreateInfoLabel(row.transform, $"{name}\n{levels}", 16, 38);
+                label.GetComponent<LayoutElement>().flexibleWidth = 1;
+            }
+        }
+
+        static Text CreateInfoLabel(Transform parent, string value, int size, float height) {
+            var child = new GameObject("Text", typeof(RectTransform), typeof(Text), typeof(LayoutElement));
+            child.transform.SetParent(parent, false);
+            var text = child.GetComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.text = value;
+            text.fontSize = size;
+            text.alignment = TextAnchor.MiddleLeft;
+            text.color = Color.white;
+            text.raycastTarget = false;
+            child.GetComponent<LayoutElement>().preferredHeight = height;
+            return text;
         }
 
         Camera sceneCamera;

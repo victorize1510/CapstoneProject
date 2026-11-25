@@ -65,7 +65,9 @@ namespace Capstone.Game.Skills {
                 pulse.Direction = direction.sqrMagnitude > .001f ? direction.normalized : castFacing;
                 pulse.Point = pulse.Origin = pulse.PreviousPoint = combat.Center;
                 pulse.TravelHits = new Dictionary<GameObject, (int, float)>();
-                pulse.Visual = CombatEffectPool.Rent(shot.profile.projectileVisual, pulse.Point, Quaternion.LookRotation(pulse.Direction));
+                pulse.Visual = CombatEffectPool.Rent(shot.profile.projectileVisual, pulse.Point, Quaternion.LookRotation(pulse.Direction),
+                    preservePrefabRotation: true, lockParticlesToMovingRoot: true,
+                    particleWarmupSeconds: shot.profile.travelVisualWarmupSeconds);
                 if (pulse.Visual != null) pulse.Visual.transform.localScale *= shot.profile.visualScale * presentation.VisualScale;
             }
             pulses.Add(pulse);
@@ -79,11 +81,14 @@ namespace Capstone.Game.Skills {
                 if (pulse.TravelHits != null) {
                     float distance = TravelDistance(pulse);
                     var next = pulse.Point + pulse.Direction * distance;
-                    if (distance <= .0001f || !ClearLine(pulse.Point, next)) {
-                        ReturnPulse(pulse);
+                    if (TravelRemaining(pulse) <= .001f || distance > 0 && !ClearLine(pulse.Point, next)) {
+                        if (pulse.Visual != null && shot.profile.travelVisualTailSeconds > 0)
+                            CombatEffectPool.FinishEmission(pulse.Visual, shot.profile.travelVisualTailSeconds);
+                        else ReturnPulse(pulse);
                         pulses.RemoveAt(i);
                         continue;
                     }
+                    if (distance <= 0) continue;
                     pulse.PreviousPoint = pulse.Point;
                     pulse.Point = next;
                     if (pulse.Visual != null) pulse.Visual.transform.position = pulse.Point;
@@ -101,9 +106,11 @@ namespace Capstone.Game.Skills {
             }
         }
 
+        static float TravelRemaining(Pulse pulse) =>
+            Mathf.Max(0f, pulse.Shot.profile.TravelRange - Vector3.Distance(pulse.Origin, pulse.Point));
+
         static float TravelDistance(Pulse pulse) =>
-            Mathf.Min(pulse.Shot.profile.projectileSpeed * Time.deltaTime,
-                Mathf.Max(0f, pulse.Shot.profile.TravelRange - Vector3.Distance(pulse.Origin, pulse.Point)));
+            Mathf.Min(pulse.Shot.profile.projectileSpeed * Time.deltaTime, TravelRemaining(pulse));
 
         void TickPulse(Pulse pulse) {
             var shot = pulse.Shot;

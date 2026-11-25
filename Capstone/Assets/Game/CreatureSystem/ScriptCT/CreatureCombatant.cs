@@ -390,6 +390,10 @@ namespace Capstone.Game.CreatureSystem
             {
                 return enemy.ApplyCombatHit(hit);
             }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (UISystem.DevCheatService.GodMode && UISystem.DevCheatService.Controls(gameObject))
+                return new CombatDamageResult(hit, gameObject, 0, false);
+#endif
 
             float before = stats.Health;
             float damage = ResolveDamage(hit, out float effectiveness);

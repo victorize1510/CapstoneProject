@@ -90,7 +90,7 @@ namespace Capstone.Game.HudSystem {
         Button replaceButton;
         Button addButton;
         Button moveButton;
-        Button detailsButton;
+        Button detailsButton, releaseButton;
         Button allFilterButton;
         Button purchaseConfirmButton;
         Button previousPageButton;
@@ -394,6 +394,7 @@ namespace Capstone.Game.HudSystem {
             addButton = docRoot.Q<Button>("box-add-button");
             moveButton = docRoot.Q<Button>("box-move-button");
             detailsButton = docRoot.Q<Button>("box-details-button");
+            releaseButton = docRoot.Q<Button>("box-release-button");
             allFilterButton = docRoot.Q<Button>("box-filter-all");
             searchField = docRoot.Q<TextField>("box-search-field");
             sortButton = docRoot.Q<Button>("box-sort-button");
@@ -509,6 +510,10 @@ namespace Capstone.Game.HudSystem {
             RegisterButton(addButton, AddSelectedPetToParty);
             RegisterButton(moveButton, MoveSelectedPetToBox);
             RegisterButton(detailsButton, RequestDetails);
+            RegisterButton(releaseButton, () => {
+                if (selectedPet != null && selectionSource == SelectionSource.Storage)
+                    inventoryController?.OpenPetReleasePanel(selectedPet);
+            });
             RegisterButton(allFilterButton, SelectAllElements);
             // Reuse the authored slots and hide any slot outside the current catalog.
             string[] filterIds = { "box-filter-nature", "box-filter-fire", "box-filter-water", "box-filter-wind", "box-filter-earth", "box-filter-electric", "box-filter-ice", "box-filter-light", "box-filter-dark" };
@@ -927,6 +932,7 @@ namespace Capstone.Game.HudSystem {
             SetVisible(moveButton, canMove);
             SetVisible(replaceButton, hasSelection);
             SetVisible(detailsButton, hasSelection);
+            SetVisible(releaseButton, hasSelection && fromStorage);
             addButton?.SetEnabled(canAdd);
             moveButton?.SetEnabled(canMove);
             replaceButton?.SetEnabled(hasSelection);

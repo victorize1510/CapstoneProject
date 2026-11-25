@@ -55,6 +55,10 @@ namespace Capstone.Game.CreatureSystem {
         public bool TryGetSkillStates(string skillId, out string[] states) {
             states = Array.Empty<string>();
             if (!string.IsNullOrWhiteSpace(skillId) && skills.TryGetValue(skillId.Trim(), out var action)) return TryGetStates(action, out states);
+            if (skillId == "bite.normal") return TryGetStates(actions.ContainsKey(CreatureAction.Bite)
+                ? CreatureAction.Bite : CreatureAction.Attack, out states);
+            if (skillId == "roar.power") return TryGetStates(actions.ContainsKey(CreatureAction.Cast)
+                ? CreatureAction.Cast : CreatureAction.Attack, out states);
             LastError = $"{(Profile != null ? Profile.name : name)}: chưa gán hành động cho kỹ năng {skillId}.";
             return false;
         }

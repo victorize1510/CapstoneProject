@@ -24,6 +24,8 @@ MonoBehaviour:
   autoAcquireTarget: 1
   meleeHalfAngle: 55
   visualScale: 0.5
+  travelVisualWarmupSeconds: 0.24
+  travelVisualTailSeconds: 0.6
   retreatDistance: 0
   retreatSpeed: 12
   preferredDistance: 5

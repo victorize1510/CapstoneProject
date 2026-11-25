@@ -18,10 +18,10 @@ MonoBehaviour:
   description: "Tạo lốc 4 nhịp, giảm tốc 25% trong 5 giây và có thể làm choáng."
   element: 12
   icon: {fileID: 21300000, guid: fdddebb1cd70919479143894a989a82a, type: 3}
-  cooldownSeconds: 14
+  cooldownSeconds: 4.666667
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 172c0014c954cbc63461b7ac1237980b, type: 2}
   combat: {fileID: 11400000, guid: 05a0134e24d9cc488370d04658ececc1, type: 2}
-  manaCost: 27
+  manaCost: 16

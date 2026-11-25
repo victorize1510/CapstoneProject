@@ -168,10 +168,12 @@ public sealed class PetCryEventReceiver : MonoBehaviour
         }
     }
 
-    internal void BeginSkill(CreatureAnimationDriver driver, int hash, float delay = 0)
+    internal void BeginSkill(CreatureAnimationDriver driver, int hash, float delay = 0, bool hasSkillSound = false)
     {
-        if (IsCosmetic)
+        // Dedicated SFX should be audible on its own; the form cry remains a fallback.
+        if (hasSkillSound || IsCosmetic)
             Clear(true);
+        if (hasSkillSound) return;
         CancelSkill();
         if (driver == null)
             return;

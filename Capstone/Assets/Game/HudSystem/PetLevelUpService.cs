@@ -1,5 +1,7 @@
 using System;
 using Capstone.Game.Inventory;
+using Capstone.Game.WorldFeedback;
+using Capstone.Game.CaptureSystem;
 using Capstone.Game.SaveSystem;
 using GDS.Core.Events;
 using UnityEngine;
@@ -11,10 +13,7 @@ namespace Capstone.Game.HudSystem {
         public const int DefaultExperienceRequirementPerLevel = 50;
         public const int DefaultQuadraticExperienceRequirement = 10;
 
-        [Header("Level Item")]
-        [SerializeField] string levelUpItemId = "Leaf Berry";
-        [SerializeField] string levelUpItemDisplayName = "Leaf Berry";
-        [SerializeField, Min(1)] int experiencePerItem = 50;
+        public const string LevelCandyId = "level-candy";
 
         [Header("Level Curve")]
         [SerializeField, Min(1)] int baseExperienceRequirement = DefaultBaseExperienceRequirement;
@@ -53,7 +52,6 @@ namespace Capstone.Game.HudSystem {
             int currentExperience = preview.Metadata.Experience;
             int requiredExperience = CalculateExperienceRequirement(currentLevel);
             int experienceNeeded = Mathf.Max(0, requiredExperience - currentExperience);
-            int itemRequirement = Mathf.Max(1, Mathf.CeilToInt(experienceNeeded / (float)Mathf.Max(1, experiencePerItem)));
 
             preview.IsValid = true;
             preview.IsMaxLevel = currentLevel >= maxLevel;
@@ -63,11 +61,11 @@ namespace Capstone.Game.HudSystem {
             preview.CurrentExperience = currentExperience;
             preview.RequiredExperience = requiredExperience;
             preview.ExperienceNeeded = experienceNeeded;
-            preview.ItemName = string.IsNullOrWhiteSpace(levelUpItemDisplayName) ? levelUpItemId : levelUpItemDisplayName;
-            preview.RequiredItemQuantity = itemRequirement;
+            preview.ItemName = InventoryDefinitionCatalog.Find(LevelCandyId)?.Name ?? "Kẹo Tăng Cấp";
+            preview.RequiredItemQuantity = 1;
             preview.Item = FindLevelUpItem();
             preview.OwnedItemQuantity = preview.Item != null ? preview.Item.Quantity : 0;
-            preview.ItemIcon = preview.Item?.Icon ?? InventoryDefinitionCatalog.Find(levelUpItemId)?.Icon;
+            preview.ItemIcon = preview.Item?.Icon ?? InventoryDefinitionCatalog.Find(LevelCandyId)?.Icon;
 
             PetStatSnapshot currentScores = preview.Metadata.GetStatsAtLevel(currentLevel);
             PetStatSnapshot nextScores = preview.Metadata.GetStatsAtLevel(preview.NextLevel);
@@ -118,21 +116,15 @@ namespace Capstone.Game.HudSystem {
             PetCustomizationSaveData metadataSnapshot = preview.Metadata.CreateSaveData();
             PetRuntimeStatsSaveData statsSnapshot = preview.RuntimeStats.CreateSaveData();
 
-            Result removeResult = inventory.RemoveItem(preview.Item.ItemBase, preview.RequiredItemQuantity);
-            if (removeResult is Fail) {
+            if (CaptureEventBatch.IsActive) { message = "Đợi giao dịch hiện tại hoàn tất."; return false; }
+            using var batch = new CaptureEventBatch();
+            var slots = inventory.CaptureSlots();
+            if (!inventory.TryRemoveItemAtomic(preview.Item.ItemBase, preview.RequiredItemQuantity)) {
                 message = $"Không thể dùng {preview.ItemName}. Hãy kiểm tra lại Túi đồ.";
                 return false;
             }
 
-            preview.Metadata.RecordResourceInvestment(
-                preview.Item.ItemBase,
-                preview.Item.ItemId,
-                preview.Item.Name,
-                preview.RequiredItemQuantity);
-
-            int grantedExperience = preview.RequiredItemQuantity * Mathf.Max(1, experiencePerItem);
-            int remainingExperience = Mathf.Max(0,
-                preview.CurrentExperience + grantedExperience - preview.RequiredExperience);
+            int remainingExperience = preview.NextLevel >= preview.MaxLevel ? 0 : preview.CurrentExperience;
             int nextRequirement = preview.NextLevel >= preview.MaxLevel
                 ? 0
                 : CalculateExperienceRequirement(preview.NextLevel);
@@ -153,14 +145,36 @@ namespace Capstone.Game.HudSystem {
             if (saveController == null || !saveController.SaveNow()) {
                 preview.Metadata.RestoreFromSaveData(metadataSnapshot);
                 stats.RestoreFromSaveData(statsSnapshot);
-                inventory.AddItem(preview.Item.ItemBase, preview.RequiredItemQuantity);
+                inventory.RestoreCaptureSlots(slots);
                 message = "Không thể lưu lần tăng cấp. Mọi thay đổi đã được hoàn tác.";
                 return false;
             }
 
             Capstone.Game.WorldFeedback.ProgressionFeedback.PetProgress(pet, stats, previouslyLearned, true);
+            PublishProgress(pet, preview.Metadata, stats, preview.CurrentLevel, preview.CurrentExperience, preview.RequiredExperience);
+            inventory.NotifyAtomicAddition();
             NotifyPetLeveledUp(pet);
+            batch.Commit();
             message = $"{preview.Metadata.ResolveDisplayName(stats.DisplayName)} đã đạt Lv. {preview.NextLevel}.";
+            return true;
+        }
+
+        internal bool TryCommitBattleExperience(PetController pet, int amount) {
+            ResolveSaveController();
+            if (saveController == null || CaptureEventBatch.IsActive) return false;
+            var stats = pet.GetComponentInChildren<PetHudRuntimeStats>(true);
+            var metadata = pet.GetComponentInChildren<PetCollectionMetadata>(true);
+            if (stats == null || metadata == null) return false;
+            var statsSnapshot = stats.CreateSaveData();
+            var metadataSnapshot = metadata.CreateSaveData();
+            using var batch = new CaptureEventBatch();
+            if (!GrantBattleExperience(pet, amount, out _)) return false;
+            if (!saveController.SaveNow()) {
+                stats.RestoreFromSaveData(statsSnapshot);
+                metadata.RestoreFromSaveData(metadataSnapshot);
+                return false;
+            }
+            batch.Commit();
             return true;
         }
 
@@ -191,7 +205,8 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
 
-            long accumulatedExperience = (long)metadata.Experience + experienceAmount;
+            int previousExperience = metadata.Experience;
+            long accumulatedExperience = (long)previousExperience + experienceAmount;
             int levelsGained = 0;
             while (currentLevel < maxLevel) {
                 int requiredExperience = CalculateExperienceRequirement(currentLevel);
@@ -216,6 +231,8 @@ namespace Capstone.Game.HudSystem {
                 NotifyPetLeveledUp(pet);
             }
 
+            if (CaptureEventBatch.IsActive)
+                PublishProgress(pet, metadata, stats, previousLevel, previousExperience, CalculateExperienceRequirement(previousLevel));
             ResolveSaveController();
             saveController?.RequestSave();
             FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();
@@ -225,6 +242,14 @@ namespace Capstone.Game.HudSystem {
             result.CurrentExperience = currentExperience;
             result.ExperienceToNextLevel = nextRequirement;
             return true;
+        }
+
+        void PublishProgress(PetController pet, PetCollectionMetadata metadata, PetHudRuntimeStats stats,
+                int previousLevel, int previousExperience, int previousRequirement) {
+            ExperiencePlayback.Publish(pet, metadata.ResolveDisplayName(stats.DisplayName),
+                new ExperiencePlayback.Point(previousLevel, previousExperience, previousRequirement),
+                new ExperiencePlayback.Point(stats.Level, metadata.Experience, metadata.ExperienceToNextLevel),
+                CalculateExperienceRequirement);
         }
 
         public int CalculateExperienceRequirement(int level) {
@@ -280,9 +305,9 @@ namespace Capstone.Game.HudSystem {
             for (int i = 0; i < items.Count; i++) {
                 InventoryItemSnapshot item = items[i];
                 if (item == null) continue;
-                if (item.ItemBase is MonsterItemDefinition definition && definition.MatchesId(levelUpItemId)
-                    || string.Equals(item.ItemId, levelUpItemId, StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(item.Name, levelUpItemId, StringComparison.OrdinalIgnoreCase)) {
+                if (item.ItemBase is MonsterItemDefinition definition && definition.MatchesId(LevelCandyId)
+                    || string.Equals(item.ItemId, LevelCandyId, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(item.Name, LevelCandyId, StringComparison.OrdinalIgnoreCase)) {
                     return item;
                 }
             }
@@ -291,7 +316,6 @@ namespace Capstone.Game.HudSystem {
         }
 
         void OnValidate() {
-            experiencePerItem = Mathf.Max(1, experiencePerItem);
             baseExperienceRequirement = Mathf.Max(1, baseExperienceRequirement);
             experienceRequirementPerLevel = Mathf.Max(0, experienceRequirementPerLevel);
             quadraticExperienceRequirement = Mathf.Max(0, quadraticExperienceRequirement);

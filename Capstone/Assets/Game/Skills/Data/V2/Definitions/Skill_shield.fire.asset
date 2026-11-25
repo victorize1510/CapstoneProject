@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Tăng 15% phòng thủ và kháng phép trong 10 giây. Địch chạm vào bị bỏng."
   element: 2
   icon: {fileID: 21300000, guid: 99a27d6f32a319b408879fb9ebae3d0c, type: 3}
-  cooldownSeconds: 19
-  manaCost: 30
+  cooldownSeconds: 6.333333
+  manaCost: 18
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

@@ -18,10 +18,10 @@ MonoBehaviour:
   description: "Bão lá gây 4 nhịp sát thương, giảm tốc 25% và có thể làm choáng."
   element: 1
   icon: {fileID: 21300000, guid: 6ee1a9567934a5d4397f96412108aa43, type: 3}
-  cooldownSeconds: 14
+  cooldownSeconds: 4.666667
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: b0ee3c9df5b00b2dcd4c8fbd31de6753, type: 2}
   combat: {fileID: 11400000, guid: fd82725b4113881fa2200766e20eb33b, type: 2}
-  manaCost: 26
+  manaCost: 16

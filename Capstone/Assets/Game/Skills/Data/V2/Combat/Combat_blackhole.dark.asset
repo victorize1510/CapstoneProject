@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Combat_blackhole.dark
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillCombatProfile
   damageKind: 1
-  power: 0.9
+  power: 1.25
   projectileVisual: {fileID: 728604140963959219, guid: 8b69484406c967a4c9f6c2a046fd5d2f, type: 3}
   releaseSocket: Mouth
   visualScale: 0.75

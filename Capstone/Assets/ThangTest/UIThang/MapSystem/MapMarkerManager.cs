@@ -61,6 +61,7 @@ namespace Capstone.Game.MapSystem {
         readonly Dictionary<MapMarker, AaMapIcon> iconsByMarker = new Dictionary<MapMarker, AaMapIcon>();
         readonly List<MapMarker> destroyedMarkers = new List<MapMarker>();
         readonly List<Renderer> mapRenderers = new List<Renderer>();
+        readonly List<(Transform visual, Vector3 scale)> scaledMinimapIcons = new();
         MinimapController minimap;
         WorldMapController worldMap;
 
@@ -297,6 +298,10 @@ namespace Capstone.Game.MapSystem {
                     !pair.Key.ShouldRender(viewer, forMinimap)) continue;
                 var visuals = pair.Value.transform.Find("Visuals");
                 if (visuals == null || !visuals.TryGetComponent<Renderer>(out var renderer)) continue;
+                if (forMinimap) {
+                    scaledMinimapIcons.Add((visuals, visuals.localScale));
+                    visuals.localScale *= 7f;
+                }
                 renderer.forceRenderingOff = false;
                 mapRenderers.Add(renderer);
             }
@@ -308,6 +313,9 @@ namespace Capstone.Game.MapSystem {
             foreach (var renderer in mapRenderers)
                 if (renderer != null) renderer.forceRenderingOff = true;
             mapRenderers.Clear();
+            foreach (var icon in scaledMinimapIcons)
+                if (icon.visual != null) icon.visual.localScale = icon.scale;
+            scaledMinimapIcons.Clear();
         }
 
         void RefreshDynamicIconRotations() {

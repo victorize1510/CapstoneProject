@@ -68,7 +68,6 @@ namespace Capstone.Game.Skills
             public VisualEffect[] graphs;
             public TrailRenderer[] trails;
             public AudioSource[] embeddedAudio;
-            public AudioSource audio;
             public int token;
             public bool castCue, followChannelAim, mouthRelease, fitActorBounds;
             public Vector3 actorLocalCenter;
@@ -402,8 +401,8 @@ namespace Capstone.Game.Skills
                     continue;
                 }
 
-                PlayCue(cast.profile.impact, cast, false, position, normal.sqrMagnitude > 0.001f ? Quaternion.FromToRotation(Vector3.up, normal.normalized) : Quaternion.identity);
                 ResolveEmission(i, emission);
+                PlayCue(cast.profile.impact, cast, false, position, normal.sqrMagnitude > 0.001f ? Quaternion.FromToRotation(Vector3.up, normal.normalized) : Quaternion.identity);
                 return true;
             }
 
@@ -527,6 +526,18 @@ namespace Capstone.Game.Skills
 
         void PlayCue(PetSkillCue cue, Cast cast, bool castCue, Vector3? worldPosition, Quaternion worldRotation, bool firstRelease = false)
         {
+            try
+            {
+                PlayCueCore(cue, cast, castCue, worldPosition, worldRotation, firstRelease);
+            }
+            catch (Exception error)
+            {
+                Debug.LogWarning($"Skill '{cast.skill.skillId}' presentation failed: {error.Message}", this);
+            }
+        }
+
+        void PlayCueCore(PetSkillCue cue, Cast cast, bool castCue, Vector3? worldPosition, Quaternion worldRotation, bool firstRelease)
+        {
             using (CueMarker.Auto())
             {
                 if (cue == null) return;
@@ -534,8 +545,16 @@ namespace Capstone.Game.Skills
                 var sound = combat != null && combat.authoredStatusRules
                     ? firstRelease ? combat.authoredReleaseSound : null
                     : cue.sound;
-                if (cue.effectPrefab == null && sound == null)
+                if (cue.effectPrefab == null)
                 {
+                    if (sound != null)
+                    {
+                        var socket = ResolveSocket(cue.socket);
+                        var audioFrame = cue.actorSpace ? transform : socket;
+                        Vector3 position = worldPosition.HasValue ? worldPosition.Value + worldRotation * cue.localOffset
+                            : socket.position + audioFrame.TransformVector(cue.localOffset);
+                        CombatAudioVoices.PlaySkill(sound, position, cast.profile, cue, gameObject.scene);
+                    }
                     return;
                 }
 
@@ -623,9 +642,10 @@ namespace Capstone.Game.Skills
                     var particle = item.particles[i];
                     particle.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
                     var main = particle.main;
+                    main.stopAction = ParticleSystemStopAction.None;
                     main.maxParticles = Mathf.Max(1, Mathf.CeilToInt(item.particleCaps[i] * particleBudget));
                     if (item.fitActorBounds) main.simulationSpace = ParticleSystemSimulationSpace.Local;
-                    particle.Play(false);
+                    if (particle.gameObject.activeInHierarchy) particle.Play(false);
                 }
 
                 foreach (var graph in item.graphs)
@@ -633,17 +653,8 @@ namespace Capstone.Game.Skills
                     graph.Reinit();
                 }
 
-                SettingsSystem.GameAudioRouting.Route(item.audio, SettingsSystem.GameAudioBus.Skill, cast.profile.mixerGroup);
-                item.audio.spatialBlend = cast.profile.spatialBlend;
-                item.audio.minDistance = Mathf.Max(0.1f, cast.profile.minDistance);
-                item.audio.maxDistance = Mathf.Max(item.audio.minDistance, cast.profile.maxDistance);
-                item.audio.volume = Mathf.Clamp01(cue.volume);
-                item.audio.pitch = Mathf.Clamp(cue.pitch * CombatAudioVoices.PitchVariation(), 0.1f, 3);
-                item.audio.clip = sound;
                 if (sound != null)
-                {
-                    CombatAudioVoices.Play(item.audio);
-                }
+                    CombatAudioVoices.PlaySkill(sound, item.root.transform.position, cast.profile, cue, gameObject.scene);
 
                 playing.Add(item);
             }
@@ -670,11 +681,8 @@ namespace Capstone.Game.Skills
                 visual.SetActive(true);
             }
 
-            var audio = root.AddComponent<AudioSource>();
-            audio.playOnAwake = false;
-            audio.rolloffMode = AudioRolloffMode.Logarithmic;
             var result = new Playback{prefab = prefab, root = root, visual = visual,
-                prefabLocalPosition = visual != null ? visual.transform.localPosition : Vector3.zero, audio = audio, particles = root.GetComponentsInChildren<ParticleSystem>(true), graphs = root.GetComponentsInChildren<VisualEffect>(true), trails = root.GetComponentsInChildren<TrailRenderer>(true), embeddedAudio = visual != null ? visual.GetComponentsInChildren<AudioSource>(true) : Array.Empty<AudioSource>()};
+                prefabLocalPosition = visual != null ? visual.transform.localPosition : Vector3.zero, particles = root.GetComponentsInChildren<ParticleSystem>(true), graphs = root.GetComponentsInChildren<VisualEffect>(true), trails = root.GetComponentsInChildren<TrailRenderer>(true), embeddedAudio = visual != null ? visual.GetComponentsInChildren<AudioSource>(true) : Array.Empty<AudioSource>()};
             result.particleCaps = new int[result.particles.Length];
             for (int i = 0; i < result.particles.Length; i++)
                 result.particleCaps[i] = result.particles[i].main.maxParticles;
@@ -744,8 +752,6 @@ namespace Capstone.Game.Skills
                 }
             }
 
-            item.audio.Stop();
-            item.audio.clip = null;
             item.follow = null;
             item.frame = null;
             item.root.SetActive(false);

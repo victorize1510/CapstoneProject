@@ -54,6 +54,7 @@ namespace Capstone.Game.ProfileSystem {
         }
         public event Action ProfileChanged;
         public int Level => Mathf.Max(1, level);
+        internal Capstone.Game.WorldFeedback.ExperiencePlayback.Point ExperiencePoint => new(Level, currentExperience, requiredExperience);
 
         public bool CanChangeAvatar => avatarOptions != null && avatarOptions.Any(sprite => sprite != null);
         public IReadOnlyList<Sprite> AvatarOptions => avatarOptions ?? Array.Empty<Sprite>();
@@ -187,8 +188,12 @@ namespace Capstone.Game.ProfileSystem {
 
         public void AddExperience(int amount) {
             if (amount <= 0) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Capstone.Game.UISystem.DevCheatService.PlayerLevelCapped && level >= Capstone.Game.UISystem.DevCheatService.Level) return;
+#endif
 
             EnsureLevelProgress();
+            var previous = new Capstone.Game.WorldFeedback.ExperiencePlayback.Point(level, currentExperience, requiredExperience);
             long nextExperience = (long)currentExperience + amount;
             long gained = Math.Min(int.MaxValue - (long)level, nextExperience / requiredExperience);
             level += (int)gained;
@@ -196,6 +201,11 @@ namespace Capstone.Game.ProfileSystem {
 
             currentExperience = (int)Math.Min(int.MaxValue, Math.Max(0L, nextExperience));
             NotifyChanged();
+            if (Capstone.Game.CaptureSystem.CaptureEventBatch.IsActive) {
+                int requirement = requiredExperience;
+                Capstone.Game.WorldFeedback.ExperiencePlayback.Publish(this, "Nhân vật", previous,
+                    new Capstone.Game.WorldFeedback.ExperiencePlayback.Point(level, currentExperience, requirement), _ => requirement);
+            }
             if (gained > 0) PublishLevelFeedback();
         }
 
@@ -221,6 +231,7 @@ namespace Capstone.Game.ProfileSystem {
             }
 
             int previous = level;
+            var previousPoint = ExperiencePoint;
             using var batch = new Capstone.Game.CaptureSystem.CaptureEventBatch();
             level = Level + 1;
             if (!saveController.SaveNow()) {
@@ -229,6 +240,8 @@ namespace Capstone.Game.ProfileSystem {
                 return false;
             }
             Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
+            int requirement = requiredExperience;
+            Capstone.Game.WorldFeedback.ExperiencePlayback.Publish(this, "Nhân vật", previousPoint, ExperiencePoint, _ => requirement);
             PublishLevelFeedback();
             batch.Commit();
             return true;
@@ -246,8 +259,11 @@ namespace Capstone.Game.ProfileSystem {
         }
 
         public void SetCodexProgress(int count, int total) {
-            codexEntries = Mathf.Max(0, count);
-            codexTotal = Mathf.Max(0, total);
+            count = Mathf.Max(0, count);
+            total = Mathf.Max(0, total);
+            if (codexEntries == count && codexTotal == total) return;
+            codexEntries = count;
+            codexTotal = total;
             SyncAchievementMetric(AchievementMetricIds.CodexEntries, codexEntries);
             NotifyChanged();
         }

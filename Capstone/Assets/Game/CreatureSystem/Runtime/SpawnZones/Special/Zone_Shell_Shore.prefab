@@ -67,7 +67,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.CreatureEncounterZone
   zoneId: capstone-special-shell
-  zoneName: Ốc ven nước
+  zoneName: ""
   zoneBounds: {fileID: 6500000}
   spawningEnabled: 1
   baseLevel: 7

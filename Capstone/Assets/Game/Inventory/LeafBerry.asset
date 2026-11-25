@@ -23,7 +23,7 @@ MonoBehaviour:
   category: 3
   rarity: 0
   description: Quả mọng dùng để bồi dưỡng thú đồng hành.
-  effect: Cung cấp 50 EXP mỗi quả khi tăng cấp trong tab Phát triển.
+  effect: Quả mọng thu được khi hạ thú hoang.
   source: "Rơi khi hạ quái"
   flavorText:
   healAmount: 0

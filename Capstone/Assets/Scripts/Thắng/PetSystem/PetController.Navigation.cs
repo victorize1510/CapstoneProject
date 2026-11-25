@@ -545,6 +545,8 @@ public partial class PetController
 
     private bool TeleportNearOwner(bool forReturnCommand = false)
     {
+        if (owner == null || FlatDistance(transform.position, owner.position) <= Mathf.Max(1f, teleportDistance))
+            return false;
         if (!TryFindSafeSpotNearOwner(out Vector3 spot, forReturnCommand ? 2.5f : 1f,
             expandedSearch: forReturnCommand, requireClearOwnerSide: forReturnCommand))
         {

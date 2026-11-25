@@ -67,9 +67,19 @@ namespace Capstone.Game.Skills
         public bool IsRetreating => retreatRemaining > .001f;
         internal bool SkipNextRetreat;
         CreatureCombatTarget coordinatedTarget;
+        Vector3 coordinatedDirection;
         bool hasCoordinatedTarget;
-        internal void StageTarget(CreatureCombatTarget target) { coordinatedTarget=target;hasCoordinatedTarget=true; }
-        internal void ClearTargetIntent() { coordinatedTarget = default; hasCoordinatedTarget = false; SkipNextRetreat = false; }
+        internal void StageTarget(CreatureCombatTarget target, Vector3 fallbackDirection = default) {
+            coordinatedTarget = target;
+            coordinatedDirection = fallbackDirection;
+            hasCoordinatedTarget = true;
+        }
+        internal void ClearTargetIntent() {
+            coordinatedTarget = default;
+            coordinatedDirection = default;
+            hasCoordinatedTarget = false;
+            SkipNextRetreat = false;
+        }
         internal CreatureCombatTarget ResolveIntentTarget(PetSkillCombatProfile profile) {
             if(profile.delivery==PetSkillDelivery.SelfBuff)return default;
             if(context.IsEnemy)return context.Target;
@@ -116,7 +126,9 @@ namespace Capstone.Game.Skills
         public bool Prepare(string id, PetSkillCombatProfile profile)
         {
             bool staged=hasCoordinatedTarget, skipRetreat=SkipNextRetreat;
-            var intended=coordinatedTarget;hasCoordinatedTarget=false;SkipNextRetreat=false;
+            var intended = coordinatedTarget;
+            var fallbackDirection = coordinatedDirection;
+            ClearTargetIntent();
             preparedProfile = null;
             preparedTarget = default;
             preparedId = null;
@@ -127,7 +139,7 @@ namespace Capstone.Game.Skills
             }
 
             preparedRetreatDistance = 0;
-            preparedDirection = transform.forward;
+            preparedDirection = staged && fallbackDirection.sqrMagnitude > .001f ? fallbackDirection : transform.forward;
             LastTargetMode = "Forward";
             if (profile == null)
             {
@@ -297,6 +309,7 @@ namespace Capstone.Game.Skills
                     if (emission == 0 && GetComponent<PetCombatActionDriver>() is { IsSkillBusy: true } driver && driver.CastToken == token)
                         stats.StartReleasedSkillCooldown(shot.id);
                     if (shot.effects?.PaymentFailed == true) return;
+                    if (emission == 0) CombatFeedback.ShowSkillRelease(gameObject, shot.profile);
                     if (shot.profile.delivery == PetSkillDelivery.SelfBuff)
                     {
                         if (presentation.NotifyImpact(token, combat.Center, Vector3.up))
@@ -375,10 +388,11 @@ namespace Capstone.Game.Skills
 
                     if (shot.profile.projectileVisual != null)
                     {
-                        shot.visual = CombatEffectPool.Rent(shot.profile.projectileVisual, shot.position, Quaternion.LookRotation(shot.direction));
+                        shot.visual = CombatEffectPool.Rent(shot.profile.projectileVisual, shot.position, Quaternion.LookRotation(shot.direction),
+                            preservePrefabRotation: true);
                         if (shot.visual != null)
                         {
-                            shot.visual.transform.localScale = Vector3.one * shot.profile.visualScale * presentation.VisualScale;
+                            shot.visual.transform.localScale *= shot.profile.visualScale * presentation.VisualScale;
                         }
                     }
 

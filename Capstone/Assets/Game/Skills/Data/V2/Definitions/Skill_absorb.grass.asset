@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Tự hồi 2% HP tối đa mỗi giây trong 10 giây."
   element: 1
   icon: {fileID: 21300000, guid: 645c94aa54b73c143bd78ba97bdf7d84, type: 3}
-  cooldownSeconds: 23
-  manaCost: 29
+  cooldownSeconds: 7.666667
+  manaCost: 17
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

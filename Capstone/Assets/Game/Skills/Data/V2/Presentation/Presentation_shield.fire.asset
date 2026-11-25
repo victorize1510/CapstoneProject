@@ -18,9 +18,52 @@ MonoBehaviour:
   playbackSpeed: 1
   releaseDelaySeconds: 0.28
   impactWindowSeconds: 8
+  mixerGroup: {fileID: 0}
   spatialBlend: 1
   minDistance: 2
   maxDistance: 35
-  cast: {effectPrefab: {fileID: 0}, scale: 1, volume: 1, pitch: 1, lifetimeSeconds: 1}
-  release: {effectPrefab: {fileID: 1727626132299242, guid: 37027234a1bf4053adcdf07a84863367, type: 3}, socket: Ground, followSocket: 1, actorSpace: 1, fitActorBounds: 1, anchorAtActorFeet: 1, localEulerAngles: {x: 0, y: 0, z: 0}, scale: 1.04, volume: 1, pitch: 1, lifetimeSeconds: 10}
-  impact: {effectPrefab: {fileID: 0}, scale: 0.55, volume: 1, pitch: 1, lifetimeSeconds: 2}
+  cast:
+    effectPrefab: {fileID: 0}
+    sound: {fileID: 0}
+    socket: 
+    followSocket: 1
+    actorSpace: 0
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
+    localOffset: {x: 0, y: 0, z: 0}
+    localEulerAngles: {x: -90, y: 0, z: 0}
+    scale: 1
+    volume: 1
+    pitch: 1
+    lifetimeSeconds: 1
+  release:
+    effectPrefab: {fileID: 1727626132299242, guid: 37027234a1bf4053adcdf07a84863367, type: 3}
+    sound: {fileID: 0}
+    socket: Ground
+    followSocket: 1
+    actorSpace: 1
+    followChannelAim: 0
+    fitActorBounds: 1
+    anchorAtActorFeet: 1
+    localOffset: {x: 0, y: 0, z: 0}
+    localEulerAngles: {x: 0, y: 0, z: 0}
+    scale: 1.04
+    volume: 1
+    pitch: 1
+    lifetimeSeconds: 10
+  impact:
+    effectPrefab: {fileID: 0}
+    sound: {fileID: 0}
+    socket: 
+    followSocket: 0
+    actorSpace: 0
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
+    localOffset: {x: 0, y: 0, z: 0}
+    localEulerAngles: {x: 0, y: 0, z: 0}
+    scale: 0.55
+    volume: 1
+    pitch: 1
+    lifetimeSeconds: 2

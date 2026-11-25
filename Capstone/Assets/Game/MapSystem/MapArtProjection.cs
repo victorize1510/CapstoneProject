@@ -68,6 +68,7 @@ namespace Capstone.Game.MapSystem {
                         || marker.MarkerType == MapMarkerType.CoopPlayer
                         ? Quaternion.Euler(0, 0, -marker.transform.eulerAngles.y) : Quaternion.identity;
                     float size = marker.MarkerType == MapMarkerType.Boss ? 24f : 18f;
+                    if (forMinimap) size *= 7f;
                     icon.rectTransform.sizeDelta = new Vector2(size, size);
                     icon.gameObject.SetActive(true);
                 }

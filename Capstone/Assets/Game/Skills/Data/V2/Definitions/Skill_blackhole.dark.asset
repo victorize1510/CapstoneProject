@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Kéo địch vào vùng, trói 0,7 giây và gây sát thương qua 6 nhịp."
   element: 9
   icon: {fileID: 21300000, guid: 8fbad31195131b940b6742ff68516da1, type: 3}
-  cooldownSeconds: 13
-  manaCost: 28
+  cooldownSeconds: 4.333333
+  manaCost: 17
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

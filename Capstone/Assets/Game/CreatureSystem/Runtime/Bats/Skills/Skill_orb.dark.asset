@@ -18,7 +18,7 @@ MonoBehaviour:
   description: "Phóng cầu bóng tối. Khi trúng, có 20% cơ hội tăng 12% sát thương bản thân trong 6 giây."
   element: 9
   icon: {fileID: 21300000, guid: 0a1097c91f0183e48a52bb66bac8468b, type: 3}
-  cooldownSeconds: 6
+  cooldownSeconds: 2
   criticalRateBonus: 0
   criticalDamageBonus: 0
   animatorStates:
@@ -33,4 +33,4 @@ MonoBehaviour:
     damageKind: 0
     effects: []
     facts: []
-  manaCost: 18
+  manaCost: 11

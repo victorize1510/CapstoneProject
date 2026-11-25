@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillDefinition
   skillId: bite.normal
   legacyIds: []
-  displayName: "C\u1EAFn"
-  description: "C\u1EAFn m\u1EE5c ti\xEAu \u1EDF c\u1EF1 ly g\u1EA7n."
+  displayName: "Đánh Thường"
+  description: "Lao tới và tấn công vật lý một mục tiêu ở cự ly gần."
   element: 13
-  icon: {fileID: 21300000, guid: 6da1f31521163e748a9d1c2787407260, type: 3}
+  icon: {fileID: 21300000, guid: c8cfcbf89085403c8ee0e839bf6b411f, type: 3}
   cooldownSeconds: 1.6
   criticalRateBonus: 0
   criticalDamageBonus: 0

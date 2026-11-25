@@ -18,10 +18,10 @@ MonoBehaviour:
   description: "Bắn cầu năng lượng. Khi trúng, có 20% cơ hội tăng 12% sát thương trong 6 giây."
   element: 1
   icon: {fileID: 21300000, guid: e4cd646a9b1bf294b886d6c69e2c40c1, type: 3}
-  cooldownSeconds: 6
+  cooldownSeconds: 2
   animationDuration: 1
   animationFade: 0.08
   animatorStates: []
   presentation: {fileID: 11400000, guid: 1e9b3a872465413eec6a78a871642e00, type: 2}
   combat: {fileID: 11400000, guid: 60b5a2f25c9700500576a7d5a2a1cb60, type: 2}
-  manaCost: 18
+  manaCost: 11

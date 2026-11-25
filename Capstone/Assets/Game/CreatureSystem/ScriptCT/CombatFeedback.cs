@@ -78,6 +78,29 @@ namespace Capstone.Game.CreatureSystem {
             if (!Application.isPlaying || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying) return;
             Ensure(); live.Apply(result);
         }
+
+        internal static void ShowSkillRelease(GameObject source, PetSkillCombatProfile profile) {
+            if (!IsPlayerSide(source) || profile == null || InventoryInputController.GameplayInputBlocked ||
+                PetEvolutionPresentationController.AnyPlaying) return;
+            Ensure();
+            live.ShakeSkillRelease(source.transform, profile);
+        }
+
+        void ShakeSkillRelease(Transform caster, PetSkillCombatProfile profile) {
+            if (Time.unscaledTime < nextImpulse) return;
+            if (!listenersBound || cameraRig == null || !cameraRig.IsReady) BindCamera();
+            if (!listenersBound) return;
+            Transform camera = cameraRig.source.transform;
+            if ((camera.position - caster.position).sqrMagnitude >= 625) return;
+            float strength = profile.delivery == PetSkillDelivery.SelfBuff ? .55f
+                : profile.pattern == PetSkillPattern.Default ? .8f : 1f;
+            float amplitude = (settings != null ? settings.skillCameraAmplitude : .105f) * strength;
+            if (amplitude <= 0f) return;
+            impulse.ImpulseDefinition.ImpulseDuration = settings != null ? settings.skillCameraDuration : .17f;
+            var direction = new Vector3(Vector3.Dot(caster.forward, camera.right) * .5f, .8f).normalized;
+            nextImpulse = Time.unscaledTime + .2f;
+            impulse.GenerateImpulseAtPositionWithVelocity(caster.position, direction * amplitude);
+        }
         void Apply(CombatDamageResult result) {
             if (!result.Hit.DamageOverTime && result.Target != null) {
                 var reaction = result.Target.GetComponent<CombatVisualReaction>();

@@ -53,9 +53,9 @@ namespace Capstone.Game.MapSystem {
         void RefreshEncounterZones() {
             nextZoneRefresh = Time.unscaledTime + 1f;
             if (minimap == null && worldMap == null) return;
-            var next = MapEncounterZone.Find(gameObject.scene).Select((zone, index) =>
+            var next = MapEncounterZone.Find(gameObject.scene).Where(zone => !MapEncounterZone.IsSecretStarter(zone)).Select((zone, index) =>
                 new MapEncounterZone(zone.zoneBounds.bounds, MapEncounterZone.DisplayName(zone, index + 1),
-                    MapEncounterZone.GroupOf(zone))).ToArray();
+                    MapEncounterZone.GroupOf(zone), zone)).ToArray();
             if (next.SequenceEqual(encounterZones)) return;
             encounterZones = next;
             minimap?.SetEncounterZones(next);

@@ -47,5 +47,17 @@ namespace Capstone.Game.CodexSystem {
             var entry = Default?.Find(metadata);
             return entry != null ? entry.number.ToString("D2") : fallback ?? string.Empty;
         }
+
+        internal void SyncProfile(Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider profile) {
+            if (profile == null || species == null) return;
+            int known = 0, total = 0;
+            foreach (var entry in species) {
+                var metadata = entry?.Metadata;
+                if (metadata == null) continue;
+                total++;
+                if (profile.KnowsCodexForm(PetCodexRuntimeProvider.FormKey(metadata))) known++;
+            }
+            profile.SetCodexProgress(known, total);
+        }
     }
 }

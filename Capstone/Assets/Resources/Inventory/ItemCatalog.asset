@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: ItemCatalog
   m_EditorClassIdentifier: GDS.Core::GDS.Core.ItemBaseCatalogSO
   items:
+  - {fileID: 11400000, guid: 847074ed414f477c8f8f3290338abb5b, type: 2}
   - {fileID: 11400000, guid: e5ef69256de4941b50b91da525110c7b, type: 2}
   - {fileID: 11400000, guid: 1cb7f66293eb0fdfbe630166077b247a, type: 2}
   - {fileID: 11400000, guid: b9d83c99a0cb41a59482463840d3581c, type: 2}

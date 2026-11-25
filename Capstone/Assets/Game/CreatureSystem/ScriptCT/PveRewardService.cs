@@ -82,7 +82,6 @@ namespace Capstone.Game.CreatureSystem {
             AddLoot(material);
             if (defeated != null && loot.evolutionStoneChance > 0f)
                 AddLoot(loot.SelectEvolutionStone(defeated.Element, UnityEngine.Random.value));
-            record.trainerExperience=10+2*enemyLevel;
             string finalPet=source!=null?source.GetComponent<PetCollectionMetadata>()?.PetId:null;
             var helpers=new HashSet<string>(StringComparer.Ordinal);
             foreach(var part in contributions)if(part.healthLost>0&&!string.IsNullOrWhiteSpace(part.petId))helpers.Add(part.petId);
@@ -95,7 +94,7 @@ namespace Capstone.Game.CreatureSystem {
                 bool finisher=identity.PetId==finalPet;
                 double share=PveBalanceRules.PartyExperienceShare(stats.Health>0,finisher,helpers.Contains(identity.PetId));
                 if(share<=0)continue;
-                record.pets.Add(new PvePetRewardSaveData{petId=identity.PetId,experience=PveBalanceRules.ExperienceAward(enemy.ExperienceReward,stats.Level,enemyLevel,share),effort=finisher?enemy.EffortYield:default});
+                record.pets.Add(new PvePetRewardSaveData{petId=identity.PetId,experience=PveBalanceRules.WildExperienceAward(stats.Level, enemyLevel, share, enemy.IsBoss, enemy.QuestZoneId == "capstone-cave-deep"),effort=finisher?enemy.EffortYield:default});
             }
             pending.Add(record);awaitingDeath[id]=enemy;LastStagedId=id;
             // Roll once, persist the journal, then show loot. A failed journal stays in memory for retry.

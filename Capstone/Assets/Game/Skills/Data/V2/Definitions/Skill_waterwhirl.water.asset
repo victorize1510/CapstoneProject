@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Tạo xoáy nước 3 nhịp. Có 30% cơ hội gây choáng trong 0,7 giây."
   element: 3
   icon: {fileID: 21300000, guid: 3e7e2fab132dd9c4180b88a83b41fbcf, type: 3}
-  cooldownSeconds: 13
-  manaCost: 29
+  cooldownSeconds: 4.333333
+  manaCost: 17
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

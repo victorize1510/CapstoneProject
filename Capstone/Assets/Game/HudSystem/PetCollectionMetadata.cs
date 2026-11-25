@@ -124,7 +124,12 @@ namespace Capstone.Game.HudSystem {
         public PetStatSnapshot CurrentStats {
             get {
                 PetHudRuntimeStats runtime = GetComponentInChildren<PetHudRuntimeStats>(true);
-                return GetStatsAtLevel(runtime != null ? runtime.Level : 1);
+                var stats = GetStatsAtLevel(runtime != null ? runtime.Level : 1);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                return Capstone.Game.UISystem.DevCheatService.OverrideStats(this, stats);
+#else
+                return stats;
+#endif
             }
         }
         public long ObtainedOrder => obtainedOrder;
@@ -145,9 +150,7 @@ namespace Capstone.Game.HudSystem {
         public string CodexDescription => codexDescription ?? string.Empty;
         public string CurrentFormId => string.IsNullOrWhiteSpace(currentFormId) ? "base" : currentFormId.Trim();
         public int EvolutionStage => Mathf.Max(0, evolutionStage);
-        public string FormCode => string.Equals(DefinitionId, "Dragon Dusk", StringComparison.OrdinalIgnoreCase)
-            ? EvolutionStage switch { 0 => "01", 1 => "02", 2 => "03", _ => "--" }
-            : CodexNumber;
+        public string FormCode => EvolutionStage switch { 0 => "01", 1 => "02", 2 => "03", _ => "--" };
         public IReadOnlyList<PetEvolutionRule> EvolutionRules => evolutionRules;
         public IReadOnlyList<PetResourceInvestment> ResourceInvestments => resourceInvestments;
         public bool HasNextEvolution => TryGetNextEvolutionRule(out _);
@@ -178,7 +181,7 @@ namespace Capstone.Game.HudSystem {
 
         public void SyncRuntimeHealth(PetHudRuntimeStats runtime) {
             if (runtime == null) return;
-            float nextMax = GetStatsAtLevel(runtime.Level).MaxHealth;
+            float nextMax = CurrentStats.MaxHealth;
             if (Mathf.Approximately(runtime.MaxHealth, nextMax)) return;
             float nextHealth = runtime.MaxHealth > 0f
                 ? nextMax * runtime.Health / runtime.MaxHealth

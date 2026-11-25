@@ -29,7 +29,7 @@ MonoBehaviour:
   preferredDistance: 5
   authoredStatusRules: 1
   statusOnly: 0
-  pattern: 1
+  pattern: 3
   minimumHits: 3
   maximumHits: 5
   targetedImpactRadius: 2

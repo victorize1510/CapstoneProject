@@ -41,10 +41,15 @@ MonoBehaviour:
   - "main_quest_08"
   unlockQuestIds: []
   rewards:
+  - rewardId: "level-candy"
+    displayName: "Kẹo Tăng Cấp"
+    rewardType: 3
+    amount: 10
+    targetId: "level-candy"
   - rewardId: "trainer-exp"
     displayName: "EXP người chơi"
     rewardType: 0
-    amount: 2000
+    amount: 200
     targetId: ""
   - rewardId: "gold"
     displayName: "Vàng"

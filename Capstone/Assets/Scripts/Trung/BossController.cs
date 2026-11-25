@@ -145,6 +145,10 @@ public class BossController : MonoBehaviour
     [SerializeField, Min(2f)] float zoneRadius = 15f;
     [Tooltip("Pet trong vùng VÀ cách boss không quá khoảng này thì boss mới bắt đầu đánh. Vòng vàng quanh boss")]
     [SerializeField, Min(1f)] float aggroRange = 10f;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    internal float DeveloperApproachDistance => Mathf.Max(zoneRadius, aggroRange) + 4f;
+    internal int DeveloperLevel { get => level; set => level = Mathf.Max(0, value); }
+#endif
     [Tooltip("Bỏ đuổi về nhà thì hồi đầy máu (người chơi không đánh lén rồi chạy được)")]
     [SerializeField] bool healWhenReturning = true;
     [SerializeField] bool snapToGround = true;

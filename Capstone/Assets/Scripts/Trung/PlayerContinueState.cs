@@ -127,6 +127,9 @@ public class PlayerContinueState : MonoBehaviour
 
     void OnSaved(PlayerSaveData _)
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Capstone.Game.UISystem.DevCheatService.Active) return;
+#endif
         if (player == null) return;
         Vector3 p = player.position;
         PlayerPrefs.SetString(Key(slotId, "scene"), SceneManager.GetActiveScene().name);
@@ -150,6 +153,9 @@ public class PlayerContinueState : MonoBehaviour
         if (restored) yield break;
         restored = true;
         yield return null;   // Đợi các hệ thống khác áp save xong.
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (Capstone.Game.UISystem.DevCheatService.Active) { ApplyVisual(); applied = true; yield break; }
+#endif
 
         // Vừa tạo nhân vật (New Game) -> PlayerSelectionApplier lo, mình không đụng vào.
         if (CharacterSelectionData.HasPendingSelection) { Log("New Game -> giữ vị trí bắt đầu."); applied = true; yield break; }

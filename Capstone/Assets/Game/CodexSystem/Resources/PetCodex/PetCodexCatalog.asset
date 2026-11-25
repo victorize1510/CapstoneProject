@@ -13,35 +13,137 @@ MonoBehaviour:
   m_Name: PetCodexCatalog
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CodexSystem.PetCodexCatalog
   species:
-  - id: dragon-dusk
+  - id: dragon-fire-01
     number: 1
-    sourcePrefab: {fileID: 537217093674518083, guid: 24cd2f33f4bd2264499982b0af608b08, type: 3}
+    sourcePrefab: {fileID: 1679457036408839924, guid: b9ee0fc57e6c9a99b424b23cf407c24c, type: 3}
     portrait: {fileID: 0}
-    region: 
-    height: 
-    weight: 
-    habitat: 
-    trait: 
-    favoriteFood: 
-  - id: dragon-darkness
+  - id: dragon-fire-02
     number: 2
-    sourcePrefab: {fileID: 2945029398312691855, guid: 5768bd01684a1274d8a758479bfe94dc, type: 3}
+    sourcePrefab: {fileID: 1679457036408839924, guid: e814f0d9b4179189965cae3853af16d7, type: 3}
     portrait: {fileID: 0}
-    region: 
-    height: 
-    weight: 
-    habitat: 
-    trait: 
-    favoriteFood: 
-  - id: dragon-nightfall
+  - id: dragon-fire-03
     number: 3
-    sourcePrefab: {fileID: 4304348002892361780, guid: b24397c846b1f6f4c8b6a3ec93ac09f1, type: 3}
+    sourcePrefab: {fileID: 1679457036408839924, guid: 9d449913acde8f60b1f6bef85a4804cb, type: 3}
     portrait: {fileID: 0}
-    region: 
-    height: 
-    weight: 
-    habitat: 
-    trait: 
-    favoriteFood: 
+  - id: shell-01
+    number: 4
+    sourcePrefab: {fileID: 1679457036408839924, guid: f310c7c3ccef4e38a0e6cc19df087b9b, type: 3}
+    portrait: {fileID: 0}
+  - id: shell-02
+    number: 5
+    sourcePrefab: {fileID: 1679457036408839924, guid: 7b9ef25ac707e265981f14d678fca612, type: 3}
+    portrait: {fileID: 0}
+  - id: shell-03
+    number: 6
+    sourcePrefab: {fileID: 1679457036408839924, guid: b938fbaa4d672174b8c9ba6af2d28f65, type: 3}
+    portrait: {fileID: 0}
+  - id: sun-blossom-01
+    number: 7
+    sourcePrefab: {fileID: 1679457036408839924, guid: 10690386185bd95bfdce2d81d5863919, type: 3}
+    portrait: {fileID: 0}
+  - id: sun-blossom-02
+    number: 8
+    sourcePrefab: {fileID: 1679457036408839924, guid: 78c4b74796d1fcb03f21bd9187c8221b, type: 3}
+    portrait: {fileID: 0}
+  - id: sun-blossom-03
+    number: 9
+    sourcePrefab: {fileID: 1679457036408839924, guid: b210bfbd002014c479703079cc2b5d11, type: 3}
+    portrait: {fileID: 0}
+  - id: chick-01
+    number: 10
+    sourcePrefab: {fileID: 1679457036408839924, guid: 63039a30c3aff23d242fa0ded598a41f, type: 3}
+    portrait: {fileID: 0}
+  - id: chick-02
+    number: 11
+    sourcePrefab: {fileID: 1679457036408839924, guid: 3030d5e55830ba0d7e71581e629c79e4, type: 3}
+    portrait: {fileID: 0}
+  - id: chick-03
+    number: 12
+    sourcePrefab: {fileID: 1679457036408839924, guid: ddcdfcc255852d6b8d8db1af64db4d4c, type: 3}
+    portrait: {fileID: 0}
+  - id: wolf-01
+    number: 13
+    sourcePrefab: {fileID: 1679457036408839924, guid: 03bd67b9568366010f595ab41dc5e37c, type: 3}
+    portrait: {fileID: 0}
+  - id: wolf-02
+    number: 14
+    sourcePrefab: {fileID: 1679457036408839924, guid: ee069abb0cb7da39439fde21dd5b2033, type: 3}
+    portrait: {fileID: 0}
+  - id: wolf-03
+    number: 15
+    sourcePrefab: {fileID: 1679457036408839924, guid: 34f81bf2895952e1522c72f1913bb21c, type: 3}
+    portrait: {fileID: 0}
+  - id: cat-electric-01
+    number: 16
+    sourcePrefab: {fileID: 1679457036408839924, guid: b20f01118c47a884966ff1d28e83ce4e, type: 3}
+    portrait: {fileID: 0}
+  - id: cat-electric-02
+    number: 17
+    sourcePrefab: {fileID: 1679457036408839924, guid: 12fbc27050ec4337704fa8060a5a2fbf, type: 3}
+    portrait: {fileID: 0}
+  - id: cat-electric-03
+    number: 18
+    sourcePrefab: {fileID: 1679457036408839924, guid: 27efe81ad24ad49f3d7b6a916b2fe061, type: 3}
+    portrait: {fileID: 0}
+  - id: snake-fire-01
+    number: 19
+    sourcePrefab: {fileID: 1679457036408839924, guid: 5085c7449e22e22e47ce5488fda9fe2f, type: 3}
+    portrait: {fileID: 0}
+  - id: snake-fire-02
+    number: 20
+    sourcePrefab: {fileID: 1679457036408839924, guid: c867129213ea5f43534e1ef67112d6c6, type: 3}
+    portrait: {fileID: 0}
+  - id: snake-fire-03
+    number: 21
+    sourcePrefab: {fileID: 1679457036408839924, guid: 86c1245595dbff26dce8dc4b0e3f58f6, type: 3}
+    portrait: {fileID: 0}
+  - id: bat-01
+    number: 22
+    sourcePrefab: {fileID: 1679457036408839924, guid: 1a082fbdf8d6ed346900d88820522f27, type: 3}
+    portrait: {fileID: 0}
+  - id: bat-02
+    number: 23
+    sourcePrefab: {fileID: 2897453090869464863, guid: 816d81ae8d91dac4baaaeb11bd6882f9, type: 3}
+    portrait: {fileID: 0}
+  - id: bat-03
+    number: 24
+    sourcePrefab: {fileID: 3643431579001653669, guid: 5ca9083e43d13074085e581a376f1959, type: 3}
+    portrait: {fileID: 0}
+  - id: ghost-01
+    number: 25
+    sourcePrefab: {fileID: 1679457036408839924, guid: 065213881f011175537f525329b194bd, type: 3}
+    portrait: {fileID: 0}
+  - id: ghost-02
+    number: 26
+    sourcePrefab: {fileID: 1679457036408839924, guid: e747f0a6a7a82ea0d7da5a5be13e4534, type: 3}
+    portrait: {fileID: 0}
+  - id: ghost-03
+    number: 27
+    sourcePrefab: {fileID: 1679457036408839924, guid: 89f7775d1a63ab13b5fd0e093ded033d, type: 3}
+    portrait: {fileID: 0}
+  - id: egg-shadow-01
+    number: 28
+    sourcePrefab: {fileID: 1679457036408839924, guid: 1b69fce019899ac137f462a469ce5abf, type: 3}
+    portrait: {fileID: 0}
+  - id: egg-shadow-02
+    number: 29
+    sourcePrefab: {fileID: 1679457036408839924, guid: e31d86517dc2bedd04094a330f4e54a4, type: 3}
+    portrait: {fileID: 0}
+  - id: egg-shadow-03
+    number: 30
+    sourcePrefab: {fileID: 1679457036408839924, guid: 3fd4af81bd926c80a4645127e04cbcc0, type: 3}
+    portrait: {fileID: 0}
+  - id: dragon-dusk
+    number: 31
+    sourcePrefab: {fileID: 6932692690579572187, guid: a7f40405cad605244a6ff785eef68aa2, type: 3}
+    portrait: {fileID: 0}
+  - id: dragon-darkness
+    number: 32
+    sourcePrefab: {fileID: 4749939975475678044, guid: a8a0a8ba78a7e3b42aae4e69b4b949f9, type: 3}
+    portrait: {fileID: 0}
+  - id: dragon-nightfall
+    number: 33
+    sourcePrefab: {fileID: 212456052354837003, guid: 284aa75eddf305b42bbf659c8ea239f9, type: 3}
+    portrait: {fileID: 0}
   evolutionItems:
   - {fileID: 11400000, guid: 5bd730739fc04e47a6f9f66bc2a2bf4d, type: 2}

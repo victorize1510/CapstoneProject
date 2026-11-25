@@ -88,6 +88,9 @@ namespace Capstone.Game.HudSystem {
         }
         internal bool SpendMana(float cost) {
             if (cost <= 0f) return true;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Capstone.Game.UISystem.DevCheatService.NoMana && Capstone.Game.UISystem.DevCheatService.Controls(gameObject)) return true;
+#endif
             if (Energy < cost) { LastSkillRejection = "Không đủ mana."; return false; }
             energy -= cost;
             LastManaSpendAt = Time.time;
@@ -193,7 +196,7 @@ namespace Capstone.Game.HudSystem {
                     skill.cooldownPercent = 0f;
                 }
 
-                skill.usable &= Energy >= skill.manaCost;
+                skill.usable &= HasSkillMana(skill.manaCost);
                 runtimeSkills.Add(skill);
             }
 
@@ -510,7 +513,7 @@ namespace Capstone.Game.HudSystem {
             // khi ky nang chung da cau hinh duoc dung lan dau.
             if (combatProfile != null && execution == null && Application.isPlaying) execution = gameObject.AddComponent<PetSkillCombatExecutor>();
             if (combatProfile != null && (execution == null || !execution.Prepare(ResolveSkillId(skill), combatProfile))) return;
-            if (!skill.unlocked || !skill.usable || Energy < skill.manaCost || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
+            if (!skill.unlocked || !skill.usable || !HasSkillMana(skill.manaCost) || !Capstone.Game.UISystem.PlayerActionGate.TryAccept(this, "skill:" + skillIndex)) return;
             // Dong bo moc animation/release voi cung ke hoach lui da duoc chap nhan.
             if (execution != null) skill.windupSeconds += execution.PreparedRetreatSeconds;
             if (animationDriver != null && animationDriver.Profile != null) {
@@ -525,7 +528,8 @@ namespace Capstone.Game.HudSystem {
             if (animationDriver != null && animationDriver.Cry != null)
                 foreach (string state in skill.animatorStates)
                     if (!string.IsNullOrWhiteSpace(state) && TryGetAnimatorStateHash(state, out int hash)) {
-                        animationDriver.Cry.BeginSkill(animationDriver, hash, Mathf.Max(0, skill.windupSeconds));
+                        animationDriver.Cry.BeginSkill(animationDriver, hash, Mathf.Max(0, skill.windupSeconds),
+                            hasSkillSound: combatProfile?.authoredReleaseSound != null);
                         break;
                     }
             SkillRequested?.Invoke(skillIndex);
@@ -561,7 +565,7 @@ namespace Capstone.Game.HudSystem {
             }
             skill = skills[index];
             if (!skill.unlocked || !skill.usable) return false;
-            if (Energy < skill.manaCost) { LastSkillRejection = "Không đủ mana."; return false; }
+            if (!HasSkillMana(skill.manaCost)) { LastSkillRejection = "Không đủ mana."; return false; }
             if (animationDriver != null && animationDriver.Profile != null &&
                 animationDriver.TryGetSkillStates(ResolveSkillId(skill), out var states) && HasSkillState(states))
             {
@@ -609,7 +613,17 @@ namespace Capstone.Game.HudSystem {
             }
         }
 
+        bool HasSkillMana(float cost) {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Capstone.Game.UISystem.DevCheatService.NoMana && Capstone.Game.UISystem.DevCheatService.Controls(gameObject)) return true;
+#endif
+            return Energy >= cost;
+        }
+
         void StartCooldown(int index, float seconds) {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Capstone.Game.UISystem.DevCheatService.NoCooldown && Capstone.Game.UISystem.DevCheatService.Controls(gameObject)) seconds = 0;
+#endif
             cooldownRemaining[index] = Mathf.Max(0, seconds);
             if (Application.isPlaying) PetSkillCooldowns.Set(CooldownKey, ResolveSkillId(skills[index]), seconds);
         }

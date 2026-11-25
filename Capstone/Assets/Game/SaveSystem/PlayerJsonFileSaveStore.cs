@@ -7,6 +7,12 @@ namespace Capstone.Game.SaveSystem {
     public sealed class PlayerJsonFileSaveStore {
         static readonly object FileLock = new object();
         readonly string rootDirectory;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        string developerSave;
+        bool developerSession;
+        internal static PlayerJsonFileSaveStore CreateDeveloperSession() =>
+            new PlayerJsonFileSaveStore("dev-session-" + Guid.NewGuid().ToString("N")) { developerSession = true };
+#endif
         public string RootDirectory => rootDirectory;
         public bool RecoveredFromBackup { get; private set; }
         public int LoadedVersion { get; private set; }
@@ -16,7 +22,12 @@ namespace Capstone.Game.SaveSystem {
                 ? Path.Combine(Application.persistentDataPath, "Saves") : rootDirectory;
         }
 
-        public bool Exists(string slotId) => File.Exists(GetPath(slotId)) || File.Exists(GetPath(slotId) + ".bak");
+        public bool Exists(string slotId) {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (developerSession) return developerSave != null;
+#endif
+            return File.Exists(GetPath(slotId)) || File.Exists(GetPath(slotId) + ".bak");
+        }
 
         public bool TrySave(string slotId, PlayerSaveData data, out string error) {
             lock (FileLock) {
@@ -25,6 +36,9 @@ namespace Capstone.Game.SaveSystem {
                     PlayerSaveMigration.Validate(data);
                     string json = PlayerSaveMigration.Write(data);
                     PlayerSaveMigration.Read(json, out _);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    if (developerSession) { developerSave = json; return true; }
+#endif
                     string path = GetPath(slotId);
                     bool primaryValid = TryRead(path, out _, out _, out bool future, out int sourceVersion);
                     if (future) throw new InvalidDataException("Refusing to overwrite a newer player save.");
@@ -50,6 +64,14 @@ namespace Capstone.Game.SaveSystem {
             lock (FileLock) {
                 RecoveredFromBackup = false;
                 LoadedVersion = 0;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                if (developerSession) {
+                    error = string.Empty;
+                    data = developerSave != null ? PlayerSaveMigration.Read(developerSave, out var _) : null;
+                    if (data != null) LoadedVersion = PlayerSaveData.CurrentVersion;
+                    return data != null;
+                }
+#endif
                 string path = GetPath(slotId);
                 if (TryRead(path, out data, out error, out bool future, out int version)) {
                     LoadedVersion = version;
@@ -71,6 +93,9 @@ namespace Capstone.Game.SaveSystem {
             lock (FileLock) {
                 error = string.Empty;
                 try {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    if (developerSession) { developerSave = null; return true; }
+#endif
                     string path = GetPath(slotId);
                     foreach (string suffix in new[] { "", ".bak", ".tmp" }) if (File.Exists(path + suffix)) File.Delete(path + suffix);
                     return true;

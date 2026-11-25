@@ -431,6 +431,15 @@ namespace Capstone.Game.PetSummon
             finally
             {
                 releaseEffect?.Cancel();
+                // A missing hand socket or Pickup state must not keep the selected pet outside.
+                if (!succeeded && !string.IsNullOrEmpty(failureReason) && isActiveAndEnabled &&
+                    commandInput != null && commandInput.activePet == pet && pet != null && pet.IsSummoned &&
+                    !pet.IsDefeatPresentation)
+                {
+                    pet.Withdraw();
+                    succeeded = !pet.IsSummoned;
+                    if (succeeded) Debug.Log($"Pet recalled without presentation: {failureReason}", this);
+                }
                 pet?.SetRecallLocked(false);
                 ClearSequenceBalls();
 

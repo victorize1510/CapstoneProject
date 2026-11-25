@@ -18,8 +18,8 @@ MonoBehaviour:
   description: "Mưa 12 giây. Đồng minh hệ Cỏ, Nước hoặc Điện được tăng 10% sát thương Skill, phòng thủ và kháng phép."
   element: 3
   icon: {fileID: 21300000, guid: bddc99fa79d25a441bba8a24d2363700, type: 3}
-  cooldownSeconds: 32
-  manaCost: 34
+  cooldownSeconds: 10.666667
+  manaCost: 20
   animatorStates: 
   - Cast Spell
   animationDuration: 0.9

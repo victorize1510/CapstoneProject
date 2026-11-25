@@ -19,6 +19,9 @@ namespace Capstone.Game.WorldFeedback {
         readonly List<Row> rows = new List<Row>(3);
         readonly Queue<Row> unused = new Queue<Row>(3);
         RectTransform root;
+        readonly List<(string name, ExperiencePlayback.Point point)> progress = new();
+        readonly List<UnityEngine.Object> expiredProgress = new();
+        readonly List<(RectTransform rect, Text label, RectTransform fill)> progressRows = new();
         public int VisibleCount => rows.Count;
         public int DisplayedReceipts { get; private set; }
         public string LastItemName { get; private set; }
@@ -51,6 +54,7 @@ namespace Capstone.Game.WorldFeedback {
         void SceneChanged(Scene previous, Scene current) { foreach (var row in rows) { row.Rect.gameObject.SetActive(false); unused.Enqueue(row); } rows.Clear(); }
         void Update() {
             bool hidden = PetEvolutionPresentationController.AnyPlaying;
+            RefreshProgress(hidden);
             foreach (var row in rows) row.Group.alpha = hidden ? 0 : row.Group.alpha;
             if (hidden) { foreach (var row in rows) { row.Born += Time.unscaledDeltaTime; row.MergeUntil += Time.unscaledDeltaTime; } return; }
             int read = 0;
@@ -65,6 +69,37 @@ namespace Capstone.Game.WorldFeedback {
                 V.Place(rows[i].Rect, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-24 + slide, 62 - i * 64), new Vector2(300, 56));
             }
         }
+        void RefreshProgress(bool hidden) {
+            ExperiencePlayback.ReadVisible(progress, expiredProgress);
+            int count = hidden ? 0 : progress.Count;
+            while (progressRows.Count < count) {
+                var rect = V.Rect(root, "Experience progress");
+                var frame = V.Frame(rect, "Surface", HudFrameGraphic.Shape.Chamfered,
+                    new Color(.12f, .16f, .24f, .93f), new Color(.73f, .71f, .66f, .72f), 1, 7);
+                V.Stretch(frame.rectTransform);
+                var label = V.Text(rect, "Level", "", 16, TextAnchor.MiddleLeft);
+                label.color = Color.white;
+                V.Top(label.rectTransform, 12, 3, 276, 24);
+                var track = V.Image(rect, "Track");
+                track.color = new Color(.30f, .34f, .42f);
+                V.Top(track.rectTransform, 12, 32, 276, 5);
+                var fill = V.Image(track.transform, "Fill");
+                fill.color = new Color(.76f, .83f, .59f);
+                V.Stretch(fill.rectTransform);
+                progressRows.Add((rect, label, fill.rectTransform));
+            }
+            for (int i = 0; i < progressRows.Count; i++) {
+                var row = progressRows[i];
+                row.rect.gameObject.SetActive(i < count);
+                if (i >= count) continue;
+                var entry = progress[i];
+                string amount = entry.point.Required > 0 ? $" · {entry.point.Experience}/{entry.point.Required} EXP" : "";
+                row.label.text = $"{entry.name} · Cấp {entry.point.Level}{amount}";
+                row.fill.anchorMax = new Vector2(entry.point.Fraction, 1);
+                V.Place(row.rect, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-24, 122 + i * 44), new Vector2(300, 42));
+            }
+        }
+
         void Push(ItemAcquisitionReceipt receipt) {
             if (receipt.Item == null&&receipt.Source!=AcquisitionSource.Gold&&receipt.Source!=AcquisitionSource.Capture && receipt.Source!=AcquisitionSource.Progression) return;
             bool single = receipt.Source == AcquisitionSource.Capture || receipt.Source == AcquisitionSource.Progression;

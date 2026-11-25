@@ -113,6 +113,10 @@ namespace Capstone.Game.QuestSystem {
                 error = "Không thể nhận thưởng vì hệ thống lưu chưa sẵn sàng.";
                 return false;
             }
+            if (state == null || state.Status != QuestStatus.Completed || state.RewardsClaimed) {
+                error = "Nhiệm vụ chưa hoàn tất hoặc đã nhận thưởng.";
+                return false;
+            }
             if (!ValidateRewards(rewards, out error)) return false;
 
             int grantedGold = 0;
@@ -243,7 +247,13 @@ namespace Capstone.Game.QuestSystem {
             if (inventory == null || reward == null) return null;
             if (reward.ItemDefinition != null) return reward.ItemDefinition;
             string itemId = !string.IsNullOrWhiteSpace(reward.TargetId) ? reward.TargetId : reward.RewardId;
-            return inventory.FindItemBase(itemId);
+            if (itemId == "starter-evolution-stone") itemId = questManager?.StarterElement switch {
+                HudSystem.PetElement.Fire => "stone-fire",
+                HudSystem.PetElement.Water => "stone-water",
+                HudSystem.PetElement.Nature => "stone-grass",
+                _ => null
+            };
+            return string.IsNullOrEmpty(itemId) ? null : inventory.FindItemBase(itemId);
         }
 
         static bool IsGoldCurrency(string currencyId) {
