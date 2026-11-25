@@ -52,7 +52,10 @@ namespace Capstone.Game.SettingsSystem {
         }
         void SceneLoaded(Scene scene, LoadSceneMode mode) => StartCoroutine(BindAfterStartup());
         void ActiveSceneChanged(Scene previous, Scene next) => PlaySceneMusic(next.name);
-        void Start() => GameAudioRouting.Apply(Model.Data);
+        void Start() {
+            GameAudioRouting.Apply(Model.Data);
+            PlaySceneMusic(SceneManager.GetActiveScene().name);
+        }
         IEnumerator BindAfterStartup() {
             yield return null; ResolveScene();
             PlaySceneMusic(SceneManager.GetActiveScene().name);

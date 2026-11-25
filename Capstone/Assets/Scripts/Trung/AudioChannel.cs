@@ -1,18 +1,16 @@
+using Capstone.Game.SettingsSystem;
 using UnityEngine;
-using UnityEngine.Audio;
 
-// Gắn lên object có AudioSource để thanh "Nhạc nền" / "Hiệu ứng âm thanh" trong Cài đặt chỉnh được nó.
-// Nhạc nền (BGM, nhạc menu) -> Music.  Tiếng bước chân, nút bấm, chiêu thức, cửa mở... -> Sfx.
+// Gắn lên object có AudioSource để thanh âm lượng trong Cài đặt chỉnh được nó.
+// Dùng hệ thống âm thanh chung của game (GameAudioRouting -> CapstoneMixer).
+// Nhạc nền -> Music. Bước chân, cửa, va chạm... -> Sfx. Nút bấm / hộp thoại -> Ui. Gió, nước, tiếng rừng -> Ambient.
 [DisallowMultipleComponent]
 public class AudioChannel : MonoBehaviour
 {
-    public enum Channel { Music, Sfx }
+    public enum Channel { Music, Sfx, Ui, Ambient }
 
     [SerializeField] Channel channel = Channel.Sfx;
-    [Tooltip("Tên Group trong AudioMixer")]
-    [SerializeField] string musicGroup = "Music";
-    [SerializeField] string sfxGroup = "SFX";
-    [Tooltip("Bật = gán cho mọi AudioSource con (vd. gắn 1 lần lên object cha chứa nhiều âm thanh)")]
+    [Tooltip("Bật = áp dụng cho mọi AudioSource con (gắn 1 lần lên object cha chứa nhiều âm thanh)")]
     [SerializeField] bool includeChildren = true;
 
     void Awake() => Apply();
@@ -20,22 +18,14 @@ public class AudioChannel : MonoBehaviour
     [ContextMenu("Gán lại Output")]
     public void Apply()
     {
-        AudioMixer mixer = GameOptions.LoadMixer();
-        if (mixer == null)
+        GameAudioBus bus = channel switch
         {
-            Debug.LogWarning($"{name}: không tìm thấy AudioMixer 'Resources/{GameOptions.MixerResourceName}'.", this);
-            return;
-        }
-
-        string groupName = channel == Channel.Music ? musicGroup : sfxGroup;
-        AudioMixerGroup[] groups = mixer.FindMatchingGroups(groupName);
-        if (groups == null || groups.Length == 0)
-        {
-            Debug.LogWarning($"{name}: AudioMixer không có Group '{groupName}'.", this);
-            return;
-        }
-
+            Channel.Music => GameAudioBus.Music,
+            Channel.Ui => GameAudioBus.UI,
+            Channel.Ambient => GameAudioBus.Ambient,
+            _ => GameAudioBus.SFX
+        };
         AudioSource[] sources = includeChildren ? GetComponentsInChildren<AudioSource>(true) : GetComponents<AudioSource>();
-        foreach (AudioSource source in sources) source.outputAudioMixerGroup = groups[0];
+        foreach (AudioSource source in sources) GameAudioRouting.Route(source, bus);
     }
 }

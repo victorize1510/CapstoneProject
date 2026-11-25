@@ -156,9 +156,33 @@ public class VillageChiefCutscene : MonoBehaviour
         if (npc != null && hideNpcUntilCutscene && !npcStaysHomeBeforeCutscene) npc.gameObject.SetActive(false);
     }
 
+    // Load Game: save đã ghi "đã gặp trưởng làng" -> không chạy lại cutscene, NPC hiện sẵn.
+    IEnumerator Start()
+    {
+        float until = Time.realtimeSinceStartup + 3f;   // Đợi save nạp xong (QuestManager được khôi phục).
+        while (Time.realtimeSinceStartup < until)
+        {
+            if (ElderAlreadyMet()) { MarkAlreadyPlayed(); yield break; }
+            yield return null;
+        }
+    }
+
+    static bool ElderAlreadyMet()
+    {
+        var quests = FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>(FindObjectsInactive.Include);
+        return quests != null && quests.ElderIntroductionComplete;
+    }
+
+    void MarkAlreadyPlayed()
+    {
+        played = true;
+        if (npc != null && !npc.gameObject.activeSelf) npc.gameObject.SetActive(true);
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (running || (playOnlyOnce && played) || npc == null) return;
+        if (playOnlyOnce && ElderAlreadyMet()) { MarkAlreadyPlayed(); return; }
         var movement = other.GetComponentInParent<BasicPlayerMovement>();
         if (movement == null) return;
 

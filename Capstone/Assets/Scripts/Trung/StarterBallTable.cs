@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Capstone.Game.HudSystem;
 using Capstone.Game.Inventory;
 using Capstone.Game.ProfileSystem;
+using Capstone.Game.SaveSystem;
 using Capstone.Game.UISystem;
 using UnityEngine;
 using UnityEngine.Events;
@@ -64,6 +65,8 @@ public class StarterBallTable : MonoBehaviour
     [SerializeField] bool hideChosenBall = true;
     [Tooltip("Chọn xong thì bàn không cho chọn nữa")]
     [SerializeField] bool disableAfterChoosing = true;
+    [Tooltip("Mã lưu trong file save để nhớ đã chọn bóng (tắt game mở lại vẫn nhớ). Mỗi bàn bóng một mã riêng")]
+    [SerializeField] string saveKey = "starterball.v1";
     [Tooltip("Thú đã tự vào Party (StarterPetGranter). Ô này để gắn thêm việc khác nếu cần, vd. bật quest")]
     public UnityEvent<GameObject> onPetGranted = new UnityEvent<GameObject>();
     [Tooltip("Gọi khi xác nhận chọn. Tham số = số thứ tự quả bóng")]
@@ -91,7 +94,47 @@ public class StarterBallTable : MonoBehaviour
     Text revealName;
     static Sprite glowSprite;
 
+    PlayerSaveController save;
+
     public bool IsSelecting => state != State.Idle;
+
+    // ---------- Nhớ đã chọn (file save) ----------
+
+    void Start()
+    {
+        save = FindFirstObjectByType<PlayerSaveController>(FindObjectsInactive.Include);
+        if (save != null) save.LoadCompleted += OnSaveLoaded;
+        RefreshFromSave();
+    }
+
+    void OnDestroy()
+    {
+        if (save != null) save.LoadCompleted -= OnSaveLoaded;
+    }
+
+    void OnSaveLoaded(PlayerSaveData data) => RefreshFromSave();
+
+    string ChoiceKey(int index) => $"{saveKey}.{index}";
+
+    // Save đã có dấu "đã chọn bóng N" -> khóa bàn, ẩn đúng quả đã chọn.
+    void RefreshFromSave()
+    {
+        if (state != State.Idle) return;
+        bool chosenInSave = false;
+        if (save != null && !string.IsNullOrEmpty(saveKey))
+        {
+            for (int i = 0; i < balls.Count; i++)
+            {
+                if (!save.HasStarterGrant(ChoiceKey(i))) continue;
+                chosenInSave = true;
+                if (hideChosenBall && IsValid(i)) balls[i].ball.gameObject.SetActive(false);
+            }
+        }
+        // Save cũ (trước khi có mã chọn bóng) nhưng nhiệm vụ ghi đã chọn thú -> cũng khóa bàn.
+        var quests = FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>(FindObjectsInactive.Include);
+        if (quests != null && quests.StarterChosen) chosenInSave = true;
+        if (chosenInSave) completed = disableAfterChoosing;
+    }
     public int SelectedIndex => selected;
 
     void Reset() => FindChildBalls();
@@ -281,7 +324,7 @@ public class StarterBallTable : MonoBehaviour
         // 2. Thêm thú vào Party (Party đầy thì vào Box).
         var granter = GetComponent<StarterPetGranter>();
         if (granter == null) granter = gameObject.AddComponent<StarterPetGranter>();
-        if (!granter.TryGrant(slot.petPrefab, out string grantError))
+        if (!granter.TryGrant(slot.petPrefab, string.IsNullOrEmpty(saveKey) ? null : ChoiceKey(selected), out string grantError))
         {
             Debug.LogWarning($"[StarterBall] Không nhận được thú: {grantError}", this);
             yield return dialogueBox.TypeLine($"Không thể nhận {petName}: {grantError}", typingSpeed);
@@ -292,6 +335,8 @@ public class StarterBallTable : MonoBehaviour
             yield break;
         }
         int chosen = selected;
+        // Báo cho hệ thống nhiệm vụ: đã chọn thú đầu tiên -> trưởng làng mới giao nhiệm vụ chương 1.
+        FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>(FindObjectsInactive.Include)?.MarkStarterChosen();
         onBallConfirmed?.Invoke(chosen);
         onPetGranted?.Invoke(slot.petPrefab);
 
@@ -303,8 +348,6 @@ public class StarterBallTable : MonoBehaviour
         SetSelected(-1);
         if (hideChosenBall && slot.ball != null) slot.ball.gameObject.SetActive(false);
         completed = disableAfterChoosing;
-        var quests = FindFirstObjectByType<Capstone.Game.QuestSystem.QuestManager>();
-        quests?.MarkStarterChosen();
 
         // 4. Về lại gameplay.
         yield return ExitRoutine();

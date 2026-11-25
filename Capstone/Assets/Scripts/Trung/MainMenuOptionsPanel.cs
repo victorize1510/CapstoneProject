@@ -10,22 +10,21 @@ using Capstone.Game.SettingsSystem;
 // Cài đặt game, lưu bằng PlayerPrefs. Tự áp dụng lại mỗi khi mở game (cả khi vào thẳng DemoScene).
 public static class GameOptions
 {
-    // Âm lượng tổng, toàn màn hình, độ phân giải: dùng chung GameSettingsService của game
-    // (cùng chỗ lưu với màn Cài đặt Esc trong gameplay). Phần còn lại lưu PlayerPrefs.
-    const string KeyMusic = "opt.musicVolume";
-    const string KeySfx = "opt.sfxVolume";
+    // Âm lượng (tổng / nhạc nền / hiệu ứng), toàn màn hình, độ phân giải: dùng chung GameSettingsService của game
+    // (cùng chỗ lưu với màn Cài đặt Esc trong gameplay; GameAudioRouting đưa vào CapstoneMixer).
+    // Chất lượng đồ họa, V-Sync, FPS: lưu PlayerPrefs.
     const string KeyQuality = "opt.quality";
     const string KeyVSync = "opt.vsync";
     const string KeyFps = "opt.fps";
-    static readonly string[] LocalKeys = { KeyMusic, KeySfx, KeyQuality, KeyVSync, KeyFps };
+    static readonly string[] LocalKeys = { KeyQuality, KeyVSync, KeyFps };
 
     public static readonly int[] FpsChoices = { 30, 60, 120, 144, -1 };   // -1 = không giới hạn
 
-    // AudioMixer để chỉnh riêng Nhạc nền / Hiệu ứng. Tự lấy Resources/GameAudioMixer nếu chưa gán.
+    // Mixer chung của game: lấy từ Resources/CapstoneAudio (GameAudioAssets của nhóm).
+    // Dự phòng: Resources/CapstoneMixer hoặc Resources/GameAudioMixer.
     public static AudioMixer Mixer;
-    public static string MusicParameter = "MusicVolume";
-    public static string SfxParameter = "SfxVolume";
-    public const string MixerResourceName = "GameAudioMixer";
+    public const string MixerResourceName = "CapstoneMixer";
+    public const string FallbackMixerResourceName = "GameAudioMixer";
 
     static SettingsState Shared => GameSettingsService.Instance != null ? GameSettingsService.Instance.Model : null;
 
@@ -34,8 +33,16 @@ public static class GameOptions
         get => Shared != null ? Shared.Data.masterVolume : 1f;
         set { if (Shared != null) Shared.Change(SettingsArea.Audio, d => { d.masterVolume = value; d.muteAll = false; }); }
     }
-    public static float MusicVolume { get => PlayerPrefs.GetFloat(KeyMusic, 0.8f); set { PlayerPrefs.SetFloat(KeyMusic, value); ApplyAudio(); } }
-    public static float SfxVolume { get => PlayerPrefs.GetFloat(KeySfx, 0.8f); set { PlayerPrefs.SetFloat(KeySfx, value); ApplyAudio(); } }
+    public static float MusicVolume
+    {
+        get => Shared != null ? Shared.Data.musicVolume : 1f;
+        set { if (Shared != null) Shared.Change(SettingsArea.Audio, d => d.musicVolume = value); }
+    }
+    public static float SfxVolume
+    {
+        get => Shared != null ? Shared.Data.sfxVolume : 1f;
+        set { if (Shared != null) Shared.Change(SettingsArea.Audio, d => d.sfxVolume = value); }
+    }
 
     // 0 = Toàn màn hình, 1 = Cửa sổ.
     public static int ScreenModeIndex
@@ -101,7 +108,7 @@ public static class GameOptions
         foreach (string key in LocalKeys)
         {
             if (!PlayerPrefs.HasKey(key)) continue;
-            snapshot.local[key] = key == KeyMusic || key == KeySfx ? PlayerPrefs.GetFloat(key) : (object)PlayerPrefs.GetInt(key);
+            snapshot.local[key] = PlayerPrefs.GetInt(key);
         }
         return snapshot;
     }
@@ -112,7 +119,6 @@ public static class GameOptions
         foreach (string key in LocalKeys)
         {
             if (!snapshot.local.TryGetValue(key, out object value)) PlayerPrefs.DeleteKey(key);
-            else if (value is float number) PlayerPrefs.SetFloat(key, number);
             else PlayerPrefs.SetInt(key, (int)value);
         }
         if (Shared != null && snapshot.shared != null)
@@ -121,6 +127,8 @@ public static class GameOptions
             Shared.Change(SettingsArea.Audio | SettingsArea.Display, d =>
             {
                 d.masterVolume = old.masterVolume;
+                d.musicVolume = old.musicVolume;
+                d.sfxVolume = old.sfxVolume;
                 d.muteAll = old.muteAll;
                 d.fullscreen = old.fullscreen;
                 d.resolutionWidth = old.resolutionWidth;
@@ -133,7 +141,6 @@ public static class GameOptions
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     public static void ApplyAll()
     {
-        ApplyAudio();
         QualitySettings.SetQualityLevel(QualityLevel, true);
         ApplyFrameRate();
     }
@@ -146,20 +153,11 @@ public static class GameOptions
 
     public static AudioMixer LoadMixer()
     {
+        if (Mixer == null && GameAudioRouting.Assets != null) Mixer = GameAudioRouting.Assets.mixer;
         if (Mixer == null) Mixer = Resources.Load<AudioMixer>(MixerResourceName);
+        if (Mixer == null) Mixer = Resources.Load<AudioMixer>(FallbackMixerResourceName);
         return Mixer;
     }
-
-    // Âm lượng tổng do GameSettingsService đặt vào AudioListener. Ở đây chỉ chỉnh Nhạc nền / Hiệu ứng.
-    static void ApplyAudio()
-    {
-        AudioMixer mixer = LoadMixer();
-        if (mixer == null) return;
-        if (!string.IsNullOrEmpty(MusicParameter)) mixer.SetFloat(MusicParameter, ToDecibel(MusicVolume));
-        if (!string.IsNullOrEmpty(SfxParameter)) mixer.SetFloat(SfxParameter, ToDecibel(SfxVolume));
-    }
-
-    static float ToDecibel(float volume) => Mathf.Log10(Mathf.Max(volume, 0.0001f)) * 20f;
 
     static void ApplyFrameRate()
     {
@@ -182,8 +180,6 @@ public class MainMenuOptionsPanel : MonoBehaviour
     [Header("Âm thanh (tùy chọn)")]
     [Tooltip("AudioMixer có tham số exposed để chỉnh Nhạc nền / Hiệu ứng riêng")]
     [SerializeField] AudioMixer audioMixer;
-    [SerializeField] string musicParameter = "MusicVolume";
-    [SerializeField] string sfxParameter = "SfxVolume";
 
     [Header("Giao diện")]
     [Tooltip("Khung bảng. Để trống = khung tối viền vàng")]
@@ -210,8 +206,6 @@ public class MainMenuOptionsPanel : MonoBehaviour
     void Awake()
     {
         if (audioMixer != null) GameOptions.Mixer = audioMixer;
-        GameOptions.MusicParameter = musicParameter;
-        GameOptions.SfxParameter = sfxParameter;
         if (audioMixer != null) GameOptions.ApplyAll();
     }
 
@@ -225,7 +219,7 @@ public class MainMenuOptionsPanel : MonoBehaviour
 
     void Update()
     {
-        if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.Backspace))) Cancel();
+        if (isOpen && (Capstone.Game.UISystem.GameplayKeyboard.GetKeyDown(KeyCode.Escape) || Capstone.Game.UISystem.GameplayKeyboard.GetKeyDown(KeyCode.Backspace))) Cancel();
     }
 
     public void Open()
