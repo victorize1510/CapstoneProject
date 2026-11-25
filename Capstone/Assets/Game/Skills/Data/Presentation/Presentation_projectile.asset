@@ -28,6 +28,9 @@ MonoBehaviour:
     socket: Mouth
     followSocket: 1
     actorSpace: 1
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 0.3
@@ -36,10 +39,13 @@ MonoBehaviour:
     lifetimeSeconds: 1.2
   release:
     effectPrefab: {fileID: 0}
-    sound: {fileID: 8300000, guid: 84e1cf0e5dff35745b6881671cec1a7e, type: 3}
+    sound: {fileID: 8300000, guid: 9685cf4d59f20424fbe986611cb05229, type: 3}
     socket: Mouth
     followSocket: 0
     actorSpace: 1
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 1
@@ -47,11 +53,14 @@ MonoBehaviour:
     pitch: 1
     lifetimeSeconds: 0.3
   impact:
-    effectPrefab: {fileID: 2762857040043822122, guid: 470b3c099b8488d4c8af4751ab776f87, type: 3}
-    sound: {fileID: 8300000, guid: 670e80edafca1094ea452901fd5d9d64, type: 3}
+    effectPrefab: {fileID: 1134129239631916, guid: 7e48ba6b1b968764490bbc70b66e3fe1, type: 3}
+    sound: {fileID: 8300000, guid: 9251c5ab5759da642b1f9c13aa65a3e4, type: 3}
     socket: 
     followSocket: 0
     actorSpace: 1
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 1

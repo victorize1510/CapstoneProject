@@ -71,9 +71,23 @@ public class BossController : MonoBehaviour
         [NonSerialized] public Vector3 hitOffset;
         [NonSerialized] public Vector3 hitEuler;
         [NonSerialized] public float hitScale = 1f;
+        [NonSerialized] public bool breath;
+        [NonSerialized] public AudioClip releaseSound;
+        [NonSerialized] public float hitLifetime = 3f;    // Hiệu ứng chạy bao lâu rồi tắt (lấy từ chiêu pet).
+        [NonSerialized] public float castLifetime = 3f;   // Tiếng lúc tung chiêu ra (bắn đạn, phun...)   // Phun từ miệng (hơi thở rồng, phun lửa...)
     }
 
     enum Mode { Idle, Chase, Return, Busy, Dead }
+
+    [Header("Miệng (chiêu phun)")]
+    [Tooltip("Kéo xương đầu / miệng của boss vào (vd. Bip001 Head). Để trống = tự tính phía trước mặt boss")]
+    [SerializeField] Transform mouthPoint;
+    [Tooltip("Bật = tự phóng to / thu nhỏ hiệu ứng phun cho dài đúng bằng tầm chiêu (Radius)")]
+    [SerializeField] bool fitBreathToRange = true;
+    [Tooltip("Bật = lửa phun bắt đầu ở Hit Time của chiêu và TẮT khi animation chiêu chạy tới Breath End Time (không theo thời gian của chiêu pet)")]
+    [SerializeField] bool breathEndsWithAnimation = true;
+    [Tooltip("Tắt lửa khi animation chiêu chạy tới đâu (0.5 = nửa animation, 1 = hết animation)")]
+    [SerializeField, Range(0.1f, 1f)] float breathEndTime = 0.95f;
 
     [Header("Animator (tên state)")]
     [SerializeField] Animator animator;
@@ -82,7 +96,31 @@ public class BossController : MonoBehaviour
     [SerializeField] string attackState = "Attack";
     [SerializeField] string damageState = "Damage";
     [SerializeField] string dieState = "Die";
+    [Tooltip("State gầm. Để trống hoặc Animator không có state này thì boss chỉ phát tiếng gầm")]
+    [SerializeField] string roarState = "Roar";
     [SerializeField, Min(0f)] float crossFade = 0.12f;
+
+    [Header("Gầm (Roar)")]
+    [SerializeField] AudioClip roarSound;
+    [SerializeField, Range(0f, 3f)] float roarVolume = 1.5f;
+    [Tooltip("Gầm 1 lần khi vừa phát hiện pet / bắt đầu trận")]
+    [SerializeField] bool roarOnAggro = true;
+    [Tooltip("Sau mỗi đòn đánh / chiêu, tỉ lệ boss gầm lên (0.25 = 25%)")]
+    [SerializeField, Range(0f, 1f)] float roarChance = 0.2f;
+    [Tooltip("2 lần gầm cách nhau ít nhất bấy nhiêu giây")]
+    [SerializeField, Min(0f)] float roarCooldown = 15f;
+
+    [Header("Tiếng bước chân / đánh thường")]
+    [Tooltip("Kéo 1 hoặc nhiều tiếng bước chân, boss phát ngẫu nhiên cho đỡ nhàm")]
+    [SerializeField] AudioClip[] footstepSounds;
+    [Tooltip("Mấy giây 1 bước khi đi (khớp với nhịp chân của animation Walk)")]
+    [SerializeField, Min(0.1f)] float footstepInterval = 0.6f;
+    [SerializeField, Range(0f, 3f)] float footstepVolume = 1f;
+    [Tooltip("Tiếng lúc vung đòn (đầu animation Attack)")]
+    [SerializeField] AudioClip attackSwingSound;
+    [Tooltip("Tiếng lúc đòn trúng pet")]
+    [SerializeField] AudioClip attackHitSound;
+    [SerializeField, Range(0f, 3f)] float attackVolume = 1f;
 
     [Header("Tên trên thanh máu")]
     [SerializeField] string displayName = "Detale";
@@ -126,9 +164,25 @@ public class BossController : MonoBehaviour
     [Tooltip("Mấy giây mới được phát Damage một lần (boss không bị khựng liên tục)")]
     [SerializeField, Min(0f)] float damageReactCooldown = 2.5f;
 
+    [Header("Âm thanh boss")]
+    [Tooltip("Độ to tiếng chiêu / đánh của boss (1 = gốc, 2 = gấp đôi)")]
+    [SerializeField, Range(0f, 3f)] float soundVolume = 1.8f;
+    [Tooltip("0 = nghe như nhau ở mọi chỗ, 1 = càng xa boss càng nhỏ")]
+    [SerializeField, Range(0f, 1f)] float sound3D = 0.6f;
+    [Tooltip("Đứng trong khoảng này quanh boss thì nghe to hết cỡ")]
+    [SerializeField, Min(1f)] float soundFullDistance = 20f;
+    [Tooltip("Xa hơn khoảng này thì không nghe nữa")]
+    [SerializeField, Min(2f)] float soundMaxDistance = 70f;
+
     [Header("Chiêu")]
     [Tooltip("Chiêu đầu tiên chỉ được dùng sau bấy nhiêu giây kể từ lúc vào trận")]
     [SerializeField, Min(0f)] float firstSkillDelay = 4f;
+    [Tooltip("Dùng xong 1 chiêu (hiệu ứng đã tan hết) thì phải đợi bấy nhiêu giây mới được dùng chiêu khác. Giữa lúc đó boss vẫn đánh thường")]
+    [SerializeField, Min(0f)] float skillGap = 4f;
+    [Tooltip("Bật = dùng lần lượt từng chiêu theo thứ tự trong danh sách, dùng hết 1 vòng rồi mới lặp lại.\nTắt = luôn ưu tiên chiêu mạnh nhất đã hồi xong")]
+    [SerializeField] bool rotateSkills = true;
+    [Tooltip("Chiêu tới lượt mà quá bấy nhiêu giây vẫn chưa dùng được (pet ngoài tầm...) thì bỏ qua, sang chiêu kế")]
+    [SerializeField, Min(1f)] float skipSkillAfter = 8f;
     [SerializeField] List<BossSkill> skills = new List<BossSkill> { new BossSkill() };
 
     [Header("Vòng đỏ cảnh báo (chiêu Target Ground)")]
@@ -156,12 +210,21 @@ public class BossController : MonoBehaviour
     Mode mode = Mode.Idle;
     CreatureCombatant target;
     float nextAttackAt;
+    float nextSkillAt;
+    int skillsInFlight;   // Đạn đang bay / vòng đỏ chưa nổ / lửa còn đang phun.
+    // Xoay vòng chiêu: mỗi chiêu dùng 1 lần theo thứ tự danh sách, hết vòng thì lặp lại.
+    readonly HashSet<BossSkill> usedThisRound = new HashSet<BossSkill>();
+    BossSkill waitingSkill;
+    float waitingSince;
     float nextReactAt;
     float lastHealth;
     float nextTargetScan;
     float combatStartedAt = -1f;
     int castId;
     string currentLoop;
+    float nextRoarAt;
+    bool roarPending;
+    float footstepTimer;
     Coroutine action;
     readonly List<CreatureCombatant> pets = new List<CreatureCombatant>();
     static Material warningMaterial;
@@ -193,10 +256,14 @@ public class BossController : MonoBehaviour
             audioSource = gameObject.AddComponent<AudioSource>();
             audioSource.playOnAwake = false;
             audioSource.spatialBlend = 1f;
-            audioSource.maxDistance = 40f;
         }
         // Đi qua kênh âm thanh "Kỹ năng" của game: thanh Hiệu ứng / Kỹ năng trong Cài đặt chỉnh được.
         Capstone.Game.SettingsSystem.GameAudioRouting.Route(audioSource, Capstone.Game.SettingsSystem.GameAudioBus.Skill);
+        // Boss to, camera đứng xa -> âm 3D mặc định bị nhỏ. Giữ to trong bán kính Sound Full Distance.
+        audioSource.spatialBlend = sound3D;
+        audioSource.rolloffMode = AudioRolloffMode.Linear;
+        audioSource.minDistance = soundFullDistance;
+        audioSource.maxDistance = Mathf.Max(soundFullDistance + 1f, soundMaxDistance);
 
         home = transform.position;
         homeRotation = transform.rotation;
@@ -245,6 +312,15 @@ public class BossController : MonoBehaviour
                     skill.useRange = skill.radius;
                     break;
             }
+            // Chiêu phun hình nón / tia (hơi thở rồng, phun lửa, vòi nước) -> phun hình nón trước mặt boss.
+            if (combat.pattern == PetSkillPattern.Cone || combat.pattern == PetSkillPattern.Beam)
+            {
+                skill.breath = true;
+                skill.shape = SkillShape.FrontCone;
+                skill.coneAngle = combat.pattern == PetSkillPattern.Beam ? 30f : 60f;
+                skill.radius = Mathf.Max(5f, combat.range);
+                skill.useRange = skill.radius;
+            }
             if (skill.projectilePrefab == null) skill.projectilePrefab = combat.projectileVisual;
         }
 
@@ -254,23 +330,31 @@ public class BossController : MonoBehaviour
             if (look.cast != null)
             {
                 if (look.cast.effectPrefab != null) skill.castEffect = look.cast.effectPrefab;
+                skill.castLifetime = Mathf.Max(0.2f, look.cast.lifetimeSeconds);
                 if (look.cast.sound != null) skill.castSound = look.cast.sound;
             }
             GameObject release = look.release != null ? look.release.effectPrefab : null;
             GameObject impact = look.impact != null ? look.impact.effectPrefab : null;
             if (skill.projectilePrefab == null && skill.shape == SkillShape.Projectile) skill.projectilePrefab = release;
             PetSkillCue hitCue = null;
-            if (impact != null) { skill.hitEffect = impact; hitCue = look.impact; }
+            if (skill.breath && release != null) { skill.hitEffect = release; hitCue = look.release; }   // Lửa phun ra từ miệng.
+            else if (impact != null) { skill.hitEffect = impact; hitCue = look.impact; }
             else if (skill.shape != SkillShape.Projectile && release != null) { skill.hitEffect = release; hitCue = look.release; }
             if (hitCue != null)
             {
                 skill.hitOffset = hitCue.localOffset;
                 skill.hitEuler = hitCue.localEulerAngles;
                 skill.hitScale = hitCue.scale > 0f ? hitCue.scale : 1f;
+                skill.hitLifetime = Mathf.Max(0.2f, hitCue.lifetimeSeconds);
             }
-            AudioClip hitSound = look.impact != null && look.impact.sound != null ? look.impact.sound
-                : look.release != null ? look.release.sound : null;
-            if (hitSound != null) skill.hitSound = hitSound;
+            AudioClip releaseSound = look.release != null ? look.release.sound : null;
+            AudioClip impactSound = look.impact != null ? look.impact.sound : null;
+            if (impactSound != null)
+            {
+                skill.hitSound = impactSound;          // Tiếng va chạm / nổ.
+                skill.releaseSound = releaseSound;     // Tiếng lúc bắn / phun ra.
+            }
+            else if (releaseSound != null) skill.hitSound = releaseSound;
         }
     }
 
@@ -350,6 +434,19 @@ public class BossController : MonoBehaviour
         {
             combatStartedAt = Time.time;
             foreach (BossSkill skill in skills) if (skill != null) skill.readyAt = Time.time + firstSkillDelay;
+            nextSkillAt = 0f;
+            skillsInFlight = 0;
+            usedThisRound.Clear();
+            waitingSkill = null;
+            if (roarOnAggro) { roarPending = true; nextRoarAt = 0f; }
+        }
+
+        // Gầm: lúc vào trận, hoặc ngẫu nhiên sau một đòn / chiêu.
+        if (roarPending && Time.time >= nextRoarAt)
+        {
+            roarPending = false;
+            action = StartCoroutine(Roar(target));
+            return;
         }
 
         float distance = DistanceTo(target);
@@ -417,14 +514,51 @@ public class BossController : MonoBehaviour
 
     BossSkill PickSkill(float distance)
     {
+        if (skillsInFlight > 0 || Time.time < nextSkillAt) return null;   // Mỗi lần chỉ 1 chiêu.
+        if (rotateSkills) return PickNextInRound(distance);
+
         BossSkill best = null;
         foreach (BossSkill skill in skills)
         {
-            if (skill == null || Time.time < skill.readyAt || distance > skill.useRange) continue;
-            if (!HasState(skill.animatorState)) continue;
+            if (!Usable(skill) || Time.time < skill.readyAt || distance > skill.useRange) continue;
             if (best == null || skill.damageMultiplier > best.damageMultiplier) best = skill;   // Chiêu mạnh nhất trước.
         }
         return best;
+    }
+
+    bool Usable(BossSkill skill) => skill != null && HasState(skill.animatorState);
+
+    // Lần lượt: chiêu 0 -> 1 -> 2 ... dùng hết thì bắt đầu vòng mới.
+    BossSkill PickNextInRound(float distance)
+    {
+        BossSkill next = null;
+        for (int pass = 0; pass < 2 && next == null; pass++)
+        {
+            foreach (BossSkill skill in skills)
+                if (Usable(skill) && !usedThisRound.Contains(skill)) { next = skill; break; }
+            if (next == null)
+            {
+                if (usedThisRound.Count == 0) return null;   // Không có chiêu nào dùng được.
+                usedThisRound.Clear();                        // Hết vòng -> lặp lại từ đầu.
+            }
+        }
+        if (next == null) return null;
+
+        if (waitingSkill != next) { waitingSkill = next; waitingSince = Time.time; }
+        if (Time.time < next.readyAt) { waitingSince = Time.time; return null; }   // Chờ hồi chiêu thì không tính là bỏ lượt.
+        if (distance <= next.useRange)
+        {
+            usedThisRound.Add(next);
+            waitingSkill = null;
+            return next;
+        }
+        // Pet đứng ngoài tầm chiêu này quá lâu -> bỏ qua lượt này.
+        if (Time.time - waitingSince > skipSkillAfter)
+        {
+            usedThisRound.Add(next);
+            waitingSkill = null;
+        }
+        return null;
     }
 
     // ---------- Đánh thường ----------
@@ -435,14 +569,38 @@ public class BossController : MonoBehaviour
         StopMoving();
         nextAttackAt = Time.time + attackInterval;
         PlayOnce(attackState);
+        PlaySound(attackSwingSound, attackVolume);
 
         yield return WaitForAnimation(attackState, attackHitTime, () => { if (IsValidTarget(victim)) Face(victim.Center); });
         if (mode == Mode.Dead) yield break;
         if (IsValidTarget(victim) && DistanceTo(victim) <= attackRange + 1f)
         {
             DealDamage(victim, 1f, attackKind, "boss-basic");
+            PlaySound(attackHitSound, attackVolume);
         }
         yield return WaitForAnimation(attackState, 0.95f, null);
+        EndAction(true);
+    }
+
+    // ---------- Gầm ----------
+
+    IEnumerator Roar(CreatureCombatant victim)
+    {
+        nextRoarAt = Time.time + roarCooldown;
+        bool hasAnim = !string.IsNullOrEmpty(roarState) && HasState(roarState);
+        if (!hasAnim)
+        {
+            PlaySound(roarSound, roarVolume);   // Chưa có animation -> chỉ gầm tiếng, không đứng lại.
+            action = null;
+            yield break;
+        }
+        mode = Mode.Busy;
+        StopMoving();
+        if (IsValidTarget(victim)) Face(victim.Center, true);
+        PlayOnce(roarState);
+        PlaySound(roarSound, roarVolume);
+        yield return WaitForAnimation(roarState, 0.95f, () => { if (IsValidTarget(victim)) Face(victim.Center); });
+        nextAttackAt = Mathf.Max(nextAttackAt, Time.time + 0.3f);
         EndAction();
     }
 
@@ -453,12 +611,13 @@ public class BossController : MonoBehaviour
         mode = Mode.Busy;
         StopMoving();
         skill.readyAt = Time.time + skill.cooldown;
+        nextSkillAt = Time.time + 12f;   // Tạm khóa chiêu khác (nếu bị ngắt giữa chừng thì 12 giây sau tự mở lại).
         nextAttackAt = Mathf.Max(nextAttackAt, Time.time + 0.8f);
         castId++;
         if (IsValidTarget(victim)) Face(victim.Center, true);
 
         PlayOnce(skill.animatorState);
-        Spawn(skill.castEffect, transform.position, transform.rotation, null);   // Không gắn làm con: boss scale lớn sẽ phóng to hiệu ứng theo.
+        Spawn(skill.castEffect, transform.position, transform.rotation, null, skill.castLifetime);   // Không gắn làm con: boss scale lớn sẽ phóng to hiệu ứng theo.
         PlaySound(skill.castSound);
 
         // Chiêu đập đất: hiện vòng cảnh báo ngay khi bắt đầu, khóa vị trí pet lúc đó.
@@ -476,29 +635,68 @@ public class BossController : MonoBehaviour
         });
         if (mode == Mode.Dead) { if (warning != null) Destroy(warning); yield break; }
 
+        PlaySound(skill.releaseSound);   // Lúc chiêu bay / phun ra.
+        GameObject breathFx = null;
         switch (skill.shape)
         {
             case SkillShape.AroundBoss:
                 Explode(skill, transform.position, skill.radius, false);
                 break;
             case SkillShape.FrontCone:
-                Explode(skill, transform.position, skill.radius, true);
+                breathFx = Explode(skill, transform.position, skill.radius, true);
                 break;
             case SkillShape.Projectile:
-                StartCoroutine(FlyProjectile(skill, victim));
+                StartCoroutine(TrackSkill(FlyProjectile(skill, victim)));
                 break;
             case SkillShape.TargetGround:
-                StartCoroutine(GroundSlam(skill, groundPoint, warning));
+                StartCoroutine(TrackSkill(GroundSlam(skill, groundPoint, warning)));
                 break;
         }
 
+        // Lửa phun / vụ nổ còn hiện thêm một lúc -> tính từ lúc nó tan hết.
+        float effectEnd = Time.time + (skill.shape == SkillShape.FrontCone || skill.shape == SkillShape.AroundBoss ? skill.hitLifetime : 0f);
+        if (breathFx != null && breathEndsWithAnimation)
+        {
+            // Lửa bám theo miệng tới lúc animation chạy tới Breath End Time thì tắt.
+            yield return WaitForAnimation(skill.animatorState, Mathf.Max(breathEndTime, skill.hitTime + 0.02f), () =>
+            {
+                if (breathFx != null) breathFx.transform.SetPositionAndRotation(
+                    MouthPosition() + BreathRotation() * skill.hitOffset, BreathRotation() * Quaternion.Euler(skill.hitEuler));
+            });
+            StopEffectNow(breathFx);
+            effectEnd = Time.time + 1f;
+        }
         yield return WaitForAnimation(skill.animatorState, 0.95f, null);
-        EndAction();
+        nextSkillAt = Mathf.Max(Time.time, effectEnd) + skillGap;
+        EndAction(true);
     }
 
-    void Explode(BossSkill skill, Vector3 center, float radius, bool coneOnly)
+    // Đạn đang bay / vòng đỏ chưa nổ thì chưa cho dùng chiêu khác.
+    IEnumerator TrackSkill(IEnumerator routine)
     {
-        SpawnHit(skill, coneOnly ? center + transform.forward * radius * 0.5f : center, transform.rotation);
+        skillsInFlight++;
+        try { yield return StartCoroutine(routine); }
+        finally
+        {
+            skillsInFlight = Mathf.Max(0, skillsInFlight - 1);
+            nextSkillAt = Mathf.Max(nextSkillAt, Time.time + skillGap);
+        }
+    }
+
+    bool IsBreath(BossSkill skill) =>
+        skill.shape == SkillShape.FrontCone && (skill.breath || skill.hitEffect != null && mouthPoint != null);
+
+    Quaternion BreathRotation() =>
+        Quaternion.LookRotation(Flat(transform.forward).sqrMagnitude > 0.01f ? Flat(transform.forward) : Vector3.forward);
+
+    GameObject Explode(BossSkill skill, Vector3 center, float radius, bool coneOnly)
+    {
+        GameObject breathFx = null;
+        if (coneOnly && IsBreath(skill))
+            // Lửa phun: để chạy lâu, tới lúc animation xong thì CastSkill tự tắt.
+            breathFx = SpawnHit(skill, MouthPosition(), BreathRotation(), breathEndsWithAnimation ? 8f : -1f);
+        else
+            SpawnHit(skill, coneOnly ? center + transform.forward * radius * 0.5f : center, transform.rotation);
         PlaySound(skill.hitSound);
         foreach (CreatureCombatant pet in PetsInRange(center, radius))
         {
@@ -509,6 +707,20 @@ public class BossController : MonoBehaviour
             }
             DealDamage(pet, skill.damageMultiplier, skill.damageKind, skill.skillName);
         }
+        return breathFx;
+    }
+
+    // Tắt phun ngay: ngừng ra hạt mới, hạt cũ bay nốt rồi tan.
+    static void StopEffectNow(GameObject effect)
+    {
+        if (effect == null) return;
+        float longest = 0f;
+        foreach (var ps in effect.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            longest = Mathf.Max(longest, ps.main.startLifetime.constantMax);
+        }
+        Destroy(effect, Mathf.Clamp(longest, 0.2f, 3f));
     }
 
     IEnumerator GroundSlam(BossSkill skill, Vector3 point, GameObject warning)
@@ -607,10 +819,11 @@ public class BossController : MonoBehaviour
         victim.ReceiveHit(new CombatHit(gameObject, id, castId, raw, kind, critical, false, victim.Center));
     }
 
-    void EndAction()
+    void EndAction(bool mayRoar = false)
     {
         action = null;
         if (mode == Mode.Dead) return;
+        if (mayRoar && !roarPending && Time.time >= nextRoarAt && UnityEngine.Random.value < roarChance) roarPending = true;
         mode = Mode.Idle;
         currentLoop = null;
         PlayLoop(idleState);
@@ -688,6 +901,18 @@ public class BossController : MonoBehaviour
         bool moving = Flat(transform.position - before).magnitude > 0.001f
             || (agent != null && agent.isActiveAndEnabled && agent.velocity.sqrMagnitude > 0.04f);
         PlayLoop(moving ? walkState : idleState);
+
+        // Tiếng bước chân khi đang đi.
+        if (moving && footstepSounds != null && footstepSounds.Length > 0)
+        {
+            footstepTimer -= Time.deltaTime;
+            if (footstepTimer <= 0f)
+            {
+                footstepTimer = footstepInterval;
+                PlaySound(footstepSounds[UnityEngine.Random.Range(0, footstepSounds.Length)], footstepVolume);
+            }
+        }
+        else footstepTimer = 0f;   // Vừa bước đi là kêu ngay bước đầu.
     }
 
     void StopMoving()
@@ -776,20 +1001,36 @@ public class BossController : MonoBehaviour
 
     // ---------- Hiệu ứng ----------
 
-    void SpawnHit(BossSkill skill, Vector3 point, Quaternion rotation)
+    GameObject SpawnHit(BossSkill skill, Vector3 point, Quaternion rotation, float lifetime = -1f)
     {
         Quaternion final = rotation * Quaternion.Euler(skill.hitEuler);
-        GameObject effect = Spawn(skill.hitEffect, point + rotation * skill.hitOffset, final, null);
-        if (effect != null && !Mathf.Approximately(skill.hitScale, 1f)) effect.transform.localScale *= skill.hitScale;
+        GameObject effect = Spawn(skill.hitEffect, point + rotation * skill.hitOffset, final, null,
+                                  lifetime > 0f ? lifetime : skill.hitLifetime);
+        if (effect != null && !Mathf.Approximately(skill.hitScale, 1f)) ScaleEffect(effect, skill.hitScale);
+        return effect;
     }
 
-    GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform follow)
+    GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation, Transform follow, float lifetime = 3f)
     {
         if (prefab == null) return null;
         GameObject effect = Instantiate(prefab, position, rotation, follow);
         IgnoreBossBody(effect, position);
-        Destroy(effect, 5f);
+        // Hiệu ứng lặp (Looping) sẽ phun lại liên tục -> hết thời gian thì ngừng phát, đợi hạt cũ tan rồi xóa.
+        StartCoroutine(StopEffectAfter(effect, lifetime));
         return effect;
+    }
+
+    static IEnumerator StopEffectAfter(GameObject effect, float lifetime)
+    {
+        yield return new WaitForSeconds(lifetime);
+        if (effect == null) yield break;
+        float longest = 0f;
+        foreach (var ps in effect.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            longest = Mathf.Max(longest, ps.main.startLifetime.constantMax);
+        }
+        Destroy(effect, Mathf.Clamp(longest, 0.2f, 3f));
     }
 
     // Hiệu ứng của pet có thể có Collider hoặc hạt va chạm (Particle Collision) -> rơi trúng thân boss là nổ luôn.
@@ -828,9 +1069,18 @@ public class BossController : MonoBehaviour
         }
     }
 
-    void PlaySound(AudioClip clip)
+    void PlaySound(AudioClip clip, float volume = 1f)
     {
-        if (clip != null && audioSource != null) audioSource.PlayOneShot(clip);
+        if (clip != null && audioSource != null) audioSource.PlayOneShot(clip, soundVolume * volume);
+    }
+
+    Vector3 MouthPosition()
+    {
+        if (mouthPoint != null) return mouthPoint.position;
+        float height = 2f;
+        foreach (var c in GetComponentsInChildren<Collider>())
+            if (!c.isTrigger && c.enabled) height = Mathf.Max(height, c.bounds.size.y);
+        return transform.position + Vector3.up * height * 0.6f + Flat(transform.forward).normalized * BodyRadius();
     }
 
     // ---------- Vòng đỏ ----------
@@ -862,29 +1112,69 @@ public class BossController : MonoBehaviour
     // Đo hiệu ứng: chạy thử hạt 1.5 giây rồi lấy độ rộng trên mặt đất.
     static float MeasureEffectRadius(GameObject prefab, float scale)
     {
-        if (prefab == null) return 0f;
+        Bounds? b = MeasureEffectBounds(prefab, scale);
+        return b.HasValue ? Mathf.Max(b.Value.extents.x, b.Value.extents.z) : 0f;
+    }
+
+    // Độ dài hiệu ứng phun theo hướng phun (trục Z xanh dương của prefab), tính từ gốc prefab.
+    static float MeasureEffectLength(GameObject prefab, float scale)
+    {
+        Bounds? b = MeasureEffectBounds(prefab, scale);
+        if (!b.HasValue) return 0f;
+        return Mathf.Max(b.Value.max.z, b.Value.size.z);   // Prefab đặt tại z = 0.
+    }
+
+    // Phóng to cả hạt con: Scaling Mode "Local" của Unity bỏ qua scale của object cha.
+    static void ScaleEffect(GameObject effect, float scale)
+    {
+        effect.transform.localScale *= scale;
+        foreach (var ps in effect.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            var main = ps.main;
+            if (main.scalingMode == ParticleSystemScalingMode.Local) main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+        }
+    }
+
+    static Bounds? MeasureEffectBounds(GameObject prefab, float scale)
+    {
+        if (prefab == null) return null;
         GameObject probe = Instantiate(prefab, new Vector3(0f, -5000f, 0f), Quaternion.identity);
-        probe.transform.localScale *= scale;
-        foreach (var ps in probe.GetComponentsInChildren<ParticleSystem>(true))
-            ps.Simulate(1.5f, false, true);
+        if (!Mathf.Approximately(scale, 1f)) ScaleEffect(probe, scale);
+        var systems = probe.GetComponentsInChildren<ParticleSystem>(true);
+        var renderers = probe.GetComponentsInChildren<Renderer>(true);
         bool any = false;
         Bounds bounds = default;
-        foreach (var r in probe.GetComponentsInChildren<Renderer>(true))
+        // Chạy thử từng nửa giây tới 3 giây, lấy kích thước lớn nhất (lửa phun cần thời gian mới dài hết cỡ).
+        for (float t = 0.5f; t <= 3.01f; t += 0.5f)
         {
-            if (r is ParticleSystemRenderer psr && psr.GetComponent<ParticleSystem>().particleCount == 0) continue;
-            if (!any) { bounds = r.bounds; any = true; }
-            else bounds.Encapsulate(r.bounds);
+            foreach (var ps in systems) ps.Simulate(t, false, true);
+            foreach (var r in renderers)
+            {
+                if (r is ParticleSystemRenderer psr && psr.GetComponent<ParticleSystem>().particleCount == 0) continue;
+                if (!any) { bounds = r.bounds; any = true; }
+                else bounds.Encapsulate(r.bounds);
+            }
+            if (systems.Length == 0) break;
         }
         DestroyImmediate(probe);
-        return any ? Mathf.Max(bounds.extents.x, bounds.extents.z) : 0f;
+        return any ? bounds : (Bounds?)null;
     }
 
     void FitRingsToEffects()
     {
-        if (!fitRingToEffect) return;
+
         foreach (BossSkill skill in skills)
         {
-            if (skill.shape != SkillShape.TargetGround || skill.hitEffect == null) continue;
+            if (skill.hitEffect == null) continue;
+            if (skill.breath && fitBreathToRange)
+            {
+                float length = MeasureEffectLength(skill.hitEffect, skill.hitScale);
+                if (length < 0.3f) continue;
+                skill.hitScale = Mathf.Clamp(skill.hitScale * skill.radius / length, 0.2f, 20f);
+                Debug.Log($"[Boss] {skill.skillName}: hiệu ứng phun dài {length:0.0} m -> phóng x{skill.hitScale:0.00} cho dài {skill.radius:0.0} m.", this);
+                continue;
+            }
+            if (skill.shape != SkillShape.TargetGround || !fitRingToEffect) continue;
             float measured = MeasureEffectRadius(skill.hitEffect, skill.hitScale) * ringFitScale;
             if (measured < 0.3f) continue;   // Đo không ra -> giữ Radius cũ.
             skill.radius = measured;

@@ -16,40 +16,51 @@ MonoBehaviour:
   releaseNormalized: 0.43
   chainNormalized: 0.85
   playbackSpeed: 1
+  releaseDelaySeconds: 0.25
   impactWindowSeconds: 5
+  mixerGroup: {fileID: 0}
   spatialBlend: 1
   minDistance: 2
   maxDistance: 35
-  cast: 
+  cast:
     effectPrefab: {fileID: 0}
     sound: {fileID: 0}
     socket: Head
     followSocket: 0
     actorSpace: 1
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 0.5
     volume: 0.3
     pitch: 1
     lifetimeSeconds: 1.2
-  release: 
+  release:
     effectPrefab: {fileID: 8400424712307853490, guid: 20d0878b7b48f0f268cd06c340643e8b, type: 3}
-    sound: {fileID: 8300000, guid: 11f9432fd9e94894883da7801527a8f0, type: 3}
+    sound: {fileID: 8300000, guid: 685895fe1f1fa714db4f90a14d0bc51d, type: 3}
     socket: Mouth
     followSocket: 1
     actorSpace: 1
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 0.5
     volume: 0.3
     pitch: 1
     lifetimeSeconds: 2.4
-  impact: 
+  impact:
     effectPrefab: {fileID: 1758473627833946668, guid: 65630e1cd512237023ea8de6755a1ed8, type: 3}
     sound: {fileID: 8300000, guid: 0baf8600b856b794b90ef46e9e7fb215, type: 3}
     socket: 
     followSocket: 0
     actorSpace: 1
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 0.38

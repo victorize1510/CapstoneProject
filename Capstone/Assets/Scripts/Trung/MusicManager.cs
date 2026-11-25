@@ -26,6 +26,8 @@ public class MusicManager : MonoBehaviour
     [SerializeField] List<SceneTrack> sceneTracks = new List<SceneTrack>();
     [Tooltip("Scene không có trong danh sách: bật = giữ bài đang phát, tắt = im lặng")]
     [SerializeField] bool keepMusicForUnknownScene = true;
+    [Tooltip("Scene không có trong danh sách: dùng nhạc có sẵn của game (Resources/CapstoneAudio): MainMenu -> nhạc menu, DemoScene... -> nhạc gameplay")]
+    [SerializeField] bool useGameDefaultTracks = true;
 
     [Header("Chuyển bài")]
     [SerializeField, Min(0f)] float fadeTime = 1.5f;
@@ -34,7 +36,7 @@ public class MusicManager : MonoBehaviour
 
     public static MusicManager Instance { get; private set; }
 
-    class Request { public object owner; public AudioClip clip; public float volume; }
+    class Request { public object owner; public AudioClip clip; public float volume; public bool silent; }
 
     readonly List<Request> overrides = new List<Request>();
     AudioSource[] sources;
@@ -81,14 +83,37 @@ public class MusicManager : MonoBehaviour
         Instance = null;
     }
 
-    void Start() => OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+    void Start()
+    {
+        OnSceneLoaded(SceneManager.GetActiveScene(), LoadSceneMode.Single);
+        StartCoroutine(ApplySettingsWhenReady());
+    }
+
+    // Play thẳng 1 scene: Cài đặt âm thanh có thể chưa được đẩy vào Audio Mixer
+    // -> mixer giữ giá trị cũ (vd. Music -26 dB) làm nhạc rất nhỏ / như không có. Đẩy lại 1 lần.
+    IEnumerator ApplySettingsWhenReady()
+    {
+        float until = Time.realtimeSinceStartup + 3f;
+        while (Time.realtimeSinceStartup < until)
+        {
+            var data = GameSettingsService.Instance != null && GameSettingsService.Instance.Model != null
+                ? GameSettingsService.Instance.Model.Data : null;
+            if (data != null)
+            {
+                GameAudioRouting.Apply(data);
+                yield break;
+            }
+            yield return null;
+        }
+    }
 
     float nextSuppressCheck;
+    bool forceSilent;
     void Update()
     {
         // Nhạc có sẵn của game có thể được tạo sau MusicManager -> kiểm tra lại định kỳ.
-        if (playingClip == null || Time.unscaledTime < nextSuppressCheck) return;
-        nextSuppressCheck = Time.unscaledTime + 1f;
+        if ((playingClip == null && !forceSilent) || Time.unscaledTime < nextSuppressCheck) return;
+        nextSuppressCheck = Time.unscaledTime + (forceSilent ? 0.2f : 1f);
         SuppressBuiltInMusic(true);
     }
 
@@ -99,9 +124,22 @@ public class MusicManager : MonoBehaviour
 
         SceneTrack track = sceneTracks.Find(t => t != null && t.clip != null
             && string.Equals(t.sceneName, scene.name, StringComparison.OrdinalIgnoreCase));
+        AudioClip builtIn = useGameDefaultTracks ? GameDefaultTrack(scene.name) : null;
         if (track != null) { sceneClip = track.clip; sceneVolume = track.volume; }
+        else if (builtIn != null) { sceneClip = builtIn; sceneVolume = 0.42f; }   // Cùng độ to với nhạc có sẵn của game.
         else if (!keepMusicForUnknownScene) { sceneClip = null; }
         Refresh();
+    }
+
+    static AudioClip GameDefaultTrack(string scene)
+    {
+        var clips = GameAudioRouting.Assets;
+        if (clips == null) return null;
+        if (scene == "MainMenu") return clips.menuMusic;
+        if (scene == "EvolutionScene") return clips.evolutionMusic;
+        if (scene.StartsWith("DemoScene", StringComparison.Ordinal) || scene == "Dwarven Cave A1" || scene == "Map forest")
+            return clips.gameplayMusic;
+        return null;
     }
 
     // ---------- API cho script khác ----------
@@ -109,10 +147,23 @@ public class MusicManager : MonoBehaviour
     // Phát bài riêng (đè lên nhạc scene) tới khi gọi Release với cùng owner.
     public static void Push(object owner, AudioClip clip, float volume = 1f)
     {
-        if (Instance == null || owner == null) return;
+        if (owner == null || !EnsureInstance()) return;
         Instance.overrides.RemoveAll(request => request.owner == owner);
-        Instance.overrides.Add(new Request { owner = owner, clip = clip, volume = volume });
+        Instance.overrides.Add(new Request { owner = owner, clip = clip, volume = volume, silent = clip == null });
         Instance.Refresh();
+    }
+
+    /// <summary>Tắt hết nhạc (cả nhạc scene có sẵn của game) tới khi gọi Release với cùng owner.</summary>
+    public static void PushSilence(object owner) => Push(owner, null);
+
+    // Chưa có prefab Resources/MusicManager -> tự tạo 1 cái trống để vẫn dùng được Push / Silence.
+    static bool EnsureInstance()
+    {
+        if (Instance != null) return true;
+        var existing = FindFirstObjectByType<MusicManager>();
+        if (existing != null) return Instance != null;
+        new GameObject("MusicManager").AddComponent<MusicManager>();
+        return Instance != null;
     }
 
     public static void Release(object owner)
@@ -136,13 +187,16 @@ public class MusicManager : MonoBehaviour
     {
         AudioClip clip = sceneClip;
         float volume = sceneVolume;
+        bool silent = false;
         if (overrides.Count > 0)
         {
             Request top = overrides[overrides.Count - 1];   // Cái mới nhất thắng.
             clip = top.clip;
             volume = top.volume;
+            silent = top.silent;
         }
-        SuppressBuiltInMusic(clip != null);
+        forceSilent = silent;
+        SuppressBuiltInMusic(clip != null || silent);
 
         if (clip == playingClip && clip != null)
         {
