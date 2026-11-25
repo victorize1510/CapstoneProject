@@ -1,5 +1,5 @@
 using UnityEngine;
-using  TMPro;
+using TMPro;
 /// <summary>
 /// Gắn script này lên Canvas trong EvolutionScene. Quản lý khung chữ kiểu
 /// "Congratulations! X đã tiến hóa thành Y!" — ẩn sẵn lúc đầu, EvolutionController
@@ -11,6 +11,8 @@ public class EvolutionUI : MonoBehaviour
 
     [Tooltip("GameObject chứa khung chữ (nền + text), sẽ được ẩn/hiện. Để trống sẽ dùng chính GameObject này.")]
     public GameObject panelRoot;
+
+    [SerializeField] TMP_Text petNameText;
 
     [Tooltip("Text hiển thị nội dung thông báo (VD: 'Chúc mừng! Dragon Spark đã tiến hóa thành Dragon Fire!').")]
     public TMP_Text messageText;
@@ -31,8 +33,10 @@ public class EvolutionUI : MonoBehaviour
         if (Instance == this) Instance = null;
     }
 
-    public void Show(string message)
+    public void Show(string petName, string message)
     {
+        if (petNameText != null)
+            petNameText.text = petName;
         if (messageText != null)
             messageText.text = message;
         else

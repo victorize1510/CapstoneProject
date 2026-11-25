@@ -175,6 +175,8 @@ namespace Capstone.Game.HudSystem {
             IsPlaying=true;active=this;committed=false;completion=onComplete;growing=null;currentPet=pet;
             try {
                 scope=new EvolutionPresentationScope(this,pet,disableDuringEvolution);
+                scope.PauseGameplay();
+                scope.IsolateAudio();
                 running=StartCoroutine(Guarded(PlayRoutine(pet,currentName,targetName,applyEvolution,onComplete)));
             }catch(Exception error){LastError="Không thể bắt đầu trình diễn tiến hóa.";Debug.LogException(error,this);Finish();}
         }
@@ -199,7 +201,7 @@ namespace Capstone.Game.HudSystem {
             SceneManager.MoveGameObjectToScene(pet.gameObject,evoScene);
             foreach(var renderer in pet.GetComponentsInChildren<Renderer>(true))
                 if(visual==null||visual.IsCurrentVisualRenderer(renderer))renderer.enabled=true;
-            if(visual!=null&&visual.ActiveAnimator!=null)visual.ActiveAnimator.enabled=true;
+            scope.EnableStageAnimator(visual != null ? visual.ActiveAnimator : pet.GetComponentInChildren<Animator>());
             int evoLayer = LayerMask.NameToLayer(evolutionOnlyLayerName);
             if (evoLayer == -1)
                 Debug.LogWarning($"{name}: không tìm thấy Layer '{evolutionOnlyLayerName}'. Tạo layer này trong Project Settings.");
@@ -216,7 +218,7 @@ namespace Capstone.Game.HudSystem {
             scope.SwitchToStage(stageCamera, gameplayOutput, gameplayScene);
 
             if (showStartText && EvolutionUI.Instance != null) {
-                EvolutionUI.Instance.Show(string.Format(startMessageFormat, currentName));
+                EvolutionUI.Instance.Show(currentName, string.Format(startMessageFormat, currentName));
                 yield return new WaitForSecondsRealtime(startMessageDisplayTime);
                 EvolutionUI.Instance.Hide();
             }
@@ -237,6 +239,7 @@ namespace Capstone.Game.HudSystem {
 
             // --- Màn hình đang trắng hoàn toàn: đổi dữ liệu/model THẬT ngay lúc này ---
             bool success = committed = applyEvolution();
+            scope.AllowPetAudio();
             overlay.Cleanup();
 
             // QUAN TRỌNG: model MỚI vừa Instantiate ra (bên trong applyEvolution/TryApply) KHÔNG tự
@@ -248,7 +251,7 @@ namespace Capstone.Game.HudSystem {
 
             foreach(var renderer in pet.GetComponentsInChildren<Renderer>(true))
                 if(visual==null||visual.IsCurrentVisualRenderer(renderer))renderer.enabled=true;
-            if(visual!=null&&visual.ActiveAnimator!=null)visual.ActiveAnimator.enabled=true;
+            scope.EnableStageAnimator(visual != null ? visual.ActiveAnimator : pet.GetComponentInChildren<Animator>());
 
             // 2) Ép animation model MỚI (nếu đổi thành công) đứng yên ở Idle ngay khi vừa xuất hiện,
             //    rồi cho nó "lớn dần" song song lúc xoay + mờ dần lộ ra.
@@ -271,7 +274,7 @@ namespace Capstone.Game.HudSystem {
             DespawnGroundRing();
 
             if (success && showCongratsText && EvolutionUI.Instance != null) {
-                EvolutionUI.Instance.Show(string.Format(congratsMessageFormat, currentName, targetName));
+                EvolutionUI.Instance.Show(targetName, string.Format(congratsMessageFormat, currentName, targetName));
                 yield return new WaitForSecondsRealtime(congratsMinDisplayTime);
                 while (!(Keyboard.current != null && Keyboard.current[congratsContinueKey].wasPressedThisFrame))
                     yield return null;
@@ -377,6 +380,10 @@ namespace Capstone.Game.HudSystem {
             if (groundRingVfxPrefab == null) return;
             Vector3 pos = target.position + Vector3.up * groundRingYOffset;
             activeRingVfx = Instantiate(groundRingVfxPrefab, pos, Quaternion.identity);
+            foreach (var particle in activeRingVfx.GetComponentsInChildren<ParticleSystem>(true)) {
+                var main = particle.main;
+                main.useUnscaledTime = true;
+            }
             activeRingVfx.transform.localScale = activeRingVfx.transform.localScale * groundRingScale;
             SetLayerRecursively(activeRingVfx, target.gameObject.layer);
         }

@@ -44,8 +44,6 @@ MonoBehaviour:
     action: 9
   - skillId: breath.fire
     action: 9
-  - skillId: heatwave.fire
-    action: 9
   - skillId: roar.power
     action: 9
   - skillId: shield.fire
