@@ -1,3 +1,4 @@
+using System.Linq;
 using AAMAP;
 using Capstone.Game.Inventory;
 using UnityEngine;
@@ -21,6 +22,8 @@ namespace Capstone.Game.MapSystem {
         bool minimapPreference = true;
         bool? minimapVisibleApplied;
         bool shuttingDown;
+        float nextZoneRefresh;
+        MapEncounterZone[] encounterZones = System.Array.Empty<MapEncounterZone>();
 
         void OnApplicationQuit() { shuttingDown = true; }
 
@@ -40,6 +43,23 @@ namespace Capstone.Game.MapSystem {
         void Start() {
             ResolveReferences();
             ApplySetup();
+            RefreshEncounterZones();
+        }
+
+        void Update() {
+            if (Time.unscaledTime >= nextZoneRefresh) RefreshEncounterZones();
+        }
+
+        void RefreshEncounterZones() {
+            nextZoneRefresh = Time.unscaledTime + 1f;
+            if (minimap == null && worldMap == null) return;
+            var next = MapEncounterZone.Find(gameObject.scene).Select((zone, index) =>
+                new MapEncounterZone(zone.zoneBounds.bounds, MapEncounterZone.DisplayName(zone, index + 1),
+                    MapEncounterZone.GroupOf(zone))).ToArray();
+            if (next.SequenceEqual(encounterZones)) return;
+            encounterZones = next;
+            minimap?.SetEncounterZones(next);
+            worldMap?.SetEncounterZones(next);
         }
 
         public void ResolveReferences() {

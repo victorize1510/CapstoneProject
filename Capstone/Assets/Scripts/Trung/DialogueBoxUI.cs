@@ -45,6 +45,8 @@ public class DialogueBoxUI : MonoBehaviour
     [Tooltip("Có ảnh này thì dùng thay cho khung vẽ bằng code")]
     [SerializeField] Sprite customBoxSprite;
     [SerializeField] Sprite customNameTagSprite;
+    [SerializeField] Sprite choiceSprite;
+    [SerializeField] Sprite selectedChoiceSprite;
 
     [Header("Âm thanh gõ chữ (tùy chọn)")]
     [SerializeField] AudioClip typeSound;
@@ -360,10 +362,11 @@ public class DialogueBoxUI : MonoBehaviour
             outline.effectColor = borderColor;
             outline.effectDistance = new Vector2(2f, -2f);
 
-            var label = NewText(row.rectTransform, "Label", font, bodyFontSize, TextAnchor.MiddleLeft, bodyTextColor);
+            var label = NewText(row.rectTransform, "Label", font, Mathf.Min(bodyFontSize, 26), TextAnchor.MiddleLeft, bodyTextColor);
             Stretch(label.rectTransform, 0f);
             label.rectTransform.offsetMin = new Vector2(52f, 0f);
-            label.fontStyle = FontStyle.Bold;
+            label.rectTransform.offsetMax = new Vector2(-16f, 0f);
+            label.verticalOverflow = VerticalWrapMode.Truncate;
 
             var marker = AddDiamond(row.rectTransform, new Vector2(0f, 0.5f), new Vector2(28f, 0f), 14f, accentColor);
             choiceBackgrounds.Add(row);
@@ -371,11 +374,18 @@ public class DialogueBoxUI : MonoBehaviour
             choiceMarkers.Add(marker);
         }
 
+        float width = 300f;
+        for (int i = 0; i < options.Length; i++)
+        {
+            choiceLabels[i].text = options[i];
+            width = Mathf.Max(width, choiceLabels[i].preferredWidth + 70f);
+        }
+        width = Mathf.Min(width, Mathf.Max(300f, box.rect.width - 48f));
         for (int i = 0; i < choiceBackgrounds.Count; i++)
         {
             bool used = i < options.Length;
             choiceBackgrounds[i].gameObject.SetActive(used);
-            if (used) choiceLabels[i].text = options[i];
+            if (used) choiceBackgrounds[i].GetComponent<LayoutElement>().preferredWidth = width;
         }
         choicePanel.SetAsLastSibling();
     }
@@ -386,7 +396,11 @@ public class DialogueBoxUI : MonoBehaviour
         {
             if (!choiceBackgrounds[i].gameObject.activeSelf) continue;
             bool selected = i == selectedIndex;
-            choiceBackgrounds[i].color = selected ? accentColor : fillColor;
+            Sprite skin = selected && selectedChoiceSprite != null ? selectedChoiceSprite : choiceSprite;
+            choiceBackgrounds[i].sprite = skin != null ? skin : RoundedSprite;
+            choiceBackgrounds[i].type = skin != null && skin.border == Vector4.zero ? Image.Type.Simple : Image.Type.Sliced;
+            choiceBackgrounds[i].pixelsPerUnitMultiplier = skin != null ? 1f : SpriteCorner / 12f;
+            choiceBackgrounds[i].color = skin != null ? Color.white : selected ? accentColor : fillColor;
             choiceLabels[i].color = selected ? nameTextColor : bodyTextColor;
             choiceMarkers[i].enabled = selected;
             if (selected)

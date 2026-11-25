@@ -138,6 +138,7 @@ namespace Capstone.Game.HudSystem {
                 : CalculateExperienceRequirement(preview.NextLevel);
 
             PetHudRuntimeStats stats = preview.RuntimeStats;
+            var previouslyLearned = Capstone.Game.WorldFeedback.ProgressionFeedback.Learned(stats);
             float oldMaxHealth = stats.MaxHealth;
             float newMaxHealth = preview.Metadata.GetStatsAtLevel(preview.NextLevel).MaxHealth;
             float newHealth = stats.Health <= 0f ? 0f : oldMaxHealth > 0f
@@ -157,6 +158,7 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
 
+            Capstone.Game.WorldFeedback.ProgressionFeedback.PetProgress(pet, stats, previouslyLearned, true);
             NotifyPetLeveledUp(pet);
             message = $"{preview.Metadata.ResolveDisplayName(stats.DisplayName)} đã đạt Lv. {preview.NextLevel}.";
             return true;
@@ -208,7 +210,9 @@ namespace Capstone.Game.HudSystem {
 
             metadata.SetProgress(currentExperience, nextRequirement);
             if (levelsGained > 0) {
+                var previouslyLearned = Capstone.Game.WorldFeedback.ProgressionFeedback.Learned(stats);
                 ApplyLevelGrowth(stats, metadata, currentLevel);
+                Capstone.Game.WorldFeedback.ProgressionFeedback.PetProgress(pet, stats, previouslyLearned, true);
                 NotifyPetLeveledUp(pet);
             }
 

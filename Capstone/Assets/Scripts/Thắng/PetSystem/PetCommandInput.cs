@@ -185,6 +185,7 @@ public partial class PetCommandInput : MonoBehaviour
         if (stats == null || metadata == null || save == null) return;
         int nextLevel = Mathf.Clamp(stats.Level + delta, 1, PetStatCalculator.MaxLevel);
         if (nextLevel == stats.Level) return;
+        var previouslyLearned = Capstone.Game.WorldFeedback.ProgressionFeedback.Learned(stats);
         PetRuntimeStatsSaveData oldStats = stats.CreateSaveData();
         PetCustomizationSaveData oldMetadata = metadata.CreateSaveData();
         float newMax = metadata.GetStatsAtLevel(nextLevel).MaxHealth;
@@ -202,7 +203,10 @@ public partial class PetCommandInput : MonoBehaviour
             return;
         }
         FindFirstObjectByType<PetCommandHudProvider>()?.NotifyHudDataChanged();
-        if (delta > 0) FindFirstObjectByType<PetLevelUpService>()?.NotifyDebugLevelChange(pet);
+        if (delta > 0) {
+            Capstone.Game.WorldFeedback.ProgressionFeedback.PetProgress(pet, stats, previouslyLearned, true);
+            FindFirstObjectByType<PetLevelUpService>()?.NotifyDebugLevelChange(pet);
+        }
         Debug.Log($"Debug pet level: {metadata.ResolveDisplayName(stats.DisplayName)} Lv. {nextLevel}", pet);
     }
 #endif

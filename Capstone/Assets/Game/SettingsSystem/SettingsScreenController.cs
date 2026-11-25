@@ -262,7 +262,7 @@ namespace Capstone.Game.SettingsSystem {
             currentModal = type; modalError.text = "";
             bool closeOnly = type == Modal.Guide || type == Modal.Save;
             presentation?.Modal(type == Modal.Guide);
-            modalTitle.text = type == Modal.Save ? "LƯU TIẾN TRÌNH" : type == Modal.Guide ? "PHÍM ĐIỀU KHIỂN"
+            modalTitle.text = type == Modal.Save ? "LƯU GAME" : type == Modal.Guide ? "PHÍM ĐIỀU KHIỂN"
                 : type == Modal.Reset ? "ĐẶT LẠI CÀI ĐẶT" : "VỀ MÀN HÌNH CHÍNH";
             modalText.text = type == Modal.Guide ? controlsGuide?.Invoke() ?? "Chưa có thông tin phím điều khiển."
                 : type == Modal.Reset ? "Bạn có muốn đặt lại toàn bộ cài đặt? Tiến trình trò chơi của bạn được giữ nguyên."

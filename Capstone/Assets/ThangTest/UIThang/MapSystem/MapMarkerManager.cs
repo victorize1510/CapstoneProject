@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 #if UNITY_EDITOR
@@ -44,8 +44,6 @@ namespace Capstone.Game.MapSystem {
         [Header("Auto Markers")]
         [SerializeField] bool scanExistingMarkers = true;
         [SerializeField] bool autoCreatePlayerMarker = true;
-        [SerializeField] bool autoCreatePetMarkers = true;
-        [SerializeField] bool autoCreateEnemyMarkers = true;
         [SerializeField] bool scanPeriodically = false;
         [SerializeField, Min(0.1f)] float markerScanInterval = 0.75f;
 
@@ -62,19 +60,14 @@ namespace Capstone.Game.MapSystem {
 
         readonly Dictionary<MapMarker, AaMapIcon> iconsByMarker = new Dictionary<MapMarker, AaMapIcon>();
         readonly List<MapMarker> destroyedMarkers = new List<MapMarker>();
-        readonly List<Renderer> rendererBuffer = new List<Renderer>();
+        readonly List<Renderer> mapRenderers = new List<Renderer>();
+        MinimapController minimap;
+        WorldMapController worldMap;
 
         public void CopyMarkersTo(List<MapMarker> destination) {
             destination.Clear();
-            foreach (var marker in iconsByMarker.Keys) if (marker != null) destination.Add(marker);
-        }
-        public void CopyIconRenderersTo(List<Renderer> destination) {
-            destination.Clear();
-            foreach (var icon in iconsByMarker.Values) {
-                if (icon == null) continue;
-                icon.GetComponentsInChildren(true, rendererBuffer);
-                destination.AddRange(rendererBuffer);
-            }
+            foreach (var marker in iconsByMarker.Keys)
+                if (marker != null && AllowsMarkerType(marker.MarkerType)) destination.Add(marker);
         }
         float nextScanTime;
 
@@ -125,7 +118,7 @@ namespace Capstone.Game.MapSystem {
 
         void DisableUnmanagedSceneIcons() {
             foreach (AaMapIcon icon in FindObjectsByType<AaMapIcon>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)) {
-                if (icon == null || icon.GetComponentInParent<MapMarker>() != null) continue;
+                if (icon == null || iconsByMarker.ContainsValue(icon)) continue;
                 icon.gameObject.SetActive(false);
             }
         }
@@ -134,6 +127,8 @@ namespace Capstone.Game.MapSystem {
             MapMarker.MarkerEnabled += RegisterMarker;
             MapMarker.MarkerDisabled += UnregisterMarker;
             MapMarker.MarkerChanged += RefreshMarkerIcon;
+            RenderPipelineManager.beginCameraRendering += BeginMapCamera;
+            RenderPipelineManager.endCameraRendering += EndMapCamera;
             ResolveReferences();
         }
 
@@ -141,6 +136,9 @@ namespace Capstone.Game.MapSystem {
             MapMarker.MarkerEnabled -= RegisterMarker;
             MapMarker.MarkerDisabled -= UnregisterMarker;
             MapMarker.MarkerChanged -= RefreshMarkerIcon;
+            RenderPipelineManager.beginCameraRendering -= BeginMapCamera;
+            RenderPipelineManager.endCameraRendering -= EndMapCamera;
+            HideMapRenderers();
         }
 
         void Start() {
@@ -185,7 +183,7 @@ namespace Capstone.Game.MapSystem {
         }
 
         public void RegisterMarker(MapMarker marker) {
-            if (marker == null) return;
+            if (marker == null || !AllowsMarkerType(marker.MarkerType)) return;
             if (iconsByMarker.TryGetValue(marker, out AaMapIcon existing) && existing != null) {
                 existing.transform.position = marker.transform.position + marker.IconOffset;
                 existing.gameObject.SetActive(marker.isActiveAndEnabled);
@@ -235,8 +233,10 @@ namespace Capstone.Game.MapSystem {
         }
 
         public bool IsMarkerTypeVisible(MapMarkerType markerType) {
-            return !hiddenMarkerTypes.Contains(markerType);
+            return AllowsMarkerType(markerType) && !hiddenMarkerTypes.Contains(markerType);
         }
+
+        internal static bool AllowsMarkerType(MapMarkerType type) => type != MapMarkerType.Enemy && type != MapMarkerType.Pet;
 
         public void ShowAllMarkerTypes() {
             hiddenMarkerTypes.Clear();
@@ -245,8 +245,12 @@ namespace Capstone.Game.MapSystem {
 
         void RefreshMarkerIcon(MapMarker marker) {
             if (marker == null) return;
-            if (!iconsByMarker.TryGetValue(marker, out AaMapIcon icon)) return;
-            ConfigureIcon(marker, icon);
+            if (!AllowsMarkerType(marker.MarkerType)) {
+                if (iconsByMarker.TryGetValue(marker, out var hidden) && hidden != null) hidden.gameObject.SetActive(false);
+                return;
+            }
+            if (iconsByMarker.TryGetValue(marker, out var icon) && icon != null) ConfigureIcon(marker, icon);
+            else if (marker.isActiveAndEnabled) RegisterMarker(marker);
         }
 
         void RefreshVisibility() {
@@ -281,6 +285,31 @@ namespace Capstone.Game.MapSystem {
             foreach (MapMarker marker in destroyedMarkers) iconsByMarker.Remove(marker);
         }
 
+        void BeginMapCamera(ScriptableRenderContext context, Camera camera) {
+            bool forMinimap = minimap != null ? camera == minimap.Camera : camera.gameObject == mapBinder?.MinimapCamera;
+            bool forMap = worldMap != null ? camera == worldMap.MapCamera : camera.gameObject == mapBinder?.MapCamera;
+            if ((!forMinimap || minimap != null && minimap.UsesMapArt) &&
+                (!forMap || worldMap != null && (worldMap.Presentation != null || worldMap.UsesMapArt))) return;
+
+            Transform viewer = mapBinder != null ? mapBinder.PlayerTarget : null;
+            foreach (var pair in iconsByMarker) {
+                if (pair.Key == null || pair.Value == null || !IsMarkerTypeVisible(pair.Key.MarkerType) ||
+                    !pair.Key.ShouldRender(viewer, forMinimap)) continue;
+                var visuals = pair.Value.transform.Find("Visuals");
+                if (visuals == null || !visuals.TryGetComponent<Renderer>(out var renderer)) continue;
+                renderer.forceRenderingOff = false;
+                mapRenderers.Add(renderer);
+            }
+        }
+
+        void EndMapCamera(ScriptableRenderContext context, Camera camera) => HideMapRenderers();
+
+        void HideMapRenderers() {
+            foreach (var renderer in mapRenderers)
+                if (renderer != null) renderer.forceRenderingOff = true;
+            mapRenderers.Clear();
+        }
+
         void RefreshDynamicIconRotations() {
             if (!rotatePlayerIconWithPlayer || iconsByMarker.Count == 0) return;
 
@@ -306,6 +335,8 @@ namespace Capstone.Game.MapSystem {
             return markerType == MapMarkerType.Player || markerType == MapMarkerType.CoopPlayer;
         }
         void ResolveReferences() {
+            if (minimap == null) minimap = GetComponent<MinimapController>();
+            if (worldMap == null) worldMap = GetComponent<WorldMapController>();
             if (mapBinder == null) mapBinder = FindFirst<AAMapRuntimeBinder>();
             if (mapBinder != null) {
                 mapBinder.ResolveReferences();
@@ -325,8 +356,6 @@ namespace Capstone.Game.MapSystem {
                 if (player != null) EnsureRuntimeMarker(player.gameObject, MapMarkerType.Player, "player", "Player");
             }
 
-            if (autoCreatePetMarkers) EnsureMarkersForBehaviour("PetController", MapMarkerType.Pet);
-            if (autoCreateEnemyMarkers) EnsureMarkersForBehaviour("DummyEnemy", MapMarkerType.Enemy);
         }
 
         static Transform ResolvePlayerMarkerTarget(Transform candidate) {
@@ -342,13 +371,6 @@ namespace Capstone.Game.MapSystem {
             }
 
             return candidate;
-        }
-
-        void EnsureMarkersForBehaviour(string behaviourTypeName, MapMarkerType markerType) {
-            foreach (var behaviour in FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)) {
-                if (behaviour == null || behaviour.GetType().Name != behaviourTypeName) continue;
-                EnsureRuntimeMarker(behaviour.gameObject, markerType, behaviour.gameObject.name, behaviour.gameObject.name);
-            }
         }
 
         AaMapIcon CreateIcon(MapMarker marker) {
@@ -383,6 +405,7 @@ namespace Capstone.Game.MapSystem {
 
             MeshRenderer renderer = visuals.GetComponent<MeshRenderer>();
             renderer.sharedMaterial = CreateIconMaterial(null, Color.white);
+            renderer.forceRenderingOff = true;
 
             root.AddComponent<AaMapIcon>();
             return root;
@@ -391,10 +414,8 @@ namespace Capstone.Game.MapSystem {
         void ConfigureIcon(MapMarker marker, AaMapIcon icon) {
             if (marker == null || icon == null) return;
 
-            Texture defaultTexture = GetDefaultTexture(marker.MarkerType);
-            Texture texture = ShouldUseMarkerTexture(marker) ? marker.IconTexture : defaultTexture;
-            if (texture == null) texture = marker.IconTexture;
-            Color color = marker.IconColor == default(Color) ? GetDefaultColor(marker.MarkerType) : marker.IconColor;
+            Texture texture = IconTextureFor(marker);
+            Color color = IconColorFor(marker);
             Vector3 scale = ResolveIconScale(marker);
 
             icon.iconTexture = texture;
@@ -422,6 +443,12 @@ namespace Capstone.Game.MapSystem {
             if (marker == null || marker.IconTexture == null) return false;
             return useMarkerTextureOverrides || marker.MarkerType == MapMarkerType.Custom;
         }
+
+        internal Texture IconTextureFor(MapMarker marker) => ShouldUseMarkerTexture(marker)
+            ? marker.IconTexture : GetDefaultTexture(marker.MarkerType) ?? marker.IconTexture;
+
+        internal Color IconColorFor(MapMarker marker) =>
+            marker.IconColor == default(Color) ? GetDefaultColor(marker.MarkerType) : marker.IconColor;
 
         Vector3 ResolveIconScale(MapMarker marker) {
             if (marker == null) return defaultIconScale;
@@ -481,10 +508,15 @@ namespace Capstone.Game.MapSystem {
                 childRenderer.shadowCastingMode = ShadowCastingMode.Off;
                 childRenderer.receiveShadows = false;
                 childRenderer.enabled = true;
+                childRenderer.forceRenderingOff = true;
             }
 
             icon.iconMaterial = material;
         }
+
+        Texture caveTexture;
+        Texture CaveTexture() => caveTexture != null ? caveTexture :
+            caveTexture = Resources.Load<Sprite>("UI/MapR5/Icons/cave")?.texture;
 
         Texture GetDefaultTexture(MapMarkerType markerType) {
             switch (markerType) {
@@ -500,6 +532,7 @@ namespace Capstone.Game.MapSystem {
                 case MapMarkerType.Item: return itemIcon;
                 case MapMarkerType.Shop: return shopIcon != null ? shopIcon : npcIcon;
                 case MapMarkerType.Travel:
+                case MapMarkerType.CaveTravel: return CaveTexture();
                 case MapMarkerType.FastTravel: return fastTravelIcon != null ? fastTravelIcon : questIcon;
                 case MapMarkerType.Waypoint: return waypointIcon != null ? waypointIcon : questIcon;
                 case MapMarkerType.CoopPlayer: return coopPlayerIcon != null ? coopPlayerIcon : playerIcon;

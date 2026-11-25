@@ -13,6 +13,7 @@ using Capstone.Game.UISystem;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -86,6 +87,7 @@ namespace Capstone.Game.QuestSystem.Editor {
                 Check(!(bool)Invoke(flow, "TryAccept", first), "The elder introduction alone does not unlock NV01");
                 manager.MarkStarterChosen();
                 Check((bool)Invoke(flow, "TryAccept", first), "Accepting NV01 commits its starter items and progress");
+                Check((string)Invoke(flow, "QuestOption") == "Xem nhiệm vụ", "An unfinished quest opens the progress dialogue");
                 var balls = InventoryDefinitionCatalog.Find("capture-ball-basic-01");
                 Check(bag.GetQuantity(balls) == 15 && !(bool)Invoke(flow, "TryAccept", first) && saves.LoadNow() &&
                     bag.GetQuantity(balls) == 15 && manager.GetQuestState(first.QuestId).IsTracked, "15 balls once, with tracking persisted across load");
@@ -153,7 +155,8 @@ namespace Capstone.Game.QuestSystem.Editor {
             var cave = Point("Cave chief", new Vector3(100, -44, -97));
             var grassArrival = Point("Grass arrival", Vector3.zero);
             var caveArrival = Point("Cave arrival", new Vector3(100, -44, -100));
-            Set(layout, "grassElder", grass);
+            Set(layout, "grassGuide", grass);
+            Set(layout, "grassElder", Point("Quest chief", new Vector3(8, 0, 0)));
             Set(layout, "caveElder", cave);
             Set(layout, "grassPortal", grassArrival);
             Set(layout, "cavePortal", caveArrival);
@@ -161,11 +164,12 @@ namespace Capstone.Game.QuestSystem.Editor {
             Set(layout, "player", player.transform);
             Set(layout, "quests", manager);
             var tracked = manager.GetTrackedQuest();
+            check(!(bool)Invoke(layout, "CanTravelFrom", root.transform.Find("Quest chief")), "The quest chief cannot teleport the player");
             check(!(bool)Invoke(layout, "TryTravelFromElder", cave), "The remote elder cannot trigger a trip from the grass region");
             check((bool)Invoke(layout, "TryTravelFromElder", grass) && player.transform.position == caveArrival.position
-                && manager.GetTrackedQuest() == tracked, "The grass elder sends the player to Nolant with the same tracked quest");
+                && manager.GetTrackedQuest() == tracked, "Nolant at the grass entrance sends the player to Nolant with the same tracked quest");
             check((bool)Invoke(layout, "TryTravelFromElder", cave) && player.transform.position == grassArrival.position
-                && manager.GetTrackedQuest() == tracked, "Nolant sends the player back to the same elder and quest state");
+                && manager.GetTrackedQuest() == tracked, "Nolant sends the player back to the entrance guide and quest state");
             UnityEngine.Object.Destroy(root);
         }
 
@@ -194,6 +198,10 @@ namespace Capstone.Game.QuestSystem.Editor {
                     formId: "01", regionId: "capstone-grass-easy", receiptId: "qa-chick-" + i));
             }
             var quest = manager.GetQuestState("main_quest_01");
+            check((string)Invoke(flow, "QuestOption") == "Trả nhiệm vụ" &&
+                ((string)Invoke(flow, "PetLabel", captures[0])).EndsWith("Đội ô 2", StringComparison.Ordinal) &&
+                ((string)Invoke(flow, "PetLabel", captures[2])).EndsWith("Kho ô 1", StringComparison.Ordinal),
+                "NV01 offers turn-in and identifies each delivery pet by party or box slot");
             var invalid = captures.ToArray();
             invalid[0] = starter;
             check((bool)Invoke(flow, "IsReady", quest) &&
@@ -212,6 +220,9 @@ namespace Capstone.Game.QuestSystem.Editor {
                 captures.All(pet => !roster.Contains(pet)) && roster.PartyCount == 1 && roster.Contains(starter) &&
                 wallet.Gold == 150 && bag.GetQuantity(InventoryDefinitionCatalog.Find("capture-ball-basic-01")) == 20,
                 "Five selected individuals from Party and Box leave the roster exactly once; the starter and rewards remain");
+            check((Invoke(flow, "Available") as QuestDefinition)?.QuestId == "main_quest_02" &&
+                (string)Invoke(flow, "QuestOption") == "Nhận nhiệm vụ",
+                "Returning NV01 immediately makes NV02 available for the next dialogue offer");
         }
 
         static void VerifyMapArt(Action<bool, string> check) {
@@ -223,7 +234,7 @@ namespace Capstone.Game.QuestSystem.Editor {
             var image = new GameObject("QA map texture").AddComponent<RawImage>();
             var projection = typeof(QuestManager).Assembly.GetType("Capstone.Game.MapSystem.MapArtProjection", true);
             var apply = projection.GetMethod("Apply", BindingFlags.Static | BindingFlags.NonPublic);
-            foreach (var name in new[] { "DongCo", "HangDong" }) {
+            foreach (var name in new[] { "Grassland_Fantasy", "Cave_Fantasy" }) {
                 var sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Game/MapSystem/Sprites/Chapter01/{name}.png");
                 apply.Invoke(null, new object[] { image, camera, sprite, new Rect(100, -35, 20, 20) });
                 check(sprite != null && image.texture == sprite.texture && image.uvRect == new Rect(.25f, .25f, .5f, .5f),
@@ -233,13 +244,73 @@ namespace Capstone.Game.QuestSystem.Editor {
             target.position = new Vector3(111, 0, -25);
             var minimap = new GameObject("QA minimap controller").AddComponent<MinimapController>();
             minimap.SetReferences(null, camera, target);
-            minimap.UseMapArt(AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Game/MapSystem/Sprites/Chapter01/HangDong.png"),
+            minimap.UseMapArt(AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Game/MapSystem/Sprites/Chapter01/Cave_Fantasy.png"),
                 new Rect(100, -35, 20, 20), 5);
             Set(minimap, "artDisplay", image);
             Set(minimap, "followSharpness", 0f);
             Invoke(minimap, "LateUpdate");
             check(Mathf.Approximately(image.uvRect.x, .30f) && Mathf.Approximately(image.uvRect.y, .25f),
                 "Minimap refreshes its sprite crop when the player moves");
+
+            var manager = minimap.gameObject.AddComponent<MapMarkerManager>();
+            Set(minimap, "markerManager", manager);
+            Set(manager, "minimap", minimap);
+            Set(manager, "bossIcon", Texture2D.whiteTexture);
+            MapMarker PlaceMarker(MapMarkerType type) {
+                var marker = new GameObject("QA " + type).AddComponent<MapMarker>();
+                marker.transform.position = new Vector3(111, 0, -25);
+                marker.ConfigureRuntime(type, type.ToString(), type.ToString(), null, Color.white, true, true);
+                return marker;
+            }
+            var boss = PlaceMarker(MapMarkerType.Boss);
+            var enemy = PlaceMarker(MapMarkerType.Enemy);
+            var pet = PlaceMarker(MapMarkerType.Pet);
+            var visibleMarkers = new List<MapMarker>();
+            manager.CopyMarkersTo(visibleMarkers);
+            check(visibleMarkers.Contains(boss) && !visibleMarkers.Contains(enemy) && !visibleMarkers.Contains(pet),
+                "A boss is registered and ordinary creatures are excluded from map icons");
+            var bossRenderer = manager.transform.Find("QA Boss Map Icon/Visuals").GetComponent<Renderer>();
+            var playerCamera = new GameObject("QA gameplay camera").AddComponent<Camera>();
+            playerCamera.enabled = false;
+            playerCamera.transform.rotation = Quaternion.Euler(-85f, 0f, 0f);
+            Invoke(manager, "BeginMapCamera", default(ScriptableRenderContext), playerCamera);
+            check(bossRenderer.forceRenderingOff, "The gameplay camera looking up cannot render a map icon");
+            Invoke(manager, "EndMapCamera", default(ScriptableRenderContext), playerCamera);
+            Set(minimap, "mapArt", null);
+            Invoke(manager, "BeginMapCamera", default(ScriptableRenderContext), camera);
+            bool renderedByMap = !bossRenderer.forceRenderingOff;
+            Invoke(manager, "EndMapCamera", default(ScriptableRenderContext), camera);
+            check(renderedByMap && bossRenderer.forceRenderingOff, "Legacy icons are enabled only during the minimap render");
+
+            image.rectTransform.sizeDelta = new Vector2(240, 240);
+            minimap.UseMapArt(AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Game/MapSystem/Sprites/Chapter01/Cave_Fantasy.png"),
+                new Rect(100, -35, 20, 20), 5, "ZoneCave");
+            var zoneType = typeof(WorldMapController).Assembly.GetType("Capstone.Game.MapSystem.MapEncounterZone", true);
+            var zones = Array.CreateInstance(zoneType, 4);
+            void AddZone(int index, Vector3 point, string name, string group) =>
+                zones.SetValue(Activator.CreateInstance(zoneType, BindingFlags.Instance | BindingFlags.NonPublic, null,
+                    new object[] { new Bounds(point, new Vector3(4, 8, 4)), name, group }, null), index);
+            AddZone(0, new Vector3(111, -49, -25), "Vùng 4", "ZoneCave");
+            AddZone(1, new Vector3(118, 100, -25), "Vùng 5", "ZoneCave");
+            AddZone(2, new Vector3(110, 0, -26), "Vùng 6", "ZoneCave");
+            AddZone(3, new Vector3(110, 0, -26), "Vùng 1", "ZoneGrass");
+            Invoke(minimap, "SetEncounterZones", zones);
+            boss.transform.position += Vector3.up * 500;
+            Invoke(minimap, "LateUpdate");
+            var icon = image.transform.Find("Map Art Icons").GetComponentsInChildren<RawImage>().Single();
+            check(icon.rectTransform.anchorMin == new Vector2(.5f, .5f),
+                "The sprite minimap preserves the boss icon while ignoring altitude");
+            var projectedOutside = (Vector2)projection.GetMethod("ViewportPoint", BindingFlags.Static | BindingFlags.NonPublic)
+                .Invoke(null, new object[] { camera, new Vector3(118, 500, -25) });
+            check(projectedOutside.x > 1, "An off-map icon stays outside the world map viewport");
+            var overlay = image.transform.Find("Encounter Zones");
+            using var mesh = new VertexHelper();
+            var graphic = overlay.GetComponent<Graphic>();
+            graphic.GetType().GetMethod("OnPopulateMesh", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+                .Invoke(graphic, new object[] { mesh });
+            check(overlay.Cast<Transform>().Select(label => label.GetComponent<Text>().text)
+                .SequenceEqual(new[] { "Vùng 4", "Vùng 5", "Vùng 6" }) && !overlay.Find("Vùng 5").gameObject.activeSelf
+                && mesh.currentVertCount > 0, "Encounter overlays use authored numbers for the current region and clip to the visible map");
         }
 
         static void VerifyCapturePicker(GameObject fixture, Action<bool, string> check) {

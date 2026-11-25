@@ -194,8 +194,7 @@ namespace Capstone.Game.QuestSystem.UI {
                 return;
             }
 
-            string location = trackedQuest.Definition != null ? trackedQuest.Definition.LocationName : string.Empty;
-            string prefix = string.IsNullOrWhiteSpace(location) ? string.Empty : location + "  ";
+            string prefix = string.IsNullOrWhiteSpace(target.Label) ? string.Empty : target.Label + "  ";
             distanceLabel.text = prefix + FormatDistance(Vector3.Distance(localPlayer.position, target.Position));
             SetVisible(distanceLabel, true);
         }

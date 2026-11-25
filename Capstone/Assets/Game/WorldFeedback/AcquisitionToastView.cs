@@ -54,7 +54,7 @@ namespace Capstone.Game.WorldFeedback {
             foreach (var row in rows) row.Group.alpha = hidden ? 0 : row.Group.alpha;
             if (hidden) { foreach (var row in rows) { row.Born += Time.unscaledDeltaTime; row.MergeUntil += Time.unscaledDeltaTime; } return; }
             int read = 0;
-            while (read++ < 8 && ItemAcquisitionFeedback.TryRead(out var receipt)) Push(receipt);
+            while (read++ < 8 && ItemAcquisitionFeedback.TryRead(out var receipt, rows.Count < 3)) Push(receipt);
             for (int i = rows.Count - 1; i >= 0; i--) {
                 float age = Time.unscaledTime - rows[i].Born;
                 if (age > 2.85f) { rows[i].Rect.gameObject.SetActive(false); unused.Enqueue(rows[i]); rows.RemoveAt(i); continue; }
@@ -66,8 +66,9 @@ namespace Capstone.Game.WorldFeedback {
             }
         }
         void Push(ItemAcquisitionReceipt receipt) {
-            if (receipt.Item == null&&receipt.Source!=AcquisitionSource.Gold&&receipt.Source!=AcquisitionSource.Capture) return;
-            string id = receipt.Source==AcquisitionSource.Capture?receipt.TransactionId:receipt.Source==AcquisitionSource.Gold?"currency:gold":receipt.Item is Inventory.MonsterItemDefinition def ? def.StableId : receipt.Item.name;
+            if (receipt.Item == null&&receipt.Source!=AcquisitionSource.Gold&&receipt.Source!=AcquisitionSource.Capture && receipt.Source!=AcquisitionSource.Progression) return;
+            bool single = receipt.Source == AcquisitionSource.Capture || receipt.Source == AcquisitionSource.Progression;
+            string id = single?receipt.TransactionId:receipt.Source==AcquisitionSource.Gold?"currency:gold":receipt.Item is Inventory.MonsterItemDefinition def ? def.StableId : receipt.Item.name;
             foreach (var row in rows) if (row.ItemId == id && Time.unscaledTime <= row.MergeUntil) {
                 row.Count = (int)Math.Min(int.MaxValue, (long)row.Count + receipt.Quantity);
                 row.Quantity.text = "×" + row.Count; row.Born = Time.unscaledTime;
@@ -77,15 +78,15 @@ namespace Capstone.Game.WorldFeedback {
             var reused = unused.Dequeue(); reused.Rect.gameObject.SetActive(true);
             reused.Rect.name = "Acquired " + id; reused.Icon.sprite = receipt.Icon; reused.Icon.enabled = receipt.Icon != null;
             reused.Name.text = receipt.DisplayName;
-            float maxNameWidth=receipt.Source==AcquisitionSource.Capture?230:180;
+            float maxNameWidth=single?230:180;
             V.Top(reused.Name.rectTransform,58,5,maxNameWidth,46);
-            reused.Name.horizontalOverflow = HorizontalWrapMode.Overflow;
-            if (reused.Name.preferredWidth > maxNameWidth) {
+            reused.Name.horizontalOverflow = receipt.Source == AcquisitionSource.Progression ? HorizontalWrapMode.Wrap : HorizontalWrapMode.Overflow;
+            if (receipt.Source != AcquisitionSource.Progression && reused.Name.preferredWidth > maxNameWidth) {
                 string original = receipt.DisplayName; int low = 0, high = original.Length;
                 while (low < high) { int mid = (low + high + 1) / 2; reused.Name.text = original.Substring(0, mid) + "…"; if (reused.Name.preferredWidth <= maxNameWidth) low = mid; else high = mid - 1; }
                 reused.Name.text = original.Substring(0, low).TrimEnd() + "…";
             }
-            reused.Quantity.text = receipt.Source==AcquisitionSource.Capture?"":"×" + receipt.Quantity; reused.ItemId = id; reused.Count = receipt.Quantity;
+            reused.Quantity.text = single?"":"×" + receipt.Quantity; reused.ItemId = id; reused.Count = receipt.Quantity;
             reused.Born = Time.unscaledTime; reused.MergeUntil = Time.unscaledTime + .4f;
             reused.Group.alpha = 0; rows.Add(reused);
             LastItemName = receipt.DisplayName; DisplayedReceipts++;

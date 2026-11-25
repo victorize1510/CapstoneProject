@@ -132,13 +132,13 @@ namespace Capstone.Game.UISystem.Editor {
                 await Capture("MAP");
                 Check(map.IsOpen && InventoryInputController.GameplayInputBlocked, "MAP opens and locks gameplay");
                 var presentation=Object.FindFirstObjectByType<WorldMapUIController>();
-                var marker=presentation.RenderMarker(new MapMarkerData { id="audit-marker",displayName="Audit",type=MapMarkerType.Enemy,normalizedPosition=new Vector2(.8f,.8f) });
+                var marker=presentation.RenderMarker(new MapMarkerData { id="audit-marker",displayName="Audit",type=MapMarkerType.Boss,normalizedPosition=new Vector2(.8f,.8f) });
                 Invoke(presentation,"SelectMarker",marker.Data); await Settle();
-                presentation.SetFilter(MapFilterGroup.Enemy,false); await Settle();
+                presentation.SetFilter(MapFilterGroup.Boss,false); await Settle();
                 Check(!Field<TMPro.TMP_Text>(presentation,"selectedLabel").transform.parent.gameObject.activeSelf, "filtered marker hides its selection label");
-                presentation.SetFilter(MapFilterGroup.Enemy,true); presentation.RemoveMarker("audit-marker");
-                var testA=presentation.RenderMarker(new MapMarkerData { id="ui-audit-A",displayName="Kiểm tra A",type=MapMarkerType.Enemy,normalizedPosition=new Vector2(.12f,.94f) });
-                presentation.RenderMarker(new MapMarkerData { id="ui-audit-B",displayName="Kiểm tra B",type=MapMarkerType.Enemy,normalizedPosition=new Vector2(.125f,.94f) });
+                presentation.SetFilter(MapFilterGroup.Boss,true); presentation.RemoveMarker("audit-marker");
+                var testA=presentation.RenderMarker(new MapMarkerData { id="ui-audit-A",displayName="Kiểm tra A",type=MapMarkerType.Boss,normalizedPosition=new Vector2(.12f,.94f) });
+                presentation.RenderMarker(new MapMarkerData { id="ui-audit-B",displayName="Kiểm tra B",type=MapMarkerType.Boss,normalizedPosition=new Vector2(.125f,.94f) });
                 await Settle();
                 var clusters=Field<object>(presentation,"clusters"); var pool=Field<IList>(clusters,"pool"); object chosen=null;
                 foreach(var group in pool) foreach(var member in (List<MapMarkerView>)group.GetType().GetField("Members").GetValue(group))
@@ -150,10 +150,10 @@ namespace Capstone.Game.UISystem.Editor {
                 Check(choice!=null,"MAP group lists exact marker name"); choice.onClick.Invoke(); await Settle();
                 Check(Field<string>(presentation,"selectedId")=="ui-audit-A" && !popup.gameObject.activeSelf,"MAP group selects requested marker and closes");
                 Check(Field<TMPro.TMP_Text>(presentation,"selectedLabel").transform.parent.gameObject.activeSelf,"grouped selected MAP marker retains its selection label");
-                Invoke(clusters,"Open",chosen); await Settle(); presentation.SetFilter(MapFilterGroup.Enemy,false); await Settle();
+                Invoke(clusters,"Open",chosen); await Settle(); presentation.SetFilter(MapFilterGroup.Boss,false); await Settle();
                 popup=Field<RectTransform>(clusters,"popup");
                 Check(!popup.gameObject.activeSelf,"MAP filter closes group popup");
-                presentation.SetFilter(MapFilterGroup.Enemy,true); presentation.RemoveMarker("ui-audit-A"); presentation.RemoveMarker("ui-audit-B");
+                presentation.SetFilter(MapFilterGroup.Boss,true); presentation.RemoveMarker("ui-audit-A"); presentation.RemoveMarker("ui-audit-B");
                 map.enabled=false; await Settle();
                 Check(!map.IsOpen,"disabled MAP closes its screen");
                 Unlocked(menu,controlLock,"disabled MAP"); map.enabled=true;

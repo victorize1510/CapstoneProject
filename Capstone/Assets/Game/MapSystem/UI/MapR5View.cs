@@ -54,6 +54,7 @@ namespace Capstone.Game.MapSystem.UI {
             var response=rect.gameObject.AddComponent<MapR5Feedback>();response.CaptionColor=dark?GreenAngularGeometry.Light:GreenAngularGeometry.Ink;response.Bind(button,feedback,glyph,text);return button;
         }
         public static string IconFor(MapMarkerType type) {
+            if (type == MapMarkerType.CaveTravel) return "cave";
             var group=WorldMapUITheme.Group(type);
             return group.HasValue?GroupIcons[(int)group.Value]:type==MapMarkerType.Player?"player":"waypoint";
         }

@@ -19,6 +19,13 @@ namespace Capstone.Game.QuestSystem {
         const string ElderId = "npc_village_elder";
         const string FinalQuestId = "main_quest_09";
 
+        [Header("Nút hội thoại Trưởng làng")]
+        [SerializeField] string questLabel = "Nhiệm vụ";
+        [SerializeField] string viewQuestLabel = "Xem nhiệm vụ";
+        [SerializeField] string acceptLabel = "Nhận nhiệm vụ";
+        [SerializeField] string turnInLabel = "Trả nhiệm vụ";
+        [SerializeField] string leaveLabel = "Rời đi";
+
         QuestManager quests;
         MonsterInventoryAdapter inventory;
         PlayerSaveController saves;
@@ -28,7 +35,7 @@ namespace Capstone.Game.QuestSystem {
         ChapterWorldLayout world;
         VillageChiefCutscene chief;
         DialogueBoxUI dialogue;
-        TextMesh grassMarker, caveMarker;
+        TextMesh grassMarker;
         bool conversation, refreshing;
         float nextWorldCheck;
         static ChapterQuestFlow live;
@@ -51,7 +58,6 @@ namespace Capstone.Game.QuestSystem {
             quests.QuestsChanged += Refresh;
             if (world != null) {
                 grassMarker = CreateElderMarker(world.GrassElder);
-                caveMarker = CreateElderMarker(world.CaveElder);
             }
             Refresh();
         }
@@ -124,12 +130,11 @@ namespace Capstone.Game.QuestSystem {
                     foreach (var objective in state.Definition.Objectives)
                         if (objective.ObjectiveType == QuestObjectiveType.CollectItem)
                             quests.RefreshChapterObjective(state, objective, Quantity(objective.TargetId));
-                if (grassMarker != null || caveMarker != null) {
+                if (grassMarker != null) {
                     bool ready = state != null && IsReady(state);
                     string symbol = state != null ? "?" : Available() != null ? "!" : "";
                     Color color = state == null || ready ? new Color(1f, .79f, .29f) : new Color(.62f, .66f, .72f);
                     SetMarker(grassMarker, symbol, color);
-                    SetMarker(caveMarker, symbol, color);
                 }
             } finally { refreshing = false; }
         }
@@ -185,17 +190,20 @@ namespace Capstone.Game.QuestSystem {
         internal bool TryGetTarget(QuestRuntimeState state, out QuestTargetInfo target) {
             target = default;
             if (player == null || world == null) return false;
-            if (IsReady(state) && world.ElderFor(player.transform.position) is Transform elder) {
-                target = new QuestTargetInfo(state.QuestId, "", "Trả nhiệm vụ cho Trưởng làng", elder.position);
-                return true;
+            var elder = world.GrassElder;
+            if (IsReady(state) && elder != null && elder.gameObject.activeInHierarchy) {
+                return world.PointForMap(player.transform.position, elder.position, false, state.QuestId, "",
+                    "Gặp Trưởng làng để trả nhiệm vụ", out target);
             }
             foreach (var objective in state.Definition.Objectives) {
                 if (objective.IsHandover || state.GetObjective(objective.ObjectiveId)?.IsComplete == true) continue;
-                if (world.TryGetPoint(objective, player.transform.position, out var position, out bool cave))
-                    return world.PointForMap(player.transform.position, position, cave, state.QuestId, objective.ObjectiveId, objective.Title, out target);
+                if (world.TryGetPoint(objective, player.transform.position, out var position, out bool cave, out string zone))
+                    return world.PointForMap(player.transform.position, position, cave, state.QuestId, objective.ObjectiveId,
+                        zone != null ? $"{zone} · {objective.Title}" : objective.Title, out target);
             }
-            if (world.TryGetHuntingPoint(state.Definition, player.transform.position, out var hunt, out bool inCave))
-                return world.PointForMap(player.transform.position, hunt, inCave, state.QuestId, "", "Tìm thêm thú để giao", out target);
+            if (world.TryGetHuntingPoint(state.Definition, player.transform.position, out var hunt, out bool inCave, out string huntingZone))
+                return world.PointForMap(player.transform.position, hunt, inCave, state.QuestId, "",
+                    huntingZone != null ? $"{huntingZone} · Tìm thêm thú để giao" : "Tìm thêm thú để giao", out target);
             return false;
         }
 
@@ -204,21 +212,27 @@ namespace Capstone.Game.QuestSystem {
             var camera = Camera.main;
             if (camera != null) {
                 FaceMarker(grassMarker, camera.transform.position);
-                FaceMarker(caveMarker, camera.transform.position);
             }
             if (Time.unscaledTime >= nextWorldCheck) {
                 nextWorldCheck = Time.unscaledTime + .25f;
                 var active = Active();
                 if (active != null && world != null) world.ReportLocations(quests, active, player.transform.position);
             }
-            var elder = world != null ? world.ElderFor(player.transform.position) : null;
+            var elder = world != null ? world.GrassElder : null;
+            var guide = world != null ? world.TravelGuideFor(player.transform.position) : null;
+            bool nearGuide = WorldInteractionView.CanInteract(player.transform, guide, ChapterWorldLayout.ElderTalkDistance);
+            bool nearChief = WorldInteractionView.CanInteract(player.transform, elder, ChapterWorldLayout.ElderTalkDistance);
+            bool guideSelected = nearGuide && (!nearChief ||
+                (guide.position - player.transform.position).sqrMagnitude < (elder.position - player.transform.position).sqrMagnitude);
+            var actor = guideSelected ? guide : elder;
             bool near = !conversation && !InventoryInputController.GameplayInputBlocked &&
-                WorldInteractionView.CanInteract(player.transform, elder, ChapterWorldLayout.ElderTalkDistance);
+                (nearGuide || nearChief);
             if (near && Capstone.Game.SettingsSystem.GameSettingsService.InteractionPromptsVisible)
-                DoorPrompt.Show(this, elder.position + Vector3.up * 1.6f, "[E] Nói chuyện với Trưởng làng");
+                DoorPrompt.Show(this, actor.position + Vector3.up * 1.6f,
+                    guideSelected ? "[E] Nói chuyện với người dẫn đường" : "[E] Nói chuyện với Trưởng làng");
             else DoorPrompt.Hide(this);
             if (near && GameplayKeyboard.GetKeyDown(KeyCode.E) && WorldInteractionView.TryConsumePress())
-                StartCoroutine(Talk(elder));
+                StartCoroutine(Talk(actor, guideSelected));
         }
 
         static void FaceMarker(TextMesh marker, Vector3 cameraPosition) {
@@ -230,6 +244,10 @@ namespace Capstone.Game.QuestSystem {
         DialogueBoxUI GetDialogue() {
             if (dialogue != null) return dialogue;
             dialogue = FindFirstObjectByType<DialogueBoxUI>(FindObjectsInactive.Include);
+            if (dialogue != null && dialogue.IsBuilt) {
+                dialogue.Build(dialogue.transform);
+                return dialogue;
+            }
             if (dialogue != null && dialogue.GetComponentInParent<Canvas>() is Canvas existing && existing.gameObject.activeInHierarchy) {
                 dialogue.Build(existing.transform);
                 return dialogue;
@@ -247,7 +265,7 @@ namespace Capstone.Game.QuestSystem {
             return dialogue;
         }
 
-        IEnumerator Talk(Transform elder) {
+        IEnumerator Talk(Transform elder, bool isGuide) {
             conversation = true;
             DoorPrompt.Hide(this);
             InventoryInputController.SetExternalGameplayInputBlocked(this, true);
@@ -255,20 +273,20 @@ namespace Capstone.Game.QuestSystem {
             try {
                 var box = GetDialogue();
                 Refresh();
-                yield return box.Show("Trưởng làng", chief != null ? chief.ChiefPortrait : null);
+                yield return box.Show(isGuide ? "Người dẫn đường" : "Trưởng làng",
+                    !isGuide && chief != null ? chief.ChiefPortrait : null);
                 bool fromCave = elder == world.CaveElder;
-                bool canTravel = world.CanTravelFrom(elder);
-                yield return box.TypeLine(fromCave ? "Cháu muốn bàn chuyện nhiệm vụ hay trở về đồng cỏ?"
-                    : "Cháu muốn bàn chuyện nhiệm vụ hay vào hang động?", 58, false);
-                string[] options = canTravel
-                    ? new[] { "Nhiệm vụ", fromCave ? "Về đồng cỏ" : "Vào hang động", "Rời đi" }
-                    : new[] { "Nhiệm vụ", "Rời đi" };
-                int choice = -1;
-                yield return box.Choose(options, result => choice = result);
-                if (choice == 0) yield return TalkAboutQuest(box);
-                else if (choice == 1 && canTravel) {
-                    yield return box.TypeLine("Đi theo ta. Ta sẽ đưa cháu sang bên kia.", 65, false);
-                    travel = true;
+                if (isGuide && world.CanTravelFrom(elder)) {
+                    yield return box.TypeLine(fromCave ? "Bạn muốn trở về đồng cỏ?" : "Bạn muốn vào hang động?", 58, false);
+                    yield return box.Choose(new[] { fromCave ? "Về đồng cỏ" : "Vào hang động", leaveLabel },
+                        choice => travel = choice == 0);
+                } else if (isGuide) {
+                    yield return box.TypeLine("Lối đi đang tạm đóng.", 58);
+                } else {
+                    yield return box.TypeLine("Cháu cần ta giúp gì?", 58, false);
+                    int choice = -1;
+                    yield return box.Choose(new[] { QuestOption(), leaveLabel }, result => choice = result);
+                    if (choice == 0) yield return TalkAboutQuest(box);
                 }
                 yield return box.Hide();
             } finally { ReleaseDialogue(); }
@@ -280,10 +298,16 @@ namespace Capstone.Game.QuestSystem {
             InventoryInputController.SetExternalGameplayInputBlocked(this, true);
             try {
                 var box = GetDialogue();
-                yield return box.Show("Trưởng làng", chief != null ? chief.ChiefPortrait : null);
+                yield return box.Show("Người dẫn đường", null);
                 yield return box.TypeLine("Lối đi đang bị chặn. Cháu hãy quay lại sau nhé.", 52);
                 yield return box.Hide();
             } finally { ReleaseDialogue(); }
+        }
+
+        string QuestOption() {
+            var state = Active();
+            if (state != null) return IsReady(state) ? turnInLabel : viewQuestLabel;
+            return quests.TutorialComplete && Available() != null ? acceptLabel : questLabel;
         }
 
         IEnumerator TalkAboutQuest(DialogueBoxUI box) {
@@ -292,19 +316,25 @@ namespace Capstone.Game.QuestSystem {
                 yield break;
             }
             var state = Active();
-            if (state != null) yield return IsReady(state) ? TurnIn(box, state) : Lines(box, state.Definition.ProgressDialogue);
-            else if (Available() is QuestDefinition next) {
-                yield return Lines(box, next.AcceptDialogue, false);
-                int choice = -1;
-                yield return box.Choose(new[] { "Nhận nhiệm vụ", "Để sau" }, result => choice = result);
-                if (choice != 0) yield return box.TypeLine("Không sao. Khi nào chuẩn bị xong, hãy quay lại gặp ta.", 42);
-                else if (!TryAccept(next)) yield return box.TypeLine("Chưa thể nhận nhiệm vụ. Hãy kiểm tra chỗ trống trong túi và bản lưu.", 42);
-            } else {
+            if (state != null) {
+                if (IsReady(state)) yield return TurnIn(box, state);
+                else yield return Lines(box, state.Definition.ProgressDialogue);
+            } else if (Available() is QuestDefinition next) yield return OfferQuest(box, next);
+            else {
                 string text = quests.IsQuestCompleted(FinalQuestId)
                     ? "Nhờ có cháu mà ngôi làng đã trở lại bình yên. Ta hy vọng một ngày nào đó sẽ được nghe thêm những câu chuyện về hành trình của cháu."
                     : "Hãy luôn cẩn thận khi khám phá thế giới bên ngoài ngôi làng.";
                 yield return box.TypeLine(text, 42);
             }
+        }
+
+        IEnumerator OfferQuest(DialogueBoxUI box, QuestDefinition definition) {
+            yield return box.TypeLine(definition.Title, 65);
+            yield return Lines(box, definition.AcceptDialogue, false);
+            int choice = -1;
+            yield return box.Choose(new[] { acceptLabel, "Để sau" }, result => choice = result);
+            if (choice != 0) yield return box.TypeLine("Không sao. Khi nào chuẩn bị xong, hãy quay lại gặp ta.", 42);
+            else if (!TryAccept(definition)) yield return box.TypeLine("Chưa thể nhận nhiệm vụ. Hãy kiểm tra chỗ trống trong túi và bản lưu.", 42);
         }
 
         static IEnumerator Lines(DialogueBoxUI box, string[] lines, bool waitForLast = true) {
@@ -321,7 +351,6 @@ namespace Capstone.Game.QuestSystem {
         }
 
         IEnumerator TurnIn(DialogueBoxUI box, QuestRuntimeState active) {
-            yield return box.TypeLine("Cháu đã hoàn thành những gì ta nhờ rồi sao? Hãy để ta kiểm tra.", 42, false);
             var selected = new List<PetController>();
             var delivery = active.Definition.Objectives.FirstOrDefault(objective => objective.ObjectiveType == QuestObjectiveType.DeliverPet);
             if (delivery != null && roster != null) {
@@ -337,30 +366,41 @@ namespace Capstone.Game.QuestSystem {
                     int next = options.Count;
                     if (remaining.Count > pageSize) options.Add($"Trang kế · {page + 1}/{(remaining.Count + pageSize - 1) / pageSize}");
                     options.Add("Hủy giao thú");
-                    yield return box.TypeLine($"Chọn thú để giao ({selected.Count}/{delivery.RequiredAmount}).", 110, false);
+                    yield return box.TypeLine($"{active.Definition.Title}\n{delivery.Title} ({selected.Count}/{delivery.RequiredAmount})", 110, false);
                     int choice = -1;
                     yield return box.Choose(options.ToArray(), value => choice = value);
                     if (choice < 0 || choice == options.Count - 1) yield break;
                     if (choice == next) { page = (page + 1) % ((remaining.Count + pageSize - 1) / pageSize); continue; }
                     selected.Add(displayed[choice]);
                 }
-                yield return box.TypeLine("Các thú đã chọn sẽ được giao cho trưởng làng và rời bộ sưu tập của cháu. Cháu có đồng ý không?", 42, false);
             }
+            string confirmation = selected.Count > 0 ? $"Giao {selected.Count} thú đã chọn cho Trưởng làng. Các thú này sẽ rời bộ sưu tập."
+                : "Cháu đã hoàn thành các mục tiêu.";
+            yield return box.TypeLine($"{active.Definition.Title}\n{confirmation}", 75, false);
             int confirm = -1;
-            yield return box.Choose(new[] { "Xác nhận trả nhiệm vụ", "Để sau" }, result => confirm = result, 1);
+            yield return box.Choose(new[] { turnInLabel, "Để sau" }, result => confirm = result, 1);
             if (confirm != 0) yield break;
             if (!TryTurnIn(active, selected, out string error)) { yield return box.TypeLine(error, 42); yield break; }
             yield return Lines(box, active.Definition.CompleteDialogue);
             if (active.QuestId == FinalQuestId)
                 yield return box.TypeLine("HOÀN THÀNH CHƯƠNG I\nBí ẩn hang động", 34);
+            else if (Available() is QuestDefinition next) {
+                yield return box.TypeLine("Ta còn một việc muốn nhờ cháu.", 55);
+                yield return OfferQuest(box, next);
+            }
         }
 
         string PetLabel(PetController pet) {
-            var info = pet.GetComponent<PetCollectionMetadata>();
             var stats = pet.GetComponent<PetHudRuntimeStats>();
-            var id = info.PersistentId;
-            string suffix = id.Substring(Mathf.Max(0, id.Length - 5));
-            return $"{stats.DisplayName} · Cấp {stats.Level} · {(roster.StoredPets.Contains(pet) ? "Kho" : "Đội")} #{suffix}";
+            int partySlot = Array.IndexOf(player.petSlots, pet);
+            string location = partySlot >= 0 ? $"Đội ô {partySlot + 1}" : "Kho";
+            if (partySlot < 0)
+                for (int i = 0; i < roster.StoredPets.Count; i++) {
+                    if (roster.StoredPets[i] != pet) continue;
+                    location = $"Kho ô {i + 1}";
+                    break;
+                }
+            return stats != null ? $"{stats.DisplayName} · Cấp {stats.Level} · {location}" : $"{pet.name} · {location}";
         }
 
         internal bool TryAccept(QuestDefinition definition) {

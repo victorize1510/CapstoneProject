@@ -1824,15 +1824,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -9.59
+      value: -9.233334
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -49.69
+      value: -50.603542
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -1013.72
+      value: -1013.3001
       objectReference: {fileID: 0}
     - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1871,6 +1871,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+--- !u!4 &28913205 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+  m_PrefabInstance: {fileID: 28913204}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &29213869 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: da1f0c026c7d49a3986c5dac7113922e, type: 3}
@@ -6526,6 +6531,101 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 430d203b327660d41b447177223cb32e, type: 3}
+--- !u!1001 &119478949
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 44.99
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -94.91
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 50.46
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.02434467
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.99970365
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -182.79
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_Name
+      value: NPC Box (1)
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects:
+    - {fileID: 8699652204047898494, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 119478951}
+  m_SourcePrefab: {fileID: 100100000, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+--- !u!1 &119478950 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+  m_PrefabInstance: {fileID: 119478949}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &119478951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 119478950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e47d5316dd4435c95869c7730469581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.UISystem.NpcPanelInteractable
+  targetPanel: 0
+  interactKey: 102
+  interactDistance: 2.75
+  player: {fileID: 0}
+  menuController: {fileID: 0}
+  dialogue: {fileID: 1494329589}
+  speaker: 
+  portrait: {fileID: 0}
+  greeting: 
+  openChoice: 
+  healChoice: "H\u1ED3i ph\u1EE5c cho pet"
+  promptOffset: {x: 0, y: 1.65, z: 0}
+  promptColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!1 &121255362
 GameObject:
   m_ObjectHideFlags: 0
@@ -48756,7 +48856,10 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 8699652204047898494, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2135400102}
   m_SourcePrefab: {fileID: 100100000, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
 --- !u!1001 &759525926
 PrefabInstance:
@@ -49918,6 +50021,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 838daae13eb54444385f77c37339df5f, type: 3}
       propertyPath: m_Name
       value: Meshy_AI_Fantasy_Pet_Shop_Coun_1007132755_texture
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 838daae13eb54444385f77c37339df5f, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -51491,6 +51598,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 796601419}
+  - component: {fileID: 2135400106}
   - component: {fileID: 796601417}
   - component: {fileID: 796601418}
   m_Layer: 0
@@ -62595,6 +62703,63 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d55c139f97e9fd2459986d22e4ef7820, type: 3}
+--- !u!1001 &1013598867
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 563.13
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -94.53
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 23.59
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.3851009
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.92287445
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -134.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4514849257731806931, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+      propertyPath: m_Name
+      value: Peasant Nolant(Free Version) (2)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
 --- !u!1001 &1013714589
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -71848,8 +72013,6 @@ MonoBehaviour:
   coopPlayerColor: {r: 0.55, g: 0.75, b: 1, a: 1}
   scanExistingMarkers: 1
   autoCreatePlayerMarker: 1
-  autoCreatePetMarkers: 1
-  autoCreateEnemyMarkers: 1
   scanPeriodically: 0
   markerScanInterval: 0.75
   useMarkerTextureOverrides: 0
@@ -90590,6 +90753,8 @@ MonoBehaviour:
   fontOverride: {fileID: 0}
   customBoxSprite: {fileID: -1144449632, guid: bc5916f3a19510340b6c101744133e15, type: 3}
   customNameTagSprite: {fileID: 0}
+  choiceSprite: {fileID: 0}
+  selectedChoiceSprite: {fileID: 0}
   typeSound: {fileID: 0}
   typeVolume: 0.35
   soundEveryChars: 2
@@ -98247,7 +98412,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1619820580}
   m_Layer: 0
-  m_Name: "C\u1ED5ng \u0111\u1ED3ng c\u1ECF"
+  m_Name: "\u0110i\u1EC3m \u0111\u1EBFn \u0111\u1ED3ng c\u1ECF"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -98261,8 +98426,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1619820579}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.07491106, z: -0, w: 0.99719024}
-  m_LocalPosition: {x: 32.47986, y: -86.59747, z: -8.9201355}
+  m_LocalRotation: {x: -0, y: 0.7229672, z: -0, w: 0.6908823}
+  m_LocalPosition: {x: 559.6225, y: -94.78056, z: 21.368872}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -117899,7 +118064,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1885198393}
   m_Layer: 0
-  m_Name: "C\u1ED5ng hang"
+  m_Name: "\u0110i\u1EC3m \u0111\u1EBFn hang"
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -117913,8 +118078,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1885198392}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: 0.7155226, z: -0, w: 0.6985896}
-  m_LocalPosition: {x: -137.22015, y: -89.87175, z: -1132.04}
+  m_LocalRotation: {x: -0, y: -0.62093455, z: -0, w: 0.7838624}
+  m_LocalPosition: {x: -6.89703, y: -50.541294, z: -1013.8494}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -127637,16 +127802,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 332b44afbbc50414992377528a6cd22f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.ChapterWorldLayout
-  grassElder: {fileID: 0}
-  caveElder: {fileID: 0}
+  grassElder: {fileID: 892991756}
+  caveElder: {fileID: 28913205}
+  grassGuide: {fileID: 2135400111}
   grassPortal: {fileID: 1619820580}
   cavePortal: {fileID: 1885198393}
   entryPoint: {fileID: 364579517}
   duskPoint: {fileID: 1727307854}
   bossPoint: {fileID: 1413085227}
   boss: {fileID: 0}
-  grassMap: {fileID: 21300000, guid: 33b30e08c49607e41817d52cb349fa07, type: 3}
-  caveMap: {fileID: 21300000, guid: f31cadab16f90374fa015dc2c2bceebf, type: 3}
+  grassMap: {fileID: 21300000, guid: eb9d6fc3d4b243f69d73f839024732f8, type: 3}
+  caveMap: {fileID: 21300000, guid: da9e0e8261364011aebcb6659029f82e, type: 3}
   grassBounds: {x: -585.80896, y: -613.809, z: 1366.818, w: 1357.8181}
   caveBounds: {x: -174.43001, y: -1164.63, z: 297.46002, w: 261.66}
   caveRegionBounds: {x: -191.3929, y: -1217.5857, z: 349.27612, w: 329.55444}
@@ -133571,6 +133737,58 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7782768099063248824, guid: 6d3df9a818fd392478aafd2be7300f60, type: 3}
   m_PrefabInstance: {fileID: 1989555964}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &2135400101 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: de76d67d0ab88dc439b10b32370775ea, type: 3}
+  m_PrefabInstance: {fileID: 759093760}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2135400102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2135400101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e47d5316dd4435c95869c7730469581, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.UISystem.NpcPanelInteractable
+  targetPanel: 1
+  interactKey: 101
+  interactDistance: 2.75
+  player: {fileID: 0}
+  menuController: {fileID: 0}
+  dialogue: {fileID: 1494329589}
+  speaker: 
+  portrait: {fileID: 0}
+  greeting: 
+  openChoice: 
+  healChoice: "H\u1ED3i ph\u1EE5c cho pet"
+  promptOffset: {x: 0, y: 1.65, z: 0}
+  promptColor: {r: 1, g: 1, b: 1, a: 1}
+--- !u!114 &2135400106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 796601416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 544fdf9b4faec3b4698302801da70b75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.QuestSystem.ChapterQuestFlow
+  questLabel: "Nhi\u1EC7m v\u1EE5"
+  viewQuestLabel: "Xem nhi\u1EC7m v\u1EE5"
+  acceptLabel: "Nh\u1EADn nhi\u1EC7m v\u1EE5"
+  turnInLabel: "Tr\u1EA3 nhi\u1EC7m v\u1EE5"
+  leaveLabel: "R\u1EDDi \u0111i"
+--- !u!4 &2135400111 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3885524379516931177, guid: 0da88e90fec49d44abc08b8f8fcddc03, type: 3}
+  m_PrefabInstance: {fileID: 1013598867}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &2135713841 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4639076891720413224, guid: 04da2fba57c456a4a85a2133f842f83f, type: 3}
@@ -134443,8 +134661,10 @@ SceneRoots:
   - {fileID: 765243656}
   - {fileID: 253385104}
   - {fileID: 759093760}
+  - {fileID: 119478949}
   - {fileID: 1636467952}
   - {fileID: 1824568150}
   - {fileID: 1389448710}
   - {fileID: 28913204}
+  - {fileID: 1013598867}
   - {fileID: 2034057113}

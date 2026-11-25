@@ -17,7 +17,6 @@ namespace Capstone.Game.QuestSystem.Editor {
         const string DataFolder = "Assets/Scenes/DemoScene 3";
         const string ArtFolder = "Assets/Game/MapSystem/Sprites/Chapter01";
         const string ZonePrefabFolder = "Assets/Game/CreatureSystem/Runtime/SpawnZones/ApprovedSix";
-        internal const string CaveElderName = "Peasant Nolant(Free Version) (1)";
         const float FloorSearch = 11f;
 
         [MenuItem("Tools/Capstone/Chapter I/Bind Quest and Travel NPCs")]
@@ -93,8 +92,10 @@ namespace Capstone.Game.QuestSystem.Editor {
             data.FindProperty("entryPoint").objectReferenceValue = entryPoint;
             data.FindProperty("duskPoint").objectReferenceValue = duskPoint;
             data.FindProperty("bossPoint").objectReferenceValue = bossPoint;
-            data.FindProperty("grassMap").objectReferenceValue = grassArt;
-            data.FindProperty("caveMap").objectReferenceValue = caveArt;
+            if (data.FindProperty("grassMap").objectReferenceValue == null)
+                data.FindProperty("grassMap").objectReferenceValue = grassArt;
+            if (data.FindProperty("caveMap").objectReferenceValue == null)
+                data.FindProperty("caveMap").objectReferenceValue = caveArt;
             data.FindProperty("grassBounds").vector4Value = grassBounds;
             data.FindProperty("caveBounds").vector4Value = caveBounds;
             data.FindProperty("caveRegionBounds").vector4Value = new Vector4(caveRect.xMin, caveRect.yMin, caveRect.width, caveRect.height);
@@ -152,23 +153,48 @@ namespace Capstone.Game.QuestSystem.Editor {
         static void BindElders(Scene scene, ChapterWorldLayout layout, SerializedObject data) {
             var cutscene = FindAll<VillageChiefCutscene>(scene).SingleOrDefault();
             var grass = cutscene != null ? cutscene.Chief : null;
-            var cave = FindAll<Transform>(scene).SingleOrDefault(actor => actor.name == CaveElderName);
-            if (grass == null || cave == null) throw new InvalidOperationException("Thiếu Trưởng làng hoặc " + CaveElderName);
-            var rest = new SerializedObject(cutscene).FindProperty("npcFinalPoint").objectReferenceValue as Transform;
-            if (rest == null) rest = grass;
-            if (!ChapterWorldLayout.TryFindElderArrival(grass, rest.position, rest.rotation, out var grassPoint))
-                throw new InvalidOperationException("Không tìm thấy chỗ đứng trước Trưởng làng tại " + rest.position);
+            var cave = FindAll<Transform>(scene).SingleOrDefault(actor => actor.name == ChapterWorldLayout.CaveElderName);
+            if (grass == null || cave == null) throw new InvalidOperationException("Thiếu Trưởng làng hoặc " + ChapterWorldLayout.CaveElderName);
+            var guide = FindAll<Transform>(scene).SingleOrDefault(actor => actor.name == ChapterWorldLayout.GrassGuideName);
+            if (guide == null || !ChapterWorldLayout.TryFindElderArrival(guide, guide.position, guide.rotation, out var grassPoint))
+                throw new InvalidOperationException("Không tìm thấy điểm đến cạnh Nolant ngoài đồng cỏ.");
             var entry = data.FindProperty("entryPoint").objectReferenceValue as Transform;
             if (!ChapterWorldLayout.TryFindElderArrival(cave, cave.position, cave.rotation, out var cavePoint, entry?.position)) {
-                if (!ChapterWorldLayout.TryFindElderArrival(cave, cave.position, cave.rotation, out cavePoint))
-                    throw new InvalidOperationException("Không tìm thấy chỗ đứng cạnh Nolant trong hang tại " + cave.position);
-                Debug.LogWarning("[Chapter I] Có điểm đến cạnh Nolant, nhưng NavMesh chưa nối từ đó tới cửa hang.");
+                if (entry == null || !TryPlaceElderOnConnectedFloor(cave, entry.position, out cavePoint))
+                    throw new InvalidOperationException("Không tìm thấy chỗ đứng nối với đường nhiệm vụ gần Nolant tại " + cave.position);
             }
             data.FindProperty("grassElder").objectReferenceValue = grass;
+            data.FindProperty("grassGuide").objectReferenceValue = guide;
             data.FindProperty("caveElder").objectReferenceValue = cave;
-            SetArrival(layout.transform, data.FindProperty("grassPortal"), "Điểm đến đồng cỏ", grassPoint, rest.position);
+            SetArrival(layout.transform, data.FindProperty("grassPortal"), "Điểm đến đồng cỏ", grassPoint, guide.position);
             SetArrival(layout.transform, data.FindProperty("cavePortal"), "Điểm đến hang", cavePoint, cave.position);
             Debug.Log($"[Chapter I] Gắn Trưởng làng {grass.name} → {grassPoint}, {cave.name} → {cavePoint}.");
+        }
+
+        static bool TryPlaceElderOnConnectedFloor(Transform elder, Vector3 entry, out Vector3 arrival) {
+            var original = elder.position;
+            var space = NavMesh.CalculateTriangulation();
+            var candidates = new List<Vector3>();
+            for (int i = 0; i < space.indices.Length; i += 3) {
+                var center = (space.vertices[space.indices[i]] + space.vertices[space.indices[i + 1]] +
+                    space.vertices[space.indices[i + 2]]) / 3f;
+                if (Vector3.ProjectOnPlane(center - original, Vector3.up).sqrMagnitude <= 32f * 32f)
+                    candidates.Add(center);
+            }
+            var path = new NavMeshPath();
+            foreach (var candidate in candidates.OrderBy(point => (point - original).sqrMagnitude)) {
+                if (!NavMesh.FindClosestEdge(candidate, out var edge, NavMesh.AllAreas) || edge.distance < .65f) continue;
+                if (!NavMesh.CalculatePath(candidate, entry, NavMesh.AllAreas, path) ||
+                    path.status != NavMeshPathStatus.PathComplete) continue;
+                if (!ChapterWorldLayout.TryFindElderArrival(elder, candidate, elder.rotation, out arrival, entry)) continue;
+                Undo.RecordObject(elder, "Place Nolant on Cave NavMesh");
+                elder.position = candidate;
+                PrefabUtility.RecordPrefabInstancePropertyModifications(elder);
+                Debug.Log($"[Chapter I] Nolant {original} → {candidate} để đứng trên đường đi trong hang.");
+                return true;
+            }
+            arrival = default;
+            return false;
         }
 
         static void SetArrival(Transform root, SerializedProperty property, string name, Vector3 point, Vector3 lookAt) {

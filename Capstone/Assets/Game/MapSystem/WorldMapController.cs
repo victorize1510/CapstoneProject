@@ -132,6 +132,14 @@ namespace Capstone.Game.MapSystem {
         RawImage mapDisplay;
         Sprite mapArt;
         Rect mapArtBounds;
+        MapEncounterZone[] encounterZones;
+        string encounterZoneGroup;
+        MapZoneOverlay zoneOverlay;
+        MapQuestRouteOverlay routeOverlay;
+        QuestMapMarkerBridge questMap;
+        MapMarkerManager markerManager;
+        MapArtMarkers artMarkers;
+        internal bool UsesMapArt => mapArt != null;
         internal Texture DisplayedMapTexture => mapArt != null ? (Texture)mapArt.texture : mapCamera?.targetTexture;
         internal string MapRegionName { get; private set; }
         readonly List<FilterListener> filterListeners = new List<FilterListener>();
@@ -202,6 +210,7 @@ namespace Capstone.Game.MapSystem {
 
             UpdateRegionName();
             MapArtProjection.Apply(mapDisplay, mapCamera, mapArt, mapArtBounds);
+            RefreshArtOverlays();
         }
 
         void OnDestroy() {
@@ -224,14 +233,36 @@ namespace Capstone.Game.MapSystem {
             ApplyCameraDefaults();
         }
 
-        public void UseMapArt(Sprite sprite, Rect bounds, string regionName) {
+        public void UseMapArt(Sprite sprite, Rect bounds, string regionName, string zoneGroup = null) {
             ResolveReferences();
             mapArt = sprite;
             mapArtBounds = bounds;
+            encounterZoneGroup = zoneGroup;
+            zoneOverlay?.SetZones(encounterZones, bounds, zoneGroup);
             MapRegionName = regionName;
             worldBoundsInsetPercent = minimumWorldBoundsInsetPercent = Vector4.zero;
             SetWorldBounds(bounds.center, bounds.size);
             if (IsOpen && playerTarget != null) Focus(playerTarget.position, false);
+        }
+
+        internal void SetEncounterZones(MapEncounterZone[] zones) {
+            encounterZones = zones;
+            zoneOverlay?.SetZones(zones, mapArtBounds, encounterZoneGroup);
+        }
+
+        void RefreshArtOverlays() {
+            if (mapDisplay == null || mapCamera == null) return;
+            if (zoneOverlay == null && encounterZones != null) {
+                zoneOverlay = MapZoneOverlay.Create(mapDisplay, false);
+                zoneOverlay.SetZones(encounterZones, mapArtBounds, encounterZoneGroup);
+            }
+            zoneOverlay?.Refresh(mapCamera, UsesMapArt);
+            MapQuestRouteOverlay.Refresh(mapDisplay, ref routeOverlay, mapCamera, questMap,
+                markerManager == null || markerManager.IsMarkerTypeVisible(MapMarkerType.QuestTarget), UsesMapArt, false);
+            if (!UsesMapArt) return;
+            if (presentation != null || markerManager == null) return;
+            if (artMarkers == null) artMarkers = new MapArtMarkers(mapDisplay.rectTransform);
+            artMarkers.Refresh(mapCamera, markerManager, playerTarget, false);
         }
 
         public void SetReferences(MapManager manager, Camera camera, RectTransform interactionRect, RectTransform overlay, Transform target) {
@@ -483,6 +514,8 @@ namespace Capstone.Game.MapSystem {
             return false;
         }
         void ResolveReferences() {
+            if (questMap == null) questMap = GetComponent<QuestMapMarkerBridge>();
+            if (markerManager == null) markerManager = GetComponent<MapMarkerManager>();
             if (presentation == null) presentation = GetComponent<UI.WorldMapUIController>();
             if (mapManager == null) mapManager = FindFirst<MapManager>();
             if (mapCamera == null && mapManager != null && mapManager.GetMapCamera() != null) mapCamera = mapManager.GetMapCamera().GetComponent<Camera>();
@@ -679,6 +712,11 @@ namespace Capstone.Game.MapSystem {
 
             Transform displayTransform = mask.Find("Map Display");
             RawImage display = displayTransform != null ? displayTransform.GetComponent<RawImage>() : null;
+            if (mapDisplay != display) {
+                artMarkers = null;
+                zoneOverlay = null;
+                routeOverlay = null;
+            }
             mapDisplay = display;
             if (display != null) {
                 display.color = Color.white;

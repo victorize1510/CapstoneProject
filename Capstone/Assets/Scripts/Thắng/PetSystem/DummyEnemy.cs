@@ -445,6 +445,7 @@ public class DummyEnemy : MonoBehaviour
             mapMarker = GetComponent<MapMarker>();
         }
 
+        if (mapMarker == null && !IsBoss) return;
         if (mapMarker == null)
         {
             mapMarker = gameObject.AddComponent<MapIcon>();

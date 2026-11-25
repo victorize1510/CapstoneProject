@@ -137,6 +137,7 @@ namespace Capstone.Game.HudSystem {
             }
 
             PetCustomizationSaveData metadataSnapshot = preview.Metadata.CreateSaveData();
+            var previouslyLearned = Capstone.Game.WorldFeedback.ProgressionFeedback.Learned(preview.RuntimeStats);
             PetRuntimeStatsSaveData statsSnapshot = preview.RuntimeStats.CreateSaveData();
             float[] cooldownSnapshot = preview.RuntimeStats.SnapshotCooldowns();
             var profile=FindFirstObjectByType<Capstone.Game.ProfileSystem.PlayerProfileRuntimeProvider>();
@@ -208,6 +209,7 @@ namespace Capstone.Game.HudSystem {
                 return false;
             }
 
+            Capstone.Game.WorldFeedback.ProgressionFeedback.PetProgress(pet, stats, previouslyLearned, false);
             PetEvolved?.Invoke(pet);
             message = $"{preview.CurrentName} đã tiến hóa thành {preview.TargetName}.";
             return true;

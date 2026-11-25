@@ -965,6 +965,8 @@ namespace Capstone.Game.QuestSystem.UI {
         void ShowSelectedQuestOnMap() {
             if (selectedQuest == null || selectedQuest.Definition == null || showOnMapRequested == null) return;
             if (!TryGetTarget(selectedQuest, out QuestTargetInfo target)) return;
+            if (selectedQuest.Status == QuestStatus.Active && !selectedQuest.IsTracked)
+                questManager?.TrackQuest(selectedQuest.QuestId);
 
             showOnMapRequested.Invoke(target.Position);
         }

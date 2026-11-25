@@ -13,6 +13,8 @@ namespace Capstone.Game.MapSystem.UI {
         RawImage r5Display;
         bool r5Collapsed;
         bool? r5Ready;
+        static readonly MapFilterGroup[] DisplayedFilters = { MapFilterGroup.NPC, MapFilterGroup.Boss,
+            MapFilterGroup.Quest, MapFilterGroup.Shop, MapFilterGroup.Travel };
         public bool MapSourceReady => worldMap!=null&&worldMap.MapCamera!=null&&worldMap.MapCamera.isActiveAndEnabled
             &&worldMap.MapCamera.targetTexture!=null&&worldMap.MapCamera.targetTexture.IsCreated()
             &&r5Display!=null&&r5Display.enabled&&r5Display.gameObject.activeInHierarchy&&r5Display.texture==worldMap.DisplayedMapTexture;
@@ -20,7 +22,7 @@ namespace Capstone.Game.MapSystem.UI {
 
         void BuildR5() {
             if(theme==null||worldMap==null||overlayRoot==null||mapViewport==null)return;
-            RestoreIcons();clusters?.Dispose();sourceViews.Clear();dataViews.Clear();selectedId=null;fittedViewportSize=Vector2.zero;r5Ready=null;
+            clusters?.Dispose();sourceViews.Clear();dataViews.Clear();selectedId=null;fittedViewportSize=Vector2.zero;r5Ready=null;
             mapSystem=GetComponent<MapSystemController>();
             if(quests==null)quests=FindFirstObjectByType<QuestSystem.QuestManager>();
             for(int i=overlayRoot.childCount-1;i>=0;i--){var old=overlayRoot.GetChild(i).gameObject;old.SetActive(false);if(Application.isPlaying)Destroy(old);else DestroyImmediate(old);}
@@ -55,9 +57,11 @@ namespace Capstone.Game.MapSystem.UI {
             markerContainer=MapUIFactory.Rect(mapViewport,"MarkerContainer",0,0,0,0);MapUIFactory.Stretch(markerContainer);
             clusters=new MapMarkerClusters(markerContainer,theme,SelectMarker,screen);
             BuildR5Compass("N",786,112);BuildR5Compass("E",1560,452);BuildR5Compass("S",786,802);BuildR5Compass("W",12,452);
-            var tracked=MapR5View.Rect(screen,"TrackedQuestOverlay",56,152,344,64);MapR5View.Face(tracked,"panel","map-cluster-popup",MapR5View.DarkTint);
-            MapR5View.Icon(tracked,"QuestIcon","quest",14,11,39);MapR5View.Text(tracked,theme,"Caption","ĐANG THEO DÕI",66,5,262,22,14,true,GreenAngularGeometry.Gold);
-            questBanner=tracked.gameObject.AddComponent<TrackedQuestBanner>();questBanner.Bind(quests,MapR5View.Text(tracked,theme,"TrackedQuestTitle","",66,27,262,29,20,true,GreenAngularGeometry.Light));
+            var tracked=MapR5View.Rect(screen,"TrackedQuestOverlay",56,152,420,100);MapR5View.Face(tracked,"panel","map-cluster-popup",MapR5View.DarkTint);
+            MapR5View.Icon(tracked,"QuestIcon","quest",14,11,39);MapR5View.Text(tracked,theme,"Caption","ĐANG THEO DÕI",66,5,338,22,14,true,GreenAngularGeometry.Gold);
+            var trackedTitle=MapR5View.Text(tracked,theme,"TrackedQuestTitle","",66,27,338,29,20,true,GreenAngularGeometry.Light);
+            var destination=MapR5View.Text(tracked,theme,"TrackedQuestDestination","",66,57,338,37,17,false,GreenAngularGeometry.Light);
+            questBanner=tracked.gameObject.AddComponent<TrackedQuestBanner>();questBanner.Bind(quests,trackedTitle,destination);
             var helper=MapR5View.Rect(screen,"MapHelp",56,772,662,30);MapR5View.Face(helper,"parallel",null,GreenAngularGeometry.Primary,false);
             MapR5View.Text(helper,theme,"Help","Kéo bản đồ · Lăn chuột thu/phóng · Chuột phải đặt dấu",8,0,646,30,16,false,GreenAngularGeometry.Light,false,TextAlignmentOptions.Center);
             for(int i=0;i<3;i++){
@@ -69,15 +73,18 @@ namespace Capstone.Game.MapSystem.UI {
             r5Tools[1].gameObject.AddComponent<MapActionButton>().Bind(this,"map-zoom-out",()=>worldMap.Zoom(-1));
             r5Tools[2].gameObject.AddComponent<MapActionButton>().Bind(this,"map-center",worldMap.CenterOnPlayer);
             r5Filters=MapR5View.Rect(screen,"BottomFilterBar",0,0,1600,900);
-            for(int i=0;i<7;i++)BuildR5Filter(i);
-            var collapse=MapR5View.Button(MapR5View.Rect(r5Filters,"CollapseFilters",1284,832,52,44),theme,"");
+            for(int i=0;i<DisplayedFilters.Length;i++)BuildR5Filter((int)DisplayedFilters[i],i);
+            var collapse=MapR5View.Button(MapR5View.Rect(r5Filters,"CollapseFilters",24+DisplayedFilters.Length*180,832,52,44),theme,"");
             collapse.GetComponent<MapR5Feedback>().Glyph=MapR5View.Icon(collapse.transform,"CollapseGlyph","collapse",14,10,24);
             collapse.gameObject.AddComponent<MapActionButton>().Bind(this,"map-collapse",()=>SetFilterDockCollapsed(true));
             r5Compact=MapR5View.Rect(screen,"CompactFilterBar",0,0,1600,900);
-            var expand=MapR5View.Button(MapR5View.Rect(r5Compact,"ExpandFilters",24,832,250,44),theme,"Bộ lọc · 7 nhóm","filter",font:19);
+            var expand=MapR5View.Button(MapR5View.Rect(r5Compact,"ExpandFilters",24,832,250,44),theme,$"Bộ lọc · {DisplayedFilters.Length} nhóm","filter",font:19);
             expand.GetComponentInChildren<TMP_Text>().rectTransform.sizeDelta-=new Vector2(24*MapR5View.Native,0);
             MapR5View.Icon(expand.transform,"ExpandGlyph","expand",214,10,24);expand.gameObject.AddComponent<MapActionButton>().Bind(this,"map-expand",()=>SetFilterDockCollapsed(false));
-            for(int i=0;i<7;i++)MapR5View.Icon(r5Compact,"Compact_"+i,MapR5View.GroupIcons[i],292+i*36,841,26).color=GreenAngularGeometry.FilterGlyph(visibleGroups[i]);
+            for(int i=0;i<DisplayedFilters.Length;i++){
+                int index=(int)DisplayedFilters[i];
+                MapR5View.Icon(r5Compact,"Compact_"+index,MapR5View.GroupIcons[index],292+i*36,841,26).color=GreenAngularGeometry.FilterGlyph(visibleGroups[index]);
+            }
             SetFilterDockCollapsed(r5Collapsed);
             r5Clear=MapR5View.Button(MapR5View.Rect(screen,"ClearWaypointButton",1352,832,224,44),theme,"Xóa dấu","clear-waypoint");
             r5Clear.gameObject.AddComponent<MapActionButton>().Bind(this,"map-clear",worldMap.ClearWaypoint);
@@ -100,8 +107,8 @@ namespace Capstone.Game.MapSystem.UI {
             var rect=MapR5View.Rect(screen,"Compass"+value,x,y,28,28);MapR5View.Face(rect,"diamond",null,GreenAngularGeometry.Primary);
             MapR5View.Text(rect,theme,"Direction",value,0,0,28,28,15,false,GreenAngularGeometry.Light,false,TextAlignmentOptions.Center);
         }
-        void BuildR5Filter(int index) {
-            var rect=MapR5View.Rect(r5Filters,"Filter"+(MapFilterGroup)index,24+index*180,832,172,44);
+        void BuildR5Filter(int index,int slot) {
+            var rect=MapR5View.Rect(r5Filters,"Filter"+(MapFilterGroup)index,24+slot*180,832,172,44);
             var hit=rect.gameObject.AddComponent<Image>();hit.color=Color.clear;
             rect.gameObject.AddComponent<MapR5Contour>().Shape="parallel";
             var toggle=rect.gameObject.AddComponent<Toggle>();toggle.targetGraphic=hit;toggle.transition=Selectable.Transition.None;toggle.toggleTransition=Toggle.ToggleTransition.None;

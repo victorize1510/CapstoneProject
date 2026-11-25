@@ -1,4 +1,4 @@
-﻿namespace Capstone.Game.MapSystem {
+namespace Capstone.Game.MapSystem {
     public enum MapMarkerType {
         Custom,
         Player,
@@ -15,7 +15,8 @@
         MainQuest,
         SideQuest,
         Travel,
-        Waypoint
+        Waypoint,
+        CaveTravel
     }
 }
 

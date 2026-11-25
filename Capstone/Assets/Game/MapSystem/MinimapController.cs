@@ -38,10 +38,18 @@ namespace Capstone.Game.MapSystem {
         Sprite mapArt;
         Rect mapArtBounds;
         RawImage artDisplay;
+        MapEncounterZone[] encounterZones;
+        string encounterZoneGroup;
+        MapZoneOverlay zoneOverlay;
+        MapQuestRouteOverlay routeOverlay;
+        QuestMapMarkerBridge questMap;
+        MapMarkerManager markerManager;
+        MapArtMarkers artMarkers;
 
         public MinimapManager Manager => minimapManager;
         public Camera Camera => minimapCamera;
         public Transform Target => target;
+        internal bool UsesMapArt => mapArt != null;
 
         public void UseGameplayHudPresentation() {
             ResolveReferences();
@@ -65,6 +73,7 @@ namespace Capstone.Game.MapSystem {
             Transform visualRoot = minimapManager != null ? minimapManager.transform : null;
             if (configuredVisualRoot != visualRoot) EnsureOpaqueMinimapVisuals();
             MapArtProjection.Apply(artDisplay, minimapCamera, mapArt, mapArtBounds);
+            RefreshArtOverlays();
         }
 
         void Start() {
@@ -85,6 +94,7 @@ namespace Capstone.Game.MapSystem {
             Transform visualRoot = minimapManager != null ? minimapManager.transform : null;
             if (configuredVisualRoot != visualRoot) EnsureOpaqueMinimapVisuals();
             MapArtProjection.Apply(artDisplay, minimapCamera, mapArt, mapArtBounds);
+            RefreshArtOverlays();
         }
 
         void OnDestroy() {
@@ -115,10 +125,12 @@ namespace Capstone.Game.MapSystem {
             worldSize = new Vector2(Mathf.Max(1f, size.x), Mathf.Max(1f, size.y));
         }
 
-        public void UseMapArt(Sprite sprite, Rect bounds, float zoom) {
+        public void UseMapArt(Sprite sprite, Rect bounds, float zoom, string zoneGroup = null) {
             ResolveReferences();
             mapArt = sprite;
             mapArtBounds = bounds;
+            encounterZoneGroup = zoneGroup;
+            zoneOverlay?.SetZones(encounterZones, bounds, zoneGroup);
             cameraRange = zoom;
             rotateWithTarget = false;
             applyCullingMask = true;
@@ -130,7 +142,29 @@ namespace Capstone.Game.MapSystem {
             EnsureOpaqueMinimapVisuals();
         }
 
+        internal void SetEncounterZones(MapEncounterZone[] zones) {
+            encounterZones = zones;
+            zoneOverlay?.SetZones(zones, mapArtBounds, encounterZoneGroup);
+        }
+
+        void RefreshArtOverlays() {
+            if (artDisplay == null || minimapCamera == null) return;
+            if (zoneOverlay == null && encounterZones != null) {
+                zoneOverlay = MapZoneOverlay.Create(artDisplay, true);
+                zoneOverlay.SetZones(encounterZones, mapArtBounds, encounterZoneGroup);
+            }
+            zoneOverlay?.Refresh(minimapCamera, UsesMapArt);
+            MapQuestRouteOverlay.Refresh(artDisplay, ref routeOverlay, minimapCamera, questMap,
+                markerManager == null || markerManager.IsMarkerTypeVisible(MapMarkerType.QuestTarget), UsesMapArt, true);
+            if (!UsesMapArt) return;
+            if (markerManager == null) return;
+            if (artMarkers == null) artMarkers = new MapArtMarkers(artDisplay.rectTransform);
+            artMarkers.Refresh(minimapCamera, markerManager, target, true);
+        }
+
         void ResolveReferences() {
+            if (questMap == null) questMap = GetComponent<QuestMapMarkerBridge>();
+            if (markerManager == null) markerManager = GetComponent<MapMarkerManager>() ?? FindFirst<MapMarkerManager>();
             if (minimapManager == null) minimapManager = FindFirst<MinimapManager>();
             if (minimapCamera == null && minimapManager != null && minimapManager.GetCamera() != null) {
                 minimapCamera = minimapManager.GetCamera().GetComponent<Camera>();
@@ -223,6 +257,11 @@ namespace Capstone.Game.MapSystem {
 
             Transform displayTransform = mask.Find("Minimap Display");
             RawImage display = displayTransform != null ? displayTransform.GetComponent<RawImage>() : null;
+            if (artDisplay != display) {
+                artMarkers = null;
+                zoneOverlay = null;
+                routeOverlay = null;
+            }
             artDisplay = display;
             if (display != null) {
                 display.color = Color.white;

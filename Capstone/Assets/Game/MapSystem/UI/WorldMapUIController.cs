@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Capstone.Game.QuestSystem;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 namespace Capstone.Game.MapSystem.UI {
@@ -17,6 +16,7 @@ namespace Capstone.Game.MapSystem.UI {
         [SerializeField] QuestManager quests;
         RectTransform screen, markerContainer;
         MapSystemController mapSystem;
+        QuestMapMarkerBridge questMap;
         Vector2 fittedViewportSize;
         RegionDisplayPanel region;
         TrackedQuestBanner questBanner;
@@ -29,14 +29,11 @@ namespace Capstone.Game.MapSystem.UI {
         readonly List<MapMarker> markers = new List<MapMarker>();
         readonly List<MapMarker> removed = new List<MapMarker>();
         readonly HashSet<MapMarker> registeredMarkers = new HashSet<MapMarker>();
-        readonly List<Renderer> iconRenderers = new List<Renderer>();
-        readonly List<bool> rendererStates = new List<bool>();
         readonly bool[] visibleGroups = { true, true, true, true, true, true, true };
         readonly Toggle[] filterToggles = new Toggle[7];
         MapMarkerClusters clusters;
         readonly List<MapMarkerView> clusterViews = new List<MapMarkerView>();
         float nextMarkerRefresh;
-        bool iconsSuppressed;
         string selectedId;
 
         public event Action<MapMarkerData> MarkerSelected;
@@ -46,15 +43,12 @@ namespace Capstone.Game.MapSystem.UI {
         public WorldMapUITheme Theme => theme;
         public float ViewportAspect => 1832f / 818f;
 
-        void Awake() { mapSystem = GetComponent<MapSystemController>(); EnsureBuilt(); }
-        void OnEnable() {
-            RenderPipelineManager.beginCameraRendering += BeforeCamera;
-            RenderPipelineManager.endCameraRendering += AfterCamera;
+        void Awake() {
+            mapSystem = GetComponent<MapSystemController>();
+            questMap = GetComponent<QuestMapMarkerBridge>();
+            EnsureBuilt();
         }
         void OnDisable() {
-            RenderPipelineManager.beginCameraRendering -= BeforeCamera;
-            RenderPipelineManager.endCameraRendering -= AfterCamera;
-            RestoreIcons();
             clusters?.Close();
             HideMarkerTooltip();
         }
@@ -113,7 +107,8 @@ namespace Capstone.Game.MapSystem.UI {
         }
         void UpdateDataVisibility(MapMarkerView view) {
             var data = view.Data; var group = WorldMapUITheme.Group(data.type);
-            view.SetPosition(data.normalizedPosition, data.isVisible && MapR5Contour.ContainsNormalized(data.normalizedPosition) && (!group.HasValue || visibleGroups[(int)group.Value]));
+            view.SetPosition(data.normalizedPosition, data.isVisible && MapMarkerManager.AllowsMarkerType(data.type)
+                && MapR5Contour.ContainsNormalized(data.normalizedPosition) && (!group.HasValue || visibleGroups[(int)group.Value]));
         }
         MapMarkerView CreateMarker(MapMarkerData data) => CreateR5Marker(data);
         void ApplyMarkerAppearance(MapMarkerView view) => ApplyR5MarkerAppearance(view);
@@ -161,6 +156,7 @@ namespace Capstone.Game.MapSystem.UI {
             RecoverR5KeyboardSubmit();if(!worldMap.IsOpen)return;
             FitViewport();
             if (!UpdateR5Availability()) return;
+            questBanner?.SetDestination(questMap?.TargetLabel, questMap != null ? questMap.RouteDistance : 0f);
             UpdateMarkerTooltipPosition();
             if (worldMap.MapManager != null) UpdateRegion(worldMap.MapManager.GetCameraPosition());
             if (Time.unscaledTime >= nextMarkerRefresh) { RefreshSources(); nextMarkerRefresh = Time.unscaledTime + .5f; }
@@ -173,12 +169,13 @@ namespace Capstone.Game.MapSystem.UI {
                 var displayType = worldMap.IsWaypointMarker(source) ? MapMarkerType.Waypoint : source.MarkerType;
                 if (view.Data.type != displayType) { view.Data.type = displayType; ApplyMarkerAppearance(view); }
                 view.Data.displayName = worldMap.IsWaypointMarker(source) ? "Điểm đánh dấu" : source.DisplayName;
-                var position = camera.WorldToViewportPoint(source.transform.position);
+                Vector3 position = worldMap.UsesMapArt ? (Vector3)MapArtProjection.ViewportPoint(camera, source.transform.position)
+                    : camera.WorldToViewportPoint(source.transform.position);
                 var group = WorldMapUITheme.Group(source.MarkerType);
                 bool shown = source.ShouldRender(viewer, false) && source.MarkerType != MapMarkerType.CoopPlayer
                     && (!group.HasValue || visibleGroups[(int)group.Value])
                     && (markerManager == null || markerManager.IsMarkerTypeVisible(source.MarkerType))
-                    && position.z > 0 && MapR5Contour.ContainsNormalized(position);
+                    && (worldMap.UsesMapArt || position.z > 0) && MapR5Contour.ContainsNormalized(position);
                 view.SetPosition(position, shown);
                 if (shown && view.Data.id == selectedId) {
                     selectedVisible = true;
@@ -200,7 +197,7 @@ namespace Capstone.Game.MapSystem.UI {
         void RefreshSources() {
             if (markerManager == null) markerManager = GetComponent<MapMarkerManager>();
             if (markerManager == null) return;
-            markerManager.CopyMarkersTo(markers); markerManager.CopyIconRenderersTo(iconRenderers);
+            markerManager.CopyMarkersTo(markers);
             registeredMarkers.Clear(); foreach (var marker in markers) registeredMarkers.Add(marker);
             removed.Clear(); foreach (var pair in sourceViews) if (pair.Key == null || !registeredMarkers.Contains(pair.Key)) removed.Add(pair.Key);
             foreach (var source in removed) { Destroy(sourceViews[source].gameObject); sourceViews.Remove(source); }
@@ -208,18 +205,6 @@ namespace Capstone.Game.MapSystem.UI {
                 if (source == null || sourceViews.ContainsKey(source)) continue;
                 sourceViews.Add(source, CreateMarker(new MapMarkerData { id = source.MarkerId, displayName = source.DisplayName, type = worldMap.IsWaypointMarker(source) ? MapMarkerType.Waypoint : source.MarkerType }));
             }
-        }
-        void BeforeCamera(ScriptableRenderContext context, Camera camera) {
-            if (worldMap == null || !worldMap.IsOpen || camera != worldMap.MapCamera || iconsSuppressed) return;
-            rendererStates.Clear();
-            foreach (var renderer in iconRenderers) { rendererStates.Add(renderer != null && renderer.forceRenderingOff); if (renderer != null) renderer.forceRenderingOff = true; }
-            iconsSuppressed = true;
-        }
-        void AfterCamera(ScriptableRenderContext context, Camera camera) { if (worldMap != null && camera == worldMap.MapCamera) RestoreIcons(); }
-        void RestoreIcons() {
-            if (!iconsSuppressed) return;
-            for (int i = 0; i < rendererStates.Count && i < iconRenderers.Count; i++) if (iconRenderers[i] != null) iconRenderers[i].forceRenderingOff = rendererStates[i];
-            iconsSuppressed = false; rendererStates.Clear();
         }
     }
 }

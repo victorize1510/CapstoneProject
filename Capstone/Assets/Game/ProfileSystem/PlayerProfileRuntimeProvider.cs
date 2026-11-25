@@ -196,6 +196,7 @@ namespace Capstone.Game.ProfileSystem {
 
             currentExperience = (int)Math.Min(int.MaxValue, Math.Max(0L, nextExperience));
             NotifyChanged();
+            if (gained > 0) PublishLevelFeedback();
         }
 
         internal bool TryDebugLevelUp(out string message) {
@@ -228,8 +229,14 @@ namespace Capstone.Game.ProfileSystem {
                 return false;
             }
             Capstone.Game.CaptureSystem.CaptureEventBatch.Publish(this, "ProfileChanged", () => ProfileChanged?.Invoke());
+            PublishLevelFeedback();
             batch.Commit();
             return true;
+        }
+
+        void PublishLevelFeedback() {
+            var movement = GetComponentInParent<BasicPlayerMovement>() ?? FindFirstObjectByType<BasicPlayerMovement>();
+            Capstone.Game.WorldFeedback.ProgressionFeedback.PlayerLevel(Level, movement != null ? movement.transform : transform);
         }
 
         public void SetCodexEntries(int count) {

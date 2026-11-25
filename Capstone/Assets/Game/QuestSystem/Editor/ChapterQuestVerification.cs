@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Capstone.Game.CreatureSystem;
 using Capstone.Game.Inventory;
+using Capstone.Game.MapSystem;
 using Capstone.Game.UISystem;
 using UnityEditor;
 using UnityEngine;
@@ -102,20 +103,36 @@ namespace Capstone.Game.QuestSystem.Editor {
                 var caveElder = world.FindProperty("caveElder").objectReferenceValue as Transform;
                 var intro = UnityEngine.Object.FindFirstObjectByType<VillageChiefCutscene>();
                 Check(grassElder != null && intro != null && grassElder == intro.Chief &&
-                    caveElder != null && caveElder.name == ChapterWorldAuthoring.CaveElderName,
+                    caveElder != null && caveElder.name == ChapterWorldLayout.CaveElderName,
                     "The tutorial chief and the exact Nolant cave instance share the chapter layout");
                 Check(a != null && b != null && NavMesh.SamplePosition(a.position, out _, 2, NavMesh.AllAreas) &&
                     NavMesh.SamplePosition(b.position, out _, 2, NavMesh.AllAreas), "Both teleport anchors are on the NavMesh");
-                var grassRest = new SerializedObject(intro).FindProperty("npcFinalPoint").objectReferenceValue as Transform;
-                Check(Vector3.Distance(a.position, (grassRest != null ? grassRest : grassElder).position) <= ChapterWorldLayout.ElderTalkDistance &&
+                var guide = world.FindProperty("grassGuide").objectReferenceValue as Transform;
+                Check(guide != null && guide != grassElder && guide.name == ChapterWorldLayout.GrassGuideName &&
+                    ChapterWorldLayout.TryFindElderArrival(guide, guide.position, guide.rotation, out _) &&
                     Vector3.Distance(b.position, caveElder.position) <= ChapterWorldLayout.ElderTalkDistance,
-                    "Each trip lands within speaking distance of the other chief");
+                    "Both Nolant guides have an arrival point within speaking range");
                 var entry = world.FindProperty("entryPoint").objectReferenceValue as Transform;
                 var path = new NavMeshPath();
                 Check(entry != null && NavMesh.CalculatePath(b.position, entry.position, NavMesh.AllAreas, path) &&
                     path.status == NavMeshPathStatus.PathComplete, "Nolant's arrival connects to the cave quest entrance");
-                Check(world.FindProperty("grassMap").objectReferenceValue is Sprite && world.FindProperty("caveMap").objectReferenceValue is Sprite,
-                    "Two imported, geo-registered map Sprites assigned");
+                var grassArt = world.FindProperty("grassMap").objectReferenceValue as Sprite;
+                var caveArt = world.FindProperty("caveMap").objectReferenceValue as Sprite;
+                Check(grassArt != null && grassArt.name == "Grassland_Fantasy" && grassArt.texture.width == 4096
+                      && caveArt != null && caveArt.name == "Cave_Fantasy" && caveArt.texture.height == 3603,
+                    "Both illustrated Sprites are assigned at their imported dimensions");
+                var assembly = typeof(WorldMapController).Assembly;
+                var routeBuilder = typeof(QuestMapMarkerBridge).GetMethod("TryCalculateRoute", BindingFlags.Static | BindingFlags.NonPublic);
+                Check((bool)routeBuilder.Invoke(null, new object[] { b.position, entry.position, path })
+                    && path.corners.Length > 1 && !(bool)routeBuilder.Invoke(null, new object[] { a.position, b.position, path }),
+                    "Route follows the cave corridor and rejects a path between disconnected maps");
+                var mapZones = assembly.GetType("Capstone.Game.MapSystem.MapEncounterZone", true);
+                var mapSources = (CreatureEncounterZone[])mapZones.GetMethod("Find", BindingFlags.Static | BindingFlags.NonPublic)
+                    .Invoke(null, new object[] { layout.gameObject.scene });
+                var groupOf = mapZones.GetMethod("GroupOf", BindingFlags.Static | BindingFlags.NonPublic);
+                int grassZones = mapSources.Count(zone => (string)groupOf.Invoke(null, new object[] { zone }) == "ZoneGrass");
+                int caveZones = mapSources.Count(zone => (string)groupOf.Invoke(null, new object[] { zone }) == "ZoneCave");
+                Check(grassZones > 3 && caveZones > 3, $"Grouped spawn rings use scene instances ({grassZones} grass, {caveZones} cave)");
                 var zones = UnityEngine.Object.FindObjectsByType<CreatureEncounterZone>(FindObjectsSortMode.None);
                 foreach (string zoneId in new[] { "grass-easy", "grass-mid", "grass-hard", "cave-entrance", "cave-mid", "cave-deep" }) {
                     var found = zones.Where(zone => zone.zoneId == "capstone-" + zoneId && zone.spawningEnabled && zone.spawnTable != null).ToArray();

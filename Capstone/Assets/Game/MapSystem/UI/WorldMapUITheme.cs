@@ -34,7 +34,7 @@ namespace Capstone.Game.MapSystem.UI {
                 case MapMarkerType.QuestAvailable: case MapMarkerType.QuestTarget:
                 case MapMarkerType.MainQuest: case MapMarkerType.SideQuest: return MapFilterGroup.Quest;
                 case MapMarkerType.Shop: return MapFilterGroup.Shop;
-                case MapMarkerType.FastTravel: case MapMarkerType.Travel: return MapFilterGroup.Travel;
+                case MapMarkerType.CaveTravel: case MapMarkerType.FastTravel: case MapMarkerType.Travel: return MapFilterGroup.Travel;
                 default: return null;
             }
         }

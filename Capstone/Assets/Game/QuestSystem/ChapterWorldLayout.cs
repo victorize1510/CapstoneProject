@@ -9,6 +9,7 @@ namespace Capstone.Game.QuestSystem {
     public sealed class ChapterWorldLayout : MonoBehaviour {
         [Header("Trưởng làng ở hai khu vực")]
         [SerializeField] Transform grassElder, caveElder;
+        [SerializeField] Transform grassGuide;
         [Header("Điểm đến khi dịch chuyển")]
         [SerializeField] Transform grassPortal, cavePortal, entryPoint, duskPoint, bossPoint;
         [SerializeField] DummyEnemy boss;
@@ -22,23 +23,27 @@ namespace Capstone.Game.QuestSystem {
         QuestManager quests;
         MapMarker grassPortalMarker, cavePortalMarker;
         bool currentCave, hasRegion;
+        float nextZoneRefresh;
 
         public DummyEnemy Boss => boss != null && boss.IsBoss ? boss : null;
         public const float ElderTalkDistance = 3.5f;
         public const string CaveElderName = "Peasant Nolant(Free Version) (1)";
+        public const string GrassGuideName = "Peasant Nolant(Free Version) (2)";
         internal Transform GrassElder => grassElder;
         internal Transform CaveElder => caveElder;
-        internal Transform ElderFor(Vector3 position) => InCave(position) ? caveElder : grassElder;
+        internal Transform TravelGuideFor(Vector3 position) => InCave(position) ? caveElder : grassGuide;
 
         void Awake() {
-            if (grassElder != null && caveElder != null) return;
+            if (grassElder != null && caveElder != null && grassGuide != null) return;
             // Older versions of DemoScene 3 have the actors and arrival points before these two references were serialized.
             foreach (var root in gameObject.scene.GetRootGameObjects()) {
                 if (grassElder == null && root.GetComponentInChildren<VillageChiefCutscene>(true) is VillageChiefCutscene intro)
                     grassElder = intro.Chief;
                 if (caveElder == null)
                     caveElder = root.GetComponentsInChildren<Transform>(true).FirstOrDefault(actor => actor.name == CaveElderName);
-                if (grassElder != null && caveElder != null) break;
+                if (grassGuide == null)
+                    grassGuide = root.GetComponentsInChildren<Transform>(true).FirstOrDefault(actor => actor.name == GrassGuideName);
+                if (grassElder != null && caveElder != null && grassGuide != null) break;
             }
         }
 
@@ -47,16 +52,15 @@ namespace Capstone.Game.QuestSystem {
             quests = FindFirstObjectByType<QuestManager>();
             minimap = FindFirstObjectByType<MinimapController>(FindObjectsInactive.Include);
             map = FindFirstObjectByType<WorldMapController>(FindObjectsInactive.Include);
-            zones = FindObjectsByType<CreatureEncounterZone>(FindObjectsSortMode.None);
-            grassPortalMarker = AddPortalMarker(grassElder, "chapter-cave-entrance", "Trưởng làng · Vào hang động");
-            cavePortalMarker = AddPortalMarker(caveElder, "chapter-cave-exit", "Trưởng làng · Về đồng cỏ");
+            grassPortalMarker = AddPortalMarker(grassGuide, "chapter-cave-entrance", "Lối vào hang động");
+            cavePortalMarker = AddPortalMarker(caveElder, "chapter-cave-exit", "Lối ra đồng cỏ");
             RefreshMap();
         }
 
         static MapMarker AddPortalMarker(Transform point, string id, string label) {
             if (point == null) return null;
             var marker = point.GetComponent<MapMarker>() ?? point.gameObject.AddComponent<MapMarker>();
-            marker.ConfigureRuntime(MapMarkerType.FastTravel, id, label, null, new Color(1, .8f, .36f), true, true);
+            marker.ConfigureRuntime(MapMarkerType.CaveTravel, id, label, null, Color.white, true, true);
             return marker;
         }
 
@@ -72,13 +76,13 @@ namespace Capstone.Game.QuestSystem {
         }
 
         internal bool CanTravelFrom(Transform elder) => elder != null && elder.gameObject.activeInHierarchy &&
-            (elder == grassElder && caveElder != null && caveElder.gameObject.activeInHierarchy && cavePortal != null ||
-                elder == caveElder && grassElder != null && grassElder.gameObject.activeInHierarchy && grassPortal != null);
+            (elder == grassGuide && caveElder != null && caveElder.gameObject.activeInHierarchy && cavePortal != null ||
+                elder == caveElder && grassGuide != null && grassGuide.gameObject.activeInHierarchy && grassPortal != null);
 
         internal bool TryTravelFromElder(Transform elder) {
-            if (player == null || !CanTravelFrom(elder) || ElderFor(player.position) != elder) return false;
-            var arrival = elder == grassElder ? cavePortal : grassPortal;
-            var destinationElder = elder == grassElder ? caveElder : grassElder;
+            if (player == null || !CanTravelFrom(elder) || TravelGuideFor(player.position) != elder) return false;
+            var arrival = elder == grassGuide ? cavePortal : grassPortal;
+            var destinationElder = elder == grassGuide ? caveElder : grassGuide;
             Vector3 point = arrival.position;
             if (Vector3.Distance(point, destinationElder.position) > ElderTalkDistance &&
                 !TryFindElderArrival(destinationElder, destinationElder.position, destinationElder.rotation, out point)) return false;
@@ -142,8 +146,9 @@ namespace Capstone.Game.QuestSystem {
             var rect = BoundsRect(cave ? caveBounds : grassBounds);
             var sprite = cave ? caveMap : grassMap;
             if (sprite != null) {
-                minimap?.UseMapArt(sprite, rect, cave ? 22 : 38);
-                map?.UseMapArt(sprite, rect, cave ? "Hang động" : "Đồng cỏ");
+                string group = cave ? MapEncounterZone.CaveGroup : MapEncounterZone.GrassGroup;
+                minimap?.UseMapArt(sprite, rect, cave ? 22 : 38, group);
+                map?.UseMapArt(sprite, rect, cave ? "Hang động" : "Đồng cỏ", group);
             }
             grassPortalMarker?.SetVisible(!cave);
             cavePortalMarker?.SetVisible(cave);
@@ -154,19 +159,21 @@ namespace Capstone.Game.QuestSystem {
             target = default;
             bool playerInCave = InCave(from);
             if (playerInCave != cave) {
-                var elder = ElderFor(from);
+                var elder = TravelGuideFor(from);
                 if (!CanTravelFrom(elder)) return false;
-                target = new QuestTargetInfo(quest, objective, playerInCave ? "Gặp Trưởng làng để về đồng cỏ" :
-                    "Gặp Trưởng làng để vào hang động", elder.position);
+                target = new QuestTargetInfo(quest, objective, playerInCave ? "Gặp người dẫn đường để ra hang" :
+                    "Gặp người dẫn đường để vào hang", elder.position);
                 return true;
             }
             target = new QuestTargetInfo(quest, objective, label, destination);
             return true;
         }
 
-        internal bool TryGetPoint(QuestObjectiveDefinition objective, Vector3 from, out Vector3 position, out bool cave) {
+        internal bool TryGetPoint(QuestObjectiveDefinition objective, Vector3 from, out Vector3 position, out bool cave,
+            out string zoneLabel) {
             position = default;
             cave = false;
+            zoneLabel = null;
             string id = objective.MarkerId;
             Transform point = id switch {
                 "cave" => cavePortal,
@@ -180,28 +187,35 @@ namespace Capstone.Game.QuestSystem {
                 cave = true;
                 return true;
             }
+            if (zones == null || Time.unscaledTime >= nextZoneRefresh) {
+                zones = MapEncounterZone.Find(gameObject.scene);
+                nextZoneRefresh = Time.unscaledTime + 1f;
+            }
             CreatureEncounterZone closest = null;
             float distance = float.PositiveInfinity;
-            if (zones != null)
-                foreach (var zone in zones) {
-                    if (zone == null || !zone.spawningEnabled ||
-                        (id != zone.zoneId && !objective.AllowedZones.Contains(zone.zoneId))) continue;
-                    float length = (from - zone.transform.position).sqrMagnitude;
-                    if (length >= distance) continue;
-                    closest = zone;
-                    distance = length;
-                }
+            foreach (var zone in zones) {
+                if (!MapEncounterZone.IsActive(zone) ||
+                    (id != zone.zoneId && !objective.AllowedZones.Contains(zone.zoneId))) continue;
+                float length = (from - zone.zoneBounds.bounds.ClosestPoint(from)).sqrMagnitude;
+                if (length >= distance) continue;
+                closest = zone;
+                distance = length;
+            }
             if (closest == null) return false;
-            position = closest.zoneBounds != null ? closest.zoneBounds.bounds.center : closest.transform.position;
+            position = closest.zoneBounds.bounds.center;
             cave = InCave(position);
+            zoneLabel = MapEncounterZone.DisplayName(closest);
             return true;
         }
 
-        internal bool TryGetHuntingPoint(QuestDefinition definition, Vector3 from, out Vector3 position, out bool cave) {
+        internal bool TryGetHuntingPoint(QuestDefinition definition, Vector3 from, out Vector3 position, out bool cave,
+            out string zoneLabel) {
             foreach (var objective in definition.Objectives)
-                if (objective.ObjectiveType == QuestObjectiveType.CaptureCreature && TryGetPoint(objective, from, out position, out cave)) return true;
+                if (objective.ObjectiveType == QuestObjectiveType.CaptureCreature
+                    && TryGetPoint(objective, from, out position, out cave, out zoneLabel)) return true;
             position = default;
             cave = false;
+            zoneLabel = null;
             return false;
         }
 
@@ -210,7 +224,7 @@ namespace Capstone.Game.QuestSystem {
             foreach (var objective in active.Definition.Objectives) {
                 if (active.GetObjective(objective.ObjectiveId)?.IsComplete == true) continue;
                 if (objective.ObjectiveType == QuestObjectiveType.ReachScene || objective.ObjectiveType == QuestObjectiveType.ReachLocation &&
-                    TryGetPoint(objective, playerPosition, out var destination, out _) && Vector3.Distance(playerPosition, destination) <= 13f)
+                    TryGetPoint(objective, playerPosition, out var destination, out _, out _) && Vector3.Distance(playerPosition, destination) <= 13f)
                     manager.ReportProgress(new QuestProgressEvent(objective.ObjectiveType, objective.TargetId,
                         questId: active.QuestId, sceneId: gameObject.scene.name));
             }

@@ -21,7 +21,7 @@ namespace Capstone.Game.MapSystem.Editor {
             Action<bool,string> check = (value, message) => { Require(value,message); checks++; };
             var root = map.OverlayRoot;
             try {
-                check(root.GetComponentsInChildren<MapFilterToggle>(true).Length == 7, "expected seven category filters");
+                check(root.GetComponentsInChildren<MapFilterToggle>(true).Length == 5, "expected five visible category filters");
                 check(!root.GetComponentsInChildren<TMP_Text>(true).Any(t=>t.text.Contains("Co-op")), "Co-op remained in UI");
                 check(root.GetComponentsInChildren<Button>(true).All(b=>b.targetGraphic != null), "button has no target graphic");
                 check(root.GetComponentsInChildren<TMP_Text>(true).Any(t=>t.text == "BẢN ĐỒ"), "Vietnamese header missing");
@@ -45,8 +45,10 @@ namespace Capstone.Game.MapSystem.Editor {
                     try { ui.SetFilter(group,false); check(!map.GetComponent<MapMarkerManager>().IsMarkerTypeVisible(type), "group filter did not reach " + type); }
                     finally { ui.SetFilter(group,previous); }
                 }
-                var view = ui.RenderMarker(new MapMarkerData {id="validation-map-marker",displayName="Validation",type=MapMarkerType.Pet,normalizedPosition=new Vector2(.25f,.75f)});
-                check(((RectTransform)view.transform).anchorMin==new Vector2(.25f,.75f),"normalized marker position incorrect");
+                var view = ui.RenderMarker(new MapMarkerData {id="validation-map-marker",displayName="Validation",type=MapMarkerType.Boss,normalizedPosition=new Vector2(.25f,.75f)});
+                check(view.IsVisible && ((RectTransform)view.transform).anchorMin==new Vector2(.25f,.75f),"boss marker position incorrect");
+                ui.RenderMarker(new MapMarkerData {id="validation-map-marker",type=MapMarkerType.Pet,normalizedPosition=new Vector2(.25f,.75f)});
+                check(!view.IsVisible, "a companion appeared on the world map");
                 ui.RenderMarker(new MapMarkerData {id="validation-map-marker",displayName="Updated",type=MapMarkerType.Shop,normalizedPosition=new Vector2(.8f,.2f),isVisible=false});
                 check(view.Data.displayName=="Updated" && !view.gameObject.activeSelf,"marker update ignored new data");
                 ui.RemoveMarker("validation-map-marker");

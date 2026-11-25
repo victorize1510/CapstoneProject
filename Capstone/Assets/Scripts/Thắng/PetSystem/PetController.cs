@@ -1384,11 +1384,7 @@ public partial class PetController : MonoBehaviour
             mapMarker = GetComponent<MapMarker>();
         }
 
-        if (mapMarker == null)
-        {
-            mapMarker = gameObject.AddComponent<MapIcon>();
-        }
-
-        mapMarker.ConfigureRuntime(MapMarkerType.Pet, gameObject.name, gameObject.name, null, default, true, true);
+        if (mapMarker != null)
+            mapMarker.ConfigureRuntime(MapMarkerType.Pet, gameObject.name, gameObject.name, null, default, false, false);
     }
 }
