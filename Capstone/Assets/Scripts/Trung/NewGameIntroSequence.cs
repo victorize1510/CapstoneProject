@@ -68,7 +68,9 @@ public class NewGameIntroSequence : MonoBehaviour
     [SerializeField] List<CameraShot> shots = new List<CameraShot>();
     [Tooltip("Thời gian màn hình sáng dần ở shot đầu tiên")]
     [SerializeField, Min(0.1f)] float revealFadeTime = 2.5f;
-    [Tooltip("Thời gian tối / sáng khi chuyển giữa 2 shot")]
+    [Tooltip("Bật = chuyển cảnh thẳng sang shot kế (cắt cảnh liên tục, không tối màn hình). Tắt = tối rồi sáng giữa 2 shot")]
+    [SerializeField] bool cutBetweenShots = true;
+    [Tooltip("Chỉ dùng khi tắt Cut Between Shots: thời gian tối / sáng khi chuyển giữa 2 shot")]
     [SerializeField, Min(0f)] float shotTransitionFade = 0.6f;
 
     [Header("3. Logo (hiện trong shot cuối)")]
@@ -130,7 +132,13 @@ public class NewGameIntroSequence : MonoBehaviour
     [Tooltip("Player chỉ đứng yên ở state này suốt đoạn mở đầu. Vào chơi mới chạy lại đủ animation")]
     [SerializeField] string introIdleState = "IdleNeutral";
 
-    [Header("Nhạc nền (tùy chọn)")]
+    [Header("Nhạc")]
+    [Tooltip("Lúc hiện lời dẫn trên nền đen: tắt hết nhạc (kể cả nhạc DemoScene)")]
+    [SerializeField] bool silentDuringStory = true;
+    [Tooltip("Nhạc phát lúc lia camera giới thiệu map. Hết phần giới thiệu -> chuyển sang nhạc DemoScene")]
+    [SerializeField] AudioClip flyoverMusic;
+    [SerializeField, Range(0f, 1f)] float flyoverMusicVolume = 0.8f;
+    [Tooltip("(Cũ) Audio Source nhạc. Nếu Flyover Music trống thì lấy clip trong này làm nhạc giới thiệu")]
     [SerializeField] AudioSource music;
 
     // UI
@@ -178,6 +186,59 @@ public class NewGameIntroSequence : MonoBehaviour
     void OnDisable()
     {
         ReleasePlayerIdle();
+        if (introMusic != null) introMusic.Stop();
+        MusicManager.Release(this);
+    }
+
+    // ---------- Nhạc giới thiệu map ----------
+    // Phát bằng Audio Source riêng (kênh Nhạc nền), MusicManager chỉ lo tắt nhạc DemoScene trong lúc này.
+    AudioSource introMusic;
+    Coroutine introMusicFade;
+
+    void PlayIntroMusic(AudioClip clip)
+    {
+        if (clip == null) { Debug.LogWarning($"{name}: chưa gắn Flyover Music nên lia camera không có nhạc.", this); return; }
+        if (introMusic == null)
+        {
+            introMusic = gameObject.AddComponent<AudioSource>();
+            introMusic.playOnAwake = false;
+            introMusic.loop = true;
+            introMusic.spatialBlend = 0f;
+            introMusic.ignoreListenerPause = true;
+            Capstone.Game.SettingsSystem.GameAudioRouting.Route(introMusic, Capstone.Game.SettingsSystem.GameAudioBus.Music);
+        }
+        if (introMusicFade != null) { StopCoroutine(introMusicFade); introMusicFade = null; }
+        introMusic.clip = clip;
+        introMusic.volume = flyoverMusicVolume;
+        introMusic.Play();
+        // Ghi lại tình trạng âm thanh để biết vì sao không nghe (mixer / Cài đặt / Listener).
+        float mixerDb = float.NaN;
+        var group = introMusic.outputAudioMixerGroup;
+        if (group != null && group.audioMixer != null) group.audioMixer.GetFloat("MusicVolume", out mixerDb);
+        Debug.Log($"[Intro] Phát nhạc giới thiệu map: {clip.name} | đang phát: {introMusic.isPlaying} | mute: {introMusic.mute} | " +
+                  $"volume: {introMusic.volume:0.00} | group: {(group != null ? group.name : "không")} | MusicVolume: {mixerDb:0.0} dB | " +
+                  $"Listener: {AudioListener.volume:0.00} (pause {AudioListener.pause}) | số AudioListener: {FindObjectsByType<AudioListener>(FindObjectsSortMode.None).Length}", this);
+        if (introMusic.mute || (!float.IsNaN(mixerDb) && mixerDb < -40f))
+            Debug.LogWarning("[Intro] Kênh Nhạc nền đang bị tắt / quá nhỏ trong Cài đặt hoặc Audio Mixer.", this);
+    }
+
+    void StopIntroMusic(float fadeTime)
+    {
+        if (introMusic == null || !introMusic.isPlaying) return;
+        if (introMusicFade != null) StopCoroutine(introMusicFade);
+        introMusicFade = StartCoroutine(FadeOutIntroMusic(fadeTime));
+    }
+
+    IEnumerator FadeOutIntroMusic(float time)
+    {
+        float from = introMusic.volume;
+        for (float t = 0f; t < time; t += Time.unscaledDeltaTime)
+        {
+            introMusic.volume = Mathf.Lerp(from, 0f, t / time);
+            yield return null;
+        }
+        introMusic.Stop();
+        introMusicFade = null;
     }
 
     void Update()
@@ -231,11 +292,8 @@ public class NewGameIntroSequence : MonoBehaviour
         TeleportPlayer();   // Đưa vào nhà ngay từ đầu để không lọt vào các shot ngoài trời.
         HoldPlayerIdle();
 
-        if (music != null)
-        {
-            musicVolume = music.volume;
-            if (!music.isPlaying) music.Play();
-        }
+        if (music != null) { musicVolume = music.volume; music.Stop(); }
+        if (silentDuringStory) MusicManager.PushSilence(this);   // Lời dẫn: chưa có nhạc.
     }
 
     IEnumerator StoryPart()
@@ -285,6 +343,10 @@ public class NewGameIntroSequence : MonoBehaviour
             yield break;
         }
 
+        // Bắt đầu lia camera -> nhạc giới thiệu map.
+        AudioClip introClip = flyoverMusic != null ? flyoverMusic : (music != null ? music.clip : null);
+        PlayIntroMusic(introClip);
+
         for (int i = 0; i < shots.Count; i++)
         {
             if (skipAll) yield break;
@@ -292,7 +354,7 @@ public class NewGameIntroSequence : MonoBehaviour
             if (shot == null || shot.start == null) continue;
             bool last = i == shots.Count - 1;
 
-            if (i > 0 && shotTransitionFade > 0f)
+            if (i > 0 && !cutBetweenShots && shotTransitionFade > 0f)
             {
                 StopBlackFade();
                 yield return Fade(black, 1f, shotTransitionFade);
@@ -300,7 +362,9 @@ public class NewGameIntroSequence : MonoBehaviour
             if (skipAll) yield break;
 
             PlaceCamera(shot.start);
-            StartBlackFade(0f, i == 0 ? revealFadeTime : shotTransitionFade, true);
+            if (i == 0) StartBlackFade(0f, revealFadeTime, true);
+            else if (cutBetweenShots) { StopBlackFade(); SetAlpha(black, 0f); }   // Cắt cảnh ngay.
+            else StartBlackFade(0f, shotTransitionFade, true);
 
             bool logoDone = true;
             if (last)
@@ -361,6 +425,9 @@ public class NewGameIntroSequence : MonoBehaviour
         // Logo xong (hoặc bấm Esc) -> tối lại -> vào nhà.
         bool skipped = skipAll;
         inHouse = true;
+        // Hết giới thiệu map -> tắt dần nhạc giới thiệu, chuyển sang nhạc DemoScene (Player tự nói + chơi).
+        StopIntroMusic(1.2f);
+        MusicManager.Release(this);
         skipAll = false;   // Từ đây Esc không còn tác dụng.
         if (logoRoutine != null) { StopCoroutine(logoRoutine); logoRoutine = null; }
         StopBlackFade();
@@ -515,13 +582,11 @@ public class NewGameIntroSequence : MonoBehaviour
         // không đặt camera ra sau lưng Player. Camera của game tự tiếp quản từ góc hiện tại.
         if (!fadeBeforeGameplay && black.color.a < 0.05f)
         {
-            StartCoroutine(FadeMusic(0f, 1f));
             yield return FinishAndPlay();
             yield break;
         }
 
         float fadeOut = skipAll ? 0.5f : returnFadeOut;
-        StartCoroutine(FadeMusic(0f, fadeOut + 0.5f));
         StopBlackFade();
         yield return Fade(black, 1f, fadeOut, false);
         SetAlpha(story, 0f);
@@ -576,6 +641,8 @@ public class NewGameIntroSequence : MonoBehaviour
         ReleasePlayerIdle();   // Trả lại BasicPlayerMovement -> đủ animation như cũ.
         BlockGameplay(false);
         if (music != null) { music.Stop(); music.volume = musicVolume; }
+        StopIntroMusic(0.5f);
+        MusicManager.Release(this);
         running = false;
 
         if (!string.IsNullOrWhiteSpace(locationTitle)) yield return LocationTitleRoutine();

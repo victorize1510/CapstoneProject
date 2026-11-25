@@ -52,9 +52,17 @@ public class DoorInteractable : MonoBehaviour
     [SerializeField] float promptHeight = 0.6f;
 
     [Header("Âm thanh (tùy chọn)")]
+    [Tooltip("Để trống = tự tạo (âm 3D, đi qua kênh Hiệu ứng của game)")]
     [SerializeField] AudioSource audioSource;
+    [Tooltip("Chỉ cần gắn ở 1 cửa: các cửa khác để trống sẽ tự dùng chung tiếng này")]
     [SerializeField] AudioClip openSound;
+    [Tooltip("Chỉ cần gắn ở 1 cửa: các cửa khác để trống sẽ tự dùng chung tiếng này")]
     [SerializeField] AudioClip closeSound;
+    [SerializeField, Range(0f, 2f)] float soundVolume = 1f;
+    [Tooltip("Đổi cao độ ngẫu nhiên chút xíu để mỗi lần mở nghe hơi khác (0 = không đổi)")]
+    [SerializeField, Range(0f, 0.3f)] float pitchVariation = 0.08f;
+    [Tooltip("Bật = tiếng đóng phát lúc cánh cửa sập hẳn vào khung (nghe thật hơn). Tắt = phát ngay lúc bấm")]
+    [SerializeField] bool closeSoundWhenShut = true;
 
     [Header("Không đẩy Player khi cửa đang chuyển động")]
     [Tooltip("Lúc cửa đang xoay: xuyên qua Player. Lúc đứng yên: chặn Player như tường.")]
@@ -73,6 +81,8 @@ public class DoorInteractable : MonoBehaviour
 
     Collider doorCollider;
     bool isOpen;
+    bool closeSoundPending;
+    static AudioClip sharedOpenSound, sharedCloseSound;
     bool playerWasNear;
     float lastDistance;
     float nextToggleTime;
@@ -95,11 +105,14 @@ public class DoorInteractable : MonoBehaviour
     public bool IsOpen => isOpen;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    static void ResetStatics() { focused = null; player = null; playerController = null; nextPlayerLookup = 0f; }
+    static void ResetStatics() { focused = null; player = null; playerController = null; nextPlayerLookup = 0f; sharedOpenSound = sharedCloseSound = null; }
 
     void Awake()
     {
         doorCollider = GetComponent<Collider>();
+        // Cửa nào có gắn tiếng thì chia sẻ cho các cửa chưa gắn.
+        if (openSound != null && sharedOpenSound == null) sharedOpenSound = openSound;
+        if (closeSound != null && sharedCloseSound == null) sharedCloseSound = closeSound;
         if (animator == null) animator = GetComponent<Animator>();
         if (useHighlight && highlight == null)
         {
@@ -159,6 +172,7 @@ public class DoorInteractable : MonoBehaviour
         {
             currentAngle = Mathf.MoveTowards(currentAngle, targetAngle, rotateSpeed * Time.deltaTime);
             ApplyAngle(currentAngle);
+            if (closeSoundPending && Mathf.Approximately(currentAngle, 0f)) { closeSoundPending = false; PlayDoorSound(false); }
         }
 
         UpdatePlayerPassThrough();
@@ -256,14 +270,33 @@ public class DoorInteractable : MonoBehaviour
             if (instant) { currentAngle = targetAngle; ApplyAngle(currentAngle); }
         }
 
-        if (playSound && audioSource != null)
+        closeSoundPending = false;
+        if (playSound)
         {
-            AudioClip clip = open ? openSound : closeSound;
-            if (clip != null) {
-                Capstone.Game.SettingsSystem.GameAudioRouting.Route(audioSource, Capstone.Game.SettingsSystem.GameAudioBus.SFX);
-                audioSource.PlayOneShot(clip);
-            }
+            // Cửa xoay bằng code: đợi cánh cửa sập vào khung rồi mới kêu tiếng đóng.
+            if (!open && closeSoundWhenShut && motionMode == MotionMode.RotateByCode && !instant && !Mathf.Approximately(currentAngle, 0f))
+                closeSoundPending = true;
+            else PlayDoorSound(open);
         }
+    }
+
+    void PlayDoorSound(bool open)
+    {
+        AudioClip clip = open ? (openSound != null ? openSound : sharedOpenSound)
+                              : (closeSound != null ? closeSound : sharedCloseSound);
+        if (clip == null) return;
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.spatialBlend = 1f;
+            audioSource.rolloffMode = AudioRolloffMode.Linear;
+            audioSource.minDistance = 3f;
+            audioSource.maxDistance = 25f;
+        }
+        Capstone.Game.SettingsSystem.GameAudioRouting.Route(audioSource, Capstone.Game.SettingsSystem.GameAudioBus.SFX);
+        audioSource.pitch = 1f + UnityEngine.Random.Range(-pitchVariation, pitchVariation);
+        audioSource.PlayOneShot(clip, soundVolume);
     }
 
     // ---------- RotateByCode ----------

@@ -61,6 +61,14 @@ public class StarterBallTable : MonoBehaviour
     [Tooltip("Để trống = dùng khung hội thoại tự chỉnh trong DialogueCanvas (nếu có)")]
     [SerializeField] DialogueBoxUI dialogueBox;
 
+    [Header("Âm thanh chọn bóng")]
+    [Tooltip("Tiếng khi chuyển sang quả bóng khác (rê chuột / A D / mũi tên). Để trống = tiếng hover chung của game")]
+    [SerializeField] AudioClip hoverSound;
+    [Tooltip("Tiếng khi bấm chọn quả bóng (F / chuột trái). Để trống = tiếng bấm chung của game")]
+    [SerializeField] AudioClip selectSound;
+    [SerializeField, Range(0f, 1f)] float hoverVolume = 0.7f;
+    [SerializeField, Range(0f, 1f)] float selectVolume = 1f;
+
     [Header("Sau khi nhận thú")]
     [SerializeField] bool hideChosenBall = true;
     [Tooltip("Chọn xong thì bàn không cho chọn nữa")]
@@ -76,6 +84,7 @@ public class StarterBallTable : MonoBehaviour
 
     State state = State.Idle;
     int selected = -1;
+    AudioSource uiAudio;
     Transform player;
     float nextPlayerLookup;
     Camera cam;
@@ -250,6 +259,7 @@ public class StarterBallTable : MonoBehaviour
         bool confirm = PhysicalKeys.GetKeyDown(interactKey) || (Input.GetMouseButtonDown(0) && hovered >= 0);
         if (confirm && selected >= 0)
         {
+            PlayUi(false);
             StartCoroutine(ConfirmRoutine());
             return;   // Không vẽ lại tooltip tên bóng khi đang hỏi xác nhận.
         }
@@ -551,7 +561,30 @@ public class StarterBallTable : MonoBehaviour
         if (selected == index) return;
         if (IsValid(selected)) GetHighlight(selected)?.SetHighlighted(false);
         selected = IsValid(index) ? index : -1;
-        if (selected >= 0) GetHighlight(selected)?.SetHighlighted(true);
+        if (selected >= 0)
+        {
+            GetHighlight(selected)?.SetHighlighted(true);
+            if (state == State.Selecting) PlayUi(true);   // Đổi sang bóng khác.
+        }
+    }
+
+    void PlayUi(bool hover)
+    {
+        if (uiAudio == null)
+        {
+            uiAudio = gameObject.AddComponent<AudioSource>();
+            uiAudio.playOnAwake = false;
+            uiAudio.spatialBlend = 0f;
+            Capstone.Game.SettingsSystem.GameAudioRouting.Route(uiAudio, Capstone.Game.SettingsSystem.GameAudioBus.UI);
+            var assets = Capstone.Game.SettingsSystem.GameAudioRouting.Assets;
+            if (assets != null)
+            {
+                if (hoverSound == null) hoverSound = assets.hover;
+                if (selectSound == null) selectSound = assets.click;
+            }
+        }
+        AudioClip clip = hover ? hoverSound : selectSound;
+        if (clip != null) uiAudio.PlayOneShot(clip, hover ? hoverVolume : selectVolume);
     }
 
     // ---------- Camera / Player / Input ----------

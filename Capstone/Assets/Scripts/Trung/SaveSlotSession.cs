@@ -13,6 +13,17 @@ public static class SaveSlotSession
     const string LastSlotKey = "saveslot.last";
 
     static string current;
+    /// <summary>Đã chọn ô từ Main Menu trong lần chạy này (false = bấm Play thẳng ở scene gameplay).</summary>
+    public static bool ChosenThisSession { get; private set; }
+    public const string EditorTestSlot = "editor-test";
+
+    // Tắt "Domain Reload" khi Play thì biến static không tự xóa -> xóa tay mỗi lần bấm Play.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics()
+    {
+        current = null;
+        ChosenThisSession = false;
+    }
     public static string Current
     {
         get
@@ -23,13 +34,15 @@ public static class SaveSlotSession
         set
         {
             current = string.IsNullOrWhiteSpace(value) ? Slots[0] : value.Trim();
+            ChosenThisSession = true;
             PlayerPrefs.SetString(LastSlotKey, current);
             PlayerPrefs.Save();
         }
     }
 
     public static int IndexOf(string slot) => Array.IndexOf(Slots, slot);
-    public static string DisplayName(string slot) => $"Ô lưu {IndexOf(slot) + 1}";
+    public static string DisplayName(string slot) =>
+        slot == EditorTestSlot ? "Ô test (Editor)" : $"Ô lưu {IndexOf(slot) + 1}";
 
     public static bool Exists(string slot) => new PlayerJsonFileSaveStore().Exists(slot);
 

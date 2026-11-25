@@ -13,6 +13,9 @@ public class PlayerContinueState : MonoBehaviour
     [Tooltip("Chỉ dùng khi bấm Play thẳng ở scene này. Vào từ Main Menu thì lấy ô đã chọn.")]
     [SerializeField] bool useLastChosenSlot = true;
     [SerializeField] string slotId = "main";
+    [Tooltip("CHỈ TRONG EDITOR: bấm Play thẳng ở scene này (không qua Main Menu) thì chơi như New Game trên 1 ô test riêng, " +
+             "xóa sạch mỗi lần Play -> cutscene, chọn bóng... chạy lại từ đầu. Không đụng tới Ô lưu 1-3")]
+    [SerializeField] bool freshTestWhenPlayingSceneDirectly = true;
     [Tooltip("Để trống = tự tìm BasicPlayerMovement")]
     [SerializeField] Transform player;
     [SerializeField] PlayerVisualSwitcher visualSwitcher;
@@ -50,6 +53,14 @@ public class PlayerContinueState : MonoBehaviour
     void Awake()
     {
         if (useLastChosenSlot) slotId = SaveSlotSession.Current;
+#if UNITY_EDITOR
+        if (freshTestWhenPlayingSceneDirectly && !SaveSlotSession.ChosenThisSession)
+        {
+            slotId = SaveSlotSession.EditorTestSlot;
+            SaveSlotSession.RequestReset(slotId);   // PlayerSaveController sẽ xóa ô test lúc Start.
+            Debug.Log("[Continue] Play thẳng scene -> chơi mới trên ô test (Editor). Bỏ tick 'Fresh Test When Playing Scene Directly' nếu muốn chơi tiếp save.");
+        }
+#endif
         SaveSlotSession.ApplyToScene(slotId);
         Log($"Đang dùng {SaveSlotSession.DisplayName(slotId)} ({slotId}).");
 

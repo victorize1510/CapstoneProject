@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Presentation_orb.dark
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.Skills.PetSkillPresentationProfile
   releaseMode: 0
+  releaseNormalized: 0.36
+  chainNormalized: 0.85
+  playbackSpeed: 1
   releaseDelaySeconds: 0.25
   impactWindowSeconds: 4
   mixerGroup: {fileID: 0}
@@ -24,6 +27,10 @@ MonoBehaviour:
     sound: {fileID: 8300000, guid: daf95965eb430f8419d5cef6e85b8046, type: 3}
     socket: Body
     followSocket: 1
+    actorSpace: 0
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 1
@@ -31,10 +38,14 @@ MonoBehaviour:
     pitch: 1
     lifetimeSeconds: 0.6
   release:
-    effectPrefab: {fileID: 0}
-    sound: {fileID: 8300000, guid: 11f9432fd9e94894883da7801527a8f0, type: 3}
+    effectPrefab: {fileID: 100006, guid: e48d810aaed66164bb312165453b460c, type: 3}
+    sound: {fileID: 0}
     socket: Mouth
     followSocket: 0
+    actorSpace: 0
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 1
@@ -46,6 +57,10 @@ MonoBehaviour:
     sound: {fileID: 8300000, guid: 0baf8600b856b794b90ef46e9e7fb215, type: 3}
     socket: 
     followSocket: 0
+    actorSpace: 0
+    followChannelAim: 0
+    fitActorBounds: 0
+    anchorAtActorFeet: 0
     localOffset: {x: 0, y: 0, z: 0}
     localEulerAngles: {x: 0, y: 0, z: 0}
     scale: 0.3
