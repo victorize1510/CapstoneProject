@@ -24,7 +24,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.WorldFeedback {
     /// <summary>Opt-in, bounded engine checks. All fixtures and saves are external or Play-only.</summary>
     public static class WorldFeedbackVerification {
-        const string Qa = QaArtifactPaths.Root + "pve-model-camera-feedback-2026-11-10/";
+        static string Qa => QaArtifactPaths.Root + "pve-model-camera-feedback-2026-11-10/";
         const string Session = "Capstone.WorldFeedback.Qa";
         const string AssetsRoot = "Assets/Game/WorldFeedback/";
         const string CommonBallPath = "Assets/Game/PetSummon/Prefabs/BallGreenClose.prefab";
@@ -149,12 +149,13 @@ namespace Capstone.Game.WorldFeedback {
                 }
                 await Gap(500);
                 var healthBars = Object.FindFirstObjectByType<EnemyHealthBars>();
-                Check(healthBars != null && healthBars.PooledCount == 32, "one fixed pool of 32 enemy bars");
+                Check(healthBars != null && healthBars.GetComponent<Canvas>().renderMode == RenderMode.ScreenSpaceOverlay,
+                    "Enemy information is hosted on the screen HUD");
                 var first = actor[0]; float hp = first.CurrentHealth;
                 first.ApplyCombatHit(new CombatHit(party.gameObject, "qa-health", 1, 1, CreatureDamageKind.Physical, false, false, first.TargetPosition));
                 Check(first.CurrentHealth < hp, "health notification uses real damage path");
                 await Gap(250);
-                Check(first.GetComponent<EnemyHealthAnchor>() != null, "visual top anchor registered on real enemy");
+                Check(party.TrySelectEnemy(first), "Enemy inspection explicitly selects the target for the HUD");
                 var type = typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.GameView");
                 view = EditorWindow.GetWindow(type); sizeProperty = type.GetProperty("selectedSizeIndex", Any); oldSize = (int)sizeProperty.GetValue(view);
                 var selectType = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("Capstone.Game.UISystem.Editor.TrainerMenuPolishCapture")).First(t => t != null);
@@ -167,8 +168,9 @@ namespace Capstone.Game.WorldFeedback {
                     await Gap(200); await Capture("before-" + resolution.x + ".png");
                     if (table != null) table.SetActive(true); healthBars.enabled = true; visibility.enabled = true;
                     clock += 1; service.TryBuy(source, "qa-potion", 1, 2, out _);
+                    Check(party.TrySelectEnemy(first), "Reselect target after restoring the HUD");
                     await Gap(350); await Capture("after-" + resolution.x + ".png");
-                    Check(healthBars.VisibleCount > 0 && healthBars.VisibleCount <= 32, "real enemy bars visible and bounded at " + resolution);
+                    Check(healthBars.VisibleCount == 1, "One target card is visible at " + resolution);
                     Write("last-runtime-state.txt", "visibleBars=" + healthBars.VisibleCount + "\nfadeRenderers=" + visibility.FadedRendererCount
                         + "\nunsupportedFade=" + visibility.UnsupportedRendererCount + "\ntable=" + table.transform.position);
                 }

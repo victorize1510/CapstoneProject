@@ -14,7 +14,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem.Editor {
     public static class PracticeCombatSetup {
         public const string PrefabPath = "Assets/Game/CreatureSystem/Runtime/Training/TrainingDummy_Bat.prefab";
-        public const string Qa = Capstone.Game.UISystem.QaArtifactPaths.Root + "practice-damage-freecast-2026-11-07/";
+        public static string Qa => Capstone.Game.UISystem.QaArtifactPaths.Root + "practice-damage-freecast-2026-11-07/";
         const string EffectPath = "Assets/Game/Skills/Data/Tactics/BiteFangs.prefab";
         [MenuItem("Tools/Capstone/Advanced/Creatures/13. Add combat dummy and bite feedback")]
         public static void Apply() {

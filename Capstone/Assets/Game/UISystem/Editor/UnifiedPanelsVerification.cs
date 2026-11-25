@@ -15,7 +15,8 @@ using UnityEngine.UIElements;
 using Object=UnityEngine.Object;
 namespace Capstone.Game.UISystem.Editor {
     public static partial class UnifiedPanelsVerification {
-        const string Root=UnifiedPanelsQaIsolation.Root,Session="Capstone.UnifiedPanelsQA";
+        static string Root => UnifiedPanelsQaIsolation.Root;
+        const string Session="Capstone.UnifiedPanelsQA";
         static readonly BindingFlags Any=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
         static bool running;static double nextPoll;static readonly List<string> log=new List<string>();
         static object Get(object o,string f)=>o.GetType().GetField(f,Any).GetValue(o);

@@ -13,30 +13,7 @@ using UnityEngine.AI;
 namespace Capstone.Game.CreatureSystem.Editor {
     [InitializeOnLoad]
     public static class PveGameplaySetup {
-        // Thư mục QA, thử lần lượt:
-        //   1. QaArtifactPaths.Root (ổ E: của máy gốc) nếu ổ đó tồn tại
-        //   2. C:/UnityWork/CapstoneProjectData/Artifacts/
-        //   3. <project>/Library/QaArtifacts/ (Git bỏ qua, Unity không xóa khi đóng editor)
-        public static readonly string Qa=ResolveQa("pve-combat-hub-2026-11-11/");
-        static string ResolveQa(string task){
-            string[] roots={
-                QaArtifactPaths.Root,
-                "C:/UnityWork/CapstoneProjectData/Artifacts/",
-                Path.GetFullPath(Path.Combine(Application.dataPath,"..","Library","QaArtifacts"))
-            };
-            foreach(string r in roots){
-                if(string.IsNullOrEmpty(r))continue;
-                string dir=r.Replace('\\','/');if(!dir.EndsWith("/"))dir+="/";dir+=task;
-                try{
-                    string drive=Path.GetPathRoot(Path.GetFullPath(dir));
-                    if(string.IsNullOrEmpty(drive)||!Directory.Exists(drive))continue;
-                    Directory.CreateDirectory(dir);
-                    return dir;
-                }catch(Exception){}
-            }
-            Debug.LogWarning("[PveGameplaySetup] Không tạo được thư mục QA nào.");
-            return roots[2].Replace('\\','/')+"/"+task;
-        }
+        public static string Qa => QaArtifactPaths.Root + "pve-combat-hub-2026-11-11/";
         public const string Version="pve-input-mana-volley-2026-11-12-v2";
         public const string NavigationVersion="pve-demo-navigation-2026-11-12-v2";
         public const string FinalizeVersion="pve-save-demo-preserved-2026-11-12-v1";

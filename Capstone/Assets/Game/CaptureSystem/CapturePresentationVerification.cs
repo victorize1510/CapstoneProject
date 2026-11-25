@@ -23,7 +23,7 @@ namespace Capstone.Game.CaptureSystem
     public static class CapturePresentationVerification
     {
         sealed class FixedRandom : ICaptureRandom { public double NextFloat01() => 0; }
-        public const string Root = QaArtifactPaths.Root + "capture-presentation-repair-2026-11-17/";
+        public static string Root => QaArtifactPaths.Root + "capture-presentation-repair-2026-11-17/";
         public static void Write(string name, string value)
         {
             Directory.CreateDirectory(Root);

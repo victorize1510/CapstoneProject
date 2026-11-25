@@ -15,7 +15,7 @@ using UnityEngine.SceneManagement;
 using Object=UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem {
     public static class R2Verification {
-        public const string Root=QaArtifactPaths.Root+"pve-hud-r2-2026-11-17/";
+        public static string Root => QaArtifactPaths.Root+"pve-hud-r2-2026-11-17/";
         [MenuItem("Tools/Capstone/PvE/12. Verify R2 isolated")]
         public static void Begin(){SessionState.SetBool("Capstone.R2",true);EnemyAiVerification.BeginAtRoot(Root,capture:false);}
         public static async Task Run(PetCommandInput input,Scene arena,Vector3 origin,Action<bool,string> check,Func<int,Task> gap){
@@ -136,6 +136,8 @@ namespace Capstone.Game.CreatureSystem {
             // Camera chi doi trong encounter QA tam de chup ro vong dem, khong luu scene.
             var follow=Object.FindFirstObjectByType<BasicCameraFollow>();if(follow!=null)follow.enabled=false;
             camera.transform.position=origin+new Vector3(0,5,-9);camera.transform.rotation=Quaternion.LookRotation(origin+Vector3.forward*2-camera.transform.position);await gap(200);
+            check(input.TrySelectEnemy(down),"explicit selection opens the downed creature on the target HUD");
+            await gap(100);
             check(Object.FindObjectsByType<DownedRing>(FindObjectsSortMode.None).Any(r=>r.isActiveAndEnabled&&r.GetComponent<CanvasRenderer>()!=null&&r.canvasRenderer.materialCount>0),"visible countdown ring has a live CanvasRenderer and submitted material");
             await EnemyAiVerification.ResolutionForElements(1920,1080,"r2");
             await Capture("r2-1920x1080",gap);

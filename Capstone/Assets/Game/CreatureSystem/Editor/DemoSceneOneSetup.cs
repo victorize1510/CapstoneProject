@@ -16,7 +16,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem.Editor {
     public static class DemoSceneOneSetup {
         public const string ScenePath = "Assets/Scenes/DemoScene 1.unity";
-        public const string Qa = UISystem.QaArtifactPaths.Root + "pve-items-capture-demoscene1-2026-11-16/";
+        public static string Qa => UISystem.QaArtifactPaths.Root + "pve-items-capture-demoscene1-2026-11-16/";
         const string Art = "Assets/Game/CreatureSystem/Runtime/DemoSceneOne";
         public static void Report(string file, string text) {
             Directory.CreateDirectory(Qa);

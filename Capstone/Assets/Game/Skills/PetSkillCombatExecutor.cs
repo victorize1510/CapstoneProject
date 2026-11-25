@@ -727,6 +727,8 @@ namespace Capstone.Game.Skills
             }
             var hit = new CombatHit(gameObject, shot.id, shot.token, shot.damage.RawDamage, shot.profile.damageKind, shot.damage.Critical, false, point, shot.emission, shot.elements, shot.emissionCount);
             var result = victim.Apply(hit);
+            if (result.HpLost > 0f || result.PreventedDamage > 0f)
+                WorldFeedback.EnemyHealthBars.ConfirmSkillHit(gameObject, shot.token, victim.Enemy);
             if (result.HpLost > 0)
             {
                 presentation.NotifyImpact(shot.token, shot.emission, point, normal);

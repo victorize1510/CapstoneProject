@@ -17,7 +17,8 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.UISystem.Editor {
     /// <summary>On-demand real Editor Play Profiler capture. Whole-scene counters, not Release benchmarks.</summary>
     public static class GreenAngularProfiler {
-        const string Request="Temp/ProfileGreenAngular.request",OwnPlay="GreenAngularProfiler.OwnPlay",Output=GreenAngularVerification.Output+"profiler/";
+        const string Request="Temp/ProfileGreenAngular.request",OwnPlay="GreenAngularProfiler.OwnPlay";
+        static string Output => GreenAngularVerification.Output+"profiler/";
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
         static bool running,sampling;
         static int priorFrame;

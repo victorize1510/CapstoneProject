@@ -13,7 +13,8 @@ using UnityEngine.UIElements;
 using Object=UnityEngine.Object;
 namespace Capstone.Game.QuestSystem.Editor {
     public static partial class QuestSkinVerification {
-        const string Root=QuestSkinQaIsolation.Root,Session="Capstone.QuestSkin.QA";
+        static string Root => QuestSkinQaIsolation.Root;
+        const string Session="Capstone.QuestSkin.QA";
         static readonly BindingFlags Any=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
         static bool running;
         static object Call(object owner,string name,params object[] args)=>owner.GetType().GetMethod(name,Any).Invoke(owner,args);

@@ -21,7 +21,8 @@ namespace Capstone.Game.HudSystem.Editor {
     public sealed class HubR11Verification:MonoBehaviour,ICaptureOpportunitySource {
         public bool HasCaptureOpportunity {get;private set;}
         sealed class FixedRandom:ICaptureRandom {public double NextFloat01()=>.999999;}
-        const string Root=QaArtifactPaths.Root+"hub-r11-2026-11-04/",Session="Capstone.HubR11.QA";
+        static string Root => QaArtifactPaths.Root+"hub-r11-2026-11-04/";
+        const string Session = "Capstone.HubR11.QA";
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
         static readonly List<string> checks=new List<string>(),geometry=new List<string>();static bool running;
         static void Write(string file,string text){Directory.CreateDirectory(Root);File.WriteAllText(Root+file,text);File.AppendAllText(Root+"owned-paths.txt",Root+file+"\n");}

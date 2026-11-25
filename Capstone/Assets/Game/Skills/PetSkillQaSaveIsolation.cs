@@ -9,7 +9,7 @@ using UnityEngine;
 namespace Capstone.Game.Skills {
     /// <summary>Opt-in QA only. A task-owned flag on E redirects stores before scene Start.</summary>
     static class PetSkillQaSaveIsolation {
-        const string Root = QaArtifactPaths.Root + "pet-skill-library-2026-10-22/";
+        static string Root => QaArtifactPaths.Root + "pet-skill-library-2026-10-22/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Redirect() {
             if (!File.Exists(Root + "isolate.flag")) return;

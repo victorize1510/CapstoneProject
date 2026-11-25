@@ -7,7 +7,7 @@ using UnityEditor.Build.Player;
 using UnityEngine;
 namespace Capstone.Game.CaptureSystem.Editor {
     public static class CapturePlayerVerification {
-        const string Root=QaArtifactPaths.Root+"capture-stats-visibility-2026-11-04/";
+        static string Root => QaArtifactPaths.Root+"capture-stats-visibility-2026-11-04/";
         [MenuItem("Tools/Capstone/Advanced/Capture/Verify release player scripts")]
         public static void Verify(){
             Directory.CreateDirectory(Root);

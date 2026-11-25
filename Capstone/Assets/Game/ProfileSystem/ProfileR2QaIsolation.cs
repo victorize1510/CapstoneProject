@@ -6,7 +6,7 @@ using Capstone.Game.UISystem;
 using UnityEngine;
 namespace Capstone.Game.ProfileSystem {
     public static class ProfileR2QaIsolation {
-        public const string Root=QaArtifactPaths.Root+"profile-original-r2-unity-2026-10-23/";
+        public static string Root => QaArtifactPaths.Root+"profile-original-r2-unity-2026-10-23/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]static void Redirect(){
             if(!File.Exists(Root+"isolate.flag"))return;string target=Root+"test-saves";Directory.CreateDirectory(target);
             string source=Path.Combine(Application.persistentDataPath,"Saves");if(Directory.Exists(source))foreach(string file in Directory.GetFiles(source,"*.json*"))File.Copy(file,Path.Combine(target,Path.GetFileName(file)),true);

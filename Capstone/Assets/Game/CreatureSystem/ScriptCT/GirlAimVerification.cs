@@ -24,7 +24,7 @@ namespace Capstone.Game.CreatureSystem
     // Chi menu chu dong, save/arena tam tren E, khong sua scene dang mo.
     public static class GirlAimVerification
     {
-        public const string Root = QaArtifactPaths.Root + "girl-throw-m3-fix-2026-11-17/";
+        public static string Root => QaArtifactPaths.Root + "girl-throw-m3-fix-2026-11-17/";
         public static void Write(string name,string text)
         {
             Directory.CreateDirectory(Root);

@@ -8,7 +8,7 @@ using UnityEngine;
 using Object=UnityEngine.Object;
 namespace Capstone.Game.CaptureSystem.Editor {
     public static class CaptureAuthoringSetup {
-        const string Root=QaArtifactPaths.Root+"capture-stats-visibility-2026-11-04/";
+        static string Root => QaArtifactPaths.Root+"capture-stats-visibility-2026-11-04/";
         const string Resource="Assets/Resources/Capture/",Prefabs="Assets/Game/CaptureSystem/Prefabs/";
         [MenuItem("Tools/Capstone/Advanced/Capture/Prepare capture assets")]
         public static void Build(){

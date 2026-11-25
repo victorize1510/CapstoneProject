@@ -17,7 +17,8 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.HudSystem.Editor {
     /// <summary>Deterministic edge regression through runtime handlers; never grants items to real storage.</summary>
     public sealed class HudHoldReleaseVerification:MonoBehaviour {
-        const string Root=QaArtifactPaths.Root+"hud-hold-release-2026-11-05/",Session="Capstone.HoldRelease.QA";
+        static string Root => QaArtifactPaths.Root+"hud-hold-release-2026-11-05/";
+        const string Session = "Capstone.HoldRelease.QA";
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
         static readonly List<string> checks=new List<string>();
         static void Write(string file,string text){Directory.CreateDirectory(Root);File.WriteAllText(Root+file,text);File.AppendAllText(Root+"owned-paths.txt",Root+file+"\n");}

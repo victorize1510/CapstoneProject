@@ -12,13 +12,17 @@ namespace Capstone.Game.CreatureSystem {
 #if UNITY_EDITOR
         public const string CompanionVerificationProfileKey = "Capstone.CompanionItems.IsolatedProfile";
 #endif
-        public string developmentProfile = "E:/UnityWork/CapstoneProjectData/PlayProfiles/DemoScene1";
+        public string developmentProfile;
+        public string ResolvedDevelopmentProfile => string.IsNullOrWhiteSpace(developmentProfile)
+            ? Path.Combine(Application.persistentDataPath, "QA", gameObject.scene.name == CreatureQaSceneName
+                ? "CreatureQAItemsTest" : "DemoScene1")
+            : developmentProfile;
         public string ActiveProfile { get; private set; }
         void Awake() {
             string sceneName = gameObject.scene.name;
             bool isCreatureQa = sceneName == CreatureQaSceneName;
             if (sceneName != "DemoScene 1" && !isCreatureQa) return;
-            ActiveProfile = Application.isEditor || Debug.isDebugBuild ? developmentProfile : Path.Combine(Application.persistentDataPath, "DemoScene1");
+            ActiveProfile = Application.isEditor || Debug.isDebugBuild ? ResolvedDevelopmentProfile : Path.Combine(Application.persistentDataPath, "DemoScene1");
             if (isCreatureQa) {
                 if (!Application.isEditor && !Debug.isDebugBuild) ActiveProfile = Path.Combine(Application.persistentDataPath, "CreatureQAItemsTest");
 #if UNITY_EDITOR

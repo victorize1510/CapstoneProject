@@ -17,7 +17,8 @@ using Object = UnityEngine.Object;
 
 namespace Capstone.Game.UISystem.Editor {
     public static partial class ReadabilityVerification {
-        const string Root = ReadabilityQaIsolation.Root, Session = "Capstone.ReadabilityQA";
+        static string Root => ReadabilityQaIsolation.Root;
+        const string Session = "Capstone.ReadabilityQA";
         static readonly BindingFlags Any = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static readonly List<string> checks = new List<string>();
         static bool running;

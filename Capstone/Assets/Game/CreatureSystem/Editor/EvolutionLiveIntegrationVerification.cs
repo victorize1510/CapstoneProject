@@ -66,7 +66,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
             var save = Object.FindFirstObjectByType<PlayerSaveController>();
             if (isolation == null || save == null) throw new InvalidOperationException("Thiếu QA save isolation.");
             Directory.CreateDirectory(Root);
-            string source = Path.Combine(isolation.developmentProfile, "player_" + save.SlotId + ".json");
+            string source = Path.Combine(isolation.ResolvedDevelopmentProfile, "player_" + save.SlotId + ".json");
             var data = PlayerSaveMigration.Read(File.ReadAllText(source), out _);
             var dragon = data.pets.petStates.First(p => p.definitionId == "Dragon Dusk");
             if (FormTwo) { dragon.customization.currentFormId = "02"; dragon.customization.evolutionStage = 1; }

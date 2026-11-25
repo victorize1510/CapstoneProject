@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Capstone.Game.UISystem {
     /// <summary>Opt-in verification storage. Never points a verification run at the player's save.</summary>
     public static class ReadabilityQaIsolation {
-        public const string Root = QaArtifactPaths.Root + "ui-readability-interaction-2026-10-26/";
+        public static string Root => QaArtifactPaths.Root + "ui-readability-interaction-2026-10-26/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Isolate() {
             if (!File.Exists(Root + "isolate.flag")) return;

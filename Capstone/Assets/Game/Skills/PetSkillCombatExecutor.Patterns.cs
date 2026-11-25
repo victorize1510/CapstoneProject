@@ -234,6 +234,8 @@ namespace Capstone.Game.Skills {
             if (!Valid(victim)) return;
             var hit = NewHit(shot, point, shot.damage.RawDamage * fraction);
             var result = shot.profile.statusOnly ? default : victim.Apply(hit);
+            if (shot.profile.statusOnly || result.HpLost > 0f || result.PreventedDamage > 0f)
+                WorldFeedback.EnemyHealthBars.ConfirmSkillHit(gameObject, shot.token, victim.Enemy);
             if (result.HpLost > 0) {
                 HitCount++;
                 if (!result.Killed && victim.Alive && !context.IsEnemy && shot.token > lastPursuedCast

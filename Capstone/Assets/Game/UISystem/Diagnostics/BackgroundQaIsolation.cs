@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Capstone.Game.UISystem {
     // Explicit opt-in for the background-only capture session. Real saves are never written.
     public static class BackgroundQaIsolation {
-        public const string Root = QaArtifactPaths.Root + "bag-pet-backgrounds-unity-2026-10-23/";
+        public static string Root => QaArtifactPaths.Root + "bag-pet-backgrounds-unity-2026-10-23/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void MaterialMode() { PanelMaterialField.UseUpdatedMaterials = !File.Exists(Root + "baseline.flag"); }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

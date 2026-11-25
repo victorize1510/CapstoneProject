@@ -10,7 +10,7 @@ namespace Capstone.Game.Skills.Editor {
     /// <summary>Idempotent, native asset authoring. Never edits vendor assets, scenes or saves.</summary>
     public static class CombatFeelSetup {
         public const string Root = "Assets/Game/Skills/Data/CombatFeel/";
-        public const string Qa = UISystem.QaArtifactPaths.Root + "combat-feel-playtest-2026-11-08/";
+        public static string Qa => UISystem.QaArtifactPaths.Root + "combat-feel-playtest-2026-11-08/";
         [MenuItem("Tools/Capstone/Advanced/Creatures/14. Apply combat feel and skill balance")]
         public static void Apply() {
             if (EditorApplication.isPlayingOrWillChangePlaymode) throw new InvalidOperationException("Dừng Play Mode trước.");

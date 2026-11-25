@@ -7,7 +7,8 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 namespace Capstone.Game.UISystem.Editor {
     static class ReadabilityStandaloneBuild {
-        const string Root=ReadabilityQaIsolation.Root;static bool running;
+        static string Root => ReadabilityQaIsolation.Root;
+        static bool running;
         [InitializeOnLoadMethod]static void Init(){EditorApplication.update-=Poll;EditorApplication.update+=Poll;}
         static void Poll(){
             if(running||EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||!File.Exists(Root+"build.request"))return;

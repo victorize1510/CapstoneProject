@@ -18,6 +18,7 @@ public partial class PetCommandInput : MonoBehaviour
     internal void ClearSelectionAfterWarp(Vector3 delta, float forwardYaw)
     {
         selectedEnemy = null;
+        Capstone.Game.WorldFeedback.EnemyHealthBars.Dismiss(this);
         cameraLock?.ResetAfterWarp(delta, forwardYaw);
     }
     private static readonly KeyCode[] NumberKeys = {KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6};
@@ -52,6 +53,7 @@ public partial class PetCommandInput : MonoBehaviour
     }
     private void OnDisable()
     {
+        Capstone.Game.WorldFeedback.EnemyHealthBars.Dismiss(this);
         if (subscribedCamera != null) subscribedCamera.EnemyPinned -= SelectPinnedEnemy;
         subscribedCamera = null;
         PauseOwnedPetStorage();
@@ -59,7 +61,7 @@ public partial class PetCommandInput : MonoBehaviour
     }
     void SelectPinnedEnemy(DummyEnemy enemy)
     {
-        // Camera lock updates the inspection and capture target.
+        // Camera lock updates skill and capture targeting without opening the HUD card.
         if (enemy != null && enemy.IsSelectable) selectedEnemy = enemy;
     }
     private void Awake()
@@ -125,11 +127,14 @@ public partial class PetCommandInput : MonoBehaviour
         int hitCount = Physics.RaycastNonAlloc(ray, hits, rayDistance, commandMask, QueryTriggerInteraction.Collide);
         if (hitCount <= 0 || hitCount == hits.Length)
         {
+            if (hitCount == 0) Capstone.Game.WorldFeedback.EnemyHealthBars.Dismiss(this);
             return;
         }
 
         if (TryFindClickedEnemy(hitCount, out DummyEnemy clickedEnemy))
             TrySelectEnemy(clickedEnemy);
+        else
+            Capstone.Game.WorldFeedback.EnemyHealthBars.Dismiss(this);
     }
 
     private bool CanSendPointerCommand() => (allowCommandsWhileRightMouseHeld || !ignoreWhileRightMouseHeld || !Input.GetMouseButton(aimMouseButton)) && (!ignoreWhenPointerOverUI || Cursor.lockState == CursorLockMode.Locked || EventSystem.current == null || !EventSystem.current.IsPointerOverGameObject());
@@ -138,6 +143,7 @@ public partial class PetCommandInput : MonoBehaviour
         if (InventoryInputController.GameplayInputBlocked || enemy == null || !enemy.isActiveAndEnabled || !enemy.IsSelectable)
             return false;
         selectedEnemy = enemy;
+        Capstone.Game.WorldFeedback.EnemyHealthBars.Inspect(this, enemy);
         return true;
     }
 

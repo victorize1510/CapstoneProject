@@ -18,7 +18,7 @@ namespace Capstone.Game.WorldFeedback
 {
     public static class CameraSmoothEntryVerification
     {
-        public const string Root = QaArtifactPaths.Root + "camera-smooth-entry-2026-11-14/";
+        public static string Root => QaArtifactPaths.Root + "camera-smooth-entry-2026-11-14/";
         const string Session = "Capstone.CameraSmoothEntry";
         const BindingFlags Any = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
         static readonly List<string> checks = new List<string>();

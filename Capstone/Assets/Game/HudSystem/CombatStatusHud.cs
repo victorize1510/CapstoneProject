@@ -98,7 +98,7 @@ namespace Capstone.Game.HudSystem {
 
         public void Dispose() => Bind(null);
 
-        public static CombatStatusHud BuildCanvas(RectTransform row) {
+        public static CombatStatusHud BuildCanvas(RectTransform row, bool below = false) {
             const int size = 84, stride = 89, columns = 4;
             var icons = new Image[Limit + 1];
             var badges = new Text[Limit + 1];
@@ -117,7 +117,8 @@ namespace Capstone.Game.HudSystem {
                 tip.text = text;
                 if (text.Length > 0) {
                     float h = Mathf.Max(36f, tip.preferredHeight + 16);
-                    V.Top(tipRoot, 0, -stride * ((Limit + columns) / columns) - h - 4, 260, h);
+                    int rows = (Limit + columns) / columns;
+                    V.Top(tipRoot, 0, below ? stride * rows + 4 : -stride * rows - h - 4, 260, h);
                 }
                 tipRoot.gameObject.SetActive(text.Length > 0);
             }, visible => row.gameObject.SetActive(visible));
@@ -126,7 +127,8 @@ namespace Capstone.Game.HudSystem {
                 int index = i;
                 var icon = icons[i] = V.Image(row, "Status" + i);
                 icon.preserveAspect = true; icon.raycastTarget = true;
-                V.Top(icon.rectTransform, (i % columns) * stride, -(i / columns + 1) * stride, size, size);
+                int line = i / columns;
+                V.Top(icon.rectTransform, (i % columns) * stride, below ? line * stride : -(line + 1) * stride, size, size);
                 var badge = badges[i] = HubR11Art.Label(icon.transform, "Count", "", 12,
                     i == Limit ? TextAnchor.MiddleCenter : TextAnchor.LowerRight);
                 V.Stretch(badge.rectTransform, 1);

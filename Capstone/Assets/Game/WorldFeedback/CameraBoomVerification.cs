@@ -16,7 +16,7 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.WorldFeedback {
     /// <summary>Explicit opt-in only. Tests/save/captures remain outside the repository.</summary>
     public static class CameraBoomVerification {
-        public const string Root=QaArtifactPaths.Root+"camera-boom-tools-2026-11-14/";
+        public static string Root => QaArtifactPaths.Root+"camera-boom-tools-2026-11-14/";
         const string Session="Capstone.CameraBoomQA";
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
         static readonly List<string> checks=new List<string>();static bool running;

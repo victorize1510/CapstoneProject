@@ -5,7 +5,7 @@ using Capstone.Game.QuestSystem.Save;
 using UnityEngine;
 namespace Capstone.Game.UISystem {
     public static class UnifiedPanelsQaIsolation {
-        public const string Root=QaArtifactPaths.Root+"ui-unified-four-panels-2026-10-24/";
+        public static string Root => QaArtifactPaths.Root+"ui-unified-four-panels-2026-10-24/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]static void Isolate(){
             if(!File.Exists(Root+"isolate.flag"))return;
             string target=Root+"test-saves",source=Path.Combine(Application.persistentDataPath,"Saves");Directory.CreateDirectory(target);
