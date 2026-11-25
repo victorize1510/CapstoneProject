@@ -145,10 +145,6 @@ public class BossController : MonoBehaviour
     [SerializeField, Min(2f)] float zoneRadius = 15f;
     [Tooltip("Pet trong vùng VÀ cách boss không quá khoảng này thì boss mới bắt đầu đánh. Vòng vàng quanh boss")]
     [SerializeField, Min(1f)] float aggroRange = 10f;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-    internal float DeveloperApproachDistance => Mathf.Max(zoneRadius, aggroRange) + 4f;
-    internal int DeveloperLevel { get => level; set => level = Mathf.Max(0, value); }
-#endif
     [Tooltip("Bỏ đuổi về nhà thì hồi đầy máu (người chơi không đánh lén rồi chạy được)")]
     [SerializeField] bool healWhenReturning = true;
     [SerializeField] bool snapToGround = true;
@@ -198,8 +194,15 @@ public class BossController : MonoBehaviour
     [SerializeField, Min(0.02f)] float ringWidth = 0.15f;
 
     [Header("Chết")]
-    [Tooltip("Mấy giây sau khi chết thì ẩn boss. 0 = giữ xác")]
-    [SerializeField, Min(0f)] float hideAfterDeath = 0f;
+    [Tooltip("Bật = chạy hết animation Die, nằm yên một lúc rồi chìm dần xuống đất và biến mất. Tắt = giữ xác")]
+    [SerializeField] bool vanishAfterDeath = true;
+    [Tooltip("Xác nằm yên bao lâu (giây) sau khi animation Die chạy xong")]
+    [SerializeField, Min(0f)] float corpseStayTime = 2f;
+    [Tooltip("Thời gian chìm dần xuống đất cho tới khi biến mất")]
+    [SerializeField, Min(0.1f)] float vanishTime = 2.5f;
+    [Tooltip("Hiện khói khi biến mất (khói chết chung của game)")]
+    [SerializeField] bool deathSmoke = true;
+    [SerializeField] AudioClip dieSound;
     public UnityEvent onDefeated = new UnityEvent();
 
     DummyEnemy enemy;
@@ -232,6 +235,31 @@ public class BossController : MonoBehaviour
     public bool IsDead => mode == Mode.Dead;
     public CreatureCombatant Target => target;
 
+    // ---------- Dùng cho bảng cheat của dev (DevCheatService) ----------
+    /// <summary>Cấp boss. Đổi thì tên trên thanh máu ("Tên • Cấp N") cập nhật theo.</summary>
+    public int DeveloperLevel
+    {
+        get => level;
+        set { level = Mathf.Max(0, value); ApplyDisplayName(); }
+    }
+
+    /// <summary>Khoảng cách (tính từ tâm boss) để dev dịch chuyển Player tới: ngoài tầm đánh thường + thân boss,
+    /// nhưng vẫn trong vùng boss để vào trận ngay.</summary>
+    public float DeveloperApproachDistance
+    {
+        get
+        {
+            float safe = Mathf.Max(8f, BodyRadius() + attackRange + 3f);
+            return zoneRadius > 2f ? Mathf.Min(safe, zoneRadius - 1f) : safe;
+        }
+    }
+
+    void ApplyDisplayName()
+    {
+        if (string.IsNullOrWhiteSpace(displayName)) return;
+        gameObject.name = level > 0 ? $"{displayName.Trim()} • Cấp {level}" : displayName.Trim();
+    }
+
     void Awake()
     {
         enemy = GetComponent<DummyEnemy>();
@@ -240,8 +268,7 @@ public class BossController : MonoBehaviour
         enemy.tintFeedback = false;   // Không tô màu model khi bị đánh / chết.
         // Thanh máu của game lấy tên object làm tên hiển thị -> đặt "Tên • Cấp N", không ghi HP vào tên.
         enemy.writeHealthToName = false;
-        if (!string.IsNullOrWhiteSpace(displayName))
-            gameObject.name = level > 0 ? $"{displayName.Trim()} • Cấp {level}" : displayName.Trim();
+        ApplyDisplayName();
 
         // Tắt AI quái thường nếu object có sẵn, để không giành điều khiển với script này.
         var basicAi = GetComponent<BasicCreatureEnemy>();
@@ -863,13 +890,54 @@ public class BossController : MonoBehaviour
         StopMoving();
         if (agent != null) agent.enabled = false;
         PlayOnce(dieState);
+        PlaySound(dieSound);
+        // Game tự thêm EnemyDeathVisual -> nó ẩn boss ngay khi không thấy animation chết của nó. Tắt đi, boss tự lo.
+        var autoHide = GetComponent<EnemyDeathVisual>();
+        if (autoHide != null) autoHide.enabled = false;
         onDefeated?.Invoke();
-        if (hideAfterDeath > 0f) StartCoroutine(HideLater());
+        if (vanishAfterDeath) StartCoroutine(VanishRoutine());
     }
 
-    IEnumerator HideLater()
+    IEnumerator VanishRoutine()
     {
-        yield return new WaitForSeconds(hideAfterDeath);
+        // 1. Đợi animation Die chạy hết (tối đa 8 giây phòng khi Animator không có state Die).
+        yield return null;
+        var autoHide = GetComponent<EnemyDeathVisual>();   // Có thể được thêm sau OnDefeated.
+        if (autoHide != null) autoHide.enabled = false;
+        if (animator != null && HasState(dieState))
+        {
+            int hash = Animator.StringToHash(dieState);
+            float until = Time.time + 8f;
+            while (Time.time < until)
+            {
+                if (autoHide != null) autoHide.enabled = false;
+                var info = animator.IsInTransition(0) ? animator.GetNextAnimatorStateInfo(0) : animator.GetCurrentAnimatorStateInfo(0);
+                if (info.shortNameHash == hash && info.normalizedTime >= 0.98f) break;
+                yield return null;
+            }
+        }
+
+        // 2. Xác nằm yên một lúc.
+        yield return new WaitForSeconds(corpseStayTime);
+
+        // 3. Chìm dần xuống đất (sâu bằng chiều cao thân boss) rồi biến mất.
+        if (animator != null) animator.applyRootMotion = false;
+        float height = 2f;
+        foreach (var r in GetComponentsInChildren<Renderer>())
+            if (r.enabled && !(r is ParticleSystemRenderer)) height = Mathf.Max(height, r.bounds.size.y);
+        Vector3 start = transform.position;
+        Vector3 end = start + Vector3.down * height * 1.1f;
+        if (deathSmoke)
+        {
+            var settings = Resources.Load<CombatFeelSettings>("CombatFeelSettings");
+            if (settings != null && settings.deathSmoke != null) Spawn(settings.deathSmoke, enemy.TargetPosition, Quaternion.identity, null, vanishTime);
+        }
+        for (float t = 0f; t < vanishTime; t += Time.deltaTime)
+        {
+            transform.position = Vector3.Lerp(start, end, Mathf.SmoothStep(0f, 1f, t / vanishTime));
+            yield return null;
+        }
+        enemy.DeathVisualComplete = true;
         gameObject.SetActive(false);
     }
 

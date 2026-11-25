@@ -205,4 +205,3 @@ public class PlayerContinueState : MonoBehaviour
 
     void Log(string message) { if (logSteps) Debug.Log($"{Tag} {message}"); }
 }
-*
