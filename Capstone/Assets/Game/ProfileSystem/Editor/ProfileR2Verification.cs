@@ -21,7 +21,8 @@ using Object=UnityEngine.Object;
 
 namespace Capstone.Game.ProfileSystem.Editor {
     public static class ProfileR2Verification {
-        const string Root=ProfileR2QaIsolation.Root,Session="Capstone.ProfileR2.QA";
+        static string Root => ProfileR2QaIsolation.Root;
+        const string Session="Capstone.ProfileR2.QA";
         const BindingFlags Any=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
         static bool running;static readonly List<string> log=new List<string>();
         static object Get(object owner,string field)=>owner.GetType().GetField(field,Any).GetValue(owner);

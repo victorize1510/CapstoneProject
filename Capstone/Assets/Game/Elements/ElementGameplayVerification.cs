@@ -24,7 +24,7 @@ namespace Capstone.Game.Elements
     // Chi chay tu menu ro rang; khong tu Play, khong ghi save that hay bake scene.
     public static class ElementGameplayVerification
     {
-        public const string Root = QaArtifactPaths.Root + "gameplay-cleanup-elements-2026-11-17/";
+        public static string Root => QaArtifactPaths.Root + "gameplay-cleanup-elements-2026-11-17/";
         static string outputRoot;
         static readonly List<string> results = new List<string>();
         static void Write(string file, string content)

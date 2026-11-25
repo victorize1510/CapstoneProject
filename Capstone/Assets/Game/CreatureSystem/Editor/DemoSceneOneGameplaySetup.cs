@@ -15,7 +15,7 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem.Editor {
     /// <summary>Explicit, repeatable authoring. Never runs on import/domain reload.</summary>
     public static class DemoSceneOneGameplaySetup {
-        public const string Qa=QaArtifactPaths.Root+"demoscene1-starter-shop-respawn-2026-11-16/";
+        public static string Qa => QaArtifactPaths.Root+"demoscene1-starter-shop-respawn-2026-11-16/";
         const string Art="Assets/Game/CreatureSystem/Runtime/DemoSceneOne";
         const string SmokeSource="Assets/UnityAssset/Trung/JMO Assets/Cartoon FX Remaster/CFXR Prefabs/Misc/CFXR3 Hit Misc F Smoke.prefab";
         public static void Write(string file,string text) {

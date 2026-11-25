@@ -10,7 +10,7 @@ using UnityEngine;
 namespace Capstone.Game.CreatureSystem.Editor {
     /// <summary>Explicit scene authoring only; never runs from an import/update hook.</summary>
     public static class EnemyAiSetup {
-        public const string Root=UISystem.QaArtifactPaths.Root+"enemy-ai-retaliation-skills-2026-11-16/";
+        public static string Root => UISystem.QaArtifactPaths.Root+"enemy-ai-retaliation-skills-2026-11-16/";
         public static string OriginalHash(){using(var sha=SHA256.Create())return BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes("Assets/Scenes/DemoScene.unity"))).Replace("-","");}
         [MenuItem("Tools/Capstone/PvE/8. Apply retaliation and skill AI (DemoScene 1)")]
         public static void Apply(){

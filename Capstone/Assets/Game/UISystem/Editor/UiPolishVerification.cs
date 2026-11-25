@@ -18,7 +18,7 @@ using Button = UnityEngine.UIElements.Button;
 namespace Capstone.Game.UISystem.Editor {
     /// <summary>Explicit, bounded real-engine capture. Transactions use the existing isolated-save hook.</summary>
     public static class UiPolishVerification {
-        public const string Root = QaArtifactPaths.Root + "ui-polish-2026-10-22/";
+        public static string Root => QaArtifactPaths.Root + "ui-polish-2026-10-22/";
         const string Request = "Temp/UiPolish.request";
         const BindingFlags Any = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static bool running;

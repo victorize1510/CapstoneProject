@@ -22,7 +22,7 @@ namespace Capstone.Game.Elements
     // Kiem phan con thieu cua dot cleanup; chi chay tu menu, khong tu Play sau reload.
     public static class GameplayCleanupFollowupVerification
     {
-        public const string Root = ElementGameplayVerification.Root + "followup-2026-11-17/";
+        public static string Root => ElementGameplayVerification.Root + "followup-2026-11-17/";
         static readonly List<string> checks = new List<string>();
         static readonly List<Object> owned = new List<Object>();
         static void Write(string name, string content)

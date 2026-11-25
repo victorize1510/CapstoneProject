@@ -17,7 +17,7 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem {
     /// <summary>Explicit bounded engine checks. Scene edits never occur in this verifier.</summary>
     public static class PveItemsCaptureVerification {
-        const string Qa=UISystem.QaArtifactPaths.Root+"pve-items-capture-demoscene1-2026-11-16/";
+        static string Qa => UISystem.QaArtifactPaths.Root+"pve-items-capture-demoscene1-2026-11-16/";
         const string Session="Capstone.PveItemsCapture20261116";
         static readonly List<string> checks=new List<string>();
         static bool running;

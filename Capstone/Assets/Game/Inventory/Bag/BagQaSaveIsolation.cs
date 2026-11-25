@@ -6,7 +6,7 @@ using Capstone.Game.UISystem;
 using UnityEngine;
 namespace Capstone.Game.Inventory.Bag {
     static class BagQaSaveIsolation {
-        const string Root = QaArtifactPaths.Root + "bag-implementation-2026-10-22/";
+        static string Root => QaArtifactPaths.Root + "bag-implementation-2026-10-22/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)] static void Redirect() {
             if (!File.Exists(Root + "isolate.flag")) return;
             string target = Root + "test-saves"; Directory.CreateDirectory(target);

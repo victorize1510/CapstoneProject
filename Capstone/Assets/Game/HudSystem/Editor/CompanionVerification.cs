@@ -18,7 +18,7 @@ using Object = UnityEngine.Object;
 using Cursor = UnityEngine.Cursor;
 namespace Capstone.Game.HudSystem.Editor {
     public static class CompanionVerification {
-        public const string Output=Capstone.Game.UISystem.QaArtifactPaths.Root + "companion-ui/";
+        public static string Output => Capstone.Game.UISystem.QaArtifactPaths.Root + "companion-ui/";
         const string Request="Temp/VerifyCompanion.request",OwnPlay="CompanionVerification.OwnPlay";
         static bool running;
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
@@ -41,7 +41,7 @@ namespace Capstone.Game.HudSystem.Editor {
             string profile = Path.Combine(SwitchReportFolder, "profile-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(profile);
             string slot = DemoSceneOneSaveIsolation.CreatureQaSlot;
-            string original = new PlayerJsonFileSaveStore(isolation.developmentProfile).GetPath(slot);
+            string original = new PlayerJsonFileSaveStore(isolation.ResolvedDevelopmentProfile).GetPath(slot);
             string copy = new PlayerJsonFileSaveStore(profile).GetPath(slot);
             foreach (string suffix in new[] { "", ".bak" })
                 if (File.Exists(original + suffix)) File.Copy(original + suffix, copy + suffix);

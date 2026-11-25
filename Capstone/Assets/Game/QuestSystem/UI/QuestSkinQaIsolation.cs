@@ -6,7 +6,7 @@ using Capstone.Game.UISystem;
 using UnityEngine;
 namespace Capstone.Game.QuestSystem.UI {
     public static class QuestSkinQaIsolation {
-        public const string Root=QaArtifactPaths.Root+"quest-original-layout-unity-2026-10-23/";
+        public static string Root => QaArtifactPaths.Root+"quest-original-layout-unity-2026-10-23/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]static void Redirect(){
             if(!File.Exists(Root+"isolate.flag"))return;
             var target=Root+"test-saves";Directory.CreateDirectory(target);var source=Path.Combine(Application.persistentDataPath,"Saves");

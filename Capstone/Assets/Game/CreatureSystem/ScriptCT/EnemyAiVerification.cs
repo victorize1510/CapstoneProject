@@ -22,7 +22,7 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem {
     /// <summary>Kiem engine co gioi han tu menu; arena va actor tam khong luu vao scene asset.</summary>
     public static class EnemyAiVerification {
-        const string DefaultRoot=QaArtifactPaths.Root+"enemy-ai-retaliation-skills-2026-11-16/";
+        static string DefaultRoot => QaArtifactPaths.Root+"enemy-ai-retaliation-skills-2026-11-16/";
         static string Root=>SessionState.GetString(Session+".root",DefaultRoot);
         const string Session="Capstone.EnemyAI.20261116";
         static readonly List<string> checks=new List<string>();
@@ -77,9 +77,9 @@ namespace Capstone.Game.CreatureSystem {
         public static void BeginFollowupRun(string root)=>BeginRun(false,false,root,false,false,true);
         public static void BeginCaptureFeelRun(string root)=>BeginRun(false,false,root,false,false,false,true);
         public static void BeginGirlAimRun(string root)=>BeginRun(false,false,root,girlAim:true);
-        static void BeginRun(bool edges,bool regression=false,string artifactRoot=DefaultRoot,bool elements=false,bool capture=true,bool followup=false,bool captureFeel=false,bool girlAim=false){
+        static void BeginRun(bool edges,bool regression=false,string artifactRoot=null,bool elements=false,bool capture=true,bool followup=false,bool captureFeel=false,bool girlAim=false){
             if(EditorApplication.isPlayingOrWillChangePlaymode||SceneManager.GetActiveScene().path!="Assets/Scenes/DemoScene 1.unity")throw new InvalidOperationException("Dừng Play và mở DemoScene 1.");
-            SessionState.SetString(Session+".root",artifactRoot);
+            SessionState.SetString(Session+".root",artifactRoot ?? DefaultRoot);
             SessionState.SetBool(Session+".elements",elements);
             SessionState.SetBool(Session+".followup",followup);
             SessionState.SetBool(Session+".captureFeel",captureFeel);

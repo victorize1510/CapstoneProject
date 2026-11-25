@@ -10,7 +10,8 @@ using UnityEngine.UIElements;
 using Object=UnityEngine.Object;
 namespace Capstone.Game.Inventory.Bag.Editor {
     public static class BagDensityCaptureEditor {
-        const string Root=BagDensityCapture.Root,Session="Capstone.BagDensityCapture";
+        static string Root => BagDensityCapture.Root;
+        const string Session = "Capstone.BagDensityCapture";
         static bool running;
         [InitializeOnLoadMethod]static void Init(){EditorApplication.update-=Poll;EditorApplication.update+=Poll;EditorApplication.playModeStateChanged-=State;EditorApplication.playModeStateChanged+=State;}
         static void Poll(){

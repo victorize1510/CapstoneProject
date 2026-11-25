@@ -46,7 +46,7 @@ namespace Capstone.Game.Skills.Editor {
     /// <summary>Add-only authoring. No startup hooks, scene changes, save access or library reset.</summary>
     public static class PetSkillBatchAuthoring {
         public const string Input = "Assets/Game/Skills/Data/Authoring/PetSkillBatch.json";
-        public const string ReportRoot = QaArtifactPaths.Root + "pet-skill-batch-2026-11-17/";
+        public static string ReportRoot => QaArtifactPaths.Root + "pet-skill-batch-2026-11-17/";
         const string Menu = "Tools/Capstone/Pet Skills/Batch/";
 
         sealed class Plan : IDisposable {

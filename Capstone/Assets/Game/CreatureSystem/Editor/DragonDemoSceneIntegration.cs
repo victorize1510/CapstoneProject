@@ -17,7 +17,7 @@ namespace Capstone.Game.CreatureSystem.Editor {
         public const string CatalogPath=Root+"DemoDragonCatalog.asset";
         const string Pilot="Assets/Game/CreatureSystem/Pilot/",Demo="Assets/Scenes/DemoScene.unity";
         const string Family="Assets/Game/CreatureSystem/Data/Families/Family_Dragon_Dusk.asset";
-        public const string Qa=Capstone.Game.UISystem.QaArtifactPaths.Root+"dragon-demoscene-runtime-2026-11-06/";
+        public static string Qa => Capstone.Game.UISystem.QaArtifactPaths.Root+"dragon-demoscene-runtime-2026-11-06/";
         static readonly List<string> changes=new();
         static void Record(string value){changes.Add(value);Directory.CreateDirectory(Qa);File.WriteAllLines(Qa+"integration.txt",changes);}
         static void Folder(string path){string current="Assets";foreach(string part in path.Split('/').Skip(1)){if(!AssetDatabase.IsValidFolder(current+"/"+part))AssetDatabase.CreateFolder(current,part);current+="/"+part;}}

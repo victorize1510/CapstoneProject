@@ -18,7 +18,7 @@ using Object=UnityEngine.Object;
 
 namespace Capstone.Game.CreatureSystem {
     internal static class PveFinalScenarioVerification {
-        const string Qa=QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
+        static string Qa => QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
         static async Task Gap(int ms=100){await Task.Delay(ms);if(!EditorApplication.isPlaying)throw new OperationCanceledException("Play ended");}
         static void Write(string file,string value){File.WriteAllText(Qa+file,value);File.AppendAllText(Qa+"created-paths.txt",Qa+file+"\n");}

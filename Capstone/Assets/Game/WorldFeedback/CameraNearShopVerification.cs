@@ -17,7 +17,7 @@ namespace Capstone.Game.WorldFeedback
 {
     public static class CameraNearShopVerification
     {
-        public const string Root = QaArtifactPaths.Root + "camera-near-shop-2026-11-14/";
+        public static string Root => QaArtifactPaths.Root + "camera-near-shop-2026-11-14/";
         const string Session = "Capstone.CameraNearShopQA";
         const BindingFlags Any = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
         static readonly List<string> checks = new List<string>();

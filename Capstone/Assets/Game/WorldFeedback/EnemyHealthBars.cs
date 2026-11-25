@@ -1,230 +1,199 @@
-using System.Collections.Generic;
 using Capstone.Game.CreatureSystem;
+using Capstone.Game.Elements;
 using Capstone.Game.HudSystem;
 using Capstone.Game.Inventory;
-using Capstone.Game.UISystem;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using V = Capstone.Game.HudSystem.GameplayHudVisuals;
 
 namespace Capstone.Game.WorldFeedback {
-
-
+    /// <summary>One fixed HUD card, opened only by explicit inspection or a confirmed player pet skill hit.</summary>
     public sealed class EnemyHealthBars : MonoBehaviour {
-        const int Capacity = 32;
-        sealed class Bar {
-            public RectTransform Root, Fill; public CanvasGroup Group; public Text Title, Numbers, Cue;
-            public DummyEnemy Enemy; public EnemyHealthAnchor Anchor; public BasicCreatureEnemy Brain;
-            public float NextNumbers;public DownedRing Ring;
-            public float ActiveUntil, Health = -1, Maximum = -1, NextSight; public bool InSight;
-        }
+        const float SkillDisplaySeconds = 6f;
         static EnemyHealthBars live;
-        readonly Dictionary<DummyEnemy, float> recentHits = new Dictionary<DummyEnemy, float>();
-        readonly List<DummyEnemy> expiredHits = new List<DummyEnemy>();
-        internal static void RevealHit(DummyEnemy enemy) {
-            if (live != null && enemy != null) live.recentHits[enemy] = Time.unscaledTime + 6f;
+        RectTransform card;
+        Text title, details, numbers, captureTime;
+        Image portrait, health, shield;
+        CombatStatusHud statusIcons;
+        DownedRing captureRing;
+        GameObject captureBadge;
+        PetCommandInput observer;
+        DummyEnemy target;
+        GameObject lastCaster;
+        int lastCast;
+        float showUntil, nextRefresh;
+
+        public int VisibleCount => card != null && card.gameObject.activeInHierarchy ? 1 : 0;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Reset() => live = null;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void Install() {
+            if (live == null)
+                new GameObject("Enemy Target HUD", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler))
+                    .AddComponent<EnemyHealthBars>();
         }
-        bool WasHitRecently(DummyEnemy enemy) => recentHits.TryGetValue(enemy, out var until) && until > Time.unscaledTime;
-        readonly List<Bar> bars = new List<Bar>(Capacity);
-        readonly List<DummyEnemy> candidates = new List<DummyEnemy>(64);
-        readonly RaycastHit[] sight = new RaycastHit[32];
-        RectTransform surface; Canvas canvas; Camera cameraSource; BasicCameraFollow cameraLock; PetCommandInput party;
-        float refreshAt;
-        public int VisibleCount { get; private set; }
-        public int PooledCount => bars.Count;
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)] static void Reset() => live = null;
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)] static void Install() {
-            if (live == null) new GameObject("Enemy Overhead Health", typeof(RectTransform), typeof(Canvas)).AddComponent<EnemyHealthBars>();
+
+        internal static void Inspect(PetCommandInput player, DummyEnemy enemy) {
+            if (live == null || !live.isActiveAndEnabled || !IsWorldEnemy(enemy) || !enemy.IsSelectable) return;
+            live.observer = player;
+            live.target = enemy;
+            live.showUntil = float.PositiveInfinity;
+            live.Refresh();
         }
+
+        internal static void Dismiss(PetCommandInput player) {
+            if (live != null && live.observer == player) live.Clear();
+        }
+
+        internal static void ConfirmSkillHit(GameObject caster, int castId, DummyEnemy enemy) {
+            if (live == null || !live.isActiveAndEnabled || caster == null || !IsWorldEnemy(enemy)) return;
+            var pet = caster.GetComponent<PetController>();
+            if (pet == null || pet.IsWildEncounter || pet.owner == null) return;
+            var player = pet.owner.GetComponentInParent<PetCommandInput>();
+            if (player == null || !player.isActiveAndEnabled) return;
+
+            // Keep one stable target for a multi-hit / area cast instead of cycling through every victim.
+            if (live.lastCaster == caster && live.lastCast == castId &&
+                IsWorldEnemy(live.target) && live.target.IsSelectable && live.target != enemy &&
+                Time.unscaledTime < live.showUntil) return;
+
+            bool keepInspection = live.observer == player && live.target == enemy && enemy.IsSelectable &&
+                float.IsPositiveInfinity(live.showUntil);
+            live.observer = player;
+            live.lastCaster = caster;
+            live.lastCast = castId;
+            live.target = enemy;
+            if (!keepInspection) live.showUntil = Time.unscaledTime + SkillDisplaySeconds;
+            live.Refresh();
+        }
+
+        static bool IsWorldEnemy(DummyEnemy enemy) => enemy != null && enemy.isActiveAndEnabled &&
+            (enemy.GetComponent<PetController>() is not PetController pet || pet.IsWildEncounter);
+
         void Awake() {
             if (live != null && live != this) { Destroy(gameObject); return; }
-            live = this; DontDestroyOnLoad(gameObject); surface = (RectTransform)transform;
-            // Draw at the pet's depth so visible scenery occludes HP, including meshes without colliders.
-            canvas = GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.WorldSpace;
+            live = this;
+            DontDestroyOnLoad(gameObject);
+            var canvas = GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = -20;
-            for (int i = 0; i < Capacity; i++) bars.Add(Build(i));
-            int uiLayer = LayerMask.NameToLayer("UI");
-            if (uiLayer >= 0)
-                foreach (var element in GetComponentsInChildren<Transform>(true)) element.gameObject.layer = uiLayer;
+            var scaler = GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1600, 900);
+            scaler.matchWidthOrHeight = .5f;
+
+            var frame = V.Frame(transform, "Target Info", HudFrameGraphic.Shape.Chamfered,
+                new Color(.08f, .12f, .20f, .95f), V.Gold, 1.5f, 10f);
+            card = frame.rectTransform;
+            V.Place(card, new Vector2(.5f, 1f), new Vector2(.5f, 1f), new Vector2(0f, -22f), new Vector2(398f, 92f));
+
+            portrait = V.Image(card, "Portrait");
+            V.Top(portrait.rectTransform, 13, 13, 54, 54);
+            title = Label(card, "Target Name", 20, 80, 9, 301, 26);
+            details = Label(card, "Target Details", 14, 80, 36, 153, 20);
+            numbers = Label(card, "Selected HP", 14, 243, 36, 138, 20, TextAnchor.MiddleRight);
+            health = V.Bar(card, "Target HP", new Color(.89f, .39f, .43f), 80, 61, 301);
+            shield = V.Image(health.transform.parent, "Target Shield");
+            shield.preserveAspect = false;
+            shield.color = Color.white;
+            V.Stretch(shield.rectTransform, 2f);
+
+            var statusRow = V.Rect(card, "Target Status");
+            V.Top(statusRow, 80, 90, 300, 1);
+            statusRow.localScale = Vector3.one * .42f;
+            statusIcons = CombatStatusHud.BuildCanvas(statusRow, below: true);
+
+            var badge = V.Rect(card, "Capture Countdown");
+            V.Top(badge, 20, 22, 40, 40);
+            captureBadge = badge.gameObject;
+            captureRing = badge.gameObject.AddComponent<DownedRing>();
+            captureRing.color = V.Gold;
+            captureRing.raycastTarget = false;
+            captureTime = V.Text(badge, "Seconds", "", 16, TextAnchor.MiddleCenter);
+            captureTime.color = Color.white;
+            V.Stretch(captureTime.rectTransform);
+
+            card.gameObject.SetActive(false);
             SceneManager.activeSceneChanged += SceneChanged;
         }
-        void OnDestroy() { SceneManager.activeSceneChanged -= SceneChanged; foreach (var bar in bars) if (bar.Enemy != null) bar.Enemy.HealthChanged -= OnHealthChanged; if (live == this) live = null; }
-        void OnDisable() { foreach (var bar in bars) if (bar.Root != null) bar.Root.gameObject.SetActive(false); VisibleCount = 0; }
-        void OnEnable() { refreshAt = 0; }
-        void SceneChanged(Scene previous, Scene current) { foreach (var b in bars) Bind(b, null); cameraSource = null; cameraLock = null; party = null; refreshAt = 0; }
-        Bar Build(int index) {
-            var root = V.Rect(surface, "EnemyHealth" + index);
-            V.Place(root, new Vector2(.5f, .5f), new Vector2(.5f, 0), Vector2.zero, new Vector2(180, 34));
-            var title = V.Text(root, "Name", "", 14, TextAnchor.MiddleCenter);
-            title.fontStyle = FontStyle.Bold; title.raycastTarget = false; title.color = new Color(.97f, .96f, .92f);
-            V.Top(title.rectTransform, 0, 0, 180, 23);
-            var outline = title.gameObject.AddComponent<Outline>(); outline.effectColor = new Color(.04f, .05f, .09f, .95f);
-            outline.effectDistance = new Vector2(1, -1);
-            var track = V.Image(root, "Track"); track.preserveAspect = false; track.raycastTarget = false;
-            track.color = new Color(.10f, .13f, .20f, .9f); V.Top(track.rectTransform, 36, 25, 108, 7);
-            var fill = V.Image(track.transform, "Health"); fill.preserveAspect = false; fill.raycastTarget = false;
-            fill.color = new Color(.84f, .43f, .52f); V.Stretch(fill.rectTransform);
-            var numbers = V.Text(root, "Selected HP", "", 13, TextAnchor.MiddleCenter);
-            numbers.raycastTarget = false; numbers.color = title.color;
-            V.Top(numbers.rectTransform, 0, 32, 180, 18);
-            var numberOutline = numbers.gameObject.AddComponent<Outline>();
-            numberOutline.effectColor = outline.effectColor;
-            numberOutline.effectDistance = outline.effectDistance;
-            var group = root.gameObject.AddComponent<CanvasGroup>(); group.blocksRaycasts = false; group.interactable = false;
-            var cue=V.Text(root,"Downed cue","",20,TextAnchor.MiddleCenter);cue.fontStyle=FontStyle.Bold;cue.color=new Color(1,.88f,.57f);cue.raycastTarget=false;V.Top(cue.rectTransform,70,0,40,40);cue.gameObject.SetActive(false);
-            var ringRoot=V.Rect(cue.transform,"Countdown ring");V.Stretch(ringRoot);var ring=ringRoot.gameObject.AddComponent<DownedRing>();ring.color=cue.color;ring.raycastTarget=false;
-            root.gameObject.SetActive(false);
-            return new Bar { Root = root, Fill = fill.rectTransform, Group = group, Title = title, Numbers = numbers, Cue=cue,Ring=ring };
+
+        static Text Label(Transform parent, string name, int size, float x, float y, float width, float height,
+            TextAnchor align = TextAnchor.MiddleLeft) {
+            var label = V.Text(parent, name, "", size, align);
+            label.color = new Color(.97f, .96f, .92f);
+            V.Top(label.rectTransform, x, y, width, height);
+            return label;
         }
-        static bool Eligible(DummyEnemy enemy) {
-            if (enemy == null || !enemy.isActiveAndEnabled || !enemy.IsSelectable) return false;
-            var pet = enemy.GetComponent<PetController>();
-            return pet == null || pet.IsWildEncounter;
+
+        void OnDestroy() {
+            SceneManager.activeSceneChanged -= SceneChanged;
+            statusIcons?.Dispose();
+            if (live == this) live = null;
         }
-        float CenterDistance(DummyEnemy enemy) {
-            Vector3 point = cameraSource.WorldToViewportPoint(enemy.TargetPosition);
-            return point.z > 0 ? new Vector2((point.x - .5f) * cameraSource.aspect, point.y - .5f).sqrMagnitude : float.PositiveInfinity;
+
+        void OnDisable() => Clear();
+        void SceneChanged(Scene previous, Scene current) => Clear();
+        void LateUpdate() => Refresh(false);
+
+        void Clear() {
+            observer = null;
+            target = null;
+            lastCaster = null;
+            lastCast = 0;
+            statusIcons?.Bind(null);
+            if (card != null) card.gameObject.SetActive(false);
         }
-        void RefreshCandidates() {
-            expiredHits.Clear();
-            foreach (var hit in recentHits) if (hit.Key == null || hit.Value <= Time.unscaledTime) expiredHits.Add(hit.Key);
-            foreach (var enemy in expiredHits) recentHits.Remove(enemy);
-            if (cameraSource == null) cameraSource = Camera.main;
-            if (canvas.worldCamera != cameraSource) canvas.worldCamera = cameraSource;
-            if (cameraLock == null) cameraLock = FindFirstObjectByType<BasicCameraFollow>();
-            if (party == null) party = FindFirstObjectByType<PetCommandInput>();
-            candidates.Clear(); if (cameraSource == null) return;
-            Vector3 from = party != null ? party.transform.position : cameraSource.transform.position;
-            DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
-            DummyEnemy selected = party != null ? party.SelectedEnemy : null;
-            foreach (var enemy in DummyEnemy.ActiveEnemies)
-                if (Eligible(enemy) && (enemy.transform.position - from).sqrMagnitude <= 625) candidates.Add(enemy);
-            candidates.Sort((a, b) => {
-                if (a == locked) return b == locked ? 0 : -1; if (b == locked) return 1;
-                if (a == selected) return b == selected ? 0 : -1; if (b == selected) return 1;
-                bool aa = CenterDistance(a) < .0064f, bb = CenterDistance(b) < .0064f;
-                if (aa != bb) return aa ? -1 : 1;
-                aa = WasHitRecently(a); bb = WasHitRecently(b);
-                if (aa != bb) return aa ? -1 : 1;
-                return (a.transform.position - from).sqrMagnitude.CompareTo((b.transform.position - from).sqrMagnitude);
-            });
-            foreach (var bar in bars) if (bar.Enemy != null && (!Eligible(bar.Enemy) || candidates.IndexOf(bar.Enemy) < 0
-                || candidates.IndexOf(bar.Enemy) >= Capacity)) Bind(bar, null);
-            for (int i = 0; i < candidates.Count && i < Capacity; i++) {
-                bool bound = false; foreach (var b in bars) if (b.Enemy == candidates[i]) { bound = true; break; }
-                if (bound) continue;
-                foreach (var b in bars) if (b.Enemy == null) { Bind(b, candidates[i]); break; }
+
+        void Refresh(bool immediate = true) {
+            if (card == null) return;
+            if (observer == null || !observer.isActiveAndEnabled || !IsWorldEnemy(target) || Time.unscaledTime >= showUntil) {
+                Clear();
+                return;
             }
-        }
-        void Bind(Bar bar, DummyEnemy enemy) {
-            if (bar.Enemy != null) bar.Enemy.HealthChanged -= OnHealthChanged;
-            bar.Enemy = enemy; bar.Health = -1; bar.Maximum = -1; bar.ActiveUntil = 0; bar.NextSight = 0; bar.InSight = false;
-            bar.Root.gameObject.SetActive(false);
-            if (enemy == null) return;
-            enemy.HealthChanged += OnHealthChanged;
-            bar.Health = enemy.CurrentHealth;
-            bar.Anchor = enemy.GetComponent<EnemyHealthAnchor>(); if (bar.Anchor == null) bar.Anchor = enemy.gameObject.AddComponent<EnemyHealthAnchor>();
-            bar.Brain = enemy.GetComponent<BasicCreatureEnemy>();
-            var stats = enemy.GetComponent<PetHudRuntimeStats>();
-            string name = stats != null ? stats.DisplayName : enemy.name;
-            bar.Title.text = name + (stats != null ? " • Cấp " + stats.Level : "");
-            bar.NextNumbers = 0;
-        }
-        void OnHealthChanged(DummyEnemy enemy) {
-            foreach (var bar in bars) if (bar.Enemy == enemy) {
-                if (bar.Health >= 0 && enemy.CurrentHealth < bar.Health) bar.ActiveUntil = Time.unscaledTime + 6;
-                bar.Health = enemy.CurrentHealth;
-                bar.Maximum = -1;
-                break;
+            if (!target.IsSelectable && float.IsPositiveInfinity(showUntil)) showUntil = Time.unscaledTime + SkillDisplaySeconds;
+            bool visible = !InventoryInputController.GameplayInputBlocked && !PetEvolutionPresentationController.AnyPlaying;
+            card.gameObject.SetActive(visible);
+            if (!visible || (!immediate && Time.unscaledTime < nextRefresh)) return;
+            nextRefresh = Time.unscaledTime + .1f;
+
+            var stats = target.GetComponent<PetHudRuntimeStats>();
+            var meta = target.GetComponent<PetCollectionMetadata>();
+            string name = stats != null ? stats.DisplayName : target.InspectionName;
+            if (meta != null) name = meta.ResolveDisplayName(name);
+            title.text = stats != null ? $"{name}  ·  Cấp {stats.Level}" : name;
+            details.text = Describe(target, meta);
+            numbers.text = $"{target.CurrentHealth:0}/{target.maxHealth:0} HP";
+            var status = target.GetComponent<CombatBleed>();
+            statusIcons?.Bind(status);
+            float shieldValue = status?.Magnitude(CombatAilment.Shield) ?? 0f;
+            float total = Mathf.Max(target.maxHealth, target.CurrentHealth + shieldValue);
+            float hpFraction = total > 0f ? Mathf.Clamp01(target.CurrentHealth / total) : 0f;
+            V.Fill(health, hpFraction);
+            shield.enabled = shieldValue > .01f && total > 0f;
+            if (shield.enabled) {
+                shield.rectTransform.anchorMin = new Vector2(hpFraction, 0f);
+                shield.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(hpFraction + shieldValue / total), 1f);
             }
-        }
-        void LateUpdate() {
-            if (Time.unscaledTime >= refreshAt) { refreshAt = Time.unscaledTime + .25f; RefreshCandidates(); }
-            VisibleCount = 0;
-            bool hidden = cameraSource == null || InventoryInputController.GameplayInputBlocked || PetEvolutionPresentationController.AnyPlaying;
-            float uiScale = hidden ? 0f : WorldUnitsPerUiUnit(cameraSource);
-            DummyEnemy locked = null; cameraLock?.TryGetLockedEnemy(out locked);
-            DummyEnemy selected = party != null ? party.SelectedEnemy : null;
-            DummyEnemy centered = null;
-            float closestToCenter = .0064f;
-            foreach (var bar in bars) {
-                if (hidden || !Eligible(bar.Enemy)) continue;
-                float distance = CenterDistance(bar.Enemy);
-                if (distance >= closestToCenter || !CanSeeEnemy(bar.Enemy)) continue;
-                centered = bar.Enemy;
-                closestToCenter = distance;
-            }
-            foreach (var bar in bars) {
-                if (hidden || !Eligible(bar.Enemy)) { bar.Root.gameObject.SetActive(false); continue; }
-                Vector3 anchor = bar.Anchor.Position;
-                Vector3 screen = cameraSource.WorldToViewportPoint(anchor);
-                bool inView = screen.z > 0 && screen.x > .01f && screen.x < .99f && screen.y > .02f && screen.y < .98f;
-                bool revealed = bar.Enemy == selected || bar.Enemy == locked || bar.Enemy == centered
-                    || WasHitRecently(bar.Enemy) || Time.unscaledTime < bar.ActiveUntil;
-                if (inView && revealed && Time.unscaledTime >= bar.NextSight) {
-                    bar.NextSight = Time.unscaledTime + .08f;
-                    bar.InSight = CanSeeEnemy(bar.Enemy) && ClearSight(cameraSource.transform.position, anchor, bar.Enemy);
-                }
-                bar.Root.gameObject.SetActive(revealed && inView && bar.InSight);
-                if (!bar.Root.gameObject.activeSelf) continue;
-                VisibleCount++;
-                if (bar.Health != bar.Enemy.CurrentHealth || bar.Maximum != bar.Enemy.maxHealth) {
-                    bar.Health = bar.Enemy.CurrentHealth; bar.Maximum = bar.Enemy.maxHealth;
-                    bar.Fill.anchorMax = new Vector2(bar.Maximum > 0 ? Mathf.Clamp01(bar.Health / bar.Maximum) : 0, 1);
-                }
-                bar.Cue.gameObject.SetActive(bar.Enemy.IsDowned);
-                bar.Fill.parent.gameObject.SetActive(!bar.Enemy.IsDowned);
-                if(bar.Enemy.IsDowned){bar.Cue.text=Mathf.CeilToInt(bar.Enemy.DownedSecondsRemaining).ToString();bar.Ring.SetRemaining(bar.Enemy.DownedSecondsRemaining/Mathf.Max(.01f,bar.Enemy.DownedDuration));}
-                bool showNumbers = bar.Enemy == selected && !bar.Enemy.IsDowned;
-                if (showNumbers && (!bar.Numbers.enabled || Time.unscaledTime >= bar.NextNumbers)) {
-                    bar.NextNumbers = Time.unscaledTime + .1f;
-                    bar.Numbers.text = $"{bar.Health:0}/{bar.Maximum:0} HP";
-                }
-                bar.Numbers.enabled = showNumbers;
-                bar.Title.enabled = !bar.Enemy.IsDowned;
-                bar.Root.SetPositionAndRotation(anchor, cameraSource.transform.rotation);
-                bar.Root.localScale = Vector3.one * (cameraSource.orthographic ? uiScale : uiScale * screen.z);
+            bool downed = target.IsDowned;
+            V.Icon(portrait, downed ? null : stats?.Icon);
+            captureBadge.SetActive(downed);
+            if (downed) {
+                captureTime.text = Mathf.CeilToInt(target.DownedSecondsRemaining).ToString();
+                captureRing.SetRemaining(target.DownedSecondsRemaining / Mathf.Max(.01f, target.DownedDuration));
             }
         }
 
-        static float WorldUnitsPerUiUnit(Camera view) {
-            var bottom = view.ViewportToWorldPoint(new Vector3(.5f, 0f, 1f));
-            var top = view.ViewportToWorldPoint(new Vector3(.5f, 1f, 1f));
-            float displayScale = Mathf.Sqrt((view.pixelWidth / 1600f) * (view.pixelHeight / 900f));
-            return Vector3.Distance(bottom, top) * displayScale / Mathf.Max(1, view.pixelHeight);
-        }
-        bool CanSeeEnemy(DummyEnemy enemy) {
-            Vector3 body = enemy.GetTargetBounds().center;
-            if (!ClearSight(cameraSource.transform.position, body, enemy)) return false;
-            return party == null || ClearSight(party.transform.position + Vector3.up * 1.35f, body, enemy);
-        }
-
-        bool ClearSight(Vector3 start, Vector3 point, DummyEnemy enemy) {
-            Vector3 delta = point - start;
-            if (delta.sqrMagnitude < .001f) return true;
-            float distance = delta.magnitude;
-            Vector3 direction = delta / distance;
-            var physics = enemy.gameObject.scene.GetPhysicsScene();
-            // Unity raycasts miss colliders containing the origin. The reverse ray covers camera clipping into a wall.
-            return !IsSightBlocked(physics, start, direction, distance, enemy)
-                && !IsSightBlocked(physics, point, -direction, distance, enemy);
-        }
-
-        bool IsSightBlocked(PhysicsScene physics, Vector3 start, Vector3 direction, float distance, DummyEnemy enemy) {
-            int count = physics.Raycast(start, direction, sight, distance, ~0, QueryTriggerInteraction.Collide);
-            if (count == sight.Length) return true;
-            for (int i = 0; i < count; i++) {
-                var collider = sight[i].collider;
-                if (collider == null || collider.transform.IsChildOf(enemy.transform)) continue;
-                if (party != null && collider.transform.IsChildOf(party.transform)) continue;
-                if (collider.GetComponentInParent<PetController>() is PetController pet && !pet.IsWildEncounter) continue;
-                if (collider.isTrigger && collider.GetComponentInParent<CameraOccluder>() is not
-                    { actor: false, kind: CameraOccluder.Kind.Wall or CameraOccluder.Kind.Column }) continue;
-                return true;
-            }
-            return false;
+        static string Describe(DummyEnemy enemy, PetCollectionMetadata meta) {
+            if (enemy.IsDowned) return "Có thể thu phục";
+            if (!enemy.IsAlive) return "Đã bị hạ";
+            if (enemy.IsBoss) return "Boss";
+            if (meta == null || !ElementCatalog.IsSupported(meta.Element)) return "Thú hoang";
+            string primary = ElementCatalog.Name(meta.Element);
+            return ElementCatalog.IsSupported(meta.SecondaryElement)
+                ? $"Hệ {primary} / {ElementCatalog.Name(meta.SecondaryElement)}" : $"Hệ {primary}";
         }
     }
 }

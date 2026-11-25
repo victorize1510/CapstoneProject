@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem.Editor {
     /// <summary>Editor-only regression checks. Fixtures stay in memory; no source asset, scene or save is written.</summary>
     public static class PetStatLookupVerification {
-        public const string Root = QaArtifactPaths.Root + "stat-profile-bat-proposal-2026-11-06/";
+        public static string Root => QaArtifactPaths.Root + "stat-profile-bat-proposal-2026-11-06/";
         static readonly FieldInfo Cache = typeof(PetStatCalculator).GetField("profiles", BindingFlags.Static | BindingFlags.NonPublic);
         static readonly List<string> Checks = new List<string>();
 

@@ -1,7 +1,7 @@
 # Generated AI data and verification storage
 
 - Keep gameplay source, scenes, prefabs, runtime textures, fonts and their `.meta` files in the Unity project.
-- Put AI screenshots, frame sequences, videos, overlays, diffs, test saves, profiler recordings, logs and standalone builds under `E:/UnityWork/CapstoneProjectData/Artifacts/<task>/`.
+- Put Unity verification screenshots, frame sequences, videos, overlays, test saves, profiler output and logs under `Application.persistentDataPath/QA/Artifacts/<task>/`. Use an external temporary directory for shell-only compile logs and standalone test builds.
 - Use `Capstone.Game.UISystem.QaArtifactPaths.Root` in Unity verification code. Never write bulky QA output into this repository or `Assets/`.
 - Do not create a junction/symlink from the repository to the external artifact directory: Git/Desktop can still collect those files.
 - Keep at most 10 rolling manual-capture frames. At handoff retain only useful final images, aiming for <=50 MB per task; summarize counters into small CSV/JSON/text reports.

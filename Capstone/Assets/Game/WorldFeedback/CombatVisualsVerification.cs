@@ -16,7 +16,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.WorldFeedback {
     /// <summary>Opt-in QA transport. Never runs, redirects saves, or captures without an external request.</summary>
     public static class CombatVisualsVerification {
-        public const string Root = QaArtifactPaths.Root + "combat-visuals-camera-rework-2026-11-12/";
+        public static string Root => QaArtifactPaths.Root + "combat-visuals-camera-rework-2026-11-12/";
         const string Session = "Capstone.CombatVisuals.Qa";
         static double nextPoll;
         static bool busy;

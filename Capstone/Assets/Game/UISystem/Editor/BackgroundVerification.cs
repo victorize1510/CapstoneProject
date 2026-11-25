@@ -15,7 +15,8 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.UISystem.Editor {
     /// <summary>Bounded, opt-in runtime captures of the five background surfaces. No item transactions.</summary>
     public static class BackgroundVerification {
-        const string Root = BackgroundQaIsolation.Root, Session = "Capstone.BackgroundQA";
+        static string Root => BackgroundQaIsolation.Root;
+        const string Session = "Capstone.BackgroundQA";
         const BindingFlags Any = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         static bool running;
         static double nextPoll;

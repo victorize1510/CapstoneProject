@@ -63,6 +63,7 @@ public class DummyEnemy : MonoBehaviour
     public bool IsDownedAvailable => downed && (Time.time < downedUntil || CaptureLocked);
     public float DownedSecondsRemaining => downed ? Mathf.Max(0, downedUntil - Time.time) : 0;
     public float CurrentHealth => health;
+    internal string InspectionName => writeHealthToName && !string.IsNullOrEmpty(baseName) ? baseName : gameObject.name;
     public bool CaptureLocked { get; internal set; }
 
     internal void InitializeCaptureHealth(float current, float maximum)

@@ -17,7 +17,7 @@ using Object = UnityEngine.Object;
 
 namespace Capstone.Game.CreatureSystem {
     public sealed class CreatureRuntimePilotVerification : MonoBehaviour {
-        const string Root = QaArtifactPaths.Root + "creature-runtime-pilot-2026-11-05/";
+        static string Root => QaArtifactPaths.Root + "creature-runtime-pilot-2026-11-05/";
         const string Session = "Capstone.CreatureRuntimePilot";
         const string Pilot = "Assets/Game/CreatureSystem/Pilot/";
         readonly List<string> checks = new List<string>();

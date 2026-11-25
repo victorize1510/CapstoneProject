@@ -6,7 +6,7 @@ using Capstone.Game.UISystem;
 using UnityEngine;
 namespace Capstone.Game.Inventory.Bag {
     public static class BagDensityCapture {
-        public const string Root=QaArtifactPaths.Root+"bag-item-density-2026-10-23/";
+        public static string Root => QaArtifactPaths.Root+"bag-item-density-2026-10-23/";
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)] static void Isolate(){
             if(!File.Exists(Root+"isolate.flag"))return;
             string target=Root+"test-saves";Directory.CreateDirectory(target);

@@ -20,7 +20,8 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem {
     /// <summary>Opt-in Play-only fixtures. Real saves and scene assets are never changed by these checks.</summary>
     public static class PveLifecycleVerification {
-        const string Qa=QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/",Session="Capstone.PveLifecycle.Qa";
+        static string Qa => QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
+        const string Session = "Capstone.PveLifecycle.Qa";
         public const string Version="pve-life-2026-11-12-v4";
         static readonly List<string> checks=new List<string>();static double pollAt;static bool running;
         static void Write(string file,string value){Directory.CreateDirectory(Qa);File.WriteAllText(Qa+file,value);File.AppendAllText(Qa+"created-paths.txt",Qa+file+"\n");}

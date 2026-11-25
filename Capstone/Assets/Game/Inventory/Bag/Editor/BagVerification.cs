@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 using Object=UnityEngine.Object;
 namespace Capstone.Game.Inventory.Bag.Editor {
     public static class BagVerification {
-        public const string Root=QaArtifactPaths.Root+"bag-implementation-2026-10-22/";
+        public static string Root => QaArtifactPaths.Root+"bag-implementation-2026-10-22/";
         const string Session="Capstone.BagQA";
         const BindingFlags Any=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
         static bool running;static double nextPoll;static readonly List<string> checks=new List<string>();

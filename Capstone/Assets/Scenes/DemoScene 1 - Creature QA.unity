@@ -44575,7 +44575,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7dbcac42efa9da943b1d69ee47bbc830, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Capstone.Game.CreatureSystem.DemoSceneOneSaveIsolation
-  developmentProfile: E:/UnityWork/CapstoneProjectData/Artifacts/creature-qa-items-test/profile
+  developmentProfile:
 --- !u!4 &1317454273
 Transform:
   m_ObjectHideFlags: 0

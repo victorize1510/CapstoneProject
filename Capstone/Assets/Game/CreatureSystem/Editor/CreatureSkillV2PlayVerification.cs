@@ -233,17 +233,12 @@ namespace Capstone.Game.CreatureSystem.Editor
                     bool SelectedHpVisible() => overhead != null && overhead.GetComponentsInChildren<UnityEngine.UI.Text>()
                         .Any(label => label.enabled && label.name == "Selected HP" && label.text == "500/500 HP");
                     Check(await WaitFor(SelectedHpVisible, 2),
-                        "Selected enemy shows current and maximum HP above its model");
-                    Check(overhead.GetComponent<Canvas>().renderMode == RenderMode.WorldSpace,
-                        "Overhead canvas draws at scene depth so an opaque mesh can occlude it without a collider");
-                    var obstruction = new GameObject("QA wall enclosing camera");
-                    obstruction.transform.position = hitCamera.transform.position;
-                    obstruction.AddComponent<BoxCollider>().size = Vector3.one * .5f;
-                    Physics.SyncTransforms();
-                    Check(await WaitFor(() => !SelectedHpVisible(), 2),
-                        "Selected HP hides even when the camera starts inside the wall collider");
-                    Object.Destroy(obstruction);
-                    Check(await WaitFor(SelectedHpVisible, 2), "Selected HP returns after the obstruction is removed");
+                        "Explicit enemy selection shows current and maximum HP on the HUD");
+                    Check(overhead.GetComponent<Canvas>().renderMode == RenderMode.ScreenSpaceOverlay,
+                        "Target HP uses a fixed screen HUD");
+                    overhead.SendMessage("Clear");
+                    await Task.Delay(150);
+                    Check(overhead.VisibleCount == 0, "Looking directly at the target does not open its HUD");
                 }
                 if (HitFeedbackRun)
                 {
@@ -287,6 +282,9 @@ namespace Capstone.Game.CreatureSystem.Editor
                 var result = damage.First(r => r.Hit.Source == actor && r.Hit.SkillId == "orb.dark");
                 Check(enemy.CurrentHealth < startingHealth && result.HpLost > 0 && driver.LastReleaseNormalized > 0,
                     $"Animation release, impact and HP loss ({result.HpLost:0.##})");
+                if (FollowUpRun)
+                    Check(await WaitFor(() => Object.FindFirstObjectByType<Capstone.Game.WorldFeedback.EnemyHealthBars>()
+                        ?.VisibleCount == 1, 2), "Confirmed pet skill hit opens the target HUD without another click");
                 if (HitFeedbackRun)
                 {
                     var feel = Resources.Load<CombatFeelSettings>("CombatFeelSettings");

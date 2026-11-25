@@ -16,7 +16,7 @@ using Object=UnityEngine.Object;
 
 namespace Capstone.Game.CreatureSystem {
     internal static class PveCombatScenarioVerification {
-        const string Qa=QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
+        static string Qa => QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
         const BindingFlags Any=BindingFlags.Public|BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.Static;
         static async Task Gap(int ms=100){await Task.Delay(ms);if(!EditorApplication.isPlaying)throw new OperationCanceledException("Play ended");}
         internal static async Task Run(PetCommandInput input,Action<bool,string> check,bool capture=true,string output=null){

@@ -15,7 +15,7 @@ using Object = UnityEngine.Object;
 namespace Capstone.Game.Skills.Editor {
     /// <summary>Explicit tests in an empty scene: no PlayerSaveController and no access to the user's save store.</summary>
     public static class PetSkillLibraryVerification {
-        public const string Root = QaArtifactPaths.Root + "pet-skill-library-2026-10-22/";
+        public static string Root => QaArtifactPaths.Root + "pet-skill-library-2026-10-22/";
         const string PlayFlag = "Capstone.PetSkillLibrary.PlayQA";
         const string LiveFlag = "Capstone.PetSkillLibrary.LiveQA";
         const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;

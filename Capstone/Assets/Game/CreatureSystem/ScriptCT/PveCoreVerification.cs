@@ -17,7 +17,8 @@ using Object=UnityEngine.Object;
 
 namespace Capstone.Game.CreatureSystem {
     public static class PveCoreVerification {
-        const string Qa=QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/",Session="Capstone.PveCore.Qa";
+        static string Qa => QaArtifactPaths.Root+"pve-combat-hub-2026-11-11/";
+        const string Session = "Capstone.PveCore.Qa";
         public const string Version="pve-core-verify-2026-11-12-v5";
         static readonly List<string> checks=new List<string>();static double pollAt;static bool running;
         static void Write(string name,string value){Directory.CreateDirectory(Qa);File.WriteAllText(Qa+name,value);File.AppendAllText(Qa+"created-paths.txt",Qa+name+"\n");}

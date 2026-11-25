@@ -107,7 +107,6 @@ namespace Capstone.Game.CreatureSystem
 
             PveCombatState.Record(result);
             HudSystem.FloatingCombatText.ShowDamage(result);
-            if (result.Target != null) WorldFeedback.EnemyHealthBars.RevealHit(result.Target.GetComponent<DummyEnemy>());
             CombatFeedback.Show(result);
             Applied?.Invoke(result);
         }

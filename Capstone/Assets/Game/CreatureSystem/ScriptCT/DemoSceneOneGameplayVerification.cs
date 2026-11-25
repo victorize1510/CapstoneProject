@@ -18,7 +18,7 @@ using Object=UnityEngine.Object;
 namespace Capstone.Game.CreatureSystem {
     /// <summary>Explicit engine verification with temporary files and no real profile writes.</summary>
     public static class DemoSceneOneGameplayVerification {
-        const string Qa=UISystem.QaArtifactPaths.Root+"demoscene1-starter-shop-respawn-2026-11-16/";
+        static string Qa => UISystem.QaArtifactPaths.Root+"demoscene1-starter-shop-respawn-2026-11-16/";
         const string Session="Capstone.DemoScene1.Gameplay20261116";
         static readonly List<string> checks=new List<string>();
         static bool running;
@@ -265,7 +265,7 @@ namespace Capstone.Game.CreatureSystem {
     }
     /// <summary>Exercises normal Start using a copy of the real profile, then explicitly applies the approved starter.</summary>
     public static class CombatStarterStartupVerification {
-        const string Qa=UISystem.QaArtifactPaths.Root+"demoscene1-combat-slots-fix-2026-11-16/";
+        static string Qa => UISystem.QaArtifactPaths.Root+"demoscene1-combat-slots-fix-2026-11-16/";
         const string Session="Capstone.CombatStarter.NormalStartup";
         static void Write(string file,string value){Directory.CreateDirectory(Qa);File.WriteAllText(Qa+file,value);File.AppendAllText(Qa+"created-paths.txt",Qa+file+"\n");}
         [MenuItem("Tools/Capstone/PvE/6. Apply combat starter and show HUD (DemoScene 1)")]
@@ -277,8 +277,8 @@ namespace Capstone.Game.CreatureSystem {
             if(EditorApplication.isPlayingOrWillChangePlaymode||scene.path!="Assets/Scenes/DemoScene 1.unity")throw new InvalidOperationException("Dừng Play và mở DemoScene 1.");
             var isolation=Object.FindFirstObjectByType<DemoSceneOneSaveIsolation>();var save=Object.FindFirstObjectByType<PlayerSaveController>();
             if(isolation==null||save?.GetComponent<DemoSceneOneStarterGrant>()==null)throw new InvalidOperationException("Thiếu binding starter/isolation.");
-            string source=new PlayerJsonFileSaveStore(isolation.developmentProfile).GetPath(save.SlotId);
-            string target=real?isolation.developmentProfile:Qa+"profile-copy-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            string source=new PlayerJsonFileSaveStore(isolation.ResolvedDevelopmentProfile).GetPath(save.SlotId);
+            string target=real?isolation.ResolvedDevelopmentProfile:Qa+"profile-copy-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             Directory.CreateDirectory(Qa+"backups");
             if(File.Exists(source)){
                 string backup=Qa+"backups/pre-apply-"+DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")+".json";
